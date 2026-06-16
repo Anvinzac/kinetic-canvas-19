@@ -11,7 +11,7 @@ type Post = {
   author_id: string;
   post_type: string;
   canvas_html: string;
-  media_urls: string[];
+  media_urls: string[] | null;
   bg_gradient: string | null;
   created_at: string;
 };
@@ -41,12 +41,13 @@ export function PostCard({
   const [flying, setFlying] = useState<{ id: number; chip: string }[]>([]);
   const flyId = useRef(0);
 
+  const media = post.media_urls ?? [];
   // Auto-advance slideshow
   useEffect(() => {
-    if (post.post_type !== "slideshow" || post.media_urls.length < 2) return;
-    const t = setInterval(() => setSlide((s) => (s + 1) % post.media_urls.length), 2800);
+    if (post.post_type !== "slideshow" || media.length < 2) return;
+    const t = setInterval(() => setSlide((s) => (s + 1) % media.length), 2800);
     return () => clearInterval(t);
-  }, [post.post_type, post.media_urls.length]);
+  }, [post.post_type, media.length]);
 
   // Seed flying chips from existing comments
   useEffect(() => {

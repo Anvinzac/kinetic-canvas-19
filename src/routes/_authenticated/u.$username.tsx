@@ -53,7 +53,7 @@ function ProfilePage() {
               className="relative aspect-[3/4] overflow-hidden rounded-md"
               style={{ background: p.bg_gradient ?? "#111" }}
             >
-              {p.media_urls[0] && (
+              {p.media_urls?.[0] && (
                 <img src={p.media_urls[0]} alt="" className="absolute inset-0 size-full object-cover opacity-90" />
               )}
               <div
