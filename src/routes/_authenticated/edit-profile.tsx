@@ -48,7 +48,7 @@ function EditProfile() {
   return (
     <div className="min-h-[100dvh] pb-28">
       <header className="sticky top-0 z-30 glass border-b border-white/10 px-4 pt-[max(env(safe-area-inset-top),12px)] pb-3 flex items-center gap-3">
-        <button onClick={() => navigate({ to: "/settings" })} className="size-8 grid place-items-center -ml-1">
+        <button onClick={() => navigate({ to: "/settings" })} className="size-8 grid place-items-center -ml-1" aria-label="back">
           <ChevronLeft className="size-5" />
         </button>
         <h1 className="font-impact text-xl tracking-wider flex-1">EDIT PROFILE</h1>

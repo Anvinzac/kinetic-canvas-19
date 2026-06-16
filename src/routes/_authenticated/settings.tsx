@@ -49,7 +49,7 @@ function SettingsPage() {
         )}
 
         <Section title="account">
-          <Row icon={<Edit3 />} label="edit profile" to="/settings/edit" />
+          <Row icon={<Edit3 />} label="edit profile" to="/edit-profile" />
           <Row icon={<Lock />} label="private account" toggle value={privateAcc} onToggle={setPrivateAcc} />
         </Section>
 
