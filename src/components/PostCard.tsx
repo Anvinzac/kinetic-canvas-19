@@ -41,7 +41,7 @@ export function PostCard({
   const [flying, setFlying] = useState<{ id: number; chip: string }[]>([]);
   const flyId = useRef(0);
 
-  const media = post.media_urls ?? [];
+  const media = (post.media_urls ?? []) ?? [];
   // Auto-advance slideshow
   useEffect(() => {
     if (post.post_type !== "slideshow" || media.length < 2) return;
@@ -71,12 +71,12 @@ export function PostCard({
       onClick={() => setPlayKey((k) => k + 1)}
     >
       {/* media layer */}
-      {post.post_type === "image" && post.media_urls[0] && (
-        <img src={post.media_urls[0]} alt="" className="absolute inset-0 size-full object-cover" />
+      {post.post_type === "image" && (post.media_urls ?? [])[0] && (
+        <img src={(post.media_urls ?? [])[0]} alt="" className="absolute inset-0 size-full object-cover" />
       )}
-      {post.post_type === "video" && post.media_urls[0] && (
+      {post.post_type === "video" && (post.media_urls ?? [])[0] && (
         <video
-          src={post.media_urls[0]}
+          src={(post.media_urls ?? [])[0]}
           autoPlay
           muted
           loop
@@ -88,7 +88,7 @@ export function PostCard({
         <AnimatePresence mode="wait">
           <motion.img
             key={slide}
-            src={post.media_urls[slide]}
+            src={(post.media_urls ?? [])[slide]}
             alt=""
             initial={{ opacity: 0, scale: 1.05 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -110,7 +110,7 @@ export function PostCard({
       {/* slideshow indicators */}
       {post.post_type === "slideshow" && (
         <div className="absolute top-4 left-1/2 z-20 flex -translate-x-1/2 gap-1">
-          {post.media_urls.map((_, i) => (
+          {(post.media_urls ?? []).map((_, i) => (
             <div
               key={i}
               className={`h-0.5 w-8 rounded-full ${i === slide ? "bg-white" : "bg-white/30"}`}
