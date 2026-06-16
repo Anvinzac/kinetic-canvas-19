@@ -3,7 +3,6 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getProfile } from "@/lib/social.functions";
 import { getMe, toggleFollow } from "@/lib/discovery.functions";
-import { KineticText } from "@/components/KineticText";
 import { parseCanvas } from "@/lib/canvas";
 import { Settings, Share2, UserCheck, UserPlus } from "lucide-react";
 import { toast } from "sonner";
@@ -147,9 +146,6 @@ function ProfilePage() {
           <p className="py-16 text-center font-mono text-xs text-muted-foreground">no kinetics yet</p>
         )}
       </div>
-
-      {/* satisfy unused import */}
-      <span className="hidden"><KineticText spec={parseCanvas("")} /></span>
     </div>
   );
 }
