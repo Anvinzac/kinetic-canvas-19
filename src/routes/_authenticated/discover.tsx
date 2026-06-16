@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useState, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { search, getDiscover } from "@/lib/discovery.functions";
 import { parseCanvas } from "@/lib/canvas";
 import { Search as SearchIcon } from "lucide-react";
@@ -162,7 +162,7 @@ function Loader() {
 
 function useDebounced(value: string, ms: number) {
   const [v, setV] = useState(value);
-  useMemo(() => {
+  useEffect(() => {
     const t = setTimeout(() => setV(value), ms);
     return () => clearTimeout(t);
   }, [value, ms]);
