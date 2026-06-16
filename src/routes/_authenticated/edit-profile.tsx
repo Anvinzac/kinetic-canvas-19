@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { ChevronLeft, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/_authenticated/settings/edit")({
+export const Route = createFileRoute("/_authenticated/edit-profile")({
   component: EditProfile,
 });
 
