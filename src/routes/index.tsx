@@ -1,16 +1,15 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/")({
-  ssr: false,
   component: IndexRedirect,
 });
 
 function IndexRedirect() {
   const navigate = useNavigate();
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
+    import("@/integrations/supabase/client").then(async ({ supabase }) => {
+      const { data } = await supabase.auth.getUser();
       navigate({ to: data.user ? "/feed" : "/auth", replace: true });
     });
   }, [navigate]);
