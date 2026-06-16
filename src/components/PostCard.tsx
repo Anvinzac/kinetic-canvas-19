@@ -41,7 +41,7 @@ export function PostCard({
   const [flying, setFlying] = useState<{ id: number; chip: string }[]>([]);
   const flyId = useRef(0);
 
-  const media = (post.media_urls ?? []) ?? [];
+  const media = post.media_urls ?? [];
   // Auto-advance slideshow
   useEffect(() => {
     if (post.post_type !== "slideshow" || media.length < 2) return;
