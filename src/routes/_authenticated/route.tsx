@@ -1,10 +1,13 @@
 import { createFileRoute, Link, Outlet, redirect } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
+import { getDemoRouteUser, isDemoSession } from "@/lib/demo-session";
 import { Home, Plus, User, Search, Bell } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
   beforeLoad: async () => {
+    if (isDemoSession()) return { user: getDemoRouteUser() };
+
     const { data, error } = await supabase.auth.getUser();
     if (error || !data.user) throw redirect({ to: "/auth" });
     return { user: data.user };
@@ -29,7 +32,17 @@ function AuthedLayout() {
   );
 }
 
-function NavBtn({ to, icon, label, emphasized }: { to: string; icon: React.ReactNode; label: string; emphasized?: boolean }) {
+function NavBtn({
+  to,
+  icon,
+  label,
+  emphasized,
+}: {
+  to: string;
+  icon: React.ReactNode;
+  label: string;
+  emphasized?: boolean;
+}) {
   return (
     <Link
       to={to}
@@ -45,7 +58,9 @@ function NavBtn({ to, icon, label, emphasized }: { to: string; icon: React.React
       >
         {icon}
       </span>
-      {!emphasized && <span className="text-[9px] uppercase tracking-widest text-muted-foreground">{label}</span>}
+      {!emphasized && (
+        <span className="text-[9px] uppercase tracking-widest text-muted-foreground">{label}</span>
+      )}
     </Link>
   );
 }

@@ -22,7 +22,10 @@ export const getFeed = createServerFn({ method: "GET" }).handler(async () => {
   const postIds = (posts ?? []).map((p) => p.id);
   const [{ data: likes }, { data: comments }] = await Promise.all([
     supabaseAdmin.from("likes").select("post_id, user_id").in("post_id", postIds),
-    supabaseAdmin.from("comments").select("id, post_id, user_id, chip_id, created_at").in("post_id", postIds),
+    supabaseAdmin
+      .from("comments")
+      .select("id, post_id, user_id, chip_id, created_at")
+      .in("post_id", postIds),
   ]);
 
   return {
@@ -39,7 +42,7 @@ export const getProfile = createServerFn({ method: "GET" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: profile } = await supabaseAdmin
       .from("profiles")
-      .select("id, username, display_name, avatar_url, bio")
+      .select("id, username, display_name, avatar_url, bio, created_at")
       .eq("username", data.username)
       .maybeSingle();
     if (!profile) throw new Error("Not found");
@@ -48,11 +51,39 @@ export const getProfile = createServerFn({ method: "GET" })
       .select("id, post_type, canvas_html, media_urls, bg_gradient, created_at")
       .eq("author_id", profile.id)
       .order("created_at", { ascending: false });
-    const [{ count: followers }, { count: following }] = await Promise.all([
-      supabaseAdmin.from("follows").select("*", { count: "exact", head: true }).eq("following_id", profile.id),
-      supabaseAdmin.from("follows").select("*", { count: "exact", head: true }).eq("follower_id", profile.id),
-    ]);
-    return { profile, posts: posts ?? [], followers: followers ?? 0, following: following ?? 0 };
+    const postIds = (posts ?? []).map((p) => p.id);
+    const [{ count: followers }, { count: following }, { data: likes }, { data: comments }] =
+      await Promise.all([
+        supabaseAdmin
+          .from("follows")
+          .select("*", { count: "exact", head: true })
+          .eq("following_id", profile.id),
+        supabaseAdmin
+          .from("follows")
+          .select("*", { count: "exact", head: true })
+          .eq("follower_id", profile.id),
+        postIds.length
+          ? supabaseAdmin.from("likes").select("post_id").in("post_id", postIds)
+          : Promise.resolve({ data: [] as { post_id: string }[] }),
+        postIds.length
+          ? supabaseAdmin.from("comments").select("post_id").in("post_id", postIds)
+          : Promise.resolve({ data: [] as { post_id: string }[] }),
+      ]);
+
+    const engagementByPost: Record<string, { likes: number; comments: number }> = {};
+    for (const id of postIds) engagementByPost[id] = { likes: 0, comments: 0 };
+    for (const like of likes ?? []) engagementByPost[like.post_id]!.likes += 1;
+    for (const comment of comments ?? []) engagementByPost[comment.post_id]!.comments += 1;
+
+    return {
+      profile,
+      posts: posts ?? [],
+      followers: followers ?? 0,
+      following: following ?? 0,
+      totalLikes: (likes ?? []).length,
+      totalComments: (comments ?? []).length,
+      engagementByPost,
+    };
   });
 
 // ===== Authenticated actions =====
@@ -73,7 +104,10 @@ export const ensureProfile = createServerFn({ method: "POST" })
       (claims.user_metadata as Record<string, unknown> | undefined)?.preferred_username ||
       (claims.user_metadata as Record<string, unknown> | undefined)?.name ||
       email.split("@")[0];
-    const username = `${String(baseHandle).toLowerCase().replace(/[^a-z0-9_]/g, "").slice(0, 14)}_${userId.slice(0, 4)}`;
+    const username = `${String(baseHandle)
+      .toLowerCase()
+      .replace(/[^a-z0-9_]/g, "")
+      .slice(0, 14)}_${userId.slice(0, 4)}`;
     const display =
       ((claims.user_metadata as Record<string, unknown> | undefined)?.full_name as string) ||
       ((claims.user_metadata as Record<string, unknown> | undefined)?.name as string) ||
@@ -84,7 +118,13 @@ export const ensureProfile = createServerFn({ method: "POST" })
 
     const { data: created, error } = await supabase
       .from("profiles")
-      .insert({ auth_user_id: userId, username, display_name: display, avatar_url: avatar, bio: "" })
+      .insert({
+        auth_user_id: userId,
+        username,
+        display_name: display,
+        avatar_url: avatar,
+        bio: "",
+      })
       .select("id, username, display_name, avatar_url")
       .single();
     if (error) throw new Error(error.message);
@@ -95,15 +135,19 @@ const POST_TYPES = ["text", "image", "video", "slideshow"] as const;
 
 export const createPost = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: { post_type: string; canvas_html: string; media_urls?: string[]; bg_gradient: string }) =>
-    z
-      .object({
-        post_type: z.enum(POST_TYPES),
-        canvas_html: z.string().min(1).max(1024 * 1024), // 1MB cap
-        media_urls: z.array(z.string().url()).max(10).optional().default([]),
-        bg_gradient: z.string().max(500),
-      })
-      .parse(d),
+  .inputValidator(
+    (d: { post_type: string; canvas_html: string; media_urls?: string[]; bg_gradient: string }) =>
+      z
+        .object({
+          post_type: z.enum(POST_TYPES),
+          canvas_html: z
+            .string()
+            .min(1)
+            .max(1024 * 1024), // 1MB cap
+          media_urls: z.array(z.string().url()).max(10).optional().default([]),
+          bg_gradient: z.string().max(500),
+        })
+        .parse(d),
   )
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
@@ -133,7 +177,11 @@ export const toggleLike = createServerFn({ method: "POST" })
   .inputValidator((d: { post_id: string }) => z.object({ post_id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    const { data: profile } = await supabase.from("profiles").select("id").eq("auth_user_id", userId).maybeSingle();
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("auth_user_id", userId)
+      .maybeSingle();
     if (!profile) throw new Error("Profile missing");
     const { data: existing } = await supabase
       .from("likes")
@@ -155,13 +203,24 @@ export const addComment = createServerFn({ method: "POST" })
     z
       .object({
         post_id: z.string().uuid(),
-        chip_id: z.string().min(1).max(40).regex(/^[a-z0-9_-]+$/),
+        chip_id: z
+          .string()
+          .trim()
+          .min(1)
+          .max(120)
+          .refine((value) => value.trim().split(/\s+/).length <= 10, {
+            message: "Comment must be 10 words or fewer",
+          }),
       })
       .parse(d),
   )
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    const { data: profile } = await supabase.from("profiles").select("id").eq("auth_user_id", userId).maybeSingle();
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("auth_user_id", userId)
+      .maybeSingle();
     if (!profile) throw new Error("Profile missing");
     const { error } = await supabase
       .from("comments")
@@ -187,9 +246,14 @@ export const createDemoAccount = createServerFn({ method: "POST" }).handler(asyn
     email,
     password,
     email_confirm: true,
-    user_metadata: { full_name: handle, name: handle, avatar_url: `https://i.pravatar.cc/200?u=${handle}` },
+    user_metadata: {
+      full_name: handle,
+      name: handle,
+      avatar_url: `https://i.pravatar.cc/200?u=${handle}`,
+    },
   });
-  if (createErr || !created.user) throw new Error(createErr?.message ?? "Could not create demo account");
+  if (createErr || !created.user)
+    throw new Error(createErr?.message ?? "Could not create demo account");
 
   // Insert profile directly (we have admin)
   await supabaseAdmin.from("profiles").insert({
@@ -217,8 +281,12 @@ export const createDemoAccount = createServerFn({ method: "POST" }).handler(asyn
   }
 
   // Sign in to retrieve session tokens
-  const { data: signin, error: signErr } = await supabaseAdmin.auth.signInWithPassword({ email, password });
-  if (signErr || !signin.session) throw new Error(signErr?.message ?? "Could not start demo session");
+  const { data: signin, error: signErr } = await supabaseAdmin.auth.signInWithPassword({
+    email,
+    password,
+  });
+  if (signErr || !signin.session)
+    throw new Error(signErr?.message ?? "Could not start demo session");
 
   return {
     access_token: signin.session.access_token,

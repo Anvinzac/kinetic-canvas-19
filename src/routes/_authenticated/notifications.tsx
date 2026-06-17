@@ -3,6 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getNotifications } from "@/lib/discovery.functions";
 import { parseCanvas } from "@/lib/canvas";
+import { isDemoSession } from "@/lib/demo-session";
+import { getMockNotifications, type MockNotificationsData } from "@/lib/mock-data";
 import { Heart, MessageCircle, UserPlus } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/notifications")({
@@ -19,9 +21,10 @@ function timeAgo(iso: string) {
 
 function NotificationsPage() {
   const fn = useServerFn(getNotifications);
-  const { data, isLoading } = useQuery({
-    queryKey: ["notifications"],
-    queryFn: () => fn(),
+  const demoMode = isDemoSession();
+  const { data, isLoading } = useQuery<MockNotificationsData>({
+    queryKey: ["notifications", demoMode ? "demo" : "live"],
+    queryFn: () => (demoMode ? getMockNotifications() : (fn() as Promise<MockNotificationsData>)),
     staleTime: 15_000,
   });
 
@@ -35,7 +38,9 @@ function NotificationsPage() {
           <div className="grad-aurora size-10 animate-pulse rounded-full" />
         </div>
       ) : data.items.length === 0 ? (
-        <p className="py-16 text-center font-mono text-xs text-muted-foreground">no echoes yet — post some kinetics ✨</p>
+        <p className="py-16 text-center font-mono text-xs text-muted-foreground">
+          no echoes yet — post some kinetics ✨
+        </p>
       ) : (
         <ul className="divide-y divide-white/5">
           {data.items.map((n, i) => {
@@ -61,7 +66,11 @@ function NotificationsPage() {
                 <div className="min-w-0 flex-1">
                   <p className="text-sm">
                     {n.actor ? (
-                      <Link to="/u/$username" params={{ username: n.actor.username }} className="font-bold">
+                      <Link
+                        to="/u/$username"
+                        params={{ username: n.actor.username }}
+                        className="font-bold"
+                      >
                         @{n.actor.username}
                       </Link>
                     ) : (
@@ -74,10 +83,14 @@ function NotificationsPage() {
                     </span>
                   </p>
                   {spec && (
-                    <p className="truncate font-mono text-[10px] text-muted-foreground/70">"{spec.text}"</p>
+                    <p className="truncate font-mono text-[10px] text-muted-foreground/70">
+                      "{spec.text}"
+                    </p>
                   )}
                 </div>
-                <span className="shrink-0 font-mono text-[10px] text-muted-foreground">{timeAgo(n.created_at)}</span>
+                <span className="shrink-0 font-mono text-[10px] text-muted-foreground">
+                  {timeAgo(n.created_at)}
+                </span>
               </li>
             );
           })}

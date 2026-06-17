@@ -17,13 +17,24 @@ function entranceVariants(entrance: CanvasSpec["entrance"]) {
     case "scale":
       return { initial: { opacity: 0, scale: 0.3 }, animate: { opacity: 1, scale: 1 } };
     case "blur":
-      return { initial: { opacity: 0, filter: "blur(24px)" }, animate: { opacity: 1, filter: "blur(0px)" } };
+      return {
+        initial: { opacity: 0, filter: "blur(24px)" },
+        animate: { opacity: 1, filter: "blur(0px)" },
+      };
     case "split":
       return { initial: { opacity: 0, letterSpacing: "0.5em" }, animate: { opacity: 1 } };
   }
 }
 
-export function KineticText({ spec, playKey = 0 }: { spec: CanvasSpec; playKey?: number }) {
+export function KineticText({
+  spec,
+  playKey = 0,
+  paused = false,
+}: {
+  spec: CanvasSpec;
+  playKey?: number;
+  paused?: boolean;
+}) {
   const v = entranceVariants(spec.entrance);
   const isSplit = spec.entrance === "split";
   const chars = spec.text.split("");
@@ -54,6 +65,7 @@ export function KineticText({ spec, playKey = 0 }: { spec: CanvasSpec; playKey?:
           textAlign: "center",
           textShadow: "0 4px 40px rgba(0,0,0,0.45)",
           animation: loopAnim[spec.loop],
+          animationPlayState: paused ? "paused" : "running",
           whiteSpace: "pre-wrap",
           wordBreak: "break-word",
         }}
@@ -65,7 +77,10 @@ export function KineticText({ spec, playKey = 0 }: { spec: CanvasSpec; playKey?:
                 initial={{ opacity: 0, y: 40 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.05, duration: 0.5 }}
-                style={{ display: "inline-block" }}
+                style={{
+                  display: "inline-block",
+                  animationPlayState: paused ? "paused" : "running",
+                }}
               >
                 {c === " " ? "\u00A0" : c}
               </motion.span>

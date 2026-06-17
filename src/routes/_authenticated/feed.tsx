@@ -5,6 +5,14 @@ import { useEffect, useState } from "react";
 import { getFeed, toggleLike, addComment } from "@/lib/social.functions";
 import { PostCard } from "@/components/PostCard";
 import { supabase } from "@/integrations/supabase/client";
+import { endDemoSession, isDemoSession } from "@/lib/demo-session";
+import {
+  addMockComment,
+  getMockFeed,
+  MOCK_ME_ID,
+  toggleMockLike,
+  type MockFeedData,
+} from "@/lib/mock-data";
 import { LogOut } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/feed")({
@@ -17,38 +25,66 @@ function FeedPage() {
   const fetchFeed = useServerFn(getFeed);
   const likeFn = useServerFn(toggleLike);
   const commentFn = useServerFn(addComment);
+  const demoMode = isDemoSession();
+  const feedKey = ["feed", demoMode ? "demo" : "live"];
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["feed"],
-    queryFn: () => fetchFeed(),
+  const { data, isLoading } = useQuery<MockFeedData>({
+    queryKey: feedKey,
+    queryFn: () => (demoMode ? getMockFeed() : (fetchFeed() as Promise<MockFeedData>)),
     staleTime: 30_000,
   });
 
   const [myProfileId, setMyProfileId] = useState<string | null>(null);
 
   useEffect(() => {
+    if (demoMode) {
+      setMyProfileId(MOCK_ME_ID);
+      return;
+    }
+
     (async () => {
       const { data: u } = await supabase.auth.getUser();
       if (!u.user) return;
-      const { data: p } = await supabase.from("profiles").select("id").eq("auth_user_id", u.user.id).maybeSingle();
+      const { data: p } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("auth_user_id", u.user.id)
+        .maybeSingle();
       if (p) setMyProfileId(p.id);
     })();
-  }, []);
+  }, [demoMode]);
 
   const likeMut = useMutation({
-    mutationFn: (post_id: string) => likeFn({ data: { post_id } }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["feed"] }),
+    mutationFn: (post_id: string) =>
+      demoMode ? toggleMockLike(post_id) : likeFn({ data: { post_id } }),
+    onSuccess: () => {
+      if (demoMode) {
+        qc.setQueryData(feedKey, getMockFeed());
+        qc.invalidateQueries({ queryKey: ["profile"] });
+        return;
+      }
+      qc.invalidateQueries({ queryKey: ["feed"] });
+    },
   });
   const commentMut = useMutation({
     mutationFn: ({ post_id, chip_id }: { post_id: string; chip_id: string }) =>
-      commentFn({ data: { post_id, chip_id } }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["feed"] }),
+      demoMode ? addMockComment(post_id, chip_id) : commentFn({ data: { post_id, chip_id } }),
+    onSuccess: () => {
+      if (demoMode) {
+        qc.setQueryData(feedKey, getMockFeed());
+        qc.invalidateQueries({ queryKey: ["notifications"] });
+        qc.invalidateQueries({ queryKey: ["profile"] });
+        return;
+      }
+      qc.invalidateQueries({ queryKey: ["feed"] });
+    },
   });
 
   async function handleSignOut() {
     await qc.cancelQueries();
     qc.clear();
-    await supabase.auth.signOut();
+    if (demoMode) endDemoSession();
+    else await supabase.auth.signOut();
     navigate({ to: "/auth", replace: true });
   }
 
@@ -93,7 +129,11 @@ function FeedPage() {
             author={profilesById.get(p.author_id)}
             likes={likesByPost.get(p.id)?.length ?? 0}
             comments={commentsByPost.get(p.id) ?? []}
-            liked={myProfileId ? (likesByPost.get(p.id) ?? []).some((l) => l.user_id === myProfileId) : false}
+            liked={
+              myProfileId
+                ? (likesByPost.get(p.id) ?? []).some((l) => l.user_id === myProfileId)
+                : false
+            }
             onLike={() => likeMut.mutate(p.id)}
             onComment={(chip) => commentMut.mutate({ post_id: p.id, chip_id: chip })}
           />

@@ -4,7 +4,9 @@ import { useServerFn } from "@tanstack/react-start";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
-import { createDemoAccount, ensureProfile } from "@/lib/social.functions";
+import { ensureProfile } from "@/lib/social.functions";
+import { endDemoSession, isDemoSession, startDemoSession } from "@/lib/demo-session";
+import { resetMockRuntimeData } from "@/lib/mock-data";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/auth")({
@@ -15,10 +17,14 @@ export const Route = createFileRoute("/auth")({
 function AuthPage() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState<string | null>(null);
-  const demoFn = useServerFn(createDemoAccount);
   const ensureFn = useServerFn(ensureProfile);
 
   useEffect(() => {
+    if (isDemoSession()) {
+      navigate({ to: "/feed" });
+      return;
+    }
+
     supabase.auth.getUser().then(({ data }) => {
       if (data.user) navigate({ to: "/feed" });
     });
@@ -26,7 +32,10 @@ function AuthPage() {
 
   async function handleGoogle() {
     setLoading("google");
-    const res = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
+    endDemoSession();
+    const res = await lovable.auth.signInWithOAuth("google", {
+      redirect_uri: window.location.origin,
+    });
     if (res.error) {
       toast.error("Google sign-in failed");
       setLoading(null);
@@ -40,12 +49,9 @@ function AuthPage() {
   async function handleDemo() {
     setLoading("demo");
     try {
-      const tokens = await demoFn();
-      await supabase.auth.setSession({
-        access_token: tokens.access_token,
-        refresh_token: tokens.refresh_token,
-      });
-      toast.success(`welcome, ${tokens.handle}`);
+      resetMockRuntimeData();
+      startDemoSession();
+      toast.success("welcome, demo creator");
       navigate({ to: "/feed" });
     } catch (e) {
       toast.error((e as Error).message);
@@ -65,8 +71,12 @@ function AuthPage() {
       </div>
 
       <header className="relative z-10 mt-4 text-center">
-        <p className="font-mono text-[11px] uppercase tracking-[0.3em] text-muted-foreground">kinetic · social</p>
-        <h1 className="font-display mt-2 text-[44px] font-black leading-[0.95] tracking-tight">words that</h1>
+        <p className="font-mono text-[11px] uppercase tracking-[0.3em] text-muted-foreground">
+          kinetic · social
+        </p>
+        <h1 className="font-display mt-2 text-[44px] font-black leading-[0.95] tracking-tight">
+          words that
+        </h1>
         <div className="relative h-[60px] overflow-hidden font-impact text-[58px] leading-none text-primary">
           {words.map((w, i) => (
             <motion.span
@@ -108,10 +118,22 @@ function AuthPage() {
           className="flex w-full items-center justify-center gap-3 rounded-2xl bg-white px-6 py-4 font-medium text-black transition active:scale-[0.98] disabled:opacity-50"
         >
           <svg width="20" height="20" viewBox="0 0 48 48">
-            <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3c-1.6 4.7-6.1 8-11.3 8a12 12 0 1 1 0-24c3 0 5.7 1.1 7.8 3l5.7-5.7A19.9 19.9 0 0 0 24 4a20 20 0 1 0 19.6 16.5z"/>
-            <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 16 19 13 24 13c3 0 5.7 1.1 7.8 3l5.7-5.7A19.9 19.9 0 0 0 24 4a20 20 0 0 0-17.7 10.7z"/>
-            <path fill="#4CAF50" d="M24 44c5.2 0 10-2 13.6-5.2l-6.3-5.3a12 12 0 0 1-18-6.3L6.7 32.5A20 20 0 0 0 24 44z"/>
-            <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3a12 12 0 0 1-4 5.5l6.3 5.3c-.4.4 6.7-4.8 6.7-14.8 0-1.3-.1-2.6-.4-3.5z"/>
+            <path
+              fill="#FFC107"
+              d="M43.6 20.5H42V20H24v8h11.3c-1.6 4.7-6.1 8-11.3 8a12 12 0 1 1 0-24c3 0 5.7 1.1 7.8 3l5.7-5.7A19.9 19.9 0 0 0 24 4a20 20 0 1 0 19.6 16.5z"
+            />
+            <path
+              fill="#FF3D00"
+              d="M6.3 14.7l6.6 4.8C14.7 16 19 13 24 13c3 0 5.7 1.1 7.8 3l5.7-5.7A19.9 19.9 0 0 0 24 4a20 20 0 0 0-17.7 10.7z"
+            />
+            <path
+              fill="#4CAF50"
+              d="M24 44c5.2 0 10-2 13.6-5.2l-6.3-5.3a12 12 0 0 1-18-6.3L6.7 32.5A20 20 0 0 0 24 44z"
+            />
+            <path
+              fill="#1976D2"
+              d="M43.6 20.5H42V20H24v8h11.3a12 12 0 0 1-4 5.5l6.3 5.3c-.4.4 6.7-4.8 6.7-14.8 0-1.3-.1-2.6-.4-3.5z"
+            />
           </svg>
           {loading === "google" ? "opening google…" : "continue with google"}
         </button>
@@ -121,7 +143,7 @@ function AuthPage() {
           disabled={loading !== null}
           className="grad-aurora flex w-full items-center justify-center gap-3 rounded-2xl px-6 py-4 font-bold text-white shadow-[var(--shadow-glow)] transition active:scale-[0.98] disabled:opacity-50"
         >
-          {loading === "demo" ? "spinning up…" : "✨ try as demo account"}
+          {loading === "demo" ? "opening demo…" : "✨ try as demo account"}
         </button>
 
         <p className="pt-2 text-center font-mono text-[10px] uppercase tracking-[0.25em] text-muted-foreground">

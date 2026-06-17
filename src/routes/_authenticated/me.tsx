@@ -1,10 +1,16 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
+import { isDemoSession } from "@/lib/demo-session";
+import { MOCK_ME_USERNAME } from "@/lib/mock-data";
 
 // /me — resolves the signed-in user's username and redirects to /u/$username
 export const Route = createFileRoute("/_authenticated/me")({
   ssr: false,
   beforeLoad: async () => {
+    if (isDemoSession()) {
+      throw redirect({ to: "/u/$username", params: { username: MOCK_ME_USERNAME } });
+    }
+
     const { data: u } = await supabase.auth.getUser();
     if (!u.user) throw redirect({ to: "/auth" });
     const { data: p } = await supabase

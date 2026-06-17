@@ -4,6 +4,14 @@ import { useServerFn } from "@tanstack/react-start";
 import { useState, useEffect } from "react";
 import { search, getDiscover } from "@/lib/discovery.functions";
 import { parseCanvas } from "@/lib/canvas";
+import { isDemoSession } from "@/lib/demo-session";
+import {
+  getMockDiscover,
+  searchMock,
+  type MockDiscoverData,
+  type MockPost,
+  type MockSearchData,
+} from "@/lib/mock-data";
 import { Search as SearchIcon } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/discover")({
@@ -15,15 +23,19 @@ function DiscoverPage() {
   const searchFn = useServerFn(search);
   const [q, setQ] = useState("");
   const debounced = useDebounced(q, 250);
+  const demoMode = isDemoSession();
 
-  const discover = useQuery({
-    queryKey: ["discover"],
-    queryFn: () => fetchDiscover(),
+  const discover = useQuery<MockDiscoverData>({
+    queryKey: ["discover", demoMode ? "demo" : "live"],
+    queryFn: () => (demoMode ? getMockDiscover() : (fetchDiscover() as Promise<MockDiscoverData>)),
     staleTime: 30_000,
   });
-  const results = useQuery({
-    queryKey: ["search", debounced],
-    queryFn: () => searchFn({ data: { q: debounced } }),
+  const results = useQuery<MockSearchData>({
+    queryKey: ["search", demoMode ? "demo" : "live", debounced],
+    queryFn: () =>
+      demoMode
+        ? searchMock(debounced)
+        : (searchFn({ data: { q: debounced } }) as Promise<MockSearchData>),
     enabled: debounced.length > 0,
   });
 
@@ -42,7 +54,12 @@ function DiscoverPage() {
             className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
           />
           {q && (
-            <button onClick={() => setQ("")} className="text-xs text-muted-foreground hover:text-foreground">clear</button>
+            <button
+              onClick={() => setQ("")}
+              className="text-xs text-muted-foreground hover:text-foreground"
+            >
+              clear
+            </button>
           )}
         </div>
       </header>
@@ -56,14 +73,16 @@ function DiscoverPage() {
   );
 }
 
-function SearchResults({ data, loading }: { data: { users: any[]; posts: any[] } | undefined; loading: boolean }) {
+function SearchResults({ data, loading }: { data: MockSearchData | undefined; loading: boolean }) {
   if (loading) return <Loader />;
   if (!data) return null;
   return (
     <div className="px-4 py-5">
       {data.users.length > 0 && (
         <section>
-          <h2 className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">creators</h2>
+          <h2 className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+            creators
+          </h2>
           <div className="mt-3 space-y-2">
             {data.users.map((u) => (
               <Link
@@ -75,7 +94,9 @@ function SearchResults({ data, loading }: { data: { users: any[]; posts: any[] }
                 <img src={u.avatar_url ?? ""} alt="" className="size-12 rounded-full" />
                 <div className="min-w-0 flex-1">
                   <div className="truncate font-display font-bold">{u.display_name}</div>
-                  <div className="truncate font-mono text-xs text-muted-foreground">@{u.username}</div>
+                  <div className="truncate font-mono text-xs text-muted-foreground">
+                    @{u.username}
+                  </div>
                 </div>
               </Link>
             ))}
@@ -84,25 +105,31 @@ function SearchResults({ data, loading }: { data: { users: any[]; posts: any[] }
       )}
       {data.posts.length > 0 && (
         <section className="mt-6">
-          <h2 className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">posts</h2>
+          <h2 className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+            posts
+          </h2>
           <PostGrid posts={data.posts} className="mt-3" />
         </section>
       )}
       {data.users.length === 0 && data.posts.length === 0 && (
-        <p className="py-12 text-center font-mono text-xs text-muted-foreground">no echoes match that</p>
+        <p className="py-12 text-center font-mono text-xs text-muted-foreground">
+          no echoes match that
+        </p>
       )}
     </div>
   );
 }
 
-function TrendingFeed({ data, loading }: { data: any; loading: boolean }) {
+function TrendingFeed({ data, loading }: { data: MockDiscoverData | undefined; loading: boolean }) {
   if (loading || !data) return <Loader />;
   return (
     <div className="px-4 py-5">
       <section>
-        <h2 className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">fresh creators</h2>
+        <h2 className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+          fresh creators
+        </h2>
         <div className="mt-3 flex gap-3 overflow-x-auto scrollbar-hide pb-2 -mx-4 px-4">
-          {data.profiles.map((p: any) => (
+          {data.profiles.map((p) => (
             <Link
               key={p.id}
               to="/u/$username"
@@ -110,22 +137,30 @@ function TrendingFeed({ data, loading }: { data: any; loading: boolean }) {
               className="flex w-20 shrink-0 flex-col items-center gap-1.5"
             >
               <div className="grad-aurora rounded-full p-[2px]">
-                <img src={p.avatar_url ?? ""} alt="" className="size-16 rounded-full border-2 border-background" />
+                <img
+                  src={p.avatar_url ?? ""}
+                  alt=""
+                  className="size-16 rounded-full border-2 border-background"
+                />
               </div>
-              <span className="truncate w-full text-center font-mono text-[10px] text-muted-foreground">@{p.username}</span>
+              <span className="truncate w-full text-center font-mono text-[10px] text-muted-foreground">
+                @{p.username}
+              </span>
             </Link>
           ))}
         </div>
       </section>
       <section className="mt-6">
-        <h2 className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">trending kinetics</h2>
+        <h2 className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+          trending kinetics
+        </h2>
         <PostGrid posts={data.posts} className="mt-3" />
       </section>
     </div>
   );
 }
 
-function PostGrid({ posts, className }: { posts: any[]; className?: string }) {
+function PostGrid({ posts, className }: { posts: MockPost[]; className?: string }) {
   return (
     <div className={`grid grid-cols-3 gap-1 ${className ?? ""}`}>
       {posts.map((p) => {
@@ -137,7 +172,11 @@ function PostGrid({ posts, className }: { posts: any[]; className?: string }) {
             style={{ background: p.bg_gradient ?? "#111" }}
           >
             {p.media_urls?.[0] && (
-              <img src={p.media_urls[0]} alt="" className="absolute inset-0 size-full object-cover opacity-90" />
+              <img
+                src={p.media_urls[0]}
+                alt=""
+                className="absolute inset-0 size-full object-cover opacity-90"
+              />
             )}
             <div
               className="absolute inset-0 flex items-center justify-center p-1 text-center"

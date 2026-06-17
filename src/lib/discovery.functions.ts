@@ -47,12 +47,14 @@ export const getDiscover = createServerFn({ method: "GET" }).handler(async () =>
 // ===== Follow / unfollow =====
 export const toggleFollow = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: { target_id: string }) =>
-    z.object({ target_id: z.string().uuid() }).parse(d),
-  )
+  .inputValidator((d: { target_id: string }) => z.object({ target_id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    const { data: me } = await supabase.from("profiles").select("id").eq("auth_user_id", userId).maybeSingle();
+    const { data: me } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("auth_user_id", userId)
+      .maybeSingle();
     if (!me) throw new Error("Profile missing");
     if (me.id === data.target_id) throw new Error("Cannot follow self");
     const { data: existing } = await supabase
@@ -62,7 +64,11 @@ export const toggleFollow = createServerFn({ method: "POST" })
       .eq("following_id", data.target_id)
       .maybeSingle();
     if (existing) {
-      await supabase.from("follows").delete().eq("follower_id", me.id).eq("following_id", data.target_id);
+      await supabase
+        .from("follows")
+        .delete()
+        .eq("follower_id", me.id)
+        .eq("following_id", data.target_id);
       return { following: false };
     }
     await supabase.from("follows").insert({ follower_id: me.id, following_id: data.target_id });
@@ -76,15 +82,41 @@ export const getMe = createServerFn({ method: "GET" })
     const { supabase, userId } = context;
     const { data: profile } = await supabase
       .from("profiles")
-      .select("id, username, display_name, avatar_url, bio")
+      .select("id, username, display_name, avatar_url, bio, created_at")
       .eq("auth_user_id", userId)
       .maybeSingle();
-    if (!profile) return { profile: null, followingIds: [] as string[] };
-    const { data: following } = await supabase
-      .from("follows")
-      .select("following_id")
-      .eq("follower_id", profile.id);
-    return { profile, followingIds: (following ?? []).map((f) => f.following_id) };
+    if (!profile) {
+      return {
+        profile: null,
+        followingIds: [] as string[],
+        stats: { posts: 0, followers: 0, following: 0 },
+      };
+    }
+    const [{ data: following }, { count: followers }, { count: followingCount }, { count: posts }] =
+      await Promise.all([
+        supabase.from("follows").select("following_id").eq("follower_id", profile.id),
+        supabase
+          .from("follows")
+          .select("*", { count: "exact", head: true })
+          .eq("following_id", profile.id),
+        supabase
+          .from("follows")
+          .select("*", { count: "exact", head: true })
+          .eq("follower_id", profile.id),
+        supabase
+          .from("posts")
+          .select("*", { count: "exact", head: true })
+          .eq("author_id", profile.id),
+      ]);
+    return {
+      profile,
+      followingIds: (following ?? []).map((f) => f.following_id),
+      stats: {
+        posts: posts ?? 0,
+        followers: followers ?? 0,
+        following: followingCount ?? 0,
+      },
+    };
   });
 
 // ===== Update profile =====
@@ -111,9 +143,16 @@ export const getNotifications = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { supabase, userId } = context;
-    const { data: me } = await supabase.from("profiles").select("id").eq("auth_user_id", userId).maybeSingle();
+    const { data: me } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("auth_user_id", userId)
+      .maybeSingle();
     if (!me) return { items: [] };
-    const { data: myPosts } = await supabase.from("posts").select("id, canvas_html").eq("author_id", me.id);
+    const { data: myPosts } = await supabase
+      .from("posts")
+      .select("id, canvas_html")
+      .eq("author_id", me.id);
     const postIds = (myPosts ?? []).map((p) => p.id);
     const postById = new Map((myPosts ?? []).map((p) => [p.id, p]));
 
@@ -127,7 +166,9 @@ export const getNotifications = createServerFn({ method: "GET" })
             .neq("user_id", me.id)
             .order("created_at", { ascending: false })
             .limit(40)
-        : Promise.resolve({ data: [] as { user_id: string; post_id: string; created_at: string }[] }),
+        : Promise.resolve({
+            data: [] as { user_id: string; post_id: string; created_at: string }[],
+          }),
       postIds.length
         ? supabaseAdmin
             .from("comments")
@@ -136,7 +177,9 @@ export const getNotifications = createServerFn({ method: "GET" })
             .neq("user_id", me.id)
             .order("created_at", { ascending: false })
             .limit(40)
-        : Promise.resolve({ data: [] as { user_id: string; post_id: string; chip_id: string; created_at: string }[] }),
+        : Promise.resolve({
+            data: [] as { user_id: string; post_id: string; chip_id: string; created_at: string }[],
+          }),
       supabaseAdmin
         .from("follows")
         .select("follower_id, created_at")
@@ -158,7 +201,12 @@ export const getNotifications = createServerFn({ method: "GET" })
 
     type Item = {
       kind: "like" | "comment" | "follow";
-      actor: { id: string; username: string; display_name: string; avatar_url: string | null } | null;
+      actor: {
+        id: string;
+        username: string;
+        display_name: string;
+        avatar_url: string | null;
+      } | null;
       post_id?: string;
       post_preview?: string;
       chip_id?: string;
