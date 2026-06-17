@@ -207,9 +207,9 @@ export const addComment = createServerFn({ method: "POST" })
           .string()
           .trim()
           .min(1)
-          .max(120)
-          .refine((value) => value.trim().split(/\s+/).length <= 10, {
-            message: "Comment must be 10 words or fewer",
+          .max(240)
+          .refine((value) => value.trim().split(/\s+/).length <= 36, {
+            message: "Comment must be 36 words or fewer",
           }),
       })
       .parse(d),

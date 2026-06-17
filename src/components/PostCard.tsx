@@ -1,6 +1,22 @@
-import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
-import { AnimatePresence, motion } from "framer-motion";
-import { Heart, MessageCircle, MoreVertical, Play, RotateCcw, Share2 } from "lucide-react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+  type MouseEvent as ReactMouseEvent,
+} from "react";
+import { AnimatePresence, motion, type PanInfo } from "framer-motion";
+import {
+  FastForward,
+  Heart,
+  MessageCircle,
+  MoreVertical,
+  Play,
+  RotateCcw,
+  Share2,
+  X,
+} from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { COMMENT_CHIPS, parseCanvas, type CanvasSpec } from "@/lib/canvas";
 
@@ -22,9 +38,12 @@ type Comment = {
   created_at: string;
 };
 type FlowComment = { key: string; chip: string; created_at: string };
+type CommentStory = { id: string; text: string; created_at: string; index: number };
 
 const MAX_WORDS_PER_TEXT_PAGE = 7;
-const MAX_COMMENT_WORDS = 10;
+const MAX_COMMENT_WORDS = 36;
+const MAX_COMMENT_CHARS = 240;
+const COMMENT_STORY_WORDS_PER_PAGE = 8;
 
 const loopAnim: Record<string, string | undefined> = {
   pulse: "kinetic-pulse 2.4s ease-in-out infinite",
@@ -62,6 +81,16 @@ export function PostCard({
   const commentFlowKey = chronologicalComments
     .map((comment) => `${comment.id}:${comment.created_at}:${comment.chip_id}`)
     .join("|");
+  const commentStories = useMemo(
+    () =>
+      chronologicalComments.map((comment, index) => ({
+        id: comment.id,
+        text: getCommentLabel(comment.chip_id),
+        created_at: comment.created_at,
+        index,
+      })),
+    [chronologicalComments],
+  );
 
   const [slide, setSlide] = useState(0);
   const [textPage, setTextPage] = useState(0);
@@ -69,6 +98,11 @@ export function PostCard({
   const [showChips, setShowChips] = useState(false);
   const [customComment, setCustomComment] = useState("");
   const [activeComment, setActiveComment] = useState<FlowComment | null>(null);
+  const [storyOpen, setStoryOpen] = useState(false);
+  const [storyIndex, setStoryIndex] = useState(0);
+  const [storyPage, setStoryPage] = useState(0);
+  const [storyPlayKey, setStoryPlayKey] = useState(0);
+  const [storyFastMode, setStoryFastMode] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [canvasWidth, setCanvasWidth] = useState(390);
   const flyId = useRef(0);
@@ -81,6 +115,12 @@ export function PostCard({
   const commentStartX = canvasWidth + 16;
   const commentEndX = -(commentMaxWidth + 24);
   const currentText = textPages[textPage] ?? textPages[0] ?? "";
+  const activeStory = commentStories[storyIndex] ?? null;
+  const storyPages = useMemo(
+    () => (activeStory ? getCommentStoryPages(activeStory.text, storyFastMode) : []),
+    [activeStory, storyFastMode],
+  );
+  const storyPageText = storyPages[storyPage] ?? storyPages[0] ?? "";
   const displaySpec: CanvasSpec = {
     ...spec,
     text: currentText,
@@ -93,7 +133,20 @@ export function PostCard({
     setSlide(0);
     setPlayKey(0);
     setIsPaused(false);
+    setStoryOpen(false);
+    setStoryIndex(0);
+    setStoryPage(0);
+    setStoryFastMode(false);
   }, [post.id, spec.text]);
+
+  useEffect(() => {
+    if (commentStories.length === 0) {
+      setStoryOpen(false);
+      setStoryIndex(0);
+      return;
+    }
+    setStoryIndex((index) => Math.min(index, commentStories.length - 1));
+  }, [commentStories.length]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -125,7 +178,7 @@ export function PostCard({
   }, [currentText, isPaused, media.length, post.id, post.post_type, textPage, textPages.length]);
 
   useEffect(() => {
-    if (isPaused) {
+    if (isPaused || storyOpen) {
       setActiveComment(null);
       return;
     }
@@ -147,7 +200,7 @@ export function PostCard({
       }
 
       const comment = chronologicalComments[index % chronologicalComments.length];
-      const label = getCommentLabel(comment.chip_id);
+      const label = getFloatingCommentLabel(getCommentLabel(comment.chip_id));
       setActiveComment({
         key: `${comment.id}-${index}`,
         chip: comment.chip_id,
@@ -163,7 +216,45 @@ export function PostCard({
       cancelled = true;
       if (timer) window.clearTimeout(timer);
     };
-  }, [commentFlowKey, chronologicalComments, isPaused]);
+  }, [commentFlowKey, chronologicalComments, isPaused, storyOpen]);
+
+  useEffect(() => {
+    if (!storyOpen) return;
+    setStoryPage(0);
+    setStoryPlayKey((key) => key + 1);
+  }, [storyFastMode, storyIndex, storyOpen]);
+
+  useEffect(() => {
+    if (!storyOpen || !activeStory || storyPages.length === 0 || commentStories.length === 0) {
+      return;
+    }
+
+    const duration = storyFastMode
+      ? getFastStoryDuration(activeStory.text)
+      : getStoryPageDuration(storyPageText);
+
+    const timer = window.setTimeout(() => {
+      if (!storyFastMode && storyPage < storyPages.length - 1) {
+        setStoryPage((page) => page + 1);
+        setStoryPlayKey((key) => key + 1);
+        return;
+      }
+
+      setStoryIndex((index) => (index + 1) % commentStories.length);
+      setStoryPage(0);
+      setStoryPlayKey((key) => key + 1);
+    }, duration);
+
+    return () => window.clearTimeout(timer);
+  }, [
+    activeStory,
+    commentStories.length,
+    storyFastMode,
+    storyOpen,
+    storyPage,
+    storyPageText,
+    storyPages.length,
+  ]);
 
   useEffect(() => {
     if (post.post_type !== "video") return;
@@ -195,6 +286,36 @@ export function PostCard({
     setActiveComment(null);
   }
 
+  function openCommentStories() {
+    if (commentStories.length === 0) return;
+    setShowChips(false);
+    setStoryOpen(true);
+    setIsPaused(true);
+    setStoryPlayKey((key) => key + 1);
+  }
+
+  function closeCommentStories() {
+    setStoryOpen(false);
+    setIsPaused(false);
+  }
+
+  function skipCommentStory(direction: 1 | -1) {
+    if (commentStories.length === 0) return;
+    setStoryIndex((index) => (index + direction + commentStories.length) % commentStories.length);
+    setStoryPage(0);
+    setStoryPlayKey((key) => key + 1);
+  }
+
+  function handleStoryDrag(_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) {
+    if (info.offset.x < -48 || info.velocity.x < -520) {
+      skipCommentStory(1);
+      return;
+    }
+    if (info.offset.x > 48 || info.velocity.x > 520) {
+      skipCommentStory(-1);
+    }
+  }
+
   function selectTextPage(page: number) {
     setIsPaused(false);
     setTextPage(page);
@@ -207,7 +328,7 @@ export function PostCard({
   function flyChip(chipId: string) {
     flyId.current += 1;
     manualCommentHoldUntil.current =
-      Date.now() + getCommentFlightDuration(getCommentLabel(chipId)) + 700;
+      Date.now() + getCommentFlightDuration(getFloatingCommentLabel(getCommentLabel(chipId))) + 700;
     setActiveComment({
       key: `local-${flyId.current}`,
       chip: chipId,
@@ -217,7 +338,13 @@ export function PostCard({
 
   function submitComment(value: string) {
     const normalized = normalizeComment(value);
-    if (!normalized || getWords(normalized).length > MAX_COMMENT_WORDS) return;
+    if (
+      !normalized ||
+      normalized.length > MAX_COMMENT_CHARS ||
+      getWords(normalized).length > MAX_COMMENT_WORDS
+    ) {
+      return;
+    }
     flyChip(normalized);
     onComment(normalized);
     setCustomComment("");
@@ -321,6 +448,16 @@ export function PostCard({
           </Link>
         )}
 
+        {commentStories.length > 0 && !storyOpen && (
+          <CommentStoryStack
+            stories={commentStories}
+            onOpen={(event) => {
+              event.stopPropagation();
+              openCommentStories();
+            }}
+          />
+        )}
+
         <div className="absolute bottom-28 right-3 z-20 flex flex-col items-center gap-5">
           <button
             onClick={(e) => {
@@ -385,12 +522,12 @@ export function PostCard({
                     maxWidth: commentMaxWidth,
                     "--chip-start-x": `${commentStartX}px`,
                     "--chip-end-x": `${commentEndX}px`,
-                    animation: `chip-fly ${getCommentFlightDuration(getCommentLabel(activeComment.chip))}ms linear forwards`,
+                    animation: `chip-fly ${getCommentFlightDuration(getFloatingCommentLabel(getCommentLabel(activeComment.chip)))}ms linear forwards`,
                   } as CSSProperties & Record<string, string | number>
                 }
               >
                 <div className="max-w-full rounded-2xl bg-white/90 px-3 py-1.5 text-center text-sm font-semibold leading-snug text-black shadow-lg">
-                  {getCommentLabel(activeComment.chip)}
+                  {getFloatingCommentLabel(getCommentLabel(activeComment.chip))}
                 </div>
                 <span className="rounded-full bg-black/35 px-2 py-0.5 font-mono text-[9px] uppercase tracking-wider text-white/75 backdrop-blur">
                   {formatShortDateTime(activeComment.created_at)}
@@ -405,7 +542,7 @@ export function PostCard({
         </div>
 
         <AnimatePresence>
-          {isPaused && (
+          {isPaused && !storyOpen && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -441,6 +578,24 @@ export function PostCard({
         </AnimatePresence>
 
         <AnimatePresence>
+          {storyOpen && activeStory && (
+            <CommentStoryPlayer
+              story={activeStory}
+              storyCount={commentStories.length}
+              storyIndex={storyIndex}
+              storyPage={storyPage}
+              storyPageCount={storyPages.length}
+              pageText={storyPageText}
+              playKey={storyPlayKey}
+              fastMode={storyFastMode}
+              onClose={closeCommentStories}
+              onToggleFast={() => setStoryFastMode((fast) => !fast)}
+              onDragEnd={handleStoryDrag}
+            />
+          )}
+        </AnimatePresence>
+
+        <AnimatePresence>
           {showChips && (
             <motion.div
               initial={{ y: 100, opacity: 0 }}
@@ -458,8 +613,8 @@ export function PostCard({
               >
                 <input
                   value={customComment}
-                  onChange={(event) => setCustomComment(limitCommentWords(event.target.value))}
-                  placeholder="add a short comment"
+                  onChange={(event) => setCustomComment(limitCommentText(event.target.value))}
+                  placeholder="add an animated comment"
                   className="min-w-0 flex-1 rounded-xl bg-white/10 px-3 py-2 text-sm text-white outline-none ring-1 ring-white/10 placeholder:text-white/40 focus:ring-primary/70"
                 />
                 <button
@@ -472,7 +627,9 @@ export function PostCard({
               </form>
               <div className="mb-2 flex items-center justify-between gap-3 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
                 <span>quick react</span>
-                <span>{getWords(customComment).length}/10</span>
+                <span>
+                  {getWords(customComment).length}/{MAX_COMMENT_WORDS}
+                </span>
               </div>
               <div className="flex flex-wrap justify-center gap-2">
                 {COMMENT_CHIPS.map((chip) => (
@@ -493,6 +650,251 @@ export function PostCard({
         </AnimatePresence>
       </article>
     </section>
+  );
+}
+
+function CommentStoryStack({
+  stories,
+  onOpen,
+}: {
+  stories: CommentStory[];
+  onOpen: (event: ReactMouseEvent<HTMLButtonElement>) => void;
+}) {
+  const preview = stories.slice(-3);
+
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      className="absolute bottom-4 right-3 z-30 h-[104px] w-[66px]"
+      aria-label="Open animated comments"
+    >
+      {preview.map((story, index) => {
+        const offset = preview.length - 1 - index;
+        return (
+          <span
+            key={story.id}
+            className="absolute bottom-0 right-0 aspect-[9/16] h-[92px] overflow-hidden rounded-xl bg-black text-white shadow-[0_12px_30px_rgba(0,0,0,0.45)] ring-1 ring-white/25"
+            style={{
+              zIndex: index + 1,
+              transform: `translate(${-offset * 6}px, ${-offset * 7}px) rotate(${-offset * 3}deg)`,
+              background: getCommentStoryGradient(story.index),
+            }}
+          >
+            <span className="absolute inset-0 bg-gradient-to-b from-white/10 via-transparent to-black/45" />
+            <span className="absolute inset-x-1 top-1 flex gap-0.5">
+              <span className="h-0.5 flex-1 rounded-full bg-white/80" />
+              <span className="h-0.5 flex-1 rounded-full bg-white/30" />
+            </span>
+            <span className="absolute inset-x-1 bottom-2 line-clamp-3 px-1 text-left text-[9px] font-black leading-[0.95] drop-shadow">
+              {getCommentPreview(story.text)}
+            </span>
+          </span>
+        );
+      })}
+      <span className="absolute -right-1 -top-1 z-10 grid size-6 place-items-center rounded-full bg-white text-[10px] font-black text-black ring-2 ring-black">
+        {stories.length}
+      </span>
+    </button>
+  );
+}
+
+function CommentStoryPlayer({
+  story,
+  storyCount,
+  storyIndex,
+  storyPage,
+  storyPageCount,
+  pageText,
+  playKey,
+  fastMode,
+  onClose,
+  onToggleFast,
+  onDragEnd,
+}: {
+  story: CommentStory;
+  storyCount: number;
+  storyIndex: number;
+  storyPage: number;
+  storyPageCount: number;
+  pageText: string;
+  playKey: number;
+  fastMode: boolean;
+  onClose: () => void;
+  onToggleFast: () => void;
+  onDragEnd: (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => void;
+}) {
+  return (
+    <motion.div
+      className="absolute inset-0 z-50 flex items-end justify-center bg-black/42 p-3 backdrop-blur-[2px]"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      onClick={(event) => event.stopPropagation()}
+    >
+      <motion.div
+        drag="x"
+        dragConstraints={{ left: 0, right: 0 }}
+        dragElastic={0.18}
+        onDragEnd={onDragEnd}
+        initial={{ y: 48, scale: 0.94, opacity: 0 }}
+        animate={{ y: 0, scale: 1, opacity: 1 }}
+        exit={{ y: 48, scale: 0.94, opacity: 0 }}
+        transition={{ type: "spring", stiffness: 260, damping: 26 }}
+        className="relative aspect-[9/16] h-[85%] max-h-[85%] max-w-[92%] overflow-hidden rounded-[28px] text-white shadow-[0_24px_80px_rgba(0,0,0,0.55)] ring-1 ring-white/20"
+        style={{ background: getCommentStoryGradient(story.index) }}
+      >
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_15%,rgba(255,255,255,0.22),transparent_30%),linear-gradient(180deg,rgba(0,0,0,0.08),rgba(0,0,0,0.52))]" />
+
+        <div className="absolute inset-x-4 top-4 z-10">
+          <div className="mb-3 flex gap-1">
+            {Array.from({ length: storyCount }).map((_, index) => (
+              <span
+                key={index}
+                className={`h-1 flex-1 rounded-full ${
+                  index === storyIndex ? "bg-white" : "bg-white/25"
+                }`}
+              />
+            ))}
+          </div>
+          <div className="flex items-center justify-between gap-2">
+            <span className="rounded-full bg-black/25 px-2.5 py-1 font-mono text-[9px] uppercase tracking-[0.16em] text-white/75 backdrop-blur">
+              {storyIndex + 1}/{storyCount}
+            </span>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={onToggleFast}
+                className={`flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.12em] backdrop-blur ${
+                  fastMode ? "bg-white text-black" : "bg-black/30 text-white"
+                }`}
+              >
+                <FastForward className="size-3" />
+                fast
+              </button>
+              <button
+                type="button"
+                onClick={onClose}
+                className="grid size-7 place-items-center rounded-full bg-black/30 text-white backdrop-blur"
+                aria-label="Close animated comments"
+              >
+                <X className="size-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <AnimatedCommentStoryText
+          text={pageText}
+          fullText={story.text}
+          playKey={playKey}
+          fastMode={fastMode}
+        />
+
+        {!fastMode && storyPageCount > 1 && (
+          <div className="absolute bottom-16 left-1/2 z-10 flex -translate-x-1/2 gap-1.5">
+            {Array.from({ length: storyPageCount }).map((_, index) => (
+              <span
+                key={index}
+                className={`h-1.5 rounded-full transition ${
+                  index === storyPage ? "w-5 bg-white" : "w-1.5 bg-white/35"
+                }`}
+              />
+            ))}
+          </div>
+        )}
+
+        <div className="absolute inset-x-4 bottom-4 z-10 flex items-end justify-between gap-3">
+          <div>
+            <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-white/62">posted</p>
+            <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-white/88">
+              {formatShortDateTime(story.created_at)}
+            </p>
+          </div>
+          <p className="max-w-[46%] text-right font-mono text-[9px] uppercase tracking-[0.14em] text-white/60">
+            swipe to skip
+          </p>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+function AnimatedCommentStoryText({
+  text,
+  fullText,
+  playKey,
+  fastMode,
+}: {
+  text: string;
+  fullText: string;
+  playKey: number;
+  fastMode: boolean;
+}) {
+  const displayText = fastMode ? fullText : text;
+  const words = getWords(displayText);
+  const emphasized = getEmphasizedWordIndexes(words);
+
+  if (fastMode) {
+    return (
+      <div className="absolute inset-x-6 top-[18%] bottom-[16%] z-10 grid place-items-center">
+        <motion.p
+          key={playKey}
+          initial={{ opacity: 0, y: 18 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="max-h-full overflow-hidden text-center font-black leading-[1.02] text-white drop-shadow-[0_8px_34px_rgba(0,0,0,0.55)]"
+          style={{ fontSize: "clamp(1.15rem, 3.5vh, 1.85rem)" }}
+        >
+          {displayText}
+        </motion.p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="absolute inset-x-6 top-[20%] bottom-[18%] z-10 grid place-items-center">
+      <motion.div
+        key={playKey}
+        className="flex flex-wrap items-center justify-center text-center font-black leading-[0.9] drop-shadow-[0_8px_34px_rgba(0,0,0,0.55)]"
+        style={{
+          columnGap: "0.25em",
+          rowGap: "0.1em",
+          fontSize: "clamp(2rem, 6vh, 3.5rem)",
+        }}
+      >
+        {words.map((word, index) => {
+          const important = emphasized.has(index);
+          return (
+            <motion.span
+              key={`${word}-${index}`}
+              initial={{
+                opacity: 0,
+                y: important ? 34 : 22,
+                scale: important ? 0.74 : 0.9,
+                filter: "blur(10px)",
+              }}
+              animate={{
+                opacity: 1,
+                y: 0,
+                scale: important ? 1.1 : 1,
+                filter: "blur(0px)",
+              }}
+              transition={{
+                delay: index * 0.14,
+                duration: important ? 0.58 : 0.46,
+                ease: [0.22, 1, 0.36, 1],
+              }}
+              className="inline-flex"
+              style={{
+                color: important ? "#FFBE0B" : "#ffffff",
+              }}
+            >
+              {word}
+            </motion.span>
+          );
+        })}
+      </motion.div>
+    </div>
   );
 }
 
@@ -534,6 +936,55 @@ function getPageDuration(text: string) {
 
 function getCommentFlightDuration(label: string) {
   return Math.max(5600, Math.min(8400, 4300 + label.length * 55));
+}
+
+function getFloatingCommentLabel(label: string) {
+  const words = getWords(label);
+  if (words.length <= 10 && label.length <= 84) return label;
+  const preview = words.slice(0, 10).join(" ");
+  return `${preview}...`;
+}
+
+function getCommentStoryPages(text: string, fastMode: boolean) {
+  const normalized = normalizeComment(text);
+  if (!normalized) return [""];
+  if (fastMode) return [normalized];
+
+  const words = getWords(normalized);
+  if (words.length <= COMMENT_STORY_WORDS_PER_PAGE) return [normalized];
+
+  const pages: string[] = [];
+  for (let i = 0; i < words.length; i += COMMENT_STORY_WORDS_PER_PAGE) {
+    pages.push(words.slice(i, i + COMMENT_STORY_WORDS_PER_PAGE).join(" "));
+  }
+  return pages;
+}
+
+function getStoryPageDuration(text: string) {
+  const wordCount = getWords(text).length;
+  return Math.max(2600, Math.min(5200, 1500 + wordCount * 360));
+}
+
+function getFastStoryDuration(text: string) {
+  const wordCount = getWords(text).length;
+  return Math.max(3200, Math.min(7600, 1700 + wordCount * 150));
+}
+
+function getCommentStoryGradient(index: number) {
+  const gradients = [
+    "linear-gradient(135deg,#FF006E,#8338EC)",
+    "linear-gradient(135deg,#06FFA5,#118AB2)",
+    "linear-gradient(135deg,#FFBE0B,#FB5607)",
+    "linear-gradient(135deg,#3A86FF,#7209B7)",
+    "linear-gradient(135deg,#073B4C,#06D6A0)",
+  ];
+  return gradients[index % gradients.length];
+}
+
+function getCommentPreview(text: string) {
+  const words = getWords(text);
+  if (words.length <= 5) return text;
+  return `${words.slice(0, 5).join(" ")}...`;
 }
 
 function WordSequenceText({
@@ -630,9 +1081,10 @@ function normalizeComment(value: string) {
   return value.replace(/\s+/g, " ").trim();
 }
 
-function limitCommentWords(value: string) {
-  const words = getWords(value);
-  if (words.length <= MAX_COMMENT_WORDS) return value;
+function limitCommentText(value: string) {
+  const clipped = value.slice(0, MAX_COMMENT_CHARS);
+  const words = getWords(clipped);
+  if (words.length <= MAX_COMMENT_WORDS) return clipped;
   return words.slice(0, MAX_COMMENT_WORDS).join(" ");
 }
 
