@@ -620,7 +620,7 @@ export function getMockNotifications(): MockNotificationsData {
   };
 }
 
-export function toggleMockLike(postId: string) {
+export async function toggleMockLike(postId: string) {
   const liked = new Set(readLikedPostIds());
   if (liked.has(postId)) {
     liked.delete(postId);
@@ -633,7 +633,7 @@ export function toggleMockLike(postId: string) {
   return { liked: true };
 }
 
-export function addMockComment(postId: string, chipId: string) {
+export async function addMockComment(postId: string, chipId: string) {
   const comments = readJsonArray<MockComment>(LOCAL_COMMENTS_KEY);
   const next: MockComment = {
     id: makeUuid(),
@@ -646,7 +646,7 @@ export function addMockComment(postId: string, chipId: string) {
   return { ok: true, comment: next };
 }
 
-export function toggleMockFollow(targetId: string) {
+export async function toggleMockFollow(targetId: string) {
   if (targetId === MOCK_ME_ID) throw new Error("Cannot follow self");
   const following = new Set(readFollowingIds());
   if (following.has(targetId)) {
@@ -660,7 +660,7 @@ export function toggleMockFollow(targetId: string) {
   return { following: true };
 }
 
-export function updateMockProfile(
+export async function updateMockProfile(
   updates: Pick<MockProfile, "display_name"> & {
     bio?: string | null;
     avatar_url?: string | null;
