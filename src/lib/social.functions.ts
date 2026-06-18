@@ -75,19 +75,25 @@ export const getFeed = createServerFn({ method: "GET" })
     }).slice(0, FEED_LIMIT);
 
     const selectedPostIds = new Set(rankedPosts.map((post) => post.id));
-    const authorIds = [...new Set(rankedPosts.map((post) => post.author_id))];
-    const { data: profiles } = authorIds.length
+    const selectedComments = comments.filter((comment) => selectedPostIds.has(comment.post_id));
+    const profileIds = [
+      ...new Set([
+        ...rankedPosts.map((post) => post.author_id),
+        ...selectedComments.map((comment) => comment.user_id),
+      ]),
+    ];
+    const { data: profiles } = profileIds.length
       ? await supabaseAdmin
           .from("profiles")
           .select("id, username, display_name, avatar_url")
-          .in("id", authorIds)
+          .in("id", profileIds)
       : { data: [] };
 
     return {
       posts: rankedPosts,
       profiles: profiles ?? [],
       likes: likes.filter((like) => selectedPostIds.has(like.post_id)),
-      comments: comments.filter((comment) => selectedPostIds.has(comment.post_id)),
+      comments: selectedComments,
     };
   });
 
@@ -248,7 +254,7 @@ export const ensureProfile = createServerFn({ method: "POST" })
     return created;
   });
 
-const POST_TYPES = ["text", "image", "video", "slideshow"] as const;
+const POST_TYPES = ["text", "image", "video", "slideshow", "link"] as const;
 
 export const createPost = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])

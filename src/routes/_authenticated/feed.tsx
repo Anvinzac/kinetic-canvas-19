@@ -1,11 +1,11 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
 import { getFeed, toggleLike, addComment } from "@/lib/social.functions";
 import { PostCard } from "@/components/PostCard";
 import { supabase } from "@/integrations/supabase/client";
-import { endDemoSession, isDemoSession } from "@/lib/demo-session";
+import { isDemoSession } from "@/lib/demo-session";
 import {
   addMockComment,
   getMockFeed,
@@ -13,14 +13,12 @@ import {
   toggleMockLike,
   type MockFeedData,
 } from "@/lib/mock-data";
-import { LogOut } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/feed")({
   component: FeedPage,
 });
 
 function FeedPage() {
-  const navigate = useNavigate();
   const qc = useQueryClient();
   const fetchFeed = useServerFn(getFeed);
   const likeFn = useServerFn(toggleLike);
@@ -80,14 +78,6 @@ function FeedPage() {
     },
   });
 
-  async function handleSignOut() {
-    await qc.cancelQueries();
-    qc.clear();
-    if (demoMode) endDemoSession();
-    else await supabase.auth.signOut();
-    navigate({ to: "/auth", replace: true });
-  }
-
   if (isLoading || !data) {
     return (
       <div className="flex h-[100dvh] items-center justify-center">
@@ -110,23 +100,14 @@ function FeedPage() {
 
   return (
     <div className="relative">
-      <header className="pointer-events-none fixed inset-x-0 top-0 z-40 flex items-center justify-between px-4 pt-[max(env(safe-area-inset-top),12px)]">
-        <span className="font-impact text-xl text-white drop-shadow">KINETIC</span>
-        <button
-          onClick={handleSignOut}
-          className="pointer-events-auto flex size-9 items-center justify-center rounded-full bg-black/40 backdrop-blur"
-          aria-label="Sign out"
-        >
-          <LogOut className="size-4 text-white" />
-        </button>
-      </header>
-
       <main className="scrollbar-hide h-[100dvh] snap-y snap-mandatory overflow-y-scroll">
         {data.posts.map((p) => (
           <PostCard
             key={p.id}
             post={p}
             author={profilesById.get(p.author_id)}
+            profilesById={profilesById}
+            currentUserId={myProfileId}
             likes={likesByPost.get(p.id)?.length ?? 0}
             comments={commentsByPost.get(p.id) ?? []}
             liked={

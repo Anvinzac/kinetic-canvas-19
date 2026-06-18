@@ -20,6 +20,7 @@ import {
   Heart,
   Image as ImageIcon,
   MessageCircle,
+  Newspaper,
   Radio,
   Settings,
   Share2,
@@ -36,7 +37,7 @@ export const Route = createFileRoute("/_authenticated/u/$username")({
   component: ProfilePage,
 });
 
-type PostKind = "text" | "image" | "video" | "slideshow";
+type PostKind = "text" | "image" | "video" | "slideshow" | "link";
 type PostFilter = "all" | PostKind;
 type Engagement = { likes: number; comments: number };
 type ProfilePost = {
@@ -54,9 +55,10 @@ const FILTERS: { id: PostFilter; label: string; icon: ReactNode }[] = [
   { id: "image", label: "image", icon: <ImageIcon className="size-3.5" /> },
   { id: "video", label: "video", icon: <Video className="size-3.5" /> },
   { id: "slideshow", label: "slides", icon: <Clapperboard className="size-3.5" /> },
+  { id: "link", label: "links", icon: <Newspaper className="size-3.5" /> },
 ];
 
-const POST_KINDS: PostKind[] = ["text", "image", "video", "slideshow"];
+const POST_KINDS: PostKind[] = ["text", "image", "video", "slideshow", "link"];
 
 function ProfilePage() {
   const { username } = Route.useParams();
@@ -126,7 +128,7 @@ function ProfilePage() {
   }
 
   return (
-    <div className="min-h-[100dvh] pb-28">
+    <div className="min-h-[100dvh] pb-8">
       <div className="grad-aurora relative h-48 overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.22),transparent_28%),linear-gradient(to_bottom,transparent,rgba(0,0,0,0.5),var(--background))]" />
         <div className="absolute left-4 top-[max(env(safe-area-inset-top),12px)] rounded-full bg-black/35 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.18em] text-white/80 backdrop-blur">
@@ -368,6 +370,7 @@ function PostTile({ post, engagement }: { post: ProfilePost; engagement?: Engage
 
 function PostPreview({ post, className }: { post: ProfilePost; className?: string }) {
   const media = post.media_urls ?? [];
+  const spec = parseCanvas(post.canvas_html);
   return (
     <div
       className={`relative overflow-hidden ${className ?? ""}`}
@@ -387,6 +390,7 @@ function PostPreview({ post, className }: { post: ProfilePost; className?: strin
       {post.post_type === "slideshow" && media[0] && (
         <img src={media[0]} alt="" className="absolute inset-0 size-full object-cover opacity-90" />
       )}
+      {post.post_type === "link" && <ArticleMiniClip title={spec.link?.title ?? spec.text} />}
       {post.post_type !== "text" && <div className="absolute inset-0 bg-black/25" />}
     </div>
   );
@@ -396,11 +400,12 @@ function PostKindIcon({ kind }: { kind: string }) {
   if (kind === "image") return <ImageIcon className="size-3" />;
   if (kind === "video") return <Video className="size-3" />;
   if (kind === "slideshow") return <Clapperboard className="size-3" />;
+  if (kind === "link") return <Newspaper className="size-3" />;
   return <Type className="size-3" />;
 }
 
 function getTypeCounts(posts: ProfilePost[]) {
-  const counts: Record<PostKind, number> = { text: 0, image: 0, video: 0, slideshow: 0 };
+  const counts: Record<PostKind, number> = { text: 0, image: 0, video: 0, slideshow: 0, link: 0 };
   for (const post of posts) {
     if (POST_KINDS.includes(post.post_type as PostKind)) counts[post.post_type as PostKind] += 1;
   }
@@ -410,6 +415,18 @@ function getTypeCounts(posts: ProfilePost[]) {
 function getFavoriteKind(counts: Record<PostKind, number>) {
   const [favorite] = [...POST_KINDS].sort((a, b) => counts[b] - counts[a]);
   return counts[favorite] > 0 ? favorite : "text";
+}
+
+function ArticleMiniClip({ title }: { title: string }) {
+  return (
+    <div className="absolute inset-x-2 bottom-2 z-10 rounded-sm bg-[#f5f0df] p-2 text-[#17140f] shadow-lg">
+      <div className="mb-1 flex items-center justify-between border-b border-black/25 pb-0.5 font-serif text-[7px] font-black uppercase tracking-widest">
+        <span>Article</span>
+        <Newspaper className="size-2.5" />
+      </div>
+      <p className="line-clamp-2 font-serif text-[10px] font-black leading-none">{title}</p>
+    </div>
+  );
 }
 
 function getSpotlight(posts: ProfilePost[], engagementByPost: Record<string, Engagement>) {

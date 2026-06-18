@@ -12,7 +12,7 @@ const FOLLOWING_KEY = "kinetic.demo.following";
 const MOCK_FEED_LIMIT = 60;
 const COLD_START_FOLLOWING_THRESHOLD = 3;
 
-type PostType = "text" | "image" | "video" | "slideshow";
+type PostType = "text" | "image" | "video" | "slideshow" | "link";
 
 export type MockProfile = {
   id: string;
@@ -176,6 +176,27 @@ const MOCK_POSTS: MockPost[] = [
   },
   {
     id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb2",
+    author_id: "22222222-2222-4222-8222-222222222222",
+    post_type: "link",
+    canvas_html: canvas({
+      text: "The best interfaces explain themselves before the user needs a tooltip.",
+      font: "Playfair Display",
+      size: 74,
+      color: "#17140f",
+      entrance: "blur",
+      loop: "float",
+      link: {
+        url: "https://www.nngroup.com/articles/designing-effective-carousels/",
+        host: "nngroup.com",
+        title: "The best interfaces explain themselves before the user needs a tooltip.",
+      },
+    }),
+    media_urls: ["https://www.nngroup.com/articles/designing-effective-carousels/"],
+    bg_gradient: "linear-gradient(135deg,#FFD60A,#FF006E)",
+    created_at: "2026-06-16T07:06:00.000Z",
+  },
+  {
+    id: "bcbcbcbc-bcbc-4bcb-8bcb-bcbcbcbcbcb3",
     author_id: "22222222-2222-4222-8222-222222222222",
     post_type: "image",
     canvas_html: canvas({

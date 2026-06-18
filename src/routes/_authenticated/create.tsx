@@ -6,8 +6,11 @@ import {
   Check,
   ChevronLeft,
   ChevronRight,
+  ExternalLink,
   Image as ImageIcon,
+  Link2,
   Move,
+  Newspaper,
   Palette,
   Send,
   SlidersHorizontal,
@@ -26,6 +29,7 @@ import {
   RHYTHMS,
   serializeCanvas,
   TEMPOS,
+  type CanvasLinkPreview,
   type CanvasSpec,
 } from "@/lib/canvas";
 import { createPost } from "@/lib/social.functions";
@@ -38,6 +42,7 @@ export const Route = createFileRoute("/_authenticated/create")({
 });
 
 type BackgroundMode = "gradient" | "photo" | "upload";
+type StatusKind = "kinetic" | "article";
 type StudioPage = "write" | "background" | "font" | "color" | "layout" | "motion";
 type AnimationTemplate = {
   id: string;
@@ -214,15 +219,34 @@ function CreatePage() {
   const [backgroundMode, setBackgroundMode] = useState<BackgroundMode>("gradient");
   const [selectedPhoto, setSelectedPhoto] = useState(PRELOADED_PHOTOS[0].url);
   const [uploadedPhoto, setUploadedPhoto] = useState<string | null>(null);
+  const [statusKind, setStatusKind] = useState<StatusKind>("kinetic");
+  const [articleUrl, setArticleUrl] = useState("");
   const [activePage, setActivePage] = useState<StudioPage>("write");
   const [playKey, setPlayKey] = useState(0);
   const [posting, setPosting] = useState(false);
+  const [advancedOpen, setAdvancedOpen] = useState(false);
 
   const activePhoto =
-    backgroundMode === "upload" ? uploadedPhoto : backgroundMode === "photo" ? selectedPhoto : null;
-  const postType = activePhoto ? "image" : "text";
-  const mediaUrls = activePhoto ? [activePhoto] : [];
-  const canPost = spec.text.trim().length > 0 && !posting;
+    statusKind === "article"
+      ? null
+      : backgroundMode === "upload"
+        ? uploadedPhoto
+        : backgroundMode === "photo"
+          ? selectedPhoto
+          : null;
+  const normalizedArticleUrl = normalizeArticleUrl(articleUrl);
+  const articlePreview = normalizedArticleUrl
+    ? {
+        url: normalizedArticleUrl,
+        host: getUrlHost(normalizedArticleUrl),
+        title: getArticleTitle(spec.text),
+      }
+    : null;
+  const publishSpec: CanvasSpec = articlePreview ? { ...spec, link: articlePreview } : spec;
+  const postType = articlePreview ? "link" : activePhoto ? "image" : "text";
+  const mediaUrls = articlePreview ? [articlePreview.url] : activePhoto ? [activePhoto] : [];
+  const canPost =
+    spec.text.trim().length > 0 && !posting && (statusKind !== "article" || !!articlePreview);
   const pageTitle = PAGE_TITLES[activePage];
   const backgroundSummary =
     backgroundMode === "gradient"
@@ -234,6 +258,7 @@ function CreatePage() {
   const colorSummary = spec.color;
   const layoutSummary = PLACEMENTS.find((placement) => placement.y === spec.y)?.label ?? "custom";
   const motionSummary = `${spec.entrance} · ${spec.tempo} · ${spec.rhythm}`;
+  const previewPaneHeight = "min(70dvh, 576px, calc((100vw - 152px) * 16 / 9))";
 
   function patch<K extends keyof CanvasSpec>(key: K, value: CanvasSpec[K]) {
     setSpec((s) => ({ ...s, [key]: value }));
@@ -276,12 +301,15 @@ function CreatePage() {
 
   async function publish() {
     if (!spec.text.trim()) return toast.error("type something first");
+    if (statusKind === "article" && !articlePreview) {
+      return toast.error("add a valid article link");
+    }
     setPosting(true);
     try {
       if (demoMode) {
         addMockPost({
           post_type: postType,
-          canvas_html: serializeCanvas(spec),
+          canvas_html: serializeCanvas(publishSpec),
           media_urls: mediaUrls,
           bg_gradient: bg,
         });
@@ -296,7 +324,7 @@ function CreatePage() {
       await submit({
         data: {
           post_type: postType,
-          canvas_html: serializeCanvas(spec),
+          canvas_html: serializeCanvas(publishSpec),
           media_urls: mediaUrls,
           bg_gradient: bg,
         },
@@ -332,7 +360,7 @@ function CreatePage() {
   }
 
   return (
-    <div className="min-h-[100dvh] overflow-y-auto bg-background pb-28 text-foreground">
+    <div className="min-h-[100dvh] overflow-y-auto bg-background pb-8 text-foreground">
       <header className="sticky top-0 z-40 glass flex items-center justify-between border-b border-white/10 px-4 pt-[max(env(safe-area-inset-top),12px)] pb-3">
         <button
           onClick={goBack}
@@ -358,13 +386,13 @@ function CreatePage() {
       </header>
 
       <main className="mx-auto max-w-md px-4 py-4">
-        <section className="sticky top-[72px] z-20 -mx-4 bg-background/95 px-4 pb-4 backdrop-blur">
-          <div className="mx-auto flex justify-center">
+        <section className="sticky top-[72px] z-20 -mx-4 bg-background/95 px-1 pb-4 backdrop-blur">
+          <div className="flex items-stretch gap-2 overflow-hidden">
             <button
               type="button"
               onClick={replayPreview}
-              className="relative aspect-[9/16] h-[min(42dvh,360px)] min-h-[260px] overflow-hidden rounded-[24px] bg-black shadow-[0_24px_70px_rgba(0,0,0,0.45)] ring-1 ring-white/10"
-              style={{ background: bg }}
+              className="relative aspect-[9/16] shrink-0 overflow-hidden rounded-[24px] bg-black shadow-[0_24px_70px_rgba(0,0,0,0.45)] ring-1 ring-white/10"
+              style={{ background: bg, height: previewPaneHeight }}
               aria-label="Replay preview"
             >
               {activePhoto && (
@@ -374,7 +402,7 @@ function CreatePage() {
                 <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/10 to-black/55" />
               )}
               {spec.text.trim() ? (
-                <KineticText spec={spec} playKey={playKey} />
+                <KineticText spec={spec} playKey={playKey} scaleToCanvas />
               ) : (
                 <div className="absolute inset-0 grid place-items-center px-8 text-center">
                   <div>
@@ -385,10 +413,34 @@ function CreatePage() {
                   </div>
                 </div>
               )}
-              <span className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-black/35 px-3 py-1 font-mono text-[9px] uppercase tracking-[0.16em] text-white/65 backdrop-blur">
-                tap to replay
-              </span>
+              {!articlePreview && (
+                <span className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-black/35 px-3 py-1 font-mono text-[9px] uppercase tracking-[0.16em] text-white/65 backdrop-blur">
+                  tap to replay
+                </span>
+              )}
+              {articlePreview && (
+                <ArticleClip
+                  preview={articlePreview}
+                  className="absolute bottom-4 left-4 right-4 z-10"
+                />
+              )}
             </button>
+            <div className="flex w-[124px] shrink-0 flex-col" style={{ height: previewPaneHeight }}>
+              <div className="mb-2 flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-[0.16em] text-muted-foreground">
+                <Sparkles className="size-3.5" />
+                templates
+              </div>
+              <div className="min-h-0 flex-1 space-y-1.5 overflow-y-auto pr-1 scrollbar-hide">
+                {ANIMATION_TEMPLATES.map((template) => (
+                  <TemplateButton
+                    key={template.id}
+                    template={template}
+                    active={isTemplateActive(template, spec, bg, backgroundMode)}
+                    onClick={() => applyTemplate(template)}
+                  />
+                ))}
+              </div>
+            </div>
           </div>
         </section>
 
@@ -396,6 +448,35 @@ function CreatePage() {
           {activePage === "write" && (
             <div className="space-y-4">
               <Panel icon={<Type />} title="sentence">
+                <div className="mb-3 grid grid-cols-2 gap-1 rounded-2xl bg-black/25 p-1">
+                  <button
+                    type="button"
+                    onClick={() => setStatusKind("kinetic")}
+                    className={`flex items-center justify-center gap-1.5 rounded-xl px-2 py-2 text-xs font-bold transition ${
+                      statusKind === "kinetic"
+                        ? "bg-white text-black"
+                        : "text-muted-foreground hover:text-white"
+                    }`}
+                  >
+                    <Type className="size-3.5" />
+                    status
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setStatusKind("article");
+                      setBackgroundMode("gradient");
+                    }}
+                    className={`flex items-center justify-center gap-1.5 rounded-xl px-2 py-2 text-xs font-bold transition ${
+                      statusKind === "article"
+                        ? "bg-white text-black"
+                        : "text-muted-foreground hover:text-white"
+                    }`}
+                  >
+                    <Newspaper className="size-3.5" />
+                    article
+                  </button>
+                </div>
                 <textarea
                   value={spec.text}
                   onChange={(event) => updateText(event.target.value)}
@@ -403,69 +484,77 @@ function CreatePage() {
                   placeholder="write one or two sentences..."
                   className="w-full resize-none rounded-2xl bg-white/7 px-4 py-3 text-base leading-relaxed text-white outline-none ring-1 ring-white/10 placeholder:text-white/35 focus:ring-primary/70"
                 />
+                {statusKind === "article" && (
+                  <div className="mt-3">
+                    <label className="mb-1.5 flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+                      <Link2 className="size-3.5" />
+                      target article
+                    </label>
+                    <input
+                      value={articleUrl}
+                      onChange={(event) => setArticleUrl(event.target.value)}
+                      placeholder="https://example.com/article"
+                      inputMode="url"
+                      className="w-full rounded-2xl bg-white/7 px-4 py-3 text-sm text-white outline-none ring-1 ring-white/10 placeholder:text-white/35 focus:ring-primary/70"
+                    />
+                    {articlePreview && (
+                      <div className="mt-2">
+                        <ArticleClip preview={articlePreview} />
+                      </div>
+                    )}
+                  </div>
+                )}
                 <div className="mt-2 flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-                  <span>{spec.text.trim() ? "live preview active" : "waiting for words"}</span>
+                  <button
+                    type="button"
+                    onClick={() => setAdvancedOpen((open) => !open)}
+                    className="flex items-center gap-1.5 text-left text-muted-foreground transition hover:text-white"
+                    aria-expanded={advancedOpen}
+                  >
+                    <SlidersHorizontal className="size-3.5" />
+                    advanced options
+                    <ChevronRight
+                      className={`size-3 transition ${advancedOpen ? "rotate-90" : ""}`}
+                    />
+                  </button>
                   <span>{spec.text.length}/220</span>
                 </div>
+
+                {advancedOpen && (
+                  <div className="mt-3 grid gap-2">
+                    <StudioLink
+                      icon={<Palette />}
+                      label="Background"
+                      value={backgroundSummary}
+                      onClick={() => setActivePage("background")}
+                    />
+                    <StudioLink
+                      icon={<Type />}
+                      label="Font"
+                      value={fontSummary}
+                      onClick={() => setActivePage("font")}
+                    />
+                    <StudioLink
+                      icon={<Palette />}
+                      label="Color"
+                      value={colorSummary}
+                      onClick={() => setActivePage("color")}
+                    />
+                    <StudioLink
+                      icon={<Move />}
+                      label="Layout"
+                      value={layoutSummary}
+                      onClick={() => setActivePage("layout")}
+                    />
+                    <StudioLink
+                      icon={<Sparkles />}
+                      label="Motion"
+                      value={motionSummary}
+                      onClick={() => setActivePage("motion")}
+                    />
+                  </div>
+                )}
               </Panel>
-
-              {spec.text.trim() && (
-                <section className="space-y-2">
-                  <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-                    <Sparkles className="size-3.5" />
-                    animation templates
-                  </div>
-                  <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 scrollbar-hide">
-                    {ANIMATION_TEMPLATES.map((template) => (
-                      <TemplateButton
-                        key={template.id}
-                        template={template}
-                        active={isTemplateActive(template, spec, bg, backgroundMode)}
-                        onClick={() => applyTemplate(template)}
-                      />
-                    ))}
-                  </div>
-                </section>
-              )}
-
-              <section className="space-y-2">
-                <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-                  <Sparkles className="size-3.5" />
-                  edit one thing
-                </div>
-                <div className="grid gap-2">
-                  <StudioLink
-                    icon={<Palette />}
-                    label="Background"
-                    value={backgroundSummary}
-                    onClick={() => setActivePage("background")}
-                  />
-                  <StudioLink
-                    icon={<Type />}
-                    label="Font"
-                    value={fontSummary}
-                    onClick={() => setActivePage("font")}
-                  />
-                  <StudioLink
-                    icon={<Palette />}
-                    label="Color"
-                    value={colorSummary}
-                    onClick={() => setActivePage("color")}
-                  />
-                  <StudioLink
-                    icon={<Move />}
-                    label="Layout"
-                    value={layoutSummary}
-                    onClick={() => setActivePage("layout")}
-                  />
-                  <StudioLink
-                    icon={<Sparkles />}
-                    label="Motion"
-                    value={motionSummary}
-                    onClick={() => setActivePage("motion")}
-                  />
-                </div>
-              </section>
             </div>
           )}
 
@@ -773,17 +862,18 @@ function TemplateButton({
     <button
       type="button"
       onClick={onClick}
-      className={`grid w-[132px] shrink-0 grid-cols-[42px_1fr] items-center gap-2 rounded-2xl p-2 text-left ring-1 transition ${
+      aria-pressed={active}
+      className={`grid w-full grid-cols-[28px_minmax(0,1fr)] items-center gap-1.5 rounded-xl p-1.5 text-left ring-1 transition ${
         active ? "bg-white text-black ring-white" : "bg-white/5 text-white ring-white/10"
       }`}
     >
       <span
-        className="relative aspect-[9/16] h-[72px] overflow-hidden rounded-xl shadow-inner"
+        className="relative aspect-[9/16] h-12 overflow-hidden rounded-lg shadow-inner"
         style={{ background: template.gradient }}
       >
         <span className="absolute inset-0 bg-gradient-to-b from-white/15 via-transparent to-black/35" />
         <span
-          className="absolute left-1/2 top-1/2 w-[70%] -translate-x-1/2 -translate-y-1/2 text-center text-[10px] font-black uppercase leading-[0.85]"
+          className="absolute left-1/2 top-1/2 w-[70%] -translate-x-1/2 -translate-y-1/2 text-center text-[8px] font-black uppercase leading-[0.85]"
           style={{
             color: template.spec.color,
             fontFamily: template.spec.font,
@@ -794,9 +884,11 @@ function TemplateButton({
         </span>
       </span>
       <span className="min-w-0">
-        <span className="block truncate text-xs font-black">{template.label}</span>
+        <span className="block truncate text-[11px] font-black leading-tight">
+          {template.label}
+        </span>
         <span
-          className={`mt-1 block truncate font-mono text-[9px] uppercase tracking-[0.14em] ${
+          className={`mt-0.5 block truncate font-mono text-[8px] uppercase tracking-[0.1em] ${
             active ? "text-black/55" : "text-muted-foreground"
           }`}
         >
@@ -804,6 +896,40 @@ function TemplateButton({
         </span>
       </span>
     </button>
+  );
+}
+
+function ArticleClip({ preview, className }: { preview: CanvasLinkPreview; className?: string }) {
+  return (
+    <div
+      className={`relative overflow-hidden rounded-md bg-[#f5f0df] p-3 text-[#17140f] shadow-[0_14px_35px_rgba(0,0,0,0.28)] ring-1 ring-black/10 ${
+        className ?? ""
+      }`}
+      style={{
+        clipPath: "polygon(0 0,100% 0,100% 88%,97% 88%,97% 100%,88% 92%,0 92%,0 62%,2% 60%,0 58%)",
+      }}
+    >
+      <div className="absolute inset-0 opacity-[0.08] [background-image:linear-gradient(#000_1px,transparent_1px)] [background-size:100%_7px]" />
+      <div className="relative">
+        <div className="flex items-center justify-between border-b border-black/30 pb-1 font-serif text-[10px] font-black uppercase tracking-[0.18em]">
+          <span>Article clipping</span>
+          <Newspaper className="size-3.5" />
+        </div>
+        <div className="mt-2 grid grid-cols-[1fr_34px] gap-2">
+          <div className="min-w-0">
+            <p className="line-clamp-2 font-serif text-base font-black leading-[0.95]">
+              {preview.title}
+            </p>
+            <p className="mt-1 truncate font-mono text-[9px] uppercase tracking-[0.14em] text-black/55">
+              {preview.host}
+            </p>
+          </div>
+          <span className="grid size-8 place-items-center rounded-sm border border-black/25 bg-black/10">
+            <ExternalLink className="size-4" />
+          </span>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -939,4 +1065,31 @@ function suggestSize(text: string, current: number) {
   if (clean.length > 90) return Math.min(current, 64);
   if (clean.length > 48) return Math.min(current, 76);
   return current;
+}
+
+function normalizeArticleUrl(value: string) {
+  const trimmed = value.trim();
+  if (!trimmed) return "";
+  const withProtocol = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+  try {
+    const url = new URL(withProtocol);
+    if (!["http:", "https:"].includes(url.protocol)) return "";
+    return url.toString();
+  } catch {
+    return "";
+  }
+}
+
+function getUrlHost(value: string) {
+  try {
+    return new URL(value).hostname.replace(/^www\./, "");
+  } catch {
+    return "linked article";
+  }
+}
+
+function getArticleTitle(text: string) {
+  const sentence = text.replace(/\s+/g, " ").trim();
+  if (!sentence) return "Linked article";
+  return sentence.length > 72 ? `${sentence.slice(0, 69).trim()}...` : sentence;
 }

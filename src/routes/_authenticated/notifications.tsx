@@ -29,7 +29,7 @@ function NotificationsPage() {
   });
 
   return (
-    <div className="min-h-[100dvh] pb-28">
+    <div className="min-h-[100dvh] pb-8">
       <header className="sticky top-0 z-30 glass border-b border-white/10 px-4 pt-[max(env(safe-area-inset-top),12px)] pb-3">
         <h1 className="font-impact text-2xl tracking-wider">ACTIVITY</h1>
       </header>

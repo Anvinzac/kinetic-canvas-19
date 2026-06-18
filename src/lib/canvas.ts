@@ -6,6 +6,12 @@ export type Loop = "pulse" | "float" | "shake" | "none";
 export type Tempo = "slow" | "steady" | "snappy";
 export type Rhythm = "smooth" | "stagger" | "burst";
 
+export interface CanvasLinkPreview {
+  url: string;
+  host: string;
+  title: string;
+}
+
 export interface CanvasSpec {
   text: string;
   font: string; // "Inter" | "Space Grotesk" | "Bebas Neue" | "Playfair Display" | "JetBrains Mono"
@@ -20,6 +26,7 @@ export interface CanvasSpec {
   tempo: Tempo;
   rhythm: Rhythm;
   rotation: number; // degrees
+  link?: CanvasLinkPreview | null;
 }
 
 export const DEFAULT_CANVAS: CanvasSpec = {
@@ -36,6 +43,7 @@ export const DEFAULT_CANVAS: CanvasSpec = {
   tempo: "steady",
   rhythm: "stagger",
   rotation: 0,
+  link: null,
 };
 
 export const FONTS = [

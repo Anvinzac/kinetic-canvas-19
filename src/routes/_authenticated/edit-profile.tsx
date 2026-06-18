@@ -94,7 +94,7 @@ function EditProfile() {
   const canSave = !!displayName.trim() && validAvatar && !mut.isPending;
 
   return (
-    <div className="min-h-[100dvh] pb-28">
+    <div className="min-h-[100dvh] pb-8">
       <header className="sticky top-0 z-30 glass flex items-center gap-3 border-b border-white/10 px-4 pt-[max(env(safe-area-inset-top),12px)] pb-3">
         <button
           onClick={() => navigate({ to: "/settings" })}

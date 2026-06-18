@@ -5,20 +5,37 @@ import {
   useState,
   type CSSProperties,
   type MouseEvent as ReactMouseEvent,
+  type ReactNode,
 } from "react";
 import { AnimatePresence, motion, type PanInfo } from "framer-motion";
 import {
+  Bell,
+  ExternalLink,
   FastForward,
   Heart,
+  Home,
+  Info,
   MessageCircle,
-  MoreVertical,
+  MoreHorizontal,
+  Newspaper,
   Play,
+  Plus,
   RotateCcw,
+  Search,
+  Settings,
   Share2,
+  User,
   X,
 } from "lucide-react";
 import { Link } from "@tanstack/react-router";
-import { COMMENT_CHIPS, parseCanvas, type CanvasSpec, type Rhythm, type Tempo } from "@/lib/canvas";
+import {
+  COMMENT_CHIPS,
+  parseCanvas,
+  type CanvasLinkPreview,
+  type CanvasSpec,
+  type Rhythm,
+  type Tempo,
+} from "@/lib/canvas";
 
 type Profile = { id: string; username: string; display_name: string; avatar_url: string | null };
 type Post = {
@@ -37,10 +54,17 @@ type Comment = {
   chip_id: string;
   created_at: string;
 };
-type FlowComment = { key: string; chip: string; created_at: string };
-type CommentStory = { id: string; text: string; created_at: string; index: number };
+type FlowComment = { key: string; chip: string; created_at: string; user_id: string };
+type CommentStory = {
+  id: string;
+  text: string;
+  created_at: string;
+  index: number;
+  user_id: string;
+};
 
 const MAX_WORDS_PER_TEXT_PAGE = 7;
+const FLOATING_COMMENT_MAX_WORDS = 3;
 const MAX_COMMENT_WORDS = 36;
 const MAX_COMMENT_CHARS = 240;
 const COMMENT_STORY_WORDS_PER_PAGE = 8;
@@ -60,11 +84,15 @@ export function PostCard({
   likes,
   comments,
   liked,
+  profilesById,
+  currentUserId,
   onLike,
   onComment,
 }: {
   post: Post;
   author?: Profile;
+  profilesById: Map<string, Profile>;
+  currentUserId: string | null;
   likes: number;
   comments: Comment[];
   liked: boolean;
@@ -73,24 +101,35 @@ export function PostCard({
 }) {
   const spec = parseCanvas(post.canvas_html);
   const textPages = useMemo(() => paginateText(spec.text), [spec.text]);
+  const [localComments, setLocalComments] = useState<Comment[]>([]);
   const chronologicalComments = useMemo(
     () =>
-      [...comments].sort(
+      [...comments, ...localComments].sort(
         (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
       ),
-    [comments],
+    [comments, localComments],
   );
-  const commentFlowKey = chronologicalComments
+  const floatingComments = useMemo(
+    () =>
+      chronologicalComments.filter((comment) =>
+        shouldFloatComment(getCommentLabel(comment.chip_id)),
+      ),
+    [chronologicalComments],
+  );
+  const commentFlowKey = floatingComments
     .map((comment) => `${comment.id}:${comment.created_at}:${comment.chip_id}`)
     .join("|");
   const commentStories = useMemo(
     () =>
-      chronologicalComments.map((comment, index) => ({
-        id: comment.id,
-        text: getCommentLabel(comment.chip_id),
-        created_at: comment.created_at,
-        index,
-      })),
+      chronologicalComments
+        .filter((comment) => !shouldFloatComment(getCommentLabel(comment.chip_id)))
+        .map((comment, index) => ({
+          id: comment.id,
+          text: getCommentLabel(comment.chip_id),
+          created_at: comment.created_at,
+          index,
+          user_id: comment.user_id,
+        })),
     [chronologicalComments],
   );
 
@@ -105,16 +144,20 @@ export function PostCard({
   const [storyPage, setStoryPage] = useState(0);
   const [storyPlayKey, setStoryPlayKey] = useState(0);
   const [storyFastMode, setStoryFastMode] = useState(false);
+  const [actionMenuOpen, setActionMenuOpen] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [canvasWidth, setCanvasWidth] = useState(390);
   const flyId = useRef(0);
+  const localCommentId = useRef(0);
   const manualCommentHoldUntil = useRef(0);
   const canvasRef = useRef<HTMLElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
   const media = post.media_urls ?? [];
-  const commentMaxWidth = Math.min(canvasWidth * 0.72, 290);
-  const commentStartX = canvasWidth + 16;
+  const articlePreview = getArticlePreview(spec, media);
+  const commentLaneWidth = Math.max(180, canvasWidth - 96);
+  const commentMaxWidth = Math.min(commentLaneWidth * 0.78, 290);
+  const commentStartX = commentLaneWidth + 16;
   const commentEndX = -(commentMaxWidth + 24);
   const currentText = textPages[textPage] ?? textPages[0] ?? "";
   const activeStory = commentStories[storyIndex] ?? null;
@@ -123,6 +166,18 @@ export function PostCard({
     [activeStory, storyFastMode],
   );
   const storyPageText = storyPages[storyPage] ?? storyPages[0] ?? "";
+  const activeCommentLabel = activeComment ? getCommentLabel(activeComment.chip) : "";
+  const activeCommentAuthor = activeComment ? profilesById.get(activeComment.user_id) : undefined;
+  const showingFlyingComment =
+    !isPaused && !!activeComment && shouldFloatComment(activeCommentLabel);
+  const postHashtags = useMemo(
+    () => getPostHashtags(spec.text, post.post_type),
+    [post.post_type, spec.text],
+  );
+  const viewCount = useMemo(
+    () => getPostViewCount(post, likes, chronologicalComments.length),
+    [chronologicalComments.length, likes, post],
+  );
   const displaySpec: CanvasSpec = {
     ...spec,
     text: currentText,
@@ -139,7 +194,20 @@ export function PostCard({
     setStoryIndex(0);
     setStoryPage(0);
     setStoryFastMode(false);
+    setActionMenuOpen(false);
+    setLocalComments([]);
   }, [post.id, spec.text]);
+
+  useEffect(() => {
+    const serverCommentLabels = new Set(
+      comments.map((comment) => normalizeComment(comment.chip_id)),
+    );
+    setLocalComments((items) => {
+      if (items.length === 0) return items;
+      const next = items.filter((item) => !serverCommentLabels.has(normalizeComment(item.chip_id)));
+      return next.length === items.length ? items : next;
+    });
+  }, [comments]);
 
   useEffect(() => {
     if (commentStories.length === 0) {
@@ -196,7 +264,7 @@ export function PostCard({
       setActiveComment(null);
       return;
     }
-    if (chronologicalComments.length === 0) {
+    if (floatingComments.length === 0) {
       setActiveComment(null);
       return;
     }
@@ -213,12 +281,13 @@ export function PostCard({
         return;
       }
 
-      const comment = chronologicalComments[index % chronologicalComments.length];
+      const comment = floatingComments[index % floatingComments.length];
       const label = getFloatingCommentLabel(getCommentLabel(comment.chip_id));
       setActiveComment({
         key: `${comment.id}-${index}`,
         chip: comment.chip_id,
         created_at: comment.created_at,
+        user_id: comment.user_id,
       });
       index += 1;
       timer = window.setTimeout(showNext, getCommentFlightDuration(label) + 700);
@@ -230,7 +299,7 @@ export function PostCard({
       cancelled = true;
       if (timer) window.clearTimeout(timer);
     };
-  }, [commentFlowKey, chronologicalComments, isPaused, storyOpen]);
+  }, [commentFlowKey, floatingComments, isPaused, storyOpen]);
 
   useEffect(() => {
     if (!storyOpen) return;
@@ -339,7 +408,24 @@ export function PostCard({
     setPlayKey((key) => key + 1);
   }
 
-  function flyChip(chipId: string) {
+  function previewSubmittedComment(chipId: string) {
+    const label = getCommentLabel(chipId);
+    if (!shouldFloatComment(label)) {
+      localCommentId.current += 1;
+      setStoryIndex(commentStories.length);
+      setLocalComments((items) => [
+        ...items,
+        {
+          id: `local-comment-${localCommentId.current}`,
+          post_id: post.id,
+          user_id: currentUserId ?? "local",
+          chip_id: chipId,
+          created_at: new Date().toISOString(),
+        },
+      ]);
+      return;
+    }
+
     flyId.current += 1;
     manualCommentHoldUntil.current =
       Date.now() + getCommentFlightDuration(getFloatingCommentLabel(getCommentLabel(chipId))) + 700;
@@ -347,6 +433,7 @@ export function PostCard({
       key: `local-${flyId.current}`,
       chip: chipId,
       created_at: new Date().toISOString(),
+      user_id: currentUserId ?? "local",
     });
   }
 
@@ -359,19 +446,19 @@ export function PostCard({
     ) {
       return;
     }
-    flyChip(normalized);
+    previewSubmittedComment(normalized);
     onComment(normalized);
     setCustomComment("");
     setShowChips(false);
   }
 
   return (
-    <section className="relative flex h-[100dvh] w-full snap-start items-center justify-center overflow-hidden bg-background pb-24 pt-3 sm:py-6">
+    <section className="relative flex h-[100dvh] w-full snap-start items-center justify-center overflow-hidden bg-background">
       <article
         ref={canvasRef}
         className="relative aspect-[9/16] overflow-hidden bg-black shadow-[0_24px_90px_rgba(0,0,0,0.45)] sm:rounded-[28px] sm:ring-1 sm:ring-white/10"
         style={{
-          height: "min(calc(100dvh - 6rem), 764px, 177.777vw)",
+          height: "min(100dvh, 764px, 177.777vw)",
           background: post.bg_gradient ?? "#000",
         }}
         onClick={pauseCanvas}
@@ -422,6 +509,13 @@ export function PostCard({
           </motion.div>
         </AnimatePresence>
 
+        {post.post_type === "link" && articlePreview && (
+          <ArticleClipLink
+            preview={articlePreview}
+            className="absolute bottom-36 left-5 right-24 z-20"
+          />
+        )}
+
         {textPages.length > 1 && (
           <div
             className="absolute left-1/2 top-4 z-20 flex -translate-x-1/2 gap-1.5"
@@ -465,6 +559,7 @@ export function PostCard({
         {commentStories.length > 0 && !storyOpen && (
           <CommentStoryStack
             stories={commentStories}
+            profilesById={profilesById}
             onOpen={(event) => {
               event.stopPropagation();
               openCommentStories();
@@ -472,87 +567,144 @@ export function PostCard({
           />
         )}
 
-        <div className="absolute bottom-28 right-3 z-20 flex flex-col items-center gap-5">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onLike();
-            }}
-            className="flex flex-col items-center gap-1"
-          >
-            <span
-              className={`flex size-12 items-center justify-center rounded-full transition ${
-                liked ? "bg-[var(--color-magenta)] scale-110" : "bg-black/40 backdrop-blur"
-              }`}
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            setShowChips(false);
+            setActionMenuOpen((open) => !open);
+          }}
+          className="absolute right-3 top-4 z-30 grid size-10 place-items-center rounded-full bg-black/40 text-white shadow-[0_12px_30px_rgba(0,0,0,0.3)] ring-1 ring-white/15 backdrop-blur transition active:scale-95"
+          aria-label="More choices"
+          aria-expanded={actionMenuOpen}
+        >
+          <MoreHorizontal className="size-5" />
+        </button>
+
+        <AnimatePresence mode="wait">
+          {actionMenuOpen ? (
+            <PostMenuRail key="menu" />
+          ) : (
+            <motion.div
+              key="actions"
+              initial={{ opacity: 0, x: 12 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 12 }}
+              transition={{ duration: 0.18 }}
+              className="absolute bottom-48 right-3 z-20 flex flex-col items-center gap-4"
             >
-              <Heart className={`size-6 ${liked ? "fill-white text-white" : "text-white"}`} />
-            </span>
-            <span className="text-xs font-bold text-white drop-shadow">{likes}</span>
-          </button>
+              <Link
+                to="/create"
+                onClick={(e) => e.stopPropagation()}
+                className="grid size-12 place-items-center rounded-full bg-white text-black shadow-[0_12px_34px_rgba(0,0,0,0.35)] transition active:scale-95"
+                aria-label="Create"
+              >
+                <Plus className="size-6" />
+              </Link>
 
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setShowChips((s) => !s);
-            }}
-            className="flex flex-col items-center gap-1"
-          >
-            <span className="flex size-12 items-center justify-center rounded-full bg-black/40 backdrop-blur">
-              <MessageCircle className="size-6 text-white" />
-            </span>
-            <span className="text-xs font-bold text-white drop-shadow">{comments.length}</span>
-          </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onLike();
+                }}
+                className="flex flex-col items-center gap-1"
+              >
+                <span
+                  className={`flex size-12 items-center justify-center rounded-full transition ${
+                    liked ? "bg-[var(--color-magenta)] scale-110" : "bg-black/40 backdrop-blur"
+                  }`}
+                >
+                  <Heart className={`size-6 ${liked ? "fill-white text-white" : "text-white"}`} />
+                </span>
+                <span className="text-xs font-bold text-white drop-shadow">{likes}</span>
+              </button>
 
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              if (navigator.share) navigator.share({ title: "kinetic", url: window.location.href });
-            }}
-            className="flex flex-col items-center gap-1"
-          >
-            <span className="flex size-12 items-center justify-center rounded-full bg-black/40 backdrop-blur">
-              <Share2 className="size-5 text-white" />
-            </span>
-          </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowChips((s) => !s);
+                }}
+                className="flex flex-col items-center gap-1"
+              >
+                <span className="flex size-12 items-center justify-center rounded-full bg-black/40 backdrop-blur">
+                  <MessageCircle className="size-6 text-white" />
+                </span>
+                <span className="text-xs font-bold text-white drop-shadow">{comments.length}</span>
+              </button>
 
-          <button
-            onClick={(e) => e.stopPropagation()}
-            className="flex size-12 items-center justify-center rounded-full bg-black/40 backdrop-blur"
-          >
-            <MoreVertical className="size-5 text-white" />
-          </button>
-        </div>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (navigator.share)
+                    navigator.share({ title: "kinetic", url: window.location.href });
+                }}
+                className="flex flex-col items-center gap-1"
+              >
+                <span className="flex size-12 items-center justify-center rounded-full bg-black/40 backdrop-blur">
+                  <Share2 className="size-5 text-white" />
+                </span>
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-        <div className="pointer-events-none absolute inset-x-0 bottom-16 z-30 h-28 overflow-hidden">
+        <div className="pointer-events-none absolute bottom-16 left-0 right-24 z-30 h-28 overflow-hidden">
           <AnimatePresence mode="wait">
-            {!isPaused && activeComment && (
+            {showingFlyingComment && (
               <motion.div
                 key={activeComment.key}
                 initial={false}
                 exit={{ opacity: 0, transition: { duration: 0.18 } }}
-                className="absolute left-0 top-0 z-30 flex flex-col items-center gap-1"
+                className="pointer-events-auto absolute left-0 top-0 z-30 flex flex-col items-center gap-1"
                 style={
                   {
                     maxWidth: commentMaxWidth,
                     "--chip-start-x": `${commentStartX}px`,
                     "--chip-end-x": `${commentEndX}px`,
-                    animation: `chip-fly ${getCommentFlightDuration(getFloatingCommentLabel(getCommentLabel(activeComment.chip)))}ms linear forwards`,
+                    animation: `chip-fly ${getCommentFlightDuration(getFloatingCommentLabel(activeCommentLabel))}ms linear forwards`,
                   } as CSSProperties & Record<string, string | number>
                 }
               >
-                <div className="max-w-full rounded-2xl bg-white/90 px-3 py-1.5 text-center text-sm font-semibold leading-snug text-black shadow-lg">
-                  {getFloatingCommentLabel(getCommentLabel(activeComment.chip))}
+                <div className="relative max-w-full rounded-2xl rounded-bl-md bg-white/90 px-3 py-1.5 text-center text-sm font-semibold leading-snug text-black shadow-lg">
+                  {getFloatingCommentLabel(activeCommentLabel)}
+                  <span className="absolute -bottom-1 left-5 h-3 w-3 rotate-45 rounded-[2px] bg-white/90" />
                 </div>
-                <span className="rounded-full bg-black/35 px-2 py-0.5 font-mono text-[9px] uppercase tracking-wider text-white/75 backdrop-blur">
-                  {formatShortDateTime(activeComment.created_at)}
-                </span>
+                <div className="flex items-center gap-1 rounded-full bg-black/35 px-2 py-0.5 font-mono text-[9px] uppercase tracking-wider text-white/75 backdrop-blur">
+                  {activeCommentAuthor ? (
+                    <Link
+                      to="/u/$username"
+                      params={{ username: activeCommentAuthor.username }}
+                      onClick={(event) => event.stopPropagation()}
+                      className="font-bold text-white"
+                    >
+                      {getProfileDisplayLabel(activeCommentAuthor)}
+                    </Link>
+                  ) : (
+                    <span>someone</span>
+                  )}
+                  <span className="text-white/35">/</span>
+                  <span>{formatShortDateTime(activeComment.created_at)}</span>
+                </div>
               </motion.div>
             )}
           </AnimatePresence>
         </div>
 
-        <div className="absolute bottom-4 left-4 z-20 rounded-full bg-black/35 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.16em] text-white/75 backdrop-blur">
-          {formatPostDate(post.created_at)}
+        <div
+          className={`absolute bottom-4 left-4 z-20 max-w-[min(64%,260px)] text-white transition-opacity duration-300 ${
+            showingFlyingComment ? "opacity-30" : "opacity-90"
+          }`}
+        >
+          <div className="inline-flex flex-wrap items-center gap-x-2 gap-y-1 rounded-full bg-black/30 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.14em] text-white/78 backdrop-blur">
+            <span>{formatCompactCount(viewCount)} views</span>
+            <span className="text-white/35">/</span>
+            <span>{formatPostDate(post.created_at)}</span>
+          </div>
+          <div className="mt-1 flex flex-wrap gap-x-2 gap-y-1 px-1 text-xs font-bold leading-tight text-white/92 drop-shadow">
+            {postHashtags.map((tag) => (
+              <span key={tag}>#{tag}</span>
+            ))}
+          </div>
         </div>
 
         <AnimatePresence>
@@ -595,6 +747,7 @@ export function PostCard({
           {storyOpen && activeStory && (
             <CommentStoryPlayer
               story={activeStory}
+              author={profilesById.get(activeStory.user_id)}
               storyCount={commentStories.length}
               storyIndex={storyIndex}
               storyPage={storyPage}
@@ -667,11 +820,108 @@ export function PostCard({
   );
 }
 
+function PostMenuRail() {
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: 16 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: 16 }}
+      transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+      className="absolute bottom-36 right-3 z-30 flex flex-col items-end gap-2"
+      onClick={(event) => event.stopPropagation()}
+    >
+      <RailMenuLink to="/create" label="create" icon={<Plus className="size-5" />} emphasized />
+      <RailMenuLink to="/feed" label="feed" icon={<Home className="size-4" />} />
+      <RailMenuLink to="/discover" label="discover" icon={<Search className="size-4" />} />
+      <RailMenuLink to="/notifications" label="activity" icon={<Bell className="size-4" />} />
+      <RailMenuLink to="/me" label="profile" icon={<User className="size-4" />} />
+      <RailMenuLink to="/settings" label="settings" icon={<Settings className="size-4" />} />
+      <RailMenuLink to="/about" label="about" icon={<Info className="size-4" />} />
+    </motion.div>
+  );
+}
+
+function RailMenuLink({
+  to,
+  label,
+  icon,
+  emphasized,
+}: {
+  to: string;
+  label: string;
+  icon: ReactNode;
+  emphasized?: boolean;
+}) {
+  return (
+    <Link to={to} className="group flex items-center gap-2 text-white">
+      <span className="rounded-full bg-black/40 px-2.5 py-1 text-right font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-white/80 opacity-95 shadow-[0_8px_24px_rgba(0,0,0,0.25)] backdrop-blur transition group-hover:text-white">
+        {label}
+      </span>
+      <span
+        className={`grid size-10 place-items-center rounded-full shadow-[0_12px_30px_rgba(0,0,0,0.3)] transition group-active:scale-95 ${
+          emphasized
+            ? "bg-white text-black"
+            : "bg-black/45 text-white ring-1 ring-white/15 backdrop-blur"
+        }`}
+      >
+        {icon}
+      </span>
+    </Link>
+  );
+}
+
+function ArticleClipLink({
+  preview,
+  className,
+}: {
+  preview: CanvasLinkPreview;
+  className?: string;
+}) {
+  return (
+    <a
+      href={preview.url}
+      target="_blank"
+      rel="noreferrer"
+      className={`relative block overflow-hidden rounded-md bg-[#f5f0df] p-3 text-[#17140f] shadow-[0_14px_42px_rgba(0,0,0,0.35)] ring-1 ring-black/10 transition active:scale-[0.98] ${
+        className ?? ""
+      }`}
+      style={{
+        clipPath: "polygon(0 0,100% 0,100% 88%,97% 88%,97% 100%,88% 92%,0 92%,0 62%,2% 60%,0 58%)",
+      }}
+      onClick={(event) => event.stopPropagation()}
+      aria-label={`Open article on ${preview.host}`}
+    >
+      <div className="absolute inset-0 opacity-[0.08] [background-image:linear-gradient(#000_1px,transparent_1px)] [background-size:100%_7px]" />
+      <div className="relative">
+        <div className="flex items-center justify-between border-b border-black/30 pb-1 font-serif text-[10px] font-black uppercase tracking-[0.18em]">
+          <span>Article clipping</span>
+          <Newspaper className="size-3.5" />
+        </div>
+        <div className="mt-2 grid grid-cols-[1fr_34px] gap-2">
+          <div className="min-w-0">
+            <p className="line-clamp-2 font-serif text-base font-black leading-[0.95]">
+              {preview.title}
+            </p>
+            <p className="mt-1 truncate font-mono text-[9px] uppercase tracking-[0.14em] text-black/55">
+              {preview.host}
+            </p>
+          </div>
+          <span className="grid size-8 place-items-center rounded-sm border border-black/25 bg-black/10">
+            <ExternalLink className="size-4" />
+          </span>
+        </div>
+      </div>
+    </a>
+  );
+}
+
 function CommentStoryStack({
   stories,
+  profilesById,
   onOpen,
 }: {
   stories: CommentStory[];
+  profilesById: Map<string, Profile>;
   onOpen: (event: ReactMouseEvent<HTMLButtonElement>) => void;
 }) {
   const preview = stories.slice(-3);
@@ -685,23 +935,38 @@ function CommentStoryStack({
     >
       {preview.map((story, index) => {
         const offset = preview.length - 1 - index;
+        const background = getCommentStoryGradient(story.index);
+        const storyAuthor = profilesById.get(story.user_id);
         return (
           <span
             key={story.id}
-            className="absolute bottom-0 right-0 aspect-[9/16] h-[92px] overflow-hidden rounded-xl bg-black text-white shadow-[0_12px_30px_rgba(0,0,0,0.45)] ring-1 ring-white/25"
+            className="absolute bottom-0 right-0 aspect-[9/16] h-[92px] text-white"
             style={{
               zIndex: index + 1,
               transform: `translate(${-offset * 6}px, ${-offset * 7}px) rotate(${-offset * 3}deg)`,
-              background: getCommentStoryGradient(story.index),
             }}
           >
-            <span className="absolute inset-0 bg-gradient-to-b from-white/10 via-transparent to-black/45" />
-            <span className="absolute inset-x-1 top-1 flex gap-0.5">
-              <span className="h-0.5 flex-1 rounded-full bg-white/80" />
-              <span className="h-0.5 flex-1 rounded-full bg-white/30" />
-            </span>
-            <span className="absolute inset-x-1 bottom-2 line-clamp-3 px-1 text-left text-[9px] font-black leading-[0.95] drop-shadow">
-              {getCommentPreview(story.text)}
+            <span
+              className="absolute -bottom-1.5 right-2 h-4 w-4 rotate-45 rounded-[4px] shadow-[0_10px_24px_rgba(0,0,0,0.32)] ring-1 ring-white/20"
+              style={{ background }}
+            />
+            <span
+              className="absolute inset-0 overflow-hidden rounded-[18px] rounded-br-md bg-black shadow-[0_12px_30px_rgba(0,0,0,0.45)] ring-1 ring-white/25"
+              style={{ background }}
+            >
+              <span className="absolute inset-0 bg-gradient-to-b from-white/10 via-transparent to-black/45" />
+              <span className="absolute inset-x-1.5 top-1.5 flex gap-0.5">
+                <span className="h-0.5 flex-1 rounded-full bg-white/80" />
+                <span className="h-0.5 flex-1 rounded-full bg-white/30" />
+              </span>
+              {storyAuthor && (
+                <span className="absolute left-2 top-3.5 max-w-[78%] truncate font-mono text-[7px] font-bold uppercase tracking-[0.08em] text-white/70">
+                  {getProfileDisplayLabel(storyAuthor)}
+                </span>
+              )}
+              <span className="absolute inset-x-1 bottom-2 line-clamp-3 px-1 text-left text-[9px] font-black leading-[0.95] drop-shadow">
+                {getCommentPreview(story.text)}
+              </span>
             </span>
           </span>
         );
@@ -715,6 +980,7 @@ function CommentStoryStack({
 
 function CommentStoryPlayer({
   story,
+  author,
   storyCount,
   storyIndex,
   storyPage,
@@ -727,6 +993,7 @@ function CommentStoryPlayer({
   onDragEnd,
 }: {
   story: CommentStory;
+  author?: Profile;
   storyCount: number;
   storyIndex: number;
   storyPage: number;
@@ -738,6 +1005,8 @@ function CommentStoryPlayer({
   onToggleFast: () => void;
   onDragEnd: (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => void;
 }) {
+  const background = getCommentStoryGradient(story.index);
+
   return (
     <motion.div
       className="absolute inset-0 z-50 flex items-end justify-center bg-black/42 p-3 backdrop-blur-[2px]"
@@ -755,79 +1024,100 @@ function CommentStoryPlayer({
         animate={{ y: 0, scale: 1, opacity: 1 }}
         exit={{ y: 48, scale: 0.94, opacity: 0 }}
         transition={{ type: "spring", stiffness: 260, damping: 26 }}
-        className="relative aspect-[9/16] h-[85%] max-h-[85%] max-w-[92%] overflow-hidden rounded-[28px] text-white shadow-[0_24px_80px_rgba(0,0,0,0.55)] ring-1 ring-white/20"
-        style={{ background: getCommentStoryGradient(story.index) }}
+        className="relative aspect-[9/16] h-[85%] max-h-[85%] max-w-[92%] text-white drop-shadow-[0_24px_80px_rgba(0,0,0,0.55)]"
       >
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_15%,rgba(255,255,255,0.22),transparent_30%),linear-gradient(180deg,rgba(0,0,0,0.08),rgba(0,0,0,0.52))]" />
+        <div
+          className="absolute -bottom-3 right-9 h-9 w-9 rotate-45 rounded-md ring-1 ring-white/20"
+          style={{ background }}
+        />
+        <div
+          className="relative h-full w-full overflow-hidden rounded-[30px] rounded-br-[10px] shadow-[0_24px_80px_rgba(0,0,0,0.55)] ring-1 ring-white/20"
+          style={{ background }}
+        >
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_15%,rgba(255,255,255,0.22),transparent_30%),linear-gradient(180deg,rgba(0,0,0,0.08),rgba(0,0,0,0.52))]" />
 
-        <div className="absolute inset-x-4 top-4 z-10">
-          <div className="mb-3 flex gap-1">
-            {Array.from({ length: storyCount }).map((_, index) => (
-              <span
-                key={index}
-                className={`h-1 flex-1 rounded-full ${
-                  index === storyIndex ? "bg-white" : "bg-white/25"
-                }`}
-              />
-            ))}
-          </div>
-          <div className="flex items-center justify-between gap-2">
-            <span className="rounded-full bg-black/25 px-2.5 py-1 font-mono text-[9px] uppercase tracking-[0.16em] text-white/75 backdrop-blur">
-              {storyIndex + 1}/{storyCount}
-            </span>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={onToggleFast}
-                className={`flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.12em] backdrop-blur ${
-                  fastMode ? "bg-white text-black" : "bg-black/30 text-white"
-                }`}
-              >
-                <FastForward className="size-3" />
-                fast
-              </button>
-              <button
-                type="button"
-                onClick={onClose}
-                className="grid size-7 place-items-center rounded-full bg-black/30 text-white backdrop-blur"
-                aria-label="Close animated comments"
-              >
-                <X className="size-4" />
-              </button>
+          <div className="absolute inset-x-4 top-4 z-10">
+            <div className="mb-3 flex gap-1">
+              {Array.from({ length: storyCount }).map((_, index) => (
+                <span
+                  key={index}
+                  className={`h-1 flex-1 rounded-full ${
+                    index === storyIndex ? "bg-white" : "bg-white/25"
+                  }`}
+                />
+              ))}
+            </div>
+            <div className="flex items-center justify-between gap-2">
+              <span className="rounded-full bg-black/25 px-2.5 py-1 font-mono text-[9px] uppercase tracking-[0.16em] text-white/75 backdrop-blur">
+                {storyIndex + 1}/{storyCount}
+              </span>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={onToggleFast}
+                  className={`flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.12em] backdrop-blur ${
+                    fastMode ? "bg-white text-black" : "bg-black/30 text-white"
+                  }`}
+                >
+                  <FastForward className="size-3" />
+                  fast
+                </button>
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="grid size-7 place-items-center rounded-full bg-black/30 text-white backdrop-blur"
+                  aria-label="Close animated comments"
+                >
+                  <X className="size-4" />
+                </button>
+              </div>
             </div>
           </div>
-        </div>
 
-        <AnimatedCommentStoryText
-          text={pageText}
-          fullText={story.text}
-          playKey={playKey}
-          fastMode={fastMode}
-        />
+          <AnimatedCommentStoryText
+            text={pageText}
+            fullText={story.text}
+            playKey={playKey}
+            fastMode={fastMode}
+          />
 
-        {!fastMode && storyPageCount > 1 && (
-          <div className="absolute bottom-16 left-1/2 z-10 flex -translate-x-1/2 gap-1.5">
-            {Array.from({ length: storyPageCount }).map((_, index) => (
-              <span
-                key={index}
-                className={`h-1.5 rounded-full transition ${
-                  index === storyPage ? "w-5 bg-white" : "w-1.5 bg-white/35"
-                }`}
-              />
-            ))}
-          </div>
-        )}
+          {!fastMode && storyPageCount > 1 && (
+            <div className="absolute bottom-16 left-1/2 z-10 flex -translate-x-1/2 gap-1.5">
+              {Array.from({ length: storyPageCount }).map((_, index) => (
+                <span
+                  key={index}
+                  className={`h-1.5 rounded-full transition ${
+                    index === storyPage ? "w-5 bg-white" : "w-1.5 bg-white/35"
+                  }`}
+                />
+              ))}
+            </div>
+          )}
 
-        <div className="absolute inset-x-4 bottom-4 z-10 flex items-end justify-between gap-3">
-          <div>
-            <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-white/62">posted</p>
-            <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-white/88">
-              {formatShortDateTime(story.created_at)}
+          <div className="absolute inset-x-4 bottom-4 z-10 flex items-end justify-between gap-3">
+            <div>
+              {author ? (
+                <Link
+                  to="/u/$username"
+                  params={{ username: author.username }}
+                  onClick={(event) => event.stopPropagation()}
+                  className="font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-white/78"
+                >
+                  {getProfileDisplayLabel(author)}
+                </Link>
+              ) : (
+                <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-white/62">
+                  someone
+                </p>
+              )}
+              <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-white/88">
+                {formatShortDateTime(story.created_at)}
+              </p>
+            </div>
+            <p className="max-w-[46%] text-right font-mono text-[9px] uppercase tracking-[0.14em] text-white/60">
+              swipe to skip
             </p>
           </div>
-          <p className="max-w-[46%] text-right font-mono text-[9px] uppercase tracking-[0.14em] text-white/60">
-            swipe to skip
-          </p>
         </div>
       </motion.div>
     </motion.div>
@@ -972,6 +1262,14 @@ function getFloatingCommentLabel(label: string) {
   return `${preview}...`;
 }
 
+function shouldFloatComment(label: string) {
+  return getCommentWordCount(label) <= FLOATING_COMMENT_MAX_WORDS;
+}
+
+function getCommentWordCount(label: string) {
+  return label.match(/[\p{L}\p{N}][\p{L}\p{N}'-]*/gu)?.length ?? 0;
+}
+
 function getCommentStoryPages(text: string, fastMode: boolean) {
   const normalized = normalizeComment(text);
   if (!normalized) return [""];
@@ -1012,6 +1310,55 @@ function getCommentPreview(text: string) {
   const words = getWords(text);
   if (words.length <= 5) return text;
   return `${words.slice(0, 5).join(" ")}...`;
+}
+
+function getProfileDisplayLabel(profile: Profile) {
+  return profile.display_name.trim() || `@${profile.username}`;
+}
+
+function getPostHashtags(text: string, postType: string) {
+  const explicitTags = Array.from(text.matchAll(/#([a-z0-9][a-z0-9_-]{1,24})/gi)).map((match) =>
+    normalizeHashtag(match[1]),
+  );
+  const textTags = getWords(text)
+    .map(normalizeHashtag)
+    .filter((tag) => tag.length >= 4 && !STOP_WORDS.has(tag));
+  const typeTag = normalizeHashtag(postType);
+  const tags = [...explicitTags, ...textTags, typeTag, "kinetic"];
+  return Array.from(new Set(tags.filter(Boolean))).slice(0, 3);
+}
+
+function normalizeHashtag(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/^[^a-z0-9]+|[^a-z0-9]+$/g, "")
+    .replace(/[^a-z0-9]+/g, "")
+    .slice(0, 18);
+}
+
+function getPostViewCount(post: Post, likes: number, comments: number) {
+  const timestamp = new Date(post.created_at).getTime();
+  const ageHours = Number.isNaN(timestamp) ? 24 : Math.max(1, (Date.now() - timestamp) / 3_600_000);
+  const seed = getStableNumber(post.id);
+  const base = 280 + (seed % 6800);
+  const recencyLift = Math.round(1800 / Math.sqrt(ageHours));
+  return Math.max(24, base + recencyLift + likes * 73 + comments * 41);
+}
+
+function getStableNumber(value: string) {
+  let hash = 2166136261;
+  for (let i = 0; i < value.length; i += 1) {
+    hash ^= value.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  return hash >>> 0;
+}
+
+function formatCompactCount(count: number) {
+  return new Intl.NumberFormat("en", {
+    notation: "compact",
+    maximumFractionDigits: count < 10_000 ? 1 : 0,
+  }).format(count);
 }
 
 function WordSequenceText({
@@ -1149,6 +1496,24 @@ function getEmphasisColor(color: string) {
   if (normalized === "#000000" || normalized === "black") return "#8338EC";
   if (normalized === "#ffbe0b") return "#ffffff";
   return "#FFBE0B";
+}
+
+function getArticlePreview(spec: CanvasSpec, media: string[]): CanvasLinkPreview | null {
+  if (spec.link?.url) return spec.link;
+  const url = media[0];
+  if (!url) return null;
+  try {
+    const parsed = new URL(url);
+    if (!["http:", "https:"].includes(parsed.protocol)) return null;
+    const title = spec.text.replace(/\s+/g, " ").trim() || "Linked article";
+    return {
+      url: parsed.toString(),
+      host: parsed.hostname.replace(/^www\./, ""),
+      title: title.length > 72 ? `${title.slice(0, 69).trim()}...` : title,
+    };
+  } catch {
+    return null;
+  }
 }
 
 const STOP_WORDS = new Set([

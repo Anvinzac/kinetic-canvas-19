@@ -12,7 +12,7 @@ import {
   type MockPost,
   type MockSearchData,
 } from "@/lib/mock-data";
-import { Search as SearchIcon } from "lucide-react";
+import { Newspaper, Search as SearchIcon } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/discover")({
   component: DiscoverPage,
@@ -42,7 +42,7 @@ function DiscoverPage() {
   const showResults = debounced.length > 0;
 
   return (
-    <div className="min-h-[100dvh] pb-28">
+    <div className="min-h-[100dvh] pb-8">
       <header className="sticky top-0 z-30 glass border-b border-white/10 px-4 pt-[max(env(safe-area-inset-top),12px)] pb-3">
         <h1 className="font-impact text-2xl tracking-wider">DISCOVER</h1>
         <div className="mt-3 flex items-center gap-2 rounded-full bg-white/5 px-4 py-2.5 ring-1 ring-white/10 focus-within:ring-primary/60 transition">
@@ -171,13 +171,14 @@ function PostGrid({ posts, className }: { posts: MockPost[]; className?: string 
             className="relative aspect-[3/4] overflow-hidden rounded-md"
             style={{ background: p.bg_gradient ?? "#111" }}
           >
-            {p.media_urls?.[0] && (
+            {(p.post_type === "image" || p.post_type === "slideshow") && p.media_urls?.[0] && (
               <img
                 src={p.media_urls[0]}
                 alt=""
                 className="absolute inset-0 size-full object-cover opacity-90"
               />
             )}
+            {p.post_type === "link" && <ArticleMiniClip title={spec.link?.title ?? spec.text} />}
             <div
               className="absolute inset-0 flex items-center justify-center p-1 text-center"
               style={{ fontFamily: spec.font, color: spec.color, fontWeight: spec.weight }}
@@ -187,6 +188,18 @@ function PostGrid({ posts, className }: { posts: MockPost[]; className?: string 
           </div>
         );
       })}
+    </div>
+  );
+}
+
+function ArticleMiniClip({ title }: { title: string }) {
+  return (
+    <div className="absolute inset-x-1.5 bottom-1.5 z-10 rounded-sm bg-[#f5f0df] p-1.5 text-[#17140f] shadow-lg">
+      <div className="mb-0.5 flex items-center justify-between border-b border-black/25 pb-0.5 font-serif text-[6px] font-black uppercase tracking-widest">
+        <span>Article</span>
+        <Newspaper className="size-2.5" />
+      </div>
+      <p className="line-clamp-2 font-serif text-[9px] font-black leading-none">{title}</p>
     </div>
   );
 }
