@@ -23,7 +23,9 @@ import {
   GRADIENTS,
   LOOPS,
   PALETTE,
+  RHYTHMS,
   serializeCanvas,
+  TEMPOS,
   type CanvasSpec,
 } from "@/lib/canvas";
 import { createPost } from "@/lib/social.functions";
@@ -37,6 +39,13 @@ export const Route = createFileRoute("/_authenticated/create")({
 
 type BackgroundMode = "gradient" | "photo" | "upload";
 type StudioPage = "write" | "background" | "font" | "color" | "layout" | "motion";
+type AnimationTemplate = {
+  id: string;
+  label: string;
+  mood: string;
+  gradient: string;
+  spec: Partial<Omit<CanvasSpec, "text">>;
+};
 
 const STATUS_CANVAS: CanvasSpec = {
   ...DEFAULT_CANVAS,
@@ -82,13 +91,116 @@ const PLACEMENTS = [
   { label: "low", x: 50, y: 68 },
 ];
 
+const ANIMATION_TEMPLATES: AnimationTemplate[] = [
+  {
+    id: "neon-burst",
+    label: "neon burst",
+    mood: "snappy · burst",
+    gradient: "linear-gradient(135deg,#FF006E,#8338EC)",
+    spec: {
+      font: "Bebas Neue",
+      size: 92,
+      color: "#ffffff",
+      weight: 900,
+      letterSpacing: -0.02,
+      entrance: "scale",
+      loop: "pulse",
+      tempo: "snappy",
+      rhythm: "burst",
+      x: 50,
+      y: 50,
+      rotation: -1,
+    },
+  },
+  {
+    id: "editorial-drift",
+    label: "editorial drift",
+    mood: "slow · smooth",
+    gradient: "linear-gradient(135deg,#073B4C,#06D6A0)",
+    spec: {
+      font: "Playfair Display",
+      size: 76,
+      color: "#FFBE0B",
+      weight: 800,
+      letterSpacing: -0.02,
+      entrance: "blur",
+      loop: "float",
+      tempo: "slow",
+      rhythm: "smooth",
+      x: 50,
+      y: 50,
+      rotation: -2,
+    },
+  },
+  {
+    id: "mono-sprint",
+    label: "mono sprint",
+    mood: "snappy · stagger",
+    gradient: "linear-gradient(180deg,#000000,#1a1a2e)",
+    spec: {
+      font: "JetBrains Mono",
+      size: 64,
+      color: "#06FFA5",
+      weight: 800,
+      letterSpacing: -0.04,
+      entrance: "split",
+      loop: "shake",
+      tempo: "snappy",
+      rhythm: "stagger",
+      x: 50,
+      y: 55,
+      rotation: 0,
+    },
+  },
+  {
+    id: "soft-signal",
+    label: "soft signal",
+    mood: "steady · smooth",
+    gradient: "linear-gradient(135deg,#3A86FF,#06FFA5)",
+    spec: {
+      font: "Inter",
+      size: 72,
+      color: "#ffffff",
+      weight: 850,
+      letterSpacing: -0.03,
+      entrance: "fade",
+      loop: "float",
+      tempo: "steady",
+      rhythm: "smooth",
+      x: 50,
+      y: 48,
+      rotation: 0,
+    },
+  },
+  {
+    id: "poster-pop",
+    label: "poster pop",
+    mood: "steady · burst",
+    gradient: "linear-gradient(135deg,#FB5607,#FFBE0B)",
+    spec: {
+      font: "Space Grotesk",
+      size: 84,
+      color: "#000000",
+      weight: 900,
+      letterSpacing: -0.05,
+      entrance: "slide",
+      loop: "pulse",
+      tempo: "steady",
+      rhythm: "burst",
+      x: 50,
+      y: 46,
+      rotation: 1,
+    },
+  },
+];
+
 const PAGE_TITLES: Record<StudioPage, { title: string; subtitle: string }> = {
   write: { title: "STATUS STUDIO", subtitle: "type · preview · post" },
   background: { title: "BACKGROUND", subtitle: "gradient · photo · upload" },
   font: { title: "FONT", subtitle: "family · scale · weight" },
   color: { title: "COLOR", subtitle: "text tone" },
   layout: { title: "LAYOUT", subtitle: "placement" },
-  motion: { title: "MOTION", subtitle: "entrance · loop" },
+  motion: { title: "MOTION", subtitle: "style · speed · rhythm" },
 };
 
 function CreatePage() {
@@ -121,7 +233,7 @@ function CreatePage() {
   const fontSummary = `${spec.font} · ${spec.size}px`;
   const colorSummary = spec.color;
   const layoutSummary = PLACEMENTS.find((placement) => placement.y === spec.y)?.label ?? "custom";
-  const motionSummary = `${spec.entrance} · ${spec.loop}`;
+  const motionSummary = `${spec.entrance} · ${spec.tempo} · ${spec.rhythm}`;
 
   function patch<K extends keyof CanvasSpec>(key: K, value: CanvasSpec[K]) {
     setSpec((s) => ({ ...s, [key]: value }));
@@ -135,6 +247,18 @@ function CreatePage() {
 
   function updatePlacement(x: number, y: number) {
     setSpec((s) => ({ ...s, x, y }));
+    setPlayKey((key) => key + 1);
+  }
+
+  function applyTemplate(template: AnimationTemplate) {
+    setBackgroundMode("gradient");
+    setBg(template.gradient);
+    setSpec((s) => ({
+      ...s,
+      ...template.spec,
+      text: s.text,
+      size: suggestSize(s.text, template.spec.size ?? s.size),
+    }));
     setPlayKey((key) => key + 1);
   }
 
@@ -284,6 +408,25 @@ function CreatePage() {
                   <span>{spec.text.length}/220</span>
                 </div>
               </Panel>
+
+              {spec.text.trim() && (
+                <section className="space-y-2">
+                  <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+                    <Sparkles className="size-3.5" />
+                    animation templates
+                  </div>
+                  <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 scrollbar-hide">
+                    {ANIMATION_TEMPLATES.map((template) => (
+                      <TemplateButton
+                        key={template.id}
+                        template={template}
+                        active={isTemplateActive(template, spec, bg, backgroundMode)}
+                        onClick={() => applyTemplate(template)}
+                      />
+                    ))}
+                  </div>
+                </section>
+              )}
 
               <section className="space-y-2">
                 <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
@@ -552,6 +695,40 @@ function CreatePage() {
                   ))}
                 </div>
               </Panel>
+
+              <Panel icon={<SlidersHorizontal />} title="speed">
+                <div className="flex flex-wrap gap-2">
+                  {TEMPOS.map((tempo) => (
+                    <Pill
+                      key={tempo}
+                      active={spec.tempo === tempo}
+                      onClick={() => {
+                        patch("tempo", tempo);
+                        replayPreview();
+                      }}
+                    >
+                      {tempo}
+                    </Pill>
+                  ))}
+                </div>
+              </Panel>
+
+              <Panel icon={<Sparkles />} title="rhythm">
+                <div className="flex flex-wrap gap-2">
+                  {RHYTHMS.map((rhythm) => (
+                    <Pill
+                      key={rhythm}
+                      active={spec.rhythm === rhythm}
+                      onClick={() => {
+                        patch("rhythm", rhythm);
+                        replayPreview();
+                      }}
+                    >
+                      {rhythm}
+                    </Pill>
+                  ))}
+                </div>
+              </Panel>
               <DoneButton onClick={() => setActivePage("write")} />
             </div>
           )}
@@ -583,6 +760,53 @@ function Panel({
   );
 }
 
+function TemplateButton({
+  template,
+  active,
+  onClick,
+}: {
+  template: AnimationTemplate;
+  active: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`grid w-[132px] shrink-0 grid-cols-[42px_1fr] items-center gap-2 rounded-2xl p-2 text-left ring-1 transition ${
+        active ? "bg-white text-black ring-white" : "bg-white/5 text-white ring-white/10"
+      }`}
+    >
+      <span
+        className="relative aspect-[9/16] h-[72px] overflow-hidden rounded-xl shadow-inner"
+        style={{ background: template.gradient }}
+      >
+        <span className="absolute inset-0 bg-gradient-to-b from-white/15 via-transparent to-black/35" />
+        <span
+          className="absolute left-1/2 top-1/2 w-[70%] -translate-x-1/2 -translate-y-1/2 text-center text-[10px] font-black uppercase leading-[0.85]"
+          style={{
+            color: template.spec.color,
+            fontFamily: template.spec.font,
+            transform: `translate(-50%, -50%) rotate(${template.spec.rotation ?? 0}deg)`,
+          }}
+        >
+          Aa
+        </span>
+      </span>
+      <span className="min-w-0">
+        <span className="block truncate text-xs font-black">{template.label}</span>
+        <span
+          className={`mt-1 block truncate font-mono text-[9px] uppercase tracking-[0.14em] ${
+            active ? "text-black/55" : "text-muted-foreground"
+          }`}
+        >
+          {template.mood}
+        </span>
+      </span>
+    </button>
+  );
+}
+
 function StudioLink({
   icon,
   label,
@@ -611,6 +835,23 @@ function StudioLink({
       </span>
       <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
     </button>
+  );
+}
+
+function isTemplateActive(
+  template: AnimationTemplate,
+  spec: CanvasSpec,
+  bg: string,
+  backgroundMode: BackgroundMode,
+) {
+  return (
+    backgroundMode === "gradient" &&
+    bg === template.gradient &&
+    spec.font === template.spec.font &&
+    spec.entrance === template.spec.entrance &&
+    spec.loop === template.spec.loop &&
+    spec.tempo === template.spec.tempo &&
+    spec.rhythm === template.spec.rhythm
   );
 }
 

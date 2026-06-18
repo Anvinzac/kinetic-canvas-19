@@ -9,6 +9,8 @@ const LOCAL_POSTS_KEY = "kinetic.demo.posts";
 const LOCAL_COMMENTS_KEY = "kinetic.demo.comments";
 const LIKED_POSTS_KEY = "kinetic.demo.likedPosts";
 const FOLLOWING_KEY = "kinetic.demo.following";
+const MOCK_FEED_LIMIT = 60;
+const COLD_START_FOLLOWING_THRESHOLD = 3;
 
 type PostType = "text" | "image" | "video" | "slideshow";
 
@@ -479,14 +481,21 @@ export function resetMockRuntimeData() {
 }
 
 export function getMockFeed(): MockFeedData {
-  const posts = getAllMockPosts().slice(0, 60);
+  const likes = getMockLikes();
+  const comments = getMockComments();
+  const posts = rankMockFeedPosts({
+    posts: getAllMockPosts(),
+    likes,
+    comments,
+    followingIds: readFollowingIds(),
+  }).slice(0, MOCK_FEED_LIMIT);
   const postIds = new Set(posts.map((post) => post.id));
 
   return {
     posts,
     profiles: getAllMockProfiles(),
-    likes: getMockLikes().filter((likeItem) => postIds.has(likeItem.post_id)),
-    comments: getMockComments().filter((commentItem) => postIds.has(commentItem.post_id)),
+    likes: likes.filter((likeItem) => postIds.has(likeItem.post_id)),
+    comments: comments.filter((commentItem) => postIds.has(commentItem.post_id)),
   };
 }
 
@@ -702,6 +711,8 @@ function canvas(overrides: Partial<CanvasSpec>) {
     y: 50,
     entrance: "scale",
     loop: "pulse",
+    tempo: "steady",
+    rhythm: "stagger",
     rotation: 0,
     ...overrides,
   });
@@ -761,6 +772,48 @@ function getMockFollows() {
     ...MOCK_FOLLOWS.filter((followItem) => followItem.follower_id !== MOCK_ME_ID),
     ...demoFollows,
   ];
+}
+
+function rankMockFeedPosts({
+  posts,
+  likes,
+  comments,
+  followingIds,
+}: {
+  posts: MockPost[];
+  likes: MockLike[];
+  comments: MockComment[];
+  followingIds: string[];
+}) {
+  const following = new Set(followingIds);
+  const engagement = buildEngagementByPost(posts, likes, comments);
+  const isColdStart = followingIds.length < COLD_START_FOLLOWING_THRESHOLD;
+
+  return [...posts].sort((a, b) => {
+    const scoreA = getMockFeedRankScore(a, engagement[a.id], following, isColdStart);
+    const scoreB = getMockFeedRankScore(b, engagement[b.id], following, isColdStart);
+    if (scoreA !== scoreB) return scoreB - scoreA;
+    return b.created_at.localeCompare(a.created_at);
+  });
+}
+
+function getMockFeedRankScore(
+  post: MockPost,
+  engagement: { likes: number; comments: number } | undefined,
+  following: Set<string>,
+  isColdStart: boolean,
+) {
+  const likes = engagement?.likes ?? 0;
+  const comments = engagement?.comments ?? 0;
+  const popularity = likes * 2 + comments * 3;
+  const ageHours = Math.max(1, (Date.now() - new Date(post.created_at).getTime()) / 3_600_000);
+  const recency = 24 / Math.sqrt(ageHours);
+
+  if (isColdStart) return popularity * 100 + recency;
+
+  const relationshipBoost =
+    following.has(post.author_id) || post.author_id === MOCK_ME_ID ? 10_000 : 0;
+  return relationshipBoost + popularity * 25 + recency;
 }
 
 function readLikedPostIds() {

@@ -18,7 +18,7 @@ import {
   X,
 } from "lucide-react";
 import { Link } from "@tanstack/react-router";
-import { COMMENT_CHIPS, parseCanvas, type CanvasSpec } from "@/lib/canvas";
+import { COMMENT_CHIPS, parseCanvas, type CanvasSpec, type Rhythm, type Tempo } from "@/lib/canvas";
 
 type Profile = { id: string; username: string; display_name: string; avatar_url: string | null };
 type Post = {
@@ -45,11 +45,13 @@ const MAX_COMMENT_WORDS = 36;
 const MAX_COMMENT_CHARS = 240;
 const COMMENT_STORY_WORDS_PER_PAGE = 8;
 
-const loopAnim: Record<string, string | undefined> = {
-  pulse: "kinetic-pulse 2.4s ease-in-out infinite",
-  float: "kinetic-float 3.2s ease-in-out infinite",
-  shake: "kinetic-shake 0.4s ease-in-out infinite",
-  none: undefined,
+const tempoConfig: Record<
+  Tempo,
+  { pageMultiplier: number; wordDelay: number; wordDuration: number; loopSeconds: number }
+> = {
+  slow: { pageMultiplier: 1.22, wordDelay: 0.25, wordDuration: 0.72, loopSeconds: 3.4 },
+  steady: { pageMultiplier: 1, wordDelay: 0.18, wordDuration: 0.5, loopSeconds: 2.4 },
+  snappy: { pageMultiplier: 0.78, wordDelay: 0.1, wordDuration: 0.36, loopSeconds: 1.45 },
 };
 
 export function PostCard({
@@ -165,17 +167,29 @@ export function PostCard({
   useEffect(() => {
     if (isPaused) return;
     if (textPages.length < 2) return;
-    const timer = window.setTimeout(() => {
-      // Rule: slideshow media advances only with text pages, never mid-sentence.
-      const nextPage = (textPage + 1) % textPages.length;
-      setTextPage(nextPage);
-      if (post.post_type === "slideshow" && media.length > 1) {
-        setSlide(nextPage % media.length);
-      }
-      setPlayKey((key) => key + 1);
-    }, getPageDuration(currentText));
+    const timer = window.setTimeout(
+      () => {
+        // Rule: slideshow media advances only with text pages, never mid-sentence.
+        const nextPage = (textPage + 1) % textPages.length;
+        setTextPage(nextPage);
+        if (post.post_type === "slideshow" && media.length > 1) {
+          setSlide(nextPage % media.length);
+        }
+        setPlayKey((key) => key + 1);
+      },
+      getPageDuration(currentText, spec.tempo),
+    );
     return () => window.clearTimeout(timer);
-  }, [currentText, isPaused, media.length, post.id, post.post_type, textPage, textPages.length]);
+  }, [
+    currentText,
+    isPaused,
+    media.length,
+    post.id,
+    post.post_type,
+    spec.tempo,
+    textPage,
+    textPages.length,
+  ]);
 
   useEffect(() => {
     if (isPaused || storyOpen) {
@@ -929,13 +943,26 @@ function getPageTextSize(baseSize: number, text: string) {
   return baseSize;
 }
 
-function getPageDuration(text: string) {
+function getPageDuration(text: string, tempo: Tempo) {
   const wordCount = getWords(text).length;
-  return Math.max(3200, Math.min(5200, 1900 + wordCount * 430));
+  const base = Math.max(3200, Math.min(5200, 1900 + wordCount * 430));
+  return base * tempoConfig[tempo].pageMultiplier;
 }
 
 function getCommentFlightDuration(label: string) {
   return Math.max(5600, Math.min(8400, 4300 + label.length * 55));
+}
+
+function getLoopAnimation(loop: CanvasSpec["loop"], tempo: Tempo) {
+  if (loop === "none") return undefined;
+  return `kinetic-${loop} ${tempoConfig[tempo].loopSeconds}s ease-in-out infinite`;
+}
+
+function getWordDelay(index: number, tempo: Tempo, rhythm: Rhythm) {
+  const base = tempoConfig[tempo].wordDelay;
+  if (rhythm === "smooth") return index * base * 0.58;
+  if (rhythm === "burst") return Math.min(index * base * 0.42, 0.38);
+  return index * base;
 }
 
 function getFloatingCommentLabel(label: string) {
@@ -998,6 +1025,7 @@ function WordSequenceText({
 }) {
   const words = getWords(spec.text);
   const emphasized = getEmphasizedWordIndexes(words);
+  const tempo = tempoConfig[spec.tempo];
 
   return (
     <div
@@ -1026,7 +1054,7 @@ function WordSequenceText({
           textAlign: "center",
           textShadow: "0 4px 40px rgba(0,0,0,0.45)",
           transform: `rotate(${spec.rotation}deg)`,
-          animation: loopAnim[spec.loop],
+          animation: getLoopAnimation(spec.loop, spec.tempo),
           animationPlayState: paused ? "paused" : "running",
         }}
       >
@@ -1050,8 +1078,8 @@ function WordSequenceText({
                 },
               }}
               transition={{
-                delay: index * 0.18,
-                duration: important ? 0.62 : 0.5,
+                delay: getWordDelay(index, spec.tempo, spec.rhythm),
+                duration: important ? tempo.wordDuration * 1.22 : tempo.wordDuration,
                 ease: [0.22, 1, 0.36, 1],
               }}
               className={important ? "relative inline-flex" : "inline-flex"}

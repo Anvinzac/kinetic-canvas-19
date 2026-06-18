@@ -1,11 +1,10 @@
 import { motion } from "framer-motion";
-import type { CanvasSpec } from "@/lib/canvas";
+import type { CanvasSpec, Rhythm, Tempo } from "@/lib/canvas";
 
-const loopAnim: Record<string, string | undefined> = {
-  pulse: "kinetic-pulse 2.4s ease-in-out infinite",
-  float: "kinetic-float 3.2s ease-in-out infinite",
-  shake: "kinetic-shake 0.4s ease-in-out infinite",
-  none: undefined,
+const tempoConfig: Record<Tempo, { duration: number; charDelay: number; loopSeconds: number }> = {
+  slow: { duration: 1.05, charDelay: 0.075, loopSeconds: 3.4 },
+  steady: { duration: 0.8, charDelay: 0.05, loopSeconds: 2.4 },
+  snappy: { duration: 0.48, charDelay: 0.028, loopSeconds: 1.45 },
 };
 
 function entranceVariants(entrance: CanvasSpec["entrance"]) {
@@ -38,6 +37,7 @@ export function KineticText({
   const v = entranceVariants(spec.entrance);
   const isSplit = spec.entrance === "split";
   const chars = spec.text.split("");
+  const tempo = tempoConfig[spec.tempo];
 
   return (
     <div
@@ -53,7 +53,7 @@ export function KineticText({
         key={playKey}
         initial={v.initial}
         animate={v.animate}
-        transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+        transition={{ duration: tempo.duration, ease: [0.22, 1, 0.36, 1] }}
         style={{
           fontFamily: spec.font,
           fontSize: spec.size,
@@ -64,7 +64,7 @@ export function KineticText({
           lineHeight: 0.95,
           textAlign: "center",
           textShadow: "0 4px 40px rgba(0,0,0,0.45)",
-          animation: loopAnim[spec.loop],
+          animation: getLoopAnimation(spec.loop, spec.tempo),
           animationPlayState: paused ? "paused" : "running",
           whiteSpace: "pre-wrap",
           wordBreak: "break-word",
@@ -76,7 +76,10 @@ export function KineticText({
                 key={i}
                 initial={{ opacity: 0, y: 40 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.05, duration: 0.5 }}
+                transition={{
+                  delay: getRhythmDelay(i, spec.tempo, spec.rhythm),
+                  duration: Math.max(0.28, tempo.duration * 0.62),
+                }}
                 style={{
                   display: "inline-block",
                   animationPlayState: paused ? "paused" : "running",
@@ -89,4 +92,16 @@ export function KineticText({
       </motion.div>
     </div>
   );
+}
+
+function getLoopAnimation(loop: CanvasSpec["loop"], tempo: Tempo) {
+  if (loop === "none") return undefined;
+  return `kinetic-${loop} ${tempoConfig[tempo].loopSeconds}s ease-in-out infinite`;
+}
+
+function getRhythmDelay(index: number, tempo: Tempo, rhythm: Rhythm) {
+  const base = tempoConfig[tempo].charDelay;
+  if (rhythm === "smooth") return index * base * 0.65;
+  if (rhythm === "burst") return Math.min(index * base * 0.45, 0.32);
+  return index * base;
 }

@@ -3,19 +3,23 @@
 
 export type Entrance = "fade" | "slide" | "scale" | "blur" | "split";
 export type Loop = "pulse" | "float" | "shake" | "none";
+export type Tempo = "slow" | "steady" | "snappy";
+export type Rhythm = "smooth" | "stagger" | "burst";
 
 export interface CanvasSpec {
   text: string;
-  font: string;          // "Inter" | "Space Grotesk" | "Bebas Neue" | "Playfair Display" | "JetBrains Mono"
-  size: number;          // px
-  color: string;         // hex/oklch
-  weight: number;        // 100-900
+  font: string; // "Inter" | "Space Grotesk" | "Bebas Neue" | "Playfair Display" | "JetBrains Mono"
+  size: number; // px
+  color: string; // hex/oklch
+  weight: number; // 100-900
   letterSpacing: number; // em
-  x: number;             // 0-100 (% of container)
-  y: number;             // 0-100
+  x: number; // 0-100 (% of container)
+  y: number; // 0-100
   entrance: Entrance;
   loop: Loop;
-  rotation: number;      // degrees
+  tempo: Tempo;
+  rhythm: Rhythm;
+  rotation: number; // degrees
 }
 
 export const DEFAULT_CANVAS: CanvasSpec = {
@@ -29,14 +33,32 @@ export const DEFAULT_CANVAS: CanvasSpec = {
   y: 50,
   entrance: "scale",
   loop: "pulse",
+  tempo: "steady",
+  rhythm: "stagger",
   rotation: 0,
 };
 
-export const FONTS = ["Inter", "Space Grotesk", "Bebas Neue", "Playfair Display", "JetBrains Mono"] as const;
+export const FONTS = [
+  "Inter",
+  "Space Grotesk",
+  "Bebas Neue",
+  "Playfair Display",
+  "JetBrains Mono",
+] as const;
 export const ENTRANCES: Entrance[] = ["fade", "slide", "scale", "blur", "split"];
 export const LOOPS: Loop[] = ["pulse", "float", "shake", "none"];
+export const TEMPOS: Tempo[] = ["slow", "steady", "snappy"];
+export const RHYTHMS: Rhythm[] = ["smooth", "stagger", "burst"];
 
-export const PALETTE = ["#ffffff", "#FF006E", "#06FFA5", "#FFBE0B", "#3A86FF", "#8338EC", "#000000"];
+export const PALETTE = [
+  "#ffffff",
+  "#FF006E",
+  "#06FFA5",
+  "#FFBE0B",
+  "#3A86FF",
+  "#8338EC",
+  "#000000",
+];
 
 export const GRADIENTS = [
   "linear-gradient(135deg,#FF006E,#8338EC)",
