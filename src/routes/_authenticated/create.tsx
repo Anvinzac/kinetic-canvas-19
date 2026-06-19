@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import {
@@ -42,7 +42,6 @@ export const Route = createFileRoute("/_authenticated/create")({
 });
 
 type BackgroundMode = "gradient" | "photo" | "upload";
-type StatusKind = "kinetic" | "article";
 type StudioPage = "write" | "background" | "font" | "color" | "layout" | "motion";
 type AnimationTemplate = {
   id: string;
@@ -219,22 +218,21 @@ function CreatePage() {
   const [backgroundMode, setBackgroundMode] = useState<BackgroundMode>("gradient");
   const [selectedPhoto, setSelectedPhoto] = useState(PRELOADED_PHOTOS[0].url);
   const [uploadedPhoto, setUploadedPhoto] = useState<string | null>(null);
-  const [statusKind, setStatusKind] = useState<StatusKind>("kinetic");
   const [articleUrl, setArticleUrl] = useState("");
+  const [articleOpen, setArticleOpen] = useState(false);
   const [activePage, setActivePage] = useState<StudioPage>("write");
   const [playKey, setPlayKey] = useState(0);
   const [posting, setPosting] = useState(false);
   const [advancedOpen, setAdvancedOpen] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const activePhoto =
-    statusKind === "article"
-      ? null
-      : backgroundMode === "upload"
-        ? uploadedPhoto
-        : backgroundMode === "photo"
-          ? selectedPhoto
-          : null;
-  const normalizedArticleUrl = normalizeArticleUrl(articleUrl);
+    backgroundMode === "upload"
+      ? uploadedPhoto
+      : backgroundMode === "photo"
+        ? selectedPhoto
+        : null;
+  const normalizedArticleUrl = articleOpen ? normalizeArticleUrl(articleUrl) : "";
   const articlePreview = normalizedArticleUrl
     ? {
         url: normalizedArticleUrl,
@@ -242,11 +240,12 @@ function CreatePage() {
         title: getArticleTitle(spec.text),
       }
     : null;
+  const articleInvalid =
+    articleOpen && articleUrl.trim().length > 0 && !articlePreview;
   const publishSpec: CanvasSpec = articlePreview ? { ...spec, link: articlePreview } : spec;
   const postType = articlePreview ? "link" : activePhoto ? "image" : "text";
   const mediaUrls = articlePreview ? [articlePreview.url] : activePhoto ? [activePhoto] : [];
-  const canPost =
-    spec.text.trim().length > 0 && !posting && (statusKind !== "article" || !!articlePreview);
+  const canPost = spec.text.trim().length > 0 && !posting && !articleInvalid;
   const pageTitle = PAGE_TITLES[activePage];
   const backgroundSummary =
     backgroundMode === "gradient"
@@ -259,6 +258,13 @@ function CreatePage() {
   const layoutSummary = PLACEMENTS.find((placement) => placement.y === spec.y)?.label ?? "custom";
   const motionSummary = `${spec.entrance} · ${spec.tempo} · ${spec.rhythm}`;
   const previewPaneHeight = "min(70dvh, 576px, calc((100vw - 152px) * 16 / 9))";
+
+  useEffect(() => {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = "0px";
+    el.style.height = `${Math.min(Math.max(el.scrollHeight, 56), 320)}px`;
+  }, [spec.text]);
 
   function patch<K extends keyof CanvasSpec>(key: K, value: CanvasSpec[K]) {
     setSpec((s) => ({ ...s, [key]: value }));
@@ -301,9 +307,7 @@ function CreatePage() {
 
   async function publish() {
     if (!spec.text.trim()) return toast.error("type something first");
-    if (statusKind === "article" && !articlePreview) {
-      return toast.error("add a valid article link");
-    }
+    if (articleInvalid) return toast.error("that article link looks off");
     setPosting(true);
     try {
       if (demoMode) {
@@ -413,24 +417,24 @@ function CreatePage() {
                   </div>
                 </div>
               )}
-              {!articlePreview && (
-                <span className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-black/35 px-3 py-1 font-mono text-[9px] uppercase tracking-[0.16em] text-white/65 backdrop-blur">
-                  tap to replay
-                </span>
-              )}
+              <span className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-black/35 px-3 py-1 font-mono text-[9px] uppercase tracking-[0.16em] text-white/65 backdrop-blur">
+                tap to replay
+              </span>
               {articlePreview && (
-                <ArticleClip
-                  preview={articlePreview}
-                  className="absolute bottom-4 left-4 right-4 z-10"
-                />
+                <span className="absolute left-3 top-3 z-10 grid size-9 place-items-center rounded-full bg-white text-black shadow-[0_10px_28px_rgba(0,0,0,0.4)]">
+                  <Link2 className="size-4" />
+                </span>
               )}
             </button>
             <div className="flex w-[124px] shrink-0 flex-col" style={{ height: previewPaneHeight }}>
-              <div className="mb-2 flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-[0.16em] text-muted-foreground">
-                <Sparkles className="size-3.5" />
-                templates
+              <div className="mb-2 flex items-center justify-between px-0.5 font-mono text-[9px] uppercase tracking-[0.16em] text-white/55">
+                <span className="flex items-center gap-1.5">
+                  <Sparkles className="size-3" />
+                  templates
+                </span>
+                <span className="text-white/35">{ANIMATION_TEMPLATES.length}</span>
               </div>
-              <div className="min-h-0 flex-1 space-y-1.5 overflow-y-auto pr-1 scrollbar-hide">
+              <div className="-mr-1 min-h-0 flex-1 space-y-1.5 overflow-y-auto pr-1 scrollbar-hide">
                 {ANIMATION_TEMPLATES.map((template) => (
                   <TemplateButton
                     key={template.id}
@@ -448,62 +452,14 @@ function CreatePage() {
           {activePage === "write" && (
             <div className="space-y-4">
               <Panel icon={<Type />} title="sentence">
-                <div className="mb-3 grid grid-cols-2 gap-1 rounded-2xl bg-black/25 p-1">
-                  <button
-                    type="button"
-                    onClick={() => setStatusKind("kinetic")}
-                    className={`flex items-center justify-center gap-1.5 rounded-xl px-2 py-2 text-xs font-bold transition ${
-                      statusKind === "kinetic"
-                        ? "bg-white text-black"
-                        : "text-muted-foreground hover:text-white"
-                    }`}
-                  >
-                    <Type className="size-3.5" />
-                    status
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setStatusKind("article");
-                      setBackgroundMode("gradient");
-                    }}
-                    className={`flex items-center justify-center gap-1.5 rounded-xl px-2 py-2 text-xs font-bold transition ${
-                      statusKind === "article"
-                        ? "bg-white text-black"
-                        : "text-muted-foreground hover:text-white"
-                    }`}
-                  >
-                    <Newspaper className="size-3.5" />
-                    article
-                  </button>
-                </div>
                 <textarea
+                  ref={textareaRef}
                   value={spec.text}
                   onChange={(event) => updateText(event.target.value)}
-                  rows={5}
+                  rows={2}
                   placeholder="write one or two sentences..."
-                  className="w-full resize-none rounded-2xl bg-white/7 px-4 py-3 text-base leading-relaxed text-white outline-none ring-1 ring-white/10 placeholder:text-white/35 focus:ring-primary/70"
+                  className="block w-full resize-none overflow-y-auto rounded-2xl bg-white/7 px-4 py-3 text-base leading-relaxed text-white outline-none ring-1 ring-white/10 placeholder:text-white/35 focus:ring-primary/70"
                 />
-                {statusKind === "article" && (
-                  <div className="mt-3">
-                    <label className="mb-1.5 flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-                      <Link2 className="size-3.5" />
-                      target article
-                    </label>
-                    <input
-                      value={articleUrl}
-                      onChange={(event) => setArticleUrl(event.target.value)}
-                      placeholder="https://example.com/article"
-                      inputMode="url"
-                      className="w-full rounded-2xl bg-white/7 px-4 py-3 text-sm text-white outline-none ring-1 ring-white/10 placeholder:text-white/35 focus:ring-primary/70"
-                    />
-                    {articlePreview && (
-                      <div className="mt-2">
-                        <ArticleClip preview={articlePreview} />
-                      </div>
-                    )}
-                  </div>
-                )}
                 <div className="mt-2 flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
                   <button
                     type="button"
@@ -554,6 +510,58 @@ function CreatePage() {
                     />
                   </div>
                 )}
+
+                <div className="mt-3 border-t border-white/10 pt-3">
+                  <button
+                    type="button"
+                    onClick={() => setArticleOpen((open) => !open)}
+                    aria-expanded={articleOpen}
+                    className={`flex w-full items-center gap-2.5 rounded-2xl px-2.5 py-2 text-left transition ${
+                      articleOpen || articlePreview
+                        ? "bg-white/[0.07] ring-1 ring-white/15"
+                        : "bg-transparent hover:bg-white/[0.04]"
+                    }`}
+                  >
+                    <span className="grid size-7 shrink-0 place-items-center rounded-lg bg-white/10 text-white/80">
+                      <Link2 className="size-3.5" />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-xs font-bold text-white">
+                        {articlePreview ? "article link attached" : "attach article link"}
+                      </span>
+                      <span className="block truncate font-mono text-[9px] uppercase tracking-[0.16em] text-muted-foreground">
+                        {articlePreview
+                          ? articlePreview.host
+                          : "optional · turns this into a link post"}
+                      </span>
+                    </span>
+                    <ChevronRight
+                      className={`size-4 shrink-0 text-muted-foreground transition ${
+                        articleOpen ? "rotate-90" : ""
+                      }`}
+                    />
+                  </button>
+                  {articleOpen && (
+                    <div className="mt-2 space-y-2">
+                      <input
+                        value={articleUrl}
+                        onChange={(event) => setArticleUrl(event.target.value)}
+                        placeholder="https://example.com/article"
+                        inputMode="url"
+                        autoComplete="off"
+                        className={`w-full rounded-2xl bg-white/7 px-4 py-3 text-sm text-white outline-none ring-1 placeholder:text-white/35 focus:ring-primary/70 ${
+                          articleInvalid ? "ring-rose-400/70" : "ring-white/10"
+                        }`}
+                      />
+                      {articleInvalid && (
+                        <p className="px-1 font-mono text-[10px] uppercase tracking-[0.16em] text-rose-300/85">
+                          link doesn't look valid yet
+                        </p>
+                      )}
+                      {articlePreview && <ArticleClip preview={articlePreview} />}
+                    </div>
+                  )}
+                </div>
               </Panel>
             </div>
           )}
@@ -863,35 +871,42 @@ function TemplateButton({
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      className={`grid w-full grid-cols-[28px_minmax(0,1fr)] items-center gap-1.5 rounded-xl p-1.5 text-left ring-1 transition ${
-        active ? "bg-white text-black ring-white" : "bg-white/5 text-white ring-white/10"
+      className={`group relative grid w-full grid-cols-[40px_minmax(0,1fr)] items-center gap-2 overflow-hidden rounded-xl p-1.5 text-left transition ${
+        active
+          ? "bg-white/[0.10] ring-2 ring-white shadow-[0_4px_14px_-8px_rgba(255,255,255,0.5)]"
+          : "bg-white/[0.04] ring-1 ring-white/10 hover:bg-white/[0.07] hover:ring-white/25"
       }`}
     >
       <span
-        className="relative aspect-[9/16] h-12 overflow-hidden rounded-lg shadow-inner"
+        className="relative block aspect-square w-full overflow-hidden rounded-lg"
         style={{ background: template.gradient }}
       >
-        <span className="absolute inset-0 bg-gradient-to-b from-white/15 via-transparent to-black/35" />
+        <span className="pointer-events-none absolute inset-0 bg-[radial-gradient(120%_60%_at_25%_0%,rgba(255,255,255,0.28),transparent_60%)]" />
         <span
-          className="absolute left-1/2 top-1/2 w-[70%] -translate-x-1/2 -translate-y-1/2 text-center text-[8px] font-black uppercase leading-[0.85]"
+          className="absolute left-1/2 top-1/2 leading-none"
           style={{
             color: template.spec.color,
             fontFamily: template.spec.font,
+            fontWeight: template.spec.weight ?? 900,
+            letterSpacing: `${template.spec.letterSpacing ?? -0.02}em`,
+            fontSize: 15,
             transform: `translate(-50%, -50%) rotate(${template.spec.rotation ?? 0}deg)`,
+            textShadow: "0 1px 6px rgba(0,0,0,0.32)",
           }}
         >
           Aa
         </span>
+        {active && (
+          <span className="absolute -right-0.5 -top-0.5 grid size-3.5 place-items-center rounded-full bg-white text-black ring-1 ring-black/40">
+            <Check className="size-2" strokeWidth={4} />
+          </span>
+        )}
       </span>
       <span className="min-w-0">
-        <span className="block truncate text-[11px] font-black leading-tight">
+        <span className="line-clamp-2 block text-[10.5px] font-black leading-[1.1] text-white">
           {template.label}
         </span>
-        <span
-          className={`mt-0.5 block truncate font-mono text-[8px] uppercase tracking-[0.1em] ${
-            active ? "text-black/55" : "text-muted-foreground"
-          }`}
-        >
+        <span className="mt-0.5 block truncate font-mono text-[7.5px] uppercase tracking-[0.14em] text-white/55">
           {template.mood}
         </span>
       </span>

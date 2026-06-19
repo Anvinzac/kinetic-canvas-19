@@ -1,5 +1,6 @@
 import {
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -9,15 +10,15 @@ import {
 } from "react";
 import { AnimatePresence, motion, type PanInfo } from "framer-motion";
 import {
+  ArrowUpRight,
   Bell,
-  ExternalLink,
   FastForward,
   Heart,
   Home,
   Info,
+  Link2,
   MessageCircle,
   MoreHorizontal,
-  Newspaper,
   Play,
   Plus,
   RotateCcw,
@@ -36,6 +37,11 @@ import {
   type Rhythm,
   type Tempo,
 } from "@/lib/canvas";
+import {
+  getTextPageWordLimit,
+  getVietnameseWordLines,
+  isLikelyVietnameseText,
+} from "@/lib/text-language";
 
 type Profile = { id: string; username: string; display_name: string; avatar_url: string | null };
 type Post = {
@@ -63,7 +69,45 @@ type CommentStory = {
   user_id: string;
 };
 
-const MAX_WORDS_PER_TEXT_PAGE = 7;
+// Keep kinetic text clear of the canvas edge without stealing its scale.
+const TEXT_SAFE_MAX_WIDTH = "min(92%, calc(100% - 2rem))";
+const MIN_TEXT_FIT_SCALE = 0.08;
+const useIsomorphicLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
+
+// Single speech-bubble outline for comment-story stack thumbnails. Drawn in a
+// 90x170 viewBox; the left 12 units form the curved tail so it matches the
+// full-screen comment player language.
+const BUBBLE_PATH_D =
+  "M 26 0 H 74 C 83 0 90 7 90 16 V 154 C 90 163 83 170 74 170 H 26 C 17 170 12 163 12 154 V 58 C 8 50 3 38 1 31 C 0 26 4 24 7 29 C 10 34 12 39 12 45 V 16 C 12 7 17 0 26 0 Z";
+const BUBBLE_MASK_URL = `url("data:image/svg+xml,${encodeURIComponent(
+  `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 90 170' preserveAspectRatio='none'><path d='${BUBBLE_PATH_D}' fill='black'/></svg>`,
+)}")`;
+const BUBBLE_MASK_STYLE = {
+  WebkitMaskImage: BUBBLE_MASK_URL,
+  maskImage: BUBBLE_MASK_URL,
+  WebkitMaskSize: "100% 100%",
+  maskSize: "100% 100%",
+  WebkitMaskRepeat: "no-repeat",
+  maskRepeat: "no-repeat",
+} as const;
+
+// Full comment player shape. Body is the existing 9:16 card; the visible tail
+// keeps the previous -22px left offset and 18%-34% vertical span, but the whole
+// bubble is now a single masked silhouette with a rounded upward arc.
+const STORY_PLAYER_BUBBLE_PATH_D =
+  "M 52 0 H 352 C 368 0 382 14 382 30 V 610 C 382 626 368 640 352 640 H 52 C 36 640 22 626 22 610 V 218 C 16 199 8 158 2 126 C 0 116 4 111 10 119 C 17 128 21 143 22 156 V 30 C 22 14 36 0 52 0 Z";
+const STORY_PLAYER_BUBBLE_MASK_URL = `url("data:image/svg+xml,${encodeURIComponent(
+  `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 382 640' preserveAspectRatio='none'><path d='${STORY_PLAYER_BUBBLE_PATH_D}' fill='black'/></svg>`,
+)}")`;
+const STORY_PLAYER_BUBBLE_MASK_STYLE = {
+  WebkitMaskImage: STORY_PLAYER_BUBBLE_MASK_URL,
+  maskImage: STORY_PLAYER_BUBBLE_MASK_URL,
+  WebkitMaskSize: "100% 100%",
+  maskSize: "100% 100%",
+  WebkitMaskRepeat: "no-repeat",
+  maskRepeat: "no-repeat",
+} as const;
+
 const FLOATING_COMMENT_MAX_WORDS = 3;
 const MAX_COMMENT_WORDS = 36;
 const MAX_COMMENT_CHARS = 240;
@@ -146,6 +190,7 @@ export function PostCard({
   const [storyFastMode, setStoryFastMode] = useState(false);
   const [actionMenuOpen, setActionMenuOpen] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
+  const [pageRevealed, setPageRevealed] = useState(false);
   const [canvasWidth, setCanvasWidth] = useState(390);
   const flyId = useRef(0);
   const localCommentId = useRef(0);
@@ -195,6 +240,7 @@ export function PostCard({
     setStoryPage(0);
     setStoryFastMode(false);
     setActionMenuOpen(false);
+    setPageRevealed(false);
     setLocalComments([]);
   }, [post.id, spec.text]);
 
@@ -234,12 +280,14 @@ export function PostCard({
 
   useEffect(() => {
     if (isPaused) return;
+    if (pageRevealed) return;
     if (textPages.length < 2) return;
     const timer = window.setTimeout(
       () => {
         // Rule: slideshow media advances only with text pages, never mid-sentence.
         const nextPage = (textPage + 1) % textPages.length;
         setTextPage(nextPage);
+        setPageRevealed(false);
         if (post.post_type === "slideshow" && media.length > 1) {
           setSlide(nextPage % media.length);
         }
@@ -252,6 +300,7 @@ export function PostCard({
     currentText,
     isPaused,
     media.length,
+    pageRevealed,
     post.id,
     post.post_type,
     spec.tempo,
@@ -350,13 +399,45 @@ export function PostCard({
     video.play().catch(() => undefined);
   }, [isPaused, post.post_type]);
 
-  function pauseCanvas() {
+  function showNextTextPage(revealed: boolean) {
+    if (textPages.length < 2) {
+      setPageRevealed(revealed);
+      setPlayKey((key) => key + 1);
+      return;
+    }
+
+    const nextPage = (textPage + 1) % textPages.length;
+    setTextPage(nextPage);
+    setPageRevealed(revealed);
+    if (post.post_type === "slideshow" && media.length > 1) {
+      setSlide(nextPage % media.length);
+    }
+    setPlayKey((key) => key + 1);
+  }
+
+  function handleCanvasTap() {
     setShowChips(false);
-    setIsPaused(true);
+    setActionMenuOpen(false);
+    setActiveComment(null);
+
+    if (isPaused) {
+      setIsPaused(false);
+      setPageRevealed(false);
+      setPlayKey((key) => key + 1);
+      return;
+    }
+
+    if (!pageRevealed) {
+      setPageRevealed(true);
+      return;
+    }
+
+    showNextTextPage(true);
   }
 
   function resetCurrentPage() {
     setIsPaused(false);
+    setPageRevealed(false);
     setPlayKey((key) => key + 1);
     setActiveComment(null);
   }
@@ -365,6 +446,7 @@ export function PostCard({
     setIsPaused(false);
     setTextPage(0);
     setSlide(0);
+    setPageRevealed(false);
     setPlayKey((key) => key + 1);
     setActiveComment(null);
   }
@@ -380,6 +462,7 @@ export function PostCard({
   function closeCommentStories() {
     setStoryOpen(false);
     setIsPaused(false);
+    setPageRevealed(false);
   }
 
   function skipCommentStory(direction: 1 | -1) {
@@ -402,6 +485,7 @@ export function PostCard({
   function selectTextPage(page: number) {
     setIsPaused(false);
     setTextPage(page);
+    setPageRevealed(false);
     if (post.post_type === "slideshow" && media.length > 1) {
       setSlide(page % media.length);
     }
@@ -456,12 +540,11 @@ export function PostCard({
     <section className="relative flex h-[100dvh] w-full snap-start items-center justify-center overflow-hidden bg-background">
       <article
         ref={canvasRef}
-        className="relative aspect-[9/16] overflow-hidden bg-black shadow-[0_24px_90px_rgba(0,0,0,0.45)] sm:rounded-[28px] sm:ring-1 sm:ring-white/10"
+        className="relative h-full w-full overflow-hidden bg-black sm:aspect-[9/16] sm:h-[min(90dvh,764px)] sm:w-auto sm:rounded-[28px] sm:shadow-[0_24px_90px_rgba(0,0,0,0.45)] sm:ring-1 sm:ring-white/10"
         style={{
-          height: "min(100dvh, 764px, 177.777vw)",
           background: post.bg_gradient ?? "#000",
         }}
-        onClick={pauseCanvas}
+        onClick={handleCanvasTap}
       >
         {post.post_type === "image" && media[0] && (
           <img src={media[0]} alt="" className="absolute inset-0 size-full object-cover" />
@@ -505,20 +588,19 @@ export function PostCard({
             transition={{ duration: 0.45 }}
             className="absolute inset-0"
           >
-            <WordSequenceText spec={displaySpec} playKey={playKey} paused={isPaused} />
+            <WordSequenceText
+              spec={displaySpec}
+              playKey={playKey}
+              paused={isPaused}
+              revealed={pageRevealed}
+              canvasWidth={canvasWidth}
+            />
           </motion.div>
         </AnimatePresence>
 
-        {post.post_type === "link" && articlePreview && (
-          <ArticleClipLink
-            preview={articlePreview}
-            className="absolute bottom-36 left-5 right-24 z-20"
-          />
-        )}
-
         {textPages.length > 1 && (
           <div
-            className="absolute left-1/2 top-4 z-20 flex -translate-x-1/2 gap-1.5"
+            className="absolute bottom-24 left-1/2 z-20 flex -translate-x-1/2 gap-1.5 rounded-full bg-black/25 px-2 py-1 backdrop-blur"
             onClick={(e) => e.stopPropagation()}
           >
             {textPages.map((_, page) => (
@@ -539,15 +621,15 @@ export function PostCard({
           <Link
             to="/u/$username"
             params={{ username: author.username }}
-            className="absolute left-4 top-12 z-20 flex items-center gap-2"
+            className="absolute left-4 top-4 z-20 flex h-10 items-center gap-2"
             onClick={(e) => e.stopPropagation()}
           >
             <img
               src={author.avatar_url ?? ""}
               alt=""
-              className="size-9 rounded-full border-2 border-white/80"
+              className="size-10 rounded-full border-2 border-white/80"
             />
-            <div>
+            <div className="leading-tight">
               <p className="text-sm font-bold text-white drop-shadow">@{author.username}</p>
               <p className="text-[10px] uppercase tracking-widest text-white/70 drop-shadow">
                 {post.post_type}
@@ -587,19 +669,19 @@ export function PostCard({
           ) : (
             <motion.div
               key="actions"
-              initial={{ opacity: 0, x: 12 }}
+              initial={{ opacity: 0, x: 36 }}
               animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 12 }}
-              transition={{ duration: 0.18 }}
-              className="absolute bottom-48 right-3 z-20 flex flex-col items-center gap-4"
+              exit={{ opacity: 0, x: 36 }}
+              transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+              className="absolute bottom-36 right-0 z-20 flex w-[72px] translate-x-[26px] flex-col divide-y divide-white/15 overflow-hidden rounded-l-[50%] bg-black/55 pr-[24px] shadow-[0_16px_40px_rgba(0,0,0,0.45)] ring-1 ring-white/10 backdrop-blur"
             >
               <Link
                 to="/create"
                 onClick={(e) => e.stopPropagation()}
-                className="grid size-12 place-items-center rounded-full bg-white text-black shadow-[0_12px_34px_rgba(0,0,0,0.35)] transition active:scale-95"
                 aria-label="Create"
+                className="grid h-14 w-full place-items-center pl-3 pt-3 text-white transition active:bg-white/5"
               >
-                <Plus className="size-6" />
+                <Plus className="size-6" strokeWidth={2.5} />
               </Link>
 
               <button
@@ -607,16 +689,20 @@ export function PostCard({
                   e.stopPropagation();
                   onLike();
                 }}
-                className="flex flex-col items-center gap-1"
+                aria-label="Like"
+                aria-pressed={liked}
+                className="flex h-14 w-full flex-col items-center justify-center gap-0.5 transition active:bg-white/5"
               >
-                <span
-                  className={`flex size-12 items-center justify-center rounded-full transition ${
-                    liked ? "bg-[var(--color-magenta)] scale-110" : "bg-black/40 backdrop-blur"
+                <Heart
+                  className={`size-5 transition ${
+                    liked
+                      ? "scale-110 fill-[var(--color-magenta)] text-[var(--color-magenta)]"
+                      : "text-white"
                   }`}
-                >
-                  <Heart className={`size-6 ${liked ? "fill-white text-white" : "text-white"}`} />
+                />
+                <span className="font-mono text-[8px] font-bold uppercase tracking-wider text-white/70">
+                  {likes}
                 </span>
-                <span className="text-xs font-bold text-white drop-shadow">{likes}</span>
               </button>
 
               <button
@@ -624,12 +710,13 @@ export function PostCard({
                   e.stopPropagation();
                   setShowChips((s) => !s);
                 }}
-                className="flex flex-col items-center gap-1"
+                aria-label="Comment"
+                className="flex h-14 w-full flex-col items-center justify-center gap-0.5 transition active:bg-white/5"
               >
-                <span className="flex size-12 items-center justify-center rounded-full bg-black/40 backdrop-blur">
-                  <MessageCircle className="size-6 text-white" />
+                <MessageCircle className="size-5 text-white" />
+                <span className="font-mono text-[8px] font-bold uppercase tracking-wider text-white/70">
+                  {comments.length}
                 </span>
-                <span className="text-xs font-bold text-white drop-shadow">{comments.length}</span>
               </button>
 
               <button
@@ -638,11 +725,10 @@ export function PostCard({
                   if (navigator.share)
                     navigator.share({ title: "kinetic", url: window.location.href });
                 }}
-                className="flex flex-col items-center gap-1"
+                aria-label="Share"
+                className="grid h-14 w-full place-items-center pb-3 pl-3 text-white transition active:bg-white/5"
               >
-                <span className="flex size-12 items-center justify-center rounded-full bg-black/40 backdrop-blur">
-                  <Share2 className="size-5 text-white" />
-                </span>
+                <Share2 className="size-5" />
               </button>
             </motion.div>
           )}
@@ -691,20 +777,53 @@ export function PostCard({
         </div>
 
         <div
-          className={`absolute bottom-4 left-4 z-20 max-w-[min(64%,260px)] text-white transition-opacity duration-300 ${
-            showingFlyingComment ? "opacity-30" : "opacity-90"
+          className={`absolute bottom-4 left-4 z-20 max-w-[min(70%,260px)] text-white transition-opacity duration-300 ${
+            showingFlyingComment ? "opacity-30" : "opacity-100"
           }`}
         >
-          <div className="inline-flex flex-wrap items-center gap-x-2 gap-y-1 rounded-full bg-black/30 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.14em] text-white/78 backdrop-blur">
-            <span>{formatCompactCount(viewCount)} views</span>
-            <span className="text-white/35">/</span>
+          {articlePreview && (
+            <a
+              href={articlePreview.url}
+              target="_blank"
+              rel="noreferrer"
+              onClick={(event) => event.stopPropagation()}
+              aria-label={`Open article on ${articlePreview.host}`}
+              className="group mb-3 inline-flex max-w-full items-center gap-2 rounded-full bg-white py-1.5 pl-2.5 pr-2 text-[10.5px] font-bold uppercase tracking-[0.16em] text-black shadow-[0_14px_38px_rgba(0,0,0,0.55)] ring-1 ring-black/5 transition active:scale-[0.97]"
+            >
+              <span className="grid size-5 shrink-0 place-items-center rounded-full bg-black/[0.06]">
+                <Link2 className="size-3" />
+              </span>
+              <span className="truncate font-mono text-[10px] font-semibold normal-case tracking-tight text-black/65">
+                {articlePreview.host}
+              </span>
+              <ArrowUpRight className="size-3.5 shrink-0 text-black/55 transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+            </a>
+          )}
+
+          {postHashtags.length > 0 && (
+            <div className="mb-1.5 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+              {postHashtags.map((tag) => (
+                <span
+                  key={tag}
+                  className="font-mono text-[11px] font-black uppercase leading-none tracking-[0.16em] text-white"
+                  style={{
+                    textShadow: "0 1px 12px rgba(0,0,0,0.6), 0 1px 2px rgba(0,0,0,0.7)",
+                  }}
+                >
+                  #{tag}
+                </span>
+              ))}
+            </div>
+          )}
+
+          <p
+            className="flex items-baseline gap-1.5 font-mono text-[9.5px] uppercase leading-none tracking-[0.22em] text-white/65"
+            style={{ textShadow: "0 1px 8px rgba(0,0,0,0.55)" }}
+          >
+            <span className="text-white/90">{formatCompactCount(viewCount)} views</span>
+            <span className="text-white/30">·</span>
             <span>{formatPostDate(post.created_at)}</span>
-          </div>
-          <div className="mt-1 flex flex-wrap gap-x-2 gap-y-1 px-1 text-xs font-bold leading-tight text-white/92 drop-shadow">
-            {postHashtags.map((tag) => (
-              <span key={tag}>#{tag}</span>
-            ))}
-          </div>
+          </p>
         </div>
 
         <AnimatePresence>
@@ -870,51 +989,6 @@ function RailMenuLink({
   );
 }
 
-function ArticleClipLink({
-  preview,
-  className,
-}: {
-  preview: CanvasLinkPreview;
-  className?: string;
-}) {
-  return (
-    <a
-      href={preview.url}
-      target="_blank"
-      rel="noreferrer"
-      className={`relative block overflow-hidden rounded-md bg-[#f5f0df] p-3 text-[#17140f] shadow-[0_14px_42px_rgba(0,0,0,0.35)] ring-1 ring-black/10 transition active:scale-[0.98] ${
-        className ?? ""
-      }`}
-      style={{
-        clipPath: "polygon(0 0,100% 0,100% 88%,97% 88%,97% 100%,88% 92%,0 92%,0 62%,2% 60%,0 58%)",
-      }}
-      onClick={(event) => event.stopPropagation()}
-      aria-label={`Open article on ${preview.host}`}
-    >
-      <div className="absolute inset-0 opacity-[0.08] [background-image:linear-gradient(#000_1px,transparent_1px)] [background-size:100%_7px]" />
-      <div className="relative">
-        <div className="flex items-center justify-between border-b border-black/30 pb-1 font-serif text-[10px] font-black uppercase tracking-[0.18em]">
-          <span>Article clipping</span>
-          <Newspaper className="size-3.5" />
-        </div>
-        <div className="mt-2 grid grid-cols-[1fr_34px] gap-2">
-          <div className="min-w-0">
-            <p className="line-clamp-2 font-serif text-base font-black leading-[0.95]">
-              {preview.title}
-            </p>
-            <p className="mt-1 truncate font-mono text-[9px] uppercase tracking-[0.14em] text-black/55">
-              {preview.host}
-            </p>
-          </div>
-          <span className="grid size-8 place-items-center rounded-sm border border-black/25 bg-black/10">
-            <ExternalLink className="size-4" />
-          </span>
-        </div>
-      </div>
-    </a>
-  );
-}
-
 function CommentStoryStack({
   stories,
   profilesById,
@@ -940,21 +1014,27 @@ function CommentStoryStack({
         return (
           <span
             key={story.id}
-            className="absolute bottom-0 right-0 aspect-[9/16] h-[92px] text-white"
+            className="absolute bottom-0 right-0 h-[102px] w-[54px] text-white"
             style={{
               zIndex: index + 1,
               transform: `translate(${-offset * 6}px, ${-offset * 7}px) rotate(${-offset * 3}deg)`,
             }}
           >
             <span
-              className="absolute -bottom-1.5 right-2 h-4 w-4 rotate-45 rounded-[4px] shadow-[0_10px_24px_rgba(0,0,0,0.32)] ring-1 ring-white/20"
-              style={{ background }}
+              aria-hidden
+              className="absolute inset-0"
+              style={{
+                background,
+                ...BUBBLE_MASK_STYLE,
+                filter: "drop-shadow(0 12px 30px rgba(0,0,0,0.45))",
+              }}
             />
             <span
-              className="absolute inset-0 overflow-hidden rounded-[18px] rounded-br-md bg-black shadow-[0_12px_30px_rgba(0,0,0,0.45)] ring-1 ring-white/25"
-              style={{ background }}
-            >
-              <span className="absolute inset-0 bg-gradient-to-b from-white/10 via-transparent to-black/45" />
+              aria-hidden
+              className="absolute inset-0 bg-gradient-to-b from-white/10 via-transparent to-black/45"
+              style={BUBBLE_MASK_STYLE}
+            />
+            <span className="absolute inset-y-0 left-[7px] right-0 overflow-hidden rounded-[14px]">
               <span className="absolute inset-x-1.5 top-1.5 flex gap-0.5">
                 <span className="h-0.5 flex-1 rounded-full bg-white/80" />
                 <span className="h-0.5 flex-1 rounded-full bg-white/30" />
@@ -1027,94 +1107,108 @@ function CommentStoryPlayer({
         className="relative aspect-[9/16] h-[85%] max-h-[85%] max-w-[92%] text-white drop-shadow-[0_24px_80px_rgba(0,0,0,0.55)]"
       >
         <div
-          className="absolute -bottom-3 right-9 h-9 w-9 rotate-45 rounded-md ring-1 ring-white/20"
-          style={{ background }}
+          aria-hidden
+          className="pointer-events-none absolute inset-y-0 -left-[22px] right-0"
+          style={{
+            background,
+            ...STORY_PLAYER_BUBBLE_MASK_STYLE,
+          }}
         />
         <div
-          className="relative h-full w-full overflow-hidden rounded-[30px] rounded-br-[10px] shadow-[0_24px_80px_rgba(0,0,0,0.55)] ring-1 ring-white/20"
-          style={{ background }}
+          className="absolute inset-y-0 -left-[22px] right-0 overflow-hidden"
+          style={STORY_PLAYER_BUBBLE_MASK_STYLE}
         >
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_15%,rgba(255,255,255,0.22),transparent_30%),linear-gradient(180deg,rgba(0,0,0,0.08),rgba(0,0,0,0.52))]" />
 
-          <div className="absolute inset-x-4 top-4 z-10">
-            <div className="mb-3 flex gap-1">
-              {Array.from({ length: storyCount }).map((_, index) => (
-                <span
-                  key={index}
-                  className={`h-1 flex-1 rounded-full ${
-                    index === storyIndex ? "bg-white" : "bg-white/25"
-                  }`}
-                />
-              ))}
-            </div>
-            <div className="flex items-center justify-between gap-2">
-              <span className="rounded-full bg-black/25 px-2.5 py-1 font-mono text-[9px] uppercase tracking-[0.16em] text-white/75 backdrop-blur">
-                {storyIndex + 1}/{storyCount}
-              </span>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={onToggleFast}
-                  className={`flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.12em] backdrop-blur ${
-                    fastMode ? "bg-white text-black" : "bg-black/30 text-white"
-                  }`}
-                >
-                  <FastForward className="size-3" />
-                  fast
-                </button>
-                <button
-                  type="button"
-                  onClick={onClose}
-                  className="grid size-7 place-items-center rounded-full bg-black/30 text-white backdrop-blur"
-                  aria-label="Close animated comments"
-                >
-                  <X className="size-4" />
-                </button>
+          <div className="absolute inset-y-0 left-[22px] right-0">
+            <div className="absolute inset-x-4 top-4 z-10">
+              <div className="mb-3 flex gap-1">
+                {Array.from({ length: storyCount }).map((_, index) => (
+                  <span
+                    key={index}
+                    className={`h-1 flex-1 rounded-full ${
+                      index === storyIndex ? "bg-white" : "bg-white/25"
+                    }`}
+                  />
+                ))}
+              </div>
+              <div className="flex items-start justify-between gap-2">
+                {author ? (
+                  <Link
+                    to="/u/$username"
+                    params={{ username: author.username }}
+                    onClick={(event) => event.stopPropagation()}
+                    className="flex h-10 min-w-0 items-center gap-2"
+                  >
+                    <img
+                      src={author.avatar_url ?? ""}
+                      alt=""
+                      className="size-10 shrink-0 rounded-full border-2 border-white/80"
+                    />
+                    <div className="min-w-0 leading-tight">
+                      <p className="truncate text-sm font-bold text-white drop-shadow">
+                        @{author.username}
+                      </p>
+                      <p className="font-mono text-[10px] uppercase tracking-widest text-white/70 drop-shadow">
+                        {formatShortDateTime(story.created_at)}
+                      </p>
+                    </div>
+                  </Link>
+                ) : (
+                  <div className="flex h-10 items-center gap-2">
+                    <span className="size-10 rounded-full border-2 border-white/40 bg-white/15" />
+                    <div className="leading-tight">
+                      <p className="text-sm font-bold text-white drop-shadow">someone</p>
+                      <p className="font-mono text-[10px] uppercase tracking-widest text-white/70 drop-shadow">
+                        {formatShortDateTime(story.created_at)}
+                      </p>
+                    </div>
+                  </div>
+                )}
+                <div className="flex shrink-0 gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={onToggleFast}
+                    className={`flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.12em] backdrop-blur ${
+                      fastMode ? "bg-white text-black" : "bg-black/30 text-white"
+                    }`}
+                  >
+                    <FastForward className="size-3" />
+                    fast
+                  </button>
+                  <button
+                    type="button"
+                    onClick={onClose}
+                    className="grid size-7 place-items-center rounded-full bg-black/30 text-white backdrop-blur"
+                    aria-label="Close animated comments"
+                  >
+                    <X className="size-4" />
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
 
-          <AnimatedCommentStoryText
-            text={pageText}
-            fullText={story.text}
-            playKey={playKey}
-            fastMode={fastMode}
-          />
+            <AnimatedCommentStoryText
+              text={pageText}
+              fullText={story.text}
+              playKey={playKey}
+              fastMode={fastMode}
+            />
 
-          {!fastMode && storyPageCount > 1 && (
-            <div className="absolute bottom-16 left-1/2 z-10 flex -translate-x-1/2 gap-1.5">
-              {Array.from({ length: storyPageCount }).map((_, index) => (
-                <span
-                  key={index}
-                  className={`h-1.5 rounded-full transition ${
-                    index === storyPage ? "w-5 bg-white" : "w-1.5 bg-white/35"
-                  }`}
-                />
-              ))}
-            </div>
-          )}
+            {!fastMode && storyPageCount > 1 && (
+              <div className="absolute bottom-16 left-1/2 z-10 flex -translate-x-1/2 gap-1.5">
+                {Array.from({ length: storyPageCount }).map((_, index) => (
+                  <span
+                    key={index}
+                    className={`h-1.5 rounded-full transition ${
+                      index === storyPage ? "w-5 bg-white" : "w-1.5 bg-white/35"
+                    }`}
+                  />
+                ))}
+              </div>
+            )}
 
-          <div className="absolute inset-x-4 bottom-4 z-10 flex items-end justify-between gap-3">
-            <div>
-              {author ? (
-                <Link
-                  to="/u/$username"
-                  params={{ username: author.username }}
-                  onClick={(event) => event.stopPropagation()}
-                  className="font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-white/78"
-                >
-                  {getProfileDisplayLabel(author)}
-                </Link>
-              ) : (
-                <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-white/62">
-                  someone
-                </p>
-              )}
-              <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-white/88">
-                {formatShortDateTime(story.created_at)}
-              </p>
-            </div>
-            <p className="max-w-[46%] text-right font-mono text-[9px] uppercase tracking-[0.14em] text-white/60">
+            <p className="absolute inset-x-4 bottom-4 z-10 text-right font-mono text-[9px] uppercase tracking-[0.14em] text-white/55">
               swipe to skip
             </p>
           </div>
@@ -1203,18 +1297,29 @@ function AnimatedCommentStoryText({
 }
 
 function paginateText(text: string) {
-  const clean = text.replace(/\s+/g, " ").trim();
-  if (!clean) return [""];
+  const blocks = text
+    .replace(/\r\n?/g, "\n")
+    .split("\n")
+    .map((block) => block.replace(/[ \t]+/g, " ").trim())
+    .filter(Boolean);
+  if (blocks.length === 0) return [""];
 
-  const sentences = clean.match(/[^.!?]+[.!?]+["')\]]*|[^.!?]+$/g) ?? [clean];
-  return sentences.flatMap((sentence) => chunkSentenceByWords(sentence.trim())).filter(Boolean);
+  return blocks.flatMap((block) => paginateTextBlock(block));
 }
 
-function chunkSentenceByWords(sentence: string) {
-  const words = sentence.match(/\S+/g) ?? [];
-  if (words.length <= MAX_WORDS_PER_TEXT_PAGE) return [sentence];
+function paginateTextBlock(text: string) {
+  const wordLimit = getTextPageWordLimit(text);
+  const sentences = text.match(/[^.!?]+[.!?]+["')\]]*|[^.!?]+$/g) ?? [text];
+  return sentences
+    .flatMap((sentence) => chunkSentenceByWords(sentence.trim(), wordLimit))
+    .filter(Boolean);
+}
 
-  const pageCount = Math.ceil(words.length / MAX_WORDS_PER_TEXT_PAGE);
+function chunkSentenceByWords(sentence: string, wordLimit: number) {
+  const words = sentence.match(/\S+/g) ?? [];
+  if (words.length <= wordLimit) return [sentence];
+
+  const pageCount = Math.ceil(words.length / wordLimit);
   const targetWordsPerPage = Math.ceil(words.length / pageCount);
   const chunks: string[] = [];
 
@@ -1227,9 +1332,10 @@ function chunkSentenceByWords(sentence: string) {
 
 function getPageTextSize(baseSize: number, text: string) {
   const wordCount = getWords(text).length;
-  if (wordCount >= 7) return Math.min(baseSize, 58);
-  if (wordCount >= 5) return Math.min(baseSize, 68);
-  if (wordCount >= 3) return Math.min(baseSize, 82);
+  if (wordCount >= 9) return Math.min(baseSize, 72);
+  if (wordCount >= 7) return Math.min(baseSize, 78);
+  if (wordCount >= 5) return Math.min(baseSize, 88);
+  if (wordCount >= 3) return Math.min(baseSize, 98);
   return baseSize;
 }
 
@@ -1365,84 +1471,171 @@ function WordSequenceText({
   spec,
   playKey,
   paused,
+  revealed,
+  canvasWidth,
 }: {
   spec: CanvasSpec;
   playKey: number;
   paused: boolean;
+  revealed: boolean;
+  canvasWidth: number;
 }) {
   const words = getWords(spec.text);
+  const isVietnamese = isLikelyVietnameseText(spec.text);
+  const vietnameseLines = isVietnamese ? getVietnameseWordLines(words) : [];
   const emphasized = getEmphasizedWordIndexes(words);
   const tempo = tempoConfig[spec.tempo];
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const textRef = useRef<HTMLDivElement>(null);
+  const [fitScale, setFitScale] = useState(1);
+  const fontSize = spec.size * fitScale;
+
+  useEffect(() => {
+    setFitScale(1);
+  }, [
+    canvasWidth,
+    spec.color,
+    spec.font,
+    spec.letterSpacing,
+    spec.rotation,
+    spec.size,
+    spec.text,
+    spec.weight,
+  ]);
+
+  useIsomorphicLayoutEffect(() => {
+    const wrapper = wrapperRef.current;
+    const text = textRef.current;
+    const canvas = wrapper?.parentElement?.parentElement;
+    if (!wrapper || !text || !canvas) return;
+
+    const wrapperWidth = wrapper.clientWidth;
+    const canvasHeight = canvas.getBoundingClientRect().height;
+    if (!wrapperWidth || !canvasHeight) return;
+
+    const verticalRoom = (canvasHeight * Math.min(spec.y, 100 - spec.y) * 2) / 100;
+    const maxHeight = Math.max(canvasHeight * 0.45, verticalRoom * 0.86);
+    const widthRatio = wrapperWidth / Math.max(text.scrollWidth, 1);
+    const heightRatio = maxHeight / Math.max(text.scrollHeight, 1);
+    const nextFit = Math.min(1, fitScale * Math.min(widthRatio, heightRatio) * 0.98);
+
+    if (nextFit < fitScale - 0.01) {
+      setFitScale(Math.max(MIN_TEXT_FIT_SCALE, nextFit));
+    }
+  }, [
+    fitScale,
+    fontSize,
+    canvasWidth,
+    spec.font,
+    spec.letterSpacing,
+    spec.rotation,
+    spec.size,
+    spec.text,
+    spec.weight,
+    spec.y,
+  ]);
+
+  const renderWord = (word: string, index: number) => {
+    const important = emphasized.has(index);
+    return (
+      <motion.span
+        key={`${word}-${index}`}
+        variants={{
+          hidden: {
+            opacity: 0,
+            y: important ? 34 : 22,
+            scale: important ? 0.74 : 0.88,
+            filter: "blur(10px)",
+          },
+          show: {
+            opacity: 1,
+            y: 0,
+            scale: important ? 1.12 : 1,
+            filter: "blur(0px)",
+          },
+        }}
+        transition={{
+          delay: revealed ? 0 : getWordDelay(index, spec.tempo, spec.rhythm),
+          duration: revealed ? 0.01 : important ? tempo.wordDuration * 1.22 : tempo.wordDuration,
+          ease: [0.22, 1, 0.36, 1],
+        }}
+        className={important ? "relative inline-flex" : "inline-flex"}
+        style={{
+          color: important ? getEmphasisColor(spec.color) : spec.color,
+          display: "inline-block",
+          fontWeight: important ? 900 : spec.weight,
+          overflowWrap: "normal",
+          whiteSpace: "nowrap",
+          wordBreak: "normal",
+          textShadow: important
+            ? "0 0 22px rgba(255,255,255,0.35), 0 5px 36px rgba(0,0,0,0.55)"
+            : "0 4px 40px rgba(0,0,0,0.45)",
+          animationPlayState: paused ? "paused" : "running",
+        }}
+      >
+        {word}
+      </motion.span>
+    );
+  };
 
   return (
     <div
+      ref={wrapperRef}
       className="pointer-events-none absolute select-none"
       style={{
         left: `${spec.x}%`,
         top: `${spec.y}%`,
         transform: "translate(-50%, -50%)",
-        maxWidth: "86%",
+        width: isVietnamese ? TEXT_SAFE_MAX_WIDTH : undefined,
+        maxWidth: TEXT_SAFE_MAX_WIDTH,
       }}
     >
       <motion.div
-        key={playKey}
-        className="flex flex-wrap items-center justify-center"
-        initial="hidden"
+        ref={textRef}
+        key={`${playKey}-${revealed ? "revealed" : "animated"}`}
+        className={
+          isVietnamese
+            ? "flex flex-col items-stretch"
+            : "flex flex-wrap items-center justify-center"
+        }
+        initial={revealed ? false : "hidden"}
         animate="show"
         style={{
-          columnGap: "0.24em",
-          rowGap: "0.08em",
+          columnGap: isVietnamese ? undefined : "0.24em",
+          rowGap: isVietnamese ? undefined : "0.08em",
           fontFamily: spec.font,
-          fontSize: spec.size,
+          fontSize,
           color: spec.color,
           fontWeight: spec.weight,
           letterSpacing: `${spec.letterSpacing}em`,
-          lineHeight: 0.9,
-          textAlign: "center",
+          lineHeight: isVietnamese ? 1.04 : 0.9,
+          textAlign: isVietnamese ? "left" : "center",
           textShadow: "0 4px 40px rgba(0,0,0,0.45)",
           transform: `rotate(${spec.rotation}deg)`,
           animation: getLoopAnimation(spec.loop, spec.tempo),
           animationPlayState: paused ? "paused" : "running",
         }}
       >
-        {words.map((word, index) => {
-          const important = emphasized.has(index);
-          return (
-            <motion.span
-              key={`${word}-${index}`}
-              variants={{
-                hidden: {
-                  opacity: 0,
-                  y: important ? 34 : 22,
-                  scale: important ? 0.74 : 0.88,
-                  filter: "blur(10px)",
-                },
-                show: {
-                  opacity: 1,
-                  y: 0,
-                  scale: important ? 1.12 : 1,
-                  filter: "blur(0px)",
-                },
-              }}
-              transition={{
-                delay: getWordDelay(index, spec.tempo, spec.rhythm),
-                duration: important ? tempo.wordDuration * 1.22 : tempo.wordDuration,
-                ease: [0.22, 1, 0.36, 1],
-              }}
-              className={important ? "relative inline-flex" : "inline-flex"}
-              style={{
-                color: important ? getEmphasisColor(spec.color) : spec.color,
-                fontWeight: important ? 900 : spec.weight,
-                textShadow: important
-                  ? "0 0 22px rgba(255,255,255,0.35), 0 5px 36px rgba(0,0,0,0.55)"
-                  : "0 4px 40px rgba(0,0,0,0.45)",
-                animationPlayState: paused ? "paused" : "running",
-              }}
-            >
-              {word}
-            </motion.span>
-          );
-        })}
+        {isVietnamese
+          ? vietnameseLines.map((line, lineIndex) => (
+              <div
+                key={`${lineIndex}-${line.indentCh}`}
+                className="flex flex-wrap items-baseline justify-start"
+                style={{
+                  boxSizing: "border-box",
+                  columnGap: "0.24em",
+                  rowGap: "0.08em",
+                  marginTop: lineIndex === 0 ? 0 : "0.06em",
+                  minWidth: 0,
+                  paddingLeft: `${line.indentCh}ch`,
+                  paddingRight: "2%",
+                  width: "100%",
+                }}
+              >
+                {line.words.map(({ text, index }) => renderWord(text, index))}
+              </div>
+            ))
+          : words.map((word, index) => renderWord(word, index))}
       </motion.div>
     </div>
   );
@@ -1498,8 +1691,29 @@ function getEmphasisColor(color: string) {
   return "#FFBE0B";
 }
 
+const COMMON_SECOND_LEVEL_SUFFIXES = new Set([
+  "ac.uk",
+  "co.jp",
+  "co.kr",
+  "co.nz",
+  "co.uk",
+  "com.au",
+  "com.br",
+  "com.mx",
+  "com.sg",
+  "com.vn",
+  "net.au",
+  "org.au",
+  "org.uk",
+]);
+
 function getArticlePreview(spec: CanvasSpec, media: string[]): CanvasLinkPreview | null {
-  if (spec.link?.url) return spec.link;
+  if (spec.link?.url) {
+    return {
+      ...spec.link,
+      host: getMainDomainFromUrl(spec.link.url, spec.link.host),
+    };
+  }
   const url = media[0];
   if (!url) return null;
   try {
@@ -1508,12 +1722,42 @@ function getArticlePreview(spec: CanvasSpec, media: string[]): CanvasLinkPreview
     const title = spec.text.replace(/\s+/g, " ").trim() || "Linked article";
     return {
       url: parsed.toString(),
-      host: parsed.hostname.replace(/^www\./, ""),
+      host: getMainDomain(parsed.hostname),
       title: title.length > 72 ? `${title.slice(0, 69).trim()}...` : title,
     };
   } catch {
     return null;
   }
+}
+
+function getMainDomainFromUrl(url: string, fallbackHost = "") {
+  try {
+    return getMainDomain(new URL(url).hostname);
+  } catch {
+    return getMainDomain(fallbackHost);
+  }
+}
+
+function getMainDomain(hostname: string) {
+  const host = hostname
+    .trim()
+    .toLowerCase()
+    .replace(/^https?:\/\//, "")
+    .split("/")[0]
+    .split(":")[0]
+    .replace(/\.$/, "")
+    .replace(/^www\./, "");
+  if (!host || host === "localhost" || /^(?:\d{1,3}\.){3}\d{1,3}$/.test(host)) return host;
+
+  const labels = host.split(".").filter(Boolean);
+  if (labels.length <= 2) return host;
+
+  const secondLevelSuffix = labels.slice(-2).join(".");
+  if (COMMON_SECOND_LEVEL_SUFFIXES.has(secondLevelSuffix) && labels.length >= 3) {
+    return labels.slice(-3).join(".");
+  }
+
+  return labels.slice(-2).join(".");
 }
 
 const STOP_WORDS = new Set([

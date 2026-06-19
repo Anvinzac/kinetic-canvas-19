@@ -1,9 +1,13 @@
 import { motion } from "framer-motion";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { CanvasSpec, Rhythm, Tempo } from "@/lib/canvas";
+import { getVietnameseWordLines, isLikelyVietnameseText } from "@/lib/text-language";
 
 const FULL_CANVAS_MAX_HEIGHT = 764;
 const CANVAS_RATIO = 16 / 9;
+// Same canvas-safe inset as PostCard: clear the edge without shrinking the status energy.
+const TEXT_SAFE_MAX_WIDTH = "min(92%, calc(100% - 2rem))";
+const MIN_TEXT_FIT_SCALE = 0.08;
 const useIsomorphicLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
 
 const tempoConfig: Record<Tempo, { duration: number; wordDelay: number; loopSeconds: number }> = {
@@ -43,6 +47,8 @@ export function KineticText({
 }) {
   const wordVariants = entranceVariants(spec.entrance);
   const words = getWords(spec.text);
+  const isVietnamese = isLikelyVietnameseText(spec.text);
+  const vietnameseLines = isVietnamese ? getVietnameseWordLines(words) : [];
   const tempo = tempoConfig[spec.tempo];
   const wrapperRef = useRef<HTMLDivElement>(null);
   const textRef = useRef<HTMLDivElement>(null);
@@ -108,7 +114,7 @@ export function KineticText({
     const nextFit = Math.min(1, fitScale * Math.min(widthRatio, heightRatio) * 0.98);
 
     if (nextFit < fitScale - 0.01) {
-      setFitScale(Math.max(0.16, nextFit));
+      setFitScale(Math.max(MIN_TEXT_FIT_SCALE, nextFit));
     }
   }, [
     fitScale,
@@ -129,8 +135,8 @@ export function KineticText({
         left: `${spec.x}%`,
         top: `${spec.y}%`,
         transform: "translate(-50%, -50%)",
-        width: "86%",
-        maxWidth: "86%",
+        width: TEXT_SAFE_MAX_WIDTH,
+        maxWidth: TEXT_SAFE_MAX_WIDTH,
       }}
     >
       <motion.div
@@ -145,44 +151,83 @@ export function KineticText({
           fontWeight: spec.weight,
           letterSpacing: `${spec.letterSpacing}em`,
           transform: `rotate(${spec.rotation}deg)`,
-          lineHeight: 0.95,
-          textAlign: "center",
+          lineHeight: isVietnamese ? 1.06 : 0.95,
+          textAlign: isVietnamese ? "left" : "center",
           textShadow: "0 4px 40px rgba(0,0,0,0.45)",
           animation: getLoopAnimation(spec.loop, spec.tempo),
           animationPlayState: paused ? "paused" : "running",
           whiteSpace: "normal",
           wordBreak: "normal",
-          overflowWrap: "break-word",
+          overflowWrap: "normal",
           display: "flex",
-          flexWrap: "wrap",
-          alignItems: "center",
-          justifyContent: "center",
-          columnGap: "0.24em",
-          rowGap: "0.1em",
+          flexDirection: isVietnamese ? "column" : undefined,
+          flexWrap: isVietnamese ? "nowrap" : "wrap",
+          alignItems: isVietnamese ? "stretch" : "center",
+          justifyContent: isVietnamese ? "flex-start" : "center",
+          columnGap: isVietnamese ? undefined : "0.24em",
+          rowGap: isVietnamese ? undefined : "0.1em",
         }}
       >
-        {words.map((word, i) => (
-          <motion.span
-            key={`${playKey}-${word}-${i}`}
-            initial={wordVariants.initial}
-            animate={wordVariants.animate}
-            transition={{
-              delay: getRhythmDelay(i, spec.tempo, spec.rhythm),
-              duration: Math.max(0.28, tempo.duration * 0.62),
-              ease: [0.22, 1, 0.36, 1],
-            }}
-            style={{
-              display: "inline-block",
-              maxWidth: "100%",
-              overflowWrap: "break-word",
-              animationPlayState: paused ? "paused" : "running",
-            }}
-          >
-            {word}
-          </motion.span>
-        ))}
+        {isVietnamese
+          ? vietnameseLines.map((line, lineIndex) => (
+              <div
+                key={`${lineIndex}-${line.indentCh}`}
+                style={{
+                  boxSizing: "border-box",
+                  display: "flex",
+                  flexWrap: "wrap",
+                  justifyContent: "flex-start",
+                  columnGap: "0.24em",
+                  rowGap: "0.1em",
+                  marginTop: lineIndex === 0 ? 0 : "0.08em",
+                  minWidth: 0,
+                  paddingLeft: `${line.indentCh}ch`,
+                  paddingRight: "2%",
+                  width: "100%",
+                }}
+              >
+                {line.words.map(({ text, index }) =>
+                  renderAnimatedWord(text, index, playKey, wordVariants, spec, tempo, paused),
+                )}
+              </div>
+            ))
+          : words.map((word, i) =>
+              renderAnimatedWord(word, i, playKey, wordVariants, spec, tempo, paused),
+            )}
       </motion.div>
     </div>
+  );
+}
+
+function renderAnimatedWord(
+  word: string,
+  index: number,
+  playKey: number,
+  wordVariants: ReturnType<typeof entranceVariants>,
+  spec: CanvasSpec,
+  tempo: { duration: number },
+  paused: boolean,
+) {
+  return (
+    <motion.span
+      key={`${playKey}-${word}-${index}`}
+      initial={wordVariants.initial}
+      animate={wordVariants.animate}
+      transition={{
+        delay: getRhythmDelay(index, spec.tempo, spec.rhythm),
+        duration: Math.max(0.28, tempo.duration * 0.62),
+        ease: [0.22, 1, 0.36, 1],
+      }}
+      style={{
+        display: "inline-block",
+        overflowWrap: "normal",
+        whiteSpace: "nowrap",
+        wordBreak: "normal",
+        animationPlayState: paused ? "paused" : "running",
+      }}
+    >
+      {word}
+    </motion.span>
   );
 }
 
