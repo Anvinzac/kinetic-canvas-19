@@ -673,7 +673,7 @@ export async function addMockComment(postId: string, chipId: string) {
     created_at: new Date().toISOString(),
   };
   writeJsonArray(LOCAL_COMMENTS_KEY, [...comments, next]);
-  return { ok: true, comment: next };
+  return { ok: true as const };
 }
 
 export async function toggleMockFollow(targetId: string) {
