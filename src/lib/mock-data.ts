@@ -697,7 +697,7 @@ export async function updateMockProfile(
   },
 ) {
   writeJson(PROFILE_PATCH_KEY, updates);
-  return getMockMe();
+  return { ok: true as const };
 }
 
 export function addMockPost(input: {
