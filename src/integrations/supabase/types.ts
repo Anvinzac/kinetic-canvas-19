@@ -14,6 +14,89 @@ export type Database = {
   }
   public: {
     Tables: {
+      bot_agents: {
+        Row: {
+          active: boolean
+          bg_gradient: string
+          created_at: string
+          daily_post_time: string
+          font: string
+          id: string
+          last_posted_on: string | null
+          profile_id: string
+          prompt: string
+          topic: string
+        }
+        Insert: {
+          active?: boolean
+          bg_gradient: string
+          created_at?: string
+          daily_post_time?: string
+          font?: string
+          id?: string
+          last_posted_on?: string | null
+          profile_id: string
+          prompt: string
+          topic: string
+        }
+        Update: {
+          active?: boolean
+          bg_gradient?: string
+          created_at?: string
+          daily_post_time?: string
+          font?: string
+          id?: string
+          last_posted_on?: string | null
+          profile_id?: string
+          prompt?: string
+          topic?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bot_agents_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bot_post_runs: {
+        Row: {
+          agent_id: string
+          created_at: string
+          post_id: string | null
+          run_date: string
+        }
+        Insert: {
+          agent_id: string
+          created_at?: string
+          post_id?: string | null
+          run_date: string
+        }
+        Update: {
+          agent_id?: string
+          created_at?: string
+          post_id?: string | null
+          run_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bot_post_runs_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "bot_agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bot_post_runs_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       comments: {
         Row: {
           chip_id: string
@@ -192,7 +275,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      publish_daily_bot_posts: {
+        Args: { p_run_date?: string }
+        Returns: number
+      }
     }
     Enums: {
       [_ in never]: never
