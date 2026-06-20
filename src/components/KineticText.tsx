@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
 import {
   getCanvasEmphasisColor,
   getCanvasTextColor,
@@ -15,6 +15,16 @@ const CANVAS_RATIO = 16 / 9;
 const TEXT_SAFE_MAX_WIDTH = "min(92%, calc(100% - 2rem))";
 const MIN_TEXT_FIT_SCALE = 0.08;
 const VIETNAMESE_SCALE_FIT_GUARD = 1.24;
+const PREVIEW_EMPHASIS_VARIANTS = [
+  "color",
+  "glow",
+  "underline",
+  "jiggle",
+  "pulse",
+  "halo",
+  "frame",
+] as const;
+const PREVIEW_NON_LUMINOUS_VARIANTS = ["color", "underline", "jiggle", "pulse", "frame"] as const;
 const useIsomorphicLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
 
 const tempoConfig: Record<Tempo, { duration: number; wordDelay: number; loopSeconds: number }> = {
@@ -147,6 +157,8 @@ export function KineticText({
     visualScaleGuard,
   ]);
 
+  const loopAnimation = getLoopAnimation(spec.loop, spec.tempo);
+
   return (
     <div
       ref={wrapperRef}
@@ -175,8 +187,9 @@ export function KineticText({
           lineHeight: isVietnamese ? 1.06 : 0.95,
           textAlign: leftAnchoredText ? "left" : "center",
           textShadow: "0 4px 40px rgba(0,0,0,0.45)",
-          animation: getLoopAnimation(spec.loop, spec.tempo),
-          animationPlayState: paused ? "paused" : "running",
+          animation: loopAnimation
+            ? `${loopAnimation} ${paused ? "paused" : "running"}`
+            : undefined,
           whiteSpace: "normal",
           wordBreak: "normal",
           overflowWrap: "normal",
@@ -282,14 +295,31 @@ function renderAnimatedWord(
   textColor: string,
   emphasisColor: string,
 ) {
+  const emphasisVariant = important
+    ? getPreviewEmphasisVariant(spec.text, word, index, !isDimPreviewColor(emphasisColor))
+    : null;
+  const wordColor = important
+    ? getPreviewEmphasisWordColor(emphasisVariant, textColor, emphasisColor)
+    : textColor;
+  const entranceDelay = getRhythmDelay(index, spec.tempo, spec.rhythm);
+  const entranceDuration = Math.max(0.28, tempo.duration * 0.62);
+  const emphasisStyle = important
+    ? ({
+        "--kinetic-emphasis-delay": `${entranceDelay + entranceDuration + 0.18}s`,
+        ...(emphasisVariant === "halo" || emphasisVariant === "glow"
+          ? { "--kinetic-aura-color": getPreviewAuraColor(textColor) }
+          : {}),
+      } as CSSProperties)
+    : undefined;
+  const innerAnimation = important ? getPreviewEmphasisInnerAnimation(emphasisVariant) : undefined;
   return (
     <motion.span
       key={`${playKey}-${word}-${index}`}
       initial={wordVariants.initial}
       animate={wordVariants.animate}
       transition={{
-        delay: getRhythmDelay(index, spec.tempo, spec.rhythm),
-        duration: Math.max(0.28, tempo.duration * 0.62),
+        delay: entranceDelay,
+        duration: entranceDuration,
         ease: [0.22, 1, 0.36, 1],
       }}
       style={{
@@ -299,16 +329,39 @@ function renderAnimatedWord(
         marginBottom: spotlightWord ? "0.08em" : undefined,
         marginTop: spotlightWord ? "0.08em" : undefined,
         textAlign: spotlightWord ? "center" : undefined,
-        color: important ? emphasisColor : textColor,
+        color: wordColor,
         fontWeight: important ? 900 : spec.weight,
+        fontSize: important ? "1.08em" : undefined,
         overflowWrap: "normal",
         whiteSpace: "nowrap",
         wordBreak: "normal",
-        animationPlayState: paused ? "paused" : "running",
+        textShadow: important ? getPreviewEmphasisTextShadow(emphasisVariant) : undefined,
         transformOrigin: anchorFromStart && !spotlightWord ? "left center" : "center",
       }}
     >
-      {word}
+      <span
+        className={
+          important
+            ? `kinetic-emphasis-mark${
+                emphasisVariant === "halo"
+                  ? " kinetic-emph-halo"
+                  : emphasisVariant === "frame"
+                    ? " kinetic-emph-frame"
+                    : emphasisVariant === "underline"
+                      ? " kinetic-emph-underline"
+                      : ""
+              }${paused ? "" : " is-animated"}`
+            : undefined
+        }
+        style={{
+          ...emphasisStyle,
+          animation: innerAnimation
+            ? `${innerAnimation} ${paused ? "paused" : "running"}`
+            : undefined,
+        }}
+      >
+        {word}
+      </span>
     </motion.span>
   );
 }
@@ -371,6 +424,72 @@ function getPreviewEmphasizedWordIndexes(words: string[]) {
   const selected = candidates.slice(0, Math.min(2, Math.max(1, Math.ceil(words.length / 4))));
   if (selected.length === 0 && words.length > 0) return new Set([words.length - 1]);
   return new Set(selected.map((item) => item.index));
+}
+
+type PreviewEmphasisVariant = (typeof PREVIEW_EMPHASIS_VARIANTS)[number];
+
+function getPreviewEmphasisVariant(
+  text: string,
+  word: string,
+  index: number,
+  allowLuminous: boolean,
+): PreviewEmphasisVariant {
+  const pool: readonly PreviewEmphasisVariant[] = allowLuminous
+    ? PREVIEW_EMPHASIS_VARIANTS
+    : PREVIEW_NON_LUMINOUS_VARIANTS;
+  return pool[getStableNumber(`${text}|${word}|${index}`) % pool.length];
+}
+
+// Dim colors make a glow/halo look muddy — keep those for bright colors only.
+function isDimPreviewColor(color: string) {
+  const hex = color.trim().replace(/^#/, "");
+  const full = hex.length === 3 ? hex.replace(/(.)/g, "$1$1") : hex;
+  if (full.length !== 6) return false;
+  const r = parseInt(full.slice(0, 2), 16);
+  const g = parseInt(full.slice(2, 4), 16);
+  const b = parseInt(full.slice(4, 6), 16);
+  return Math.max(r, g, b) / 255 < 0.42;
+}
+
+function getPreviewEmphasisTextShadow(variant: PreviewEmphasisVariant | null) {
+  if (variant === "color") {
+    return "0 4px 40px rgba(0,0,0,0.45)";
+  }
+  if (variant === "halo") {
+    return "0 4px 40px rgba(0,0,0,0.45)";
+  }
+  if (variant === "glow") {
+    return "0 0 0.14em var(--kinetic-aura-color, #FFBE0B), 0 0 0.4em var(--kinetic-aura-color, #FFBE0B), 0 5px 30px rgba(0,0,0,0.5)";
+  }
+  if (variant === "frame") {
+    return "0 2px 16px rgba(0,0,0,0.5)";
+  }
+  return "0 0 22px rgba(255,255,255,0.35), 0 5px 36px rgba(0,0,0,0.55)";
+}
+
+// halo and frame are CSS-class driven; only the transform/filter variants animate inline.
+function getPreviewEmphasisInnerAnimation(variant: PreviewEmphasisVariant | null) {
+  if (variant === "jiggle") return "kinetic-emphasis-jiggle 0.58s ease-in-out 0.08s 2";
+  if (variant === "pulse") return "kinetic-emphasis-pulse 1.35s ease-in-out infinite";
+  if (variant === "glow") return "kinetic-emphasis-glow 1.6s ease-in-out infinite";
+  return undefined;
+}
+
+function getPreviewEmphasisWordColor(
+  variant: PreviewEmphasisVariant | null,
+  textColor: string,
+  emphasisColor: string,
+) {
+  return variant === "color" ? emphasisColor : textColor;
+}
+
+function getPreviewAuraColor(textColor: string) {
+  return isWhiteLikePreviewColor(textColor) ? "#FFBE0B" : "currentColor";
+}
+
+function isWhiteLikePreviewColor(color: string) {
+  const normalized = color.trim().toLowerCase();
+  return normalized === "white" || normalized === "#fff" || normalized === "#ffffff";
 }
 
 function getPreviewWordImportance(word: string, index: number, total: number) {

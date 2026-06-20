@@ -162,3 +162,186 @@
     transform: translateX(4px) rotate(1deg);
   }
 }
+
+.kinetic-emphasis-mark {
+  display: inline-block;
+  transform-origin: center;
+  position: relative;
+}
+
+/* UNDERLINE — drawn on after the word lands, instead of appearing as static text decoration. */
+.kinetic-emph-underline {
+  padding-bottom: 0.08em;
+}
+.kinetic-emph-underline::after {
+  content: "";
+  position: absolute;
+  left: -0.02em;
+  right: -0.02em;
+  bottom: -0.02em;
+  height: 0.08em;
+  border-radius: 999px;
+  background: currentColor;
+  box-shadow: 0 0 0.24em color-mix(in srgb, currentColor 42%, transparent);
+  transform: scaleX(1);
+  transform-origin: left center;
+}
+.kinetic-emph-underline.is-animated::after {
+  animation: kinetic-emph-underline-draw 0.82s cubic-bezier(0.22, 1, 0.36, 1)
+    var(--kinetic-emphasis-delay, 0.68s) both;
+}
+@keyframes kinetic-emph-underline-draw {
+  from {
+    opacity: 0;
+    transform: scaleX(0);
+  }
+  60% {
+    opacity: 1;
+  }
+  to {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+}
+
+/* HALO — a soft luminous aura blooming behind the word (no box). */
+.kinetic-emph-halo {
+  isolation: isolate;
+}
+.kinetic-emph-halo::before {
+  content: "";
+  position: absolute;
+  inset: -0.34em -0.58em;
+  z-index: -1;
+  border-radius: 999px;
+  background: radial-gradient(
+    closest-side,
+    color-mix(in srgb, var(--kinetic-aura-color, #ffbe0b) 88%, transparent) 0%,
+    color-mix(in srgb, var(--kinetic-aura-color, #ffbe0b) 42%, transparent) 46%,
+    transparent 76%
+  );
+  filter: blur(0.09em);
+  opacity: 0.6;
+  pointer-events: none;
+}
+.kinetic-emph-halo.is-animated::before {
+  animation: kinetic-emph-halo-breathe 1.9s ease-in-out infinite;
+}
+@keyframes kinetic-emph-halo-breathe {
+  0%,
+  100% {
+    transform: scale(0.9);
+    opacity: 0.44;
+  }
+  50% {
+    transform: scale(1.12);
+    opacity: 0.74;
+  }
+}
+
+/* FRAME — a crisp, glowing token box framing the word. */
+.kinetic-emph-frame {
+  padding: 0.05em 0.3em 0.1em;
+  border-radius: 0.28em;
+  border: 0.05em solid transparent;
+  isolation: isolate;
+}
+.kinetic-emph-frame::before,
+.kinetic-emph-frame::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+}
+.kinetic-emph-frame::before {
+  z-index: -1;
+  background: color-mix(in srgb, currentColor 13%, transparent);
+  opacity: 1;
+}
+.kinetic-emph-frame::after {
+  border: 0.05em solid color-mix(in srgb, currentColor 80%, transparent);
+  box-shadow:
+    0 0 0.5em color-mix(in srgb, currentColor 42%, transparent),
+    inset 0 0 0.42em color-mix(in srgb, currentColor 16%, transparent);
+  clip-path: inset(0 0 0 0);
+}
+.kinetic-emph-frame.is-animated::before {
+  animation: kinetic-emph-frame-fill 0.74s cubic-bezier(0.22, 1, 0.36, 1)
+    var(--kinetic-emphasis-delay, 0.68s) both;
+}
+.kinetic-emph-frame.is-animated::after {
+  animation:
+    kinetic-emph-frame-draw 0.74s cubic-bezier(0.22, 1, 0.36, 1)
+      var(--kinetic-emphasis-delay, 0.68s) both,
+    kinetic-emph-frame-pulse 2.1s ease-in-out calc(var(--kinetic-emphasis-delay, 0.68s) + 0.74s)
+      infinite;
+}
+@keyframes kinetic-emph-frame-fill {
+  from {
+    opacity: 0;
+    transform: scaleX(0.12);
+  }
+  to {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+}
+@keyframes kinetic-emph-frame-draw {
+  from {
+    opacity: 0;
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    opacity: 1;
+    clip-path: inset(0 0 0 0);
+  }
+}
+@keyframes kinetic-emph-frame-pulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0.38em color-mix(in srgb, currentColor 32%, transparent),
+      inset 0 0 0.32em color-mix(in srgb, currentColor 12%, transparent);
+  }
+  50% {
+    box-shadow:
+      0 0 0.82em color-mix(in srgb, currentColor 64%, transparent),
+      inset 0 0 0.58em color-mix(in srgb, currentColor 28%, transparent);
+  }
+}
+
+@keyframes kinetic-emphasis-jiggle {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) rotate(0);
+  }
+  25% {
+    transform: translate3d(-0.04em, -0.02em, 0) rotate(-1.8deg);
+  }
+  60% {
+    transform: translate3d(0.05em, 0.015em, 0) rotate(1.4deg);
+  }
+}
+
+@keyframes kinetic-emphasis-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+  50% {
+    transform: scale(1.07);
+    filter: brightness(1.18);
+  }
+}
+
+@keyframes kinetic-emphasis-glow {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 0.08em var(--kinetic-aura-color, #ffbe0b));
+  }
+  50% {
+    filter: drop-shadow(0 0 0.34em var(--kinetic-aura-color, #ffbe0b));
+  }
+}

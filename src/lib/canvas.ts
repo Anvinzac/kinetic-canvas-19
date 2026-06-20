@@ -85,9 +85,9 @@ export const GRADIENTS = [
   "linear-gradient(135deg,#F72585,#7209B7)",
   "linear-gradient(135deg,#FFD60A,#FF006E)",
   "linear-gradient(135deg,#06D6A0,#118AB2)",
-  "linear-gradient(135deg,#073B4C,#06D6A0)",
+  "linear-gradient(135deg,#00B4D8,#FF006E)",
   "linear-gradient(135deg,#9D4EDD,#FF006E)",
-  "linear-gradient(180deg,#000000,#1a1a2e)",
+  "linear-gradient(135deg,#00B4D8,#FF006E)",
 ];
 
 export type GradientTransitionPath = {

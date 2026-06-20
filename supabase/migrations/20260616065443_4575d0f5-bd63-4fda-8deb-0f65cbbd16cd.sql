@@ -123,7 +123,7 @@ DECLARE
     'linear-gradient(135deg,#FFD60A,#FF006E)',
     'linear-gradient(135deg,#06D6A0,#118AB2)',
     'linear-gradient(135deg,#EF476F,#FFD166)',
-    'linear-gradient(135deg,#073B4C,#06D6A0)',
+    'linear-gradient(135deg,#00B4D8,#FF006E)',
     'linear-gradient(135deg,#9D4EDD,#FF006E)'
   ];
   texts TEXT[] := ARRAY[

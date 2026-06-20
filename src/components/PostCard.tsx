@@ -7,6 +7,7 @@ import {
   useState,
   type MouseEvent as ReactMouseEvent,
   type PointerEvent as ReactPointerEvent,
+  type CSSProperties,
   type ReactNode,
 } from "react";
 import { AnimatePresence, motion, type PanInfo } from "framer-motion";
@@ -76,11 +77,29 @@ type CommentStory = {
 const TEXT_SAFE_MAX_WIDTH = "min(92%, calc(100% - 2rem))";
 const MIN_TEXT_FIT_SCALE = 0.58;
 const MIN_ENGLISH_TEXT_FIT_SCALE = 0.72;
+// A single-word page (e.g. a one-word reveal) cannot wrap, so it is allowed to
+// shrink this far to fit a long word fully on screen.
+const SOLO_TEXT_MIN_FIT = 0.3;
+const SOLO_REVEAL_MIN_FIT = 0.62;
 const EMPHASIS_SCALE_FIT_GUARD = 1.14;
 // Emphasized words render this many times larger than the base font. Applied via
 // fontSize (not transform: scale) so the extra width occupies real layout space.
 const EMPHASIS_FONT_SCALE = 1.12;
+const EMPHASIS_VARIANTS = [
+  "color",
+  "glow",
+  "underline",
+  "jiggle",
+  "pulse",
+  "halo",
+  "frame",
+] as const;
+// glow and halo are luminous auras — they only read well on bright colors. On a
+// dim/dark emphasis color they turn into an ugly muddy blob, so those colors get
+// the non-luminous set only.
+const NON_LUMINOUS_EMPHASIS_VARIANTS = ["color", "underline", "jiggle", "pulse", "frame"] as const;
 const VIETNAMESE_SCALE_FIT_GUARD = 1.06;
+const DEFAULT_CANVAS_BACKGROUND = "linear-gradient(135deg,#00B4D8,#FF006E)";
 const ARC_BUTTON_TAP = { scale: 0.94, y: 2 };
 const ARC_BUTTON_TAP_TRANSITION = { type: "spring" as const, stiffness: 400, damping: 24 };
 const useIsomorphicLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
@@ -95,13 +114,23 @@ const SPEECH_BUBBLE_MASK_STYLE = {
   maskRepeat: "no-repeat",
 } as const;
 
+// Outline speech bubble (same shape as the comment canvas) so it matches the
+// stroked Plus / Heart / Share icons in the arc plate instead of a solid fill.
 function CommentBubbleIcon({ className }: { className?: string }) {
   return (
-    <span
-      className={`inline-block bg-current ${className ?? ""}`}
-      style={SPEECH_BUBBLE_MASK_STYLE}
+    <svg
+      viewBox="20 45 242 253"
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={18}
+      strokeLinejoin="round"
       aria-hidden
-    />
+    >
+      <g transform="translate(262 0) rotate(90)">
+        <path d="M82 26H262C282 26 298 43 298 64V163C298 184 282 201 261 201H153C148 216 135 227 114 235C105 238 96 241 88 242C99 234 104 221 103 201H82C61 201 45 184 45 163V64C45 43 61 26 82 26Z" />
+      </g>
+    </svg>
   );
 }
 
@@ -282,12 +311,12 @@ export function PostCard({
   // End: chip's right edge clears the left edge with CHIP_EXIT_PAD to spare.
   const commentEndX = -commentTravelHalf;
   const currentText = textPages[textPage] ?? textPages[0] ?? "";
+  const staticCanvasBackground = getResolvedPostBackground(post);
   const slidingCanvasBackground = useMemo(
-    () => getSlidingCanvasBackground(spec, post.bg_gradient, backgroundShiftPage),
-    [backgroundShiftPage, post.bg_gradient, spec],
+    () => getSlidingCanvasBackground(spec, staticCanvasBackground, backgroundShiftPage),
+    [backgroundShiftPage, spec, staticCanvasBackground],
   );
   const hasTransitionBackground = !!slidingCanvasBackground;
-  const staticCanvasBackground = post.bg_gradient ?? "#000";
   const activeStory = commentStories[storyIndex] ?? null;
   const storyPages = useMemo(
     () => (activeStory ? getCommentStoryPages(activeStory.text, storyFastMode) : []),
@@ -299,8 +328,8 @@ export function PostCard({
   const showingFlyingComment =
     !isPaused && !!activeComment && shouldFloatComment(activeCommentLabel);
   const postHashtags = useMemo(
-    () => getPostHashtags(spec.text, post.post_type),
-    [post.post_type, spec.text],
+    () => getPostHashtags(spec.text, post.post_type, textPages),
+    [post.post_type, spec.text, textPages],
   );
   const viewCount = useMemo(
     () => getPostViewCount(post, likes, chronologicalComments.length),
@@ -329,12 +358,24 @@ export function PostCard({
   useEffect(() => {
     setPageFitScales({});
   }, [textPages, uniformPageSize, canvasWidth]);
-  const needsSharedFit = textPages.length > 1;
-  const allPagesMeasured = needsSharedFit && Object.keys(pageFitScales).length >= textPages.length;
-  const sharedFitScale = allPagesMeasured ? Math.min(...Object.values(pageFitScales)) : 1;
+  // Solo (single-word) pages are excluded from the shared sizing: they fit on
+  // their own so a long reveal word can shrink to the screen without dragging
+  // every other page down to match it.
+  const sharedFitIndexes = useMemo(
+    () => textPages.map((_, i) => i).filter((i) => !isSoloTextPage(textPages[i])),
+    [textPages],
+  );
+  const needsSharedFit = sharedFitIndexes.length > 1;
+  const allPagesMeasured =
+    needsSharedFit && sharedFitIndexes.every((i) => pageFitScales[i] !== undefined);
+  const sharedFitScale = allPagesMeasured
+    ? Math.min(...sharedFitIndexes.map((i) => pageFitScales[i]))
+    : 1;
+  const currentIsSolo = isSoloTextPage(currentText);
+  const useSharedSize = allPagesMeasured && !currentIsSolo;
   const displaySize = Math.max(
     MIN_FONT_SIZE,
-    allPagesMeasured ? uniformPageSize * sharedFitScale : uniformPageSize,
+    useSharedSize ? uniformPageSize * sharedFitScale : uniformPageSize,
   );
 
   const displaySpec: CanvasSpec = {
@@ -684,7 +725,8 @@ export function PostCard({
             aria-hidden
             className="absolute inset-y-0 left-0"
             style={{
-              background: slidingCanvasBackground.background,
+              background: DEFAULT_CANVAS_BACKGROUND,
+              backgroundImage: slidingCanvasBackground.background,
               width: slidingCanvasBackground.width,
             }}
             initial={false}
@@ -695,7 +737,10 @@ export function PostCard({
           <div
             aria-hidden
             className="absolute inset-0"
-            style={{ background: staticCanvasBackground }}
+            style={{
+              background: DEFAULT_CANVAS_BACKGROUND,
+              backgroundImage: staticCanvasBackground,
+            }}
           />
         )}
         {hasTransitionBackground && (
@@ -762,30 +807,33 @@ export function PostCard({
                 paused={isPaused}
                 revealed={pageRevealed}
                 canvasWidth={canvasWidth}
-                disableFit={allPagesMeasured}
+                disableFit={useSharedSize}
                 background={staticCanvasBackground}
               />
             )}
           </motion.div>
         </AnimatePresence>
 
-        {/* Off-screen measurers: one per page at the uniform base size, so the
-            smallest required fit can be shared across all pages (consistent size). */}
+        {/* Off-screen measurers: one per multi-word page at the uniform base size,
+            so the smallest required fit can be shared across them (consistent
+            size). Solo pages are skipped — they size themselves. */}
         {needsSharedFit && isVisible && (
           <div className="pointer-events-none absolute inset-0" aria-hidden>
-            {textPages.map((pageText, pageIndex) => (
-              <WordSequenceText
-                key={`measure-${pageIndex}-${pageText.length}`}
-                spec={{ ...spec, text: pageText, size: uniformPageSize, entrance: "fade" }}
-                playKey={0}
-                paused
-                revealed
-                measure
-                canvasWidth={canvasWidth}
-                onFitScale={(scale) => reportPageFit(pageIndex, scale)}
-                background={staticCanvasBackground}
-              />
-            ))}
+            {textPages.map((pageText, pageIndex) =>
+              isSoloTextPage(pageText) ? null : (
+                <WordSequenceText
+                  key={`measure-${pageIndex}-${pageText.length}`}
+                  spec={{ ...spec, text: pageText, size: uniformPageSize, entrance: "fade" }}
+                  playKey={0}
+                  paused
+                  revealed
+                  measure
+                  canvasWidth={canvasWidth}
+                  onFitScale={(scale) => reportPageFit(pageIndex, scale)}
+                  background={staticCanvasBackground}
+                />
+              ),
+            )}
           </div>
         )}
 
@@ -937,7 +985,7 @@ export function PostCard({
                   <CommentBubbleIcon className="absolute inset-0 size-7 text-white" />
                   {comments.length > 0 && (
                     <span
-                      className="relative mt-0.5 max-w-[1.8rem] truncate text-center font-mono text-[10px] font-black leading-none text-black"
+                      className="relative -mt-0.5 max-w-[1.8rem] truncate text-center font-mono text-[10px] font-black leading-none text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)]"
                       style={{ fontSize: 10 }}
                     >
                       {formatCompactCount(comments.length)}
@@ -1551,63 +1599,113 @@ export function paginateText(text: string) {
   return mergeShortTextPages(blocks.flatMap((block) => paginateTextBlock(block)));
 }
 
-function paginateTextBlock(text: string) {
+// A single-word page (e.g. a one-word reveal). It cannot wrap, so it is sized on
+// its own to fit the screen rather than being held to the shared page size.
+function isSoloTextPage(text: string) {
+  return getWords(text).length <= 1;
+}
+
+// A page plus whether it may be merged backwards. Only "mergeable" pages — the
+// overflow continuations created when a single sentence is split because it
+// exceeds the word limit — can be pulled back to avoid a 1-2 word orphan.
+// Deliberate pages (a whole newline block / a complete sentence, e.g. a one-word
+// reveal) are never merged, even when short.
+type RawTextPage = { text: string; mergeable: boolean };
+
+function paginateTextBlock(text: string): RawTextPage[] {
   const wordLimit = getTextPageWordLimit(text);
   const sentences = text.match(/[^.!?]+[.!?]+["')\]]*|[^.!?]+$/g) ?? [text];
   return sentences
     .flatMap((sentence) => chunkSentenceByWords(sentence.trim(), wordLimit))
-    .filter(Boolean);
+    .filter((page) => page.text);
 }
 
-function chunkSentenceByWords(sentence: string, wordLimit: number) {
+function chunkSentenceByWords(sentence: string, wordLimit: number): RawTextPage[] {
   const words = sentence.match(/\S+/g) ?? [];
-  if (words.length <= wordLimit) return [sentence];
+  if (words.length <= wordLimit) return [{ text: sentence, mergeable: false }];
 
+  const units = getTextPageUnits(words);
   const pageCount = Math.ceil(words.length / wordLimit);
   const targetWordsPerPage = Math.ceil(words.length / pageCount);
   const chunks: string[] = [];
+  let currentWords: string[] = [];
+  let currentWeight = 0;
 
-  for (let i = 0; i < words.length; i += targetWordsPerPage) {
-    let chunkEnd = Math.min(i + targetWordsPerPage, words.length);
-
-    // The page word limit is a guide, not a hard rule: never orphan only 1-2
-    // words on a following page just because the current page reached the cap.
-    const remainingWords = words.length - chunkEnd;
-    if (remainingWords > 0 && remainingWords <= 2) {
-      chunkEnd = words.length;
+  for (const unit of units) {
+    if (currentWords.length > 0 && currentWeight + unit.weight > targetWordsPerPage) {
+      chunks.push(currentWords.join(" "));
+      currentWords = [];
+      currentWeight = 0;
     }
 
-    if (chunkEnd > i) {
-      chunks.push(words.slice(i, chunkEnd).join(" "));
-    }
+    currentWords.push(...unit.words);
+    currentWeight += unit.weight;
   }
 
-  return chunks;
+  if (currentWords.length > 0) chunks.push(currentWords.join(" "));
+  // The first chunk heads the sentence (deliberate); later chunks are overflow
+  // continuations that may merge back if they end up too short.
+  return chunks.map((text, index) => ({ text, mergeable: index > 0 }));
+}
+
+type TextPageUnit = {
+  words: string[];
+  weight: number;
+};
+
+function getTextPageUnits(words: string[]): TextPageUnit[] {
+  const units: TextPageUnit[] = [];
+
+  for (let index = 0; index < words.length; ) {
+    if (index + 2 < words.length && isStandaloneHyphen(words[index + 1])) {
+      units.push({ words: words.slice(index, index + 3), weight: 3 });
+      index += 3;
+      continue;
+    }
+
+    if (index + 1 < words.length && isStandaloneHyphen(words[index])) {
+      units.push({ words: words.slice(index, index + 2), weight: 2 });
+      index += 2;
+      continue;
+    }
+
+    units.push({ words: [words[index]], weight: 1 });
+    index += 1;
+  }
+
+  return units;
+}
+
+function isStandaloneHyphen(word: string) {
+  return /^[-–—]+$/.test(word.trim());
 }
 
 const MIN_STANDALONE_PAGE_WORDS = 3;
 
-function mergeShortTextPages(pages: string[]) {
-  const merged: string[] = [];
+// Anti-orphan: only overflow continuations may merge; deliberate pages stay.
+function mergeShortTextPages(pages: RawTextPage[]) {
+  const merged: RawTextPage[] = [];
 
   for (const page of pages) {
-    const normalized = page.trim();
+    const normalized = page.text.trim();
     if (!normalized) continue;
 
-    if (getWords(normalized).length < MIN_STANDALONE_PAGE_WORDS && merged.length > 0) {
-      merged[merged.length - 1] = joinTextPages(merged[merged.length - 1], normalized);
+    // Pull a short page back ONLY when it is an overflow continuation of the
+    // previous page — a deliberate short page (whole line / one-word reveal)
+    // always keeps its own page.
+    if (
+      page.mergeable &&
+      getWords(normalized).length < MIN_STANDALONE_PAGE_WORDS &&
+      merged.length > 0
+    ) {
+      merged[merged.length - 1].text = joinTextPages(merged[merged.length - 1].text, normalized);
       continue;
     }
 
-    merged.push(normalized);
+    merged.push({ text: normalized, mergeable: page.mergeable });
   }
 
-  while (merged.length > 1 && getWords(merged[0]).length < MIN_STANDALONE_PAGE_WORDS) {
-    merged[1] = joinTextPages(merged[0], merged[1]);
-    merged.shift();
-  }
-
-  return merged;
+  return merged.map((page) => page.text);
 }
 
 function joinTextPages(left: string, right: string) {
@@ -1733,14 +1831,81 @@ function getCommentStoryGradient(index: number) {
     "linear-gradient(135deg,#06FFA5,#118AB2)",
     "linear-gradient(135deg,#FFBE0B,#FB5607)",
     "linear-gradient(135deg,#3A86FF,#7209B7)",
-    "linear-gradient(135deg,#073B4C,#06D6A0)",
+    DEFAULT_CANVAS_BACKGROUND,
   ];
   return gradients[index % gradients.length];
 }
 
 function getGradientTransitionPath(spec: CanvasSpec) {
   if (spec.backgroundStyle !== "transition") return [];
-  return (spec.gradientPath ?? []).map((gradient) => gradient.trim()).filter(Boolean);
+  return (spec.gradientPath ?? [])
+    .map((gradient) => gradient.trim())
+    .filter((gradient) => isUsableCanvasBackground(gradient));
+}
+
+function getResolvedPostBackground(post: Post) {
+  const background = post.bg_gradient?.trim();
+  if (isUsableCanvasBackground(background)) return background;
+  return getPostFallbackGradient(post.id);
+}
+
+function getPostFallbackGradient(id: string) {
+  const gradients = [
+    "linear-gradient(135deg,#FF006E,#8338EC)",
+    "linear-gradient(135deg,#3A86FF,#06FFA5)",
+    "linear-gradient(135deg,#F72585,#118AB2)",
+    "linear-gradient(135deg,#FFD60A,#FF006E)",
+    "linear-gradient(135deg,#00B4D8,#FF006E)",
+  ];
+  return gradients[getStableNumber(id) % gradients.length];
+}
+
+function isTooDarkCanvasBackground(background: string) {
+  const colors = extractGradientColors(background);
+  if (colors.length === 0) return true;
+  const luminance = colors.map(getHexColorLuminance);
+  const average = luminance.reduce((sum, value) => sum + value, 0) / luminance.length;
+  return (
+    luminance.every((value) => value < 0.035) || (Math.min(...luminance) < 0.05 && average < 0.34)
+  );
+}
+
+function isUsableCanvasBackground(background: string | null | undefined) {
+  const value = background?.trim();
+  if (!value) return false;
+
+  const normalized = value.toLowerCase();
+  if (
+    normalized === "none" ||
+    normalized === "transparent" ||
+    normalized === "black" ||
+    normalized === "#000" ||
+    normalized === "#000000"
+  ) {
+    return false;
+  }
+
+  if (normalized.startsWith("url(")) return true;
+  return !isTooDarkCanvasBackground(value);
+}
+
+function getHexColorLuminance(color: string) {
+  const hex = color.trim().replace(/^#/, "");
+  if (![3, 6, 8].includes(hex.length)) return 1;
+  const normalized =
+    hex.length === 3
+      ? hex
+          .split("")
+          .map((char) => char + char)
+          .join("")
+      : hex.slice(0, 6);
+  const int = Number.parseInt(normalized, 16);
+  if (Number.isNaN(int)) return 1;
+  const rgb = [(int >> 16) & 255, (int >> 8) & 255, int & 255].map((channel) => {
+    const value = channel / 255;
+    return value <= 0.03928 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2];
 }
 
 function getSlidingCanvasBackground(spec: CanvasSpec, fallback: string | null, shiftPage: number) {
@@ -1766,15 +1931,21 @@ function getSlidingCanvasBackground(spec: CanvasSpec, fallback: string | null, s
 function getTransitionColorCycle(spec: CanvasSpec, fallback: string | null) {
   const gradients = getGradientTransitionPath(spec);
   const colors = gradients.reduce<string[]>((items, gradient, index) => {
-    const stops = extractGradientColors(gradient);
+    const stops = extractGradientColors(gradient).filter(
+      (color) => !isTooDarkCanvasBackground(color),
+    );
     if (stops.length < 2) return items;
     if (index === 0) items.push(stops[0]);
     items.push(stops[stops.length - 1]);
     return items;
   }, []);
 
-  const fallbackStops = fallback ? extractGradientColors(fallback) : [];
-  const cycle = colors.length >= 2 ? colors : fallbackStops;
+  const fallbackStops = fallback
+    ? extractGradientColors(fallback).filter((color) => !isTooDarkCanvasBackground(color))
+    : [];
+  const defaultStops = extractGradientColors(DEFAULT_CANVAS_BACKGROUND);
+  const cycle =
+    colors.length >= 2 ? colors : fallbackStops.length >= 2 ? fallbackStops : defaultStops;
   if (cycle.length < 2) return [];
   return cycle[0] === cycle[cycle.length - 1] ? cycle.slice(0, -1) : cycle;
 }
@@ -1787,11 +1958,15 @@ function extractGradientColors(value: string) {
   );
 }
 
-function getPostHashtags(text: string, postType: string) {
+function getPostHashtags(text: string, postType: string, pages?: string[]) {
   const explicitTags = Array.from(text.matchAll(/#([a-z0-9][a-z0-9_-]{1,24})/gi)).map((match) =>
     normalizeHashtag(match[1]),
   );
-  const textTags = getWords(text)
+  // Never derive a tag from the final page of a multi-page post — it is the
+  // reveal/punchline (e.g. a guessing game's answer), and tagging it would spoil
+  // the mystery right under the post.
+  const tagSource = pages && pages.length > 1 ? pages.slice(0, -1).join(" ") : text;
+  const textTags = getWords(tagSource)
     .map(normalizeHashtag)
     .filter((tag) => tag.length >= 4 && !STOP_WORDS.has(tag));
   const typeTag = normalizeHashtag(postType);
@@ -1866,6 +2041,7 @@ function WordSequenceText({
   const wrapperRef = useRef<HTMLDivElement>(null);
   const textRef = useRef<HTMLDivElement>(null);
   const [fitScale, setFitScale] = useState(1);
+  const [soloInlineScale, setSoloInlineScale] = useState(1);
   const staticRender = revealed || measure;
   const fontSize = spec.size * (disableFit ? 1 : fitScale);
   const textColor = getCanvasTextColor(spec, background);
@@ -1877,6 +2053,7 @@ function WordSequenceText({
 
   useIsomorphicLayoutEffect(() => {
     setFitScale(1);
+    setSoloInlineScale(1);
   }, [
     canvasWidth,
     background,
@@ -1905,15 +2082,21 @@ function WordSequenceText({
     const measuredWidth = getMeasuredTextWidth(text, wrapper, leftAnchoredText);
     const widthRatio = wrapperWidth / Math.max(measuredWidth * visualScaleGuard, 1);
     const heightRatio = maxHeight / Math.max(text.scrollHeight, 1);
+    // A single word cannot wrap, so the usual immersive minimums must not block
+    // it from shrinking enough to fit. For reveal words, keep the letters tall
+    // and condense the word horizontally only when that is needed to stay inside
+    // the canvas bounds.
+    const isSolo = words.length <= 1;
     const finalSizeFloor = Math.min(1, MIN_FONT_SIZE / Math.max(spec.size, 1));
-    const floor = Math.max(
-      isVietnamese ? MIN_TEXT_FIT_SCALE : MIN_ENGLISH_TEXT_FIT_SCALE,
-      finalSizeFloor,
-    );
-    const nextFit = Math.max(
-      floor,
-      Math.min(1, fitScale * Math.min(widthRatio, heightRatio) * 0.98),
-    );
+    const floor = isSolo
+      ? SOLO_TEXT_MIN_FIT
+      : Math.max(isVietnamese ? MIN_TEXT_FIT_SCALE : MIN_ENGLISH_TEXT_FIT_SCALE, finalSizeFloor);
+    const widthFit = Math.min(1, fitScale * widthRatio * 0.98);
+    const heightFit = Math.min(1, fitScale * heightRatio * 0.98);
+    const nextFit = isSolo
+      ? Math.max(floor, Math.min(1, Math.max(widthFit, SOLO_REVEAL_MIN_FIT), heightFit))
+      : Math.max(floor, Math.min(1, widthFit, heightFit));
+    const nextSoloInlineScale = isSolo ? Math.min(1, widthFit / Math.max(nextFit, 0.01)) : 1;
 
     if (nextFit < fitScale - 0.01) {
       setFitScale(nextFit);
@@ -1921,6 +2104,9 @@ function WordSequenceText({
       // Converged — report the scale this page needs so the parent can pick a
       // single shared size that keeps every page the same immersive size.
       onFitScale?.(nextFit);
+    }
+    if (Math.abs(nextSoloInlineScale - soloInlineScale) > 0.01) {
+      setSoloInlineScale(nextSoloInlineScale);
     }
   }, [
     disableFit,
@@ -1938,11 +2124,38 @@ function WordSequenceText({
     isVietnamese,
     leftAnchoredText,
     visualScaleGuard,
+    soloInlineScale,
   ]);
 
   const renderWord = (word: string, index: number, suppressSpotlight = false) => {
     const important = emphasized.has(index);
     const spotlightWord = spotlightEmphasis && important && !suppressSpotlight;
+    const emphasisVariant = important
+      ? getEmphasisVariant(spec.text, word, index, !isDimEmphasisColor(emphasisColor))
+      : null;
+    const wordColor = important
+      ? getEmphasisWordColor(emphasisVariant, textColor, emphasisColor)
+      : textColor;
+    const entranceDelay = staticRender ? 0 : getWordDelay(index, spec.tempo, spec.rhythm);
+    const entranceDuration = staticRender
+      ? 0.01
+      : important
+        ? tempo.wordDuration * 1.22
+        : tempo.wordDuration;
+    const emphasisStyle = important
+      ? ({
+          "--kinetic-emphasis-delay": `${entranceDelay + entranceDuration + 0.18}s`,
+          ...(emphasisVariant === "halo" || emphasisVariant === "glow"
+            ? { "--kinetic-aura-color": getAuraColor(textColor) }
+            : {}),
+        } as CSSProperties)
+      : undefined;
+    // Bake the play-state into the animation shorthand so we never mix the
+    // `animation` shorthand with the `animationPlayState` longhand (React warns).
+    const innerAnimation = important
+      ? getEmphasisInnerAnimation(emphasisVariant, staticRender)
+      : undefined;
+    const isSoloRevealWord = words.length <= 1;
     return (
       <motion.span
         key={`${word}-${index}`}
@@ -1964,17 +2177,13 @@ function WordSequenceText({
           },
         }}
         transition={{
-          delay: staticRender ? 0 : getWordDelay(index, spec.tempo, spec.rhythm),
-          duration: staticRender
-            ? 0.01
-            : important
-              ? tempo.wordDuration * 1.22
-              : tempo.wordDuration,
+          delay: entranceDelay,
+          duration: entranceDuration,
           ease: [0.22, 1, 0.36, 1],
         }}
         className={important ? "relative inline-flex" : "inline-flex"}
         style={{
-          color: important ? emphasisColor : textColor,
+          color: wordColor,
           display: spotlightWord ? "inline-flex" : "inline-block",
           flexBasis: spotlightWord ? "100%" : undefined,
           justifyContent: spotlightWord ? "center" : undefined,
@@ -1987,7 +2196,7 @@ function WordSequenceText({
           whiteSpace: "nowrap",
           wordBreak: "normal",
           textShadow: important
-            ? "0 0 22px rgba(255,255,255,0.35), 0 5px 36px rgba(0,0,0,0.55)"
+            ? getEmphasisTextShadow(emphasisVariant)
             : "0 4px 40px rgba(0,0,0,0.45)",
           animationPlayState: paused ? "paused" : "running",
           transformOrigin: leftAnchoredText && !spotlightWord ? "left center" : "center",
@@ -1995,14 +2204,56 @@ function WordSequenceText({
           // bolder glyphs never kiss the adjacent words.
           marginTop: spotlightWord ? "0.08em" : undefined,
           marginBottom: spotlightWord ? "0.08em" : undefined,
-          marginLeft: important && !spotlightWord ? "0.06em" : undefined,
-          marginRight: important && !spotlightWord ? "0.06em" : undefined,
+          marginLeft:
+            important && !spotlightWord
+              ? emphasisVariant === "frame"
+                ? "0.18em"
+                : "0.06em"
+              : undefined,
+          marginRight:
+            important && !spotlightWord
+              ? emphasisVariant === "frame"
+                ? "0.18em"
+                : "0.06em"
+              : undefined,
         }}
       >
-        {word}
+        <span
+          style={{
+            display: "inline-block",
+            transform: isSoloRevealWord ? `scaleX(${soloInlineScale})` : undefined,
+            transformOrigin: "center",
+          }}
+        >
+          <span
+            className={
+              important
+                ? `kinetic-emphasis-mark${
+                    emphasisVariant === "halo"
+                      ? " kinetic-emph-halo"
+                      : emphasisVariant === "frame"
+                        ? " kinetic-emph-frame"
+                        : emphasisVariant === "underline"
+                          ? " kinetic-emph-underline"
+                          : ""
+                  }${staticRender ? "" : " is-animated"}`
+                : undefined
+            }
+            style={{
+              ...emphasisStyle,
+              animation: innerAnimation
+                ? `${innerAnimation} ${paused ? "paused" : "running"}`
+                : undefined,
+            }}
+          >
+            {word}
+          </span>
+        </span>
       </motion.span>
     );
   };
+
+  const loopAnimation = getLoopAnimation(spec.loop, spec.tempo);
 
   return (
     <div
@@ -2043,8 +2294,9 @@ function WordSequenceText({
           textAlign: leftAnchoredText ? "left" : "center",
           textShadow: "0 4px 40px rgba(0,0,0,0.45)",
           transform: `rotate(${spec.rotation}deg)`,
-          animation: getLoopAnimation(spec.loop, spec.tempo),
-          animationPlayState: paused ? "paused" : "running",
+          animation: loopAnimation
+            ? `${loopAnimation} ${paused ? "paused" : "running"}`
+            : undefined,
         }}
       >
         {isVietnamese
@@ -2144,6 +2396,75 @@ function getEmphasizedWordIndexes(words: string[]) {
   const selected = candidates.slice(0, desiredCount).map((item) => item.index);
   if (selected.length === 0 && words.length > 0) selected.push(words.length - 1);
   return new Set(selected);
+}
+
+type EmphasisVariant = (typeof EMPHASIS_VARIANTS)[number];
+
+function getEmphasisVariant(
+  text: string,
+  word: string,
+  index: number,
+  allowLuminous: boolean,
+): EmphasisVariant {
+  const pool: readonly EmphasisVariant[] = allowLuminous
+    ? EMPHASIS_VARIANTS
+    : NON_LUMINOUS_EMPHASIS_VARIANTS;
+  return pool[getStableNumber(`${text}|${word}|${index}`) % pool.length];
+}
+
+// True for dim/dark colors where a glow or halo would look muddy. Uses HSV value
+// (the brightest channel) so vibrant pink/blue/purple still count as bright.
+function isDimEmphasisColor(color: string) {
+  const hex = color.trim().replace(/^#/, "");
+  const full = hex.length === 3 ? hex.replace(/(.)/g, "$1$1") : hex;
+  if (full.length !== 6) return false;
+  const r = parseInt(full.slice(0, 2), 16);
+  const g = parseInt(full.slice(2, 4), 16);
+  const b = parseInt(full.slice(4, 6), 16);
+  return Math.max(r, g, b) / 255 < 0.42;
+}
+
+function getEmphasisTextShadow(variant: EmphasisVariant | null) {
+  if (variant === "color") {
+    return "0 4px 40px rgba(0,0,0,0.45)";
+  }
+  if (variant === "halo") {
+    return "0 4px 40px rgba(0,0,0,0.45)";
+  }
+  if (variant === "glow") {
+    return "0 0 0.14em var(--kinetic-aura-color, #FFBE0B), 0 0 0.4em var(--kinetic-aura-color, #FFBE0B), 0 5px 30px rgba(0,0,0,0.5)";
+  }
+  if (variant === "frame") {
+    return "0 2px 16px rgba(0,0,0,0.5)";
+  }
+  return "0 0 22px rgba(255,255,255,0.35), 0 5px 36px rgba(0,0,0,0.55)";
+}
+
+// halo and frame are driven entirely by their CSS classes (kinetic-emph-halo /
+// kinetic-emph-frame); only the transform/filter variants animate inline.
+function getEmphasisInnerAnimation(variant: EmphasisVariant | null, staticRender: boolean) {
+  if (staticRender || !variant) return undefined;
+  if (variant === "jiggle") return "kinetic-emphasis-jiggle 0.58s ease-in-out 0.08s 2";
+  if (variant === "pulse") return "kinetic-emphasis-pulse 1.35s ease-in-out infinite";
+  if (variant === "glow") return "kinetic-emphasis-glow 1.6s ease-in-out infinite";
+  return undefined;
+}
+
+function getEmphasisWordColor(
+  variant: EmphasisVariant | null,
+  textColor: string,
+  emphasisColor: string,
+) {
+  return variant === "color" ? emphasisColor : textColor;
+}
+
+function getAuraColor(textColor: string) {
+  return isWhiteLikeColor(textColor) ? "#FFBE0B" : "currentColor";
+}
+
+function isWhiteLikeColor(color: string) {
+  const normalized = color.trim().toLowerCase();
+  return normalized === "white" || normalized === "#fff" || normalized === "#ffffff";
 }
 
 function getWordImportance(word: string, index: number, total: number) {

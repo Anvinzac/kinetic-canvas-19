@@ -109,7 +109,7 @@ VALUES
     '91000000-0000-4000-8000-000000000003',
     'Technology',
     'Short kinetic posts about AI, product launches, apps, hardware, and software habits.',
-    'linear-gradient(180deg,#000000,#1a1a2e)',
+    'linear-gradient(135deg,#00B4D8,#FF006E)',
     'JetBrains Mono',
     '09:19'
   ),

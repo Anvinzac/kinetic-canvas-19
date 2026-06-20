@@ -167,9 +167,98 @@ const MOCK_PROFILES: MockProfile[] = [
     bio: "Quiet captions that still know how to move.",
     created_at: "2026-05-20T06:18:00.000Z",
   },
+  {
+    id: "77777777-7777-4777-8777-777777777777",
+    auth_user_id: null,
+    username: "do_chu_bot",
+    display_name: "Đố Chữ Mỗi Ngày",
+    avatar_url: "https://api.dicebear.com/7.x/bottts/svg?seed=dochu&backgroundColor=8338EC,3A86FF",
+    bio: "🤖 Mỗi ngày một từ tiếng Anh — đoán nghĩa qua gợi ý tiếng Việt.",
+    created_at: "2026-05-30T05:00:00.000Z",
+  },
 ];
 
+const VOCAB_BOT_ID = "77777777-7777-4777-8777-777777777777";
+
 const MOCK_POSTS: MockPost[] = [
+  {
+    id: "70707070-7001-4701-8701-707070700001",
+    author_id: VOCAB_BOT_ID,
+    post_type: "text",
+    canvas_html: canvas({
+      text: [
+        "Mùi đất thơm dịu sau cơn mưa đầu mùa.",
+        "Từ này bắt đầu bằng chữ P.",
+        "Cả từ gồm 9 chữ cái.",
+        "Đoán tiếp nào, bạn tìm ra chứ?",
+        "Petrichor",
+      ].join("\n"),
+      font: "Inter",
+      size: 72,
+      color: "#ffffff",
+      weight: 800,
+      letterSpacing: -0.02,
+      entrance: "fade",
+      loop: "float",
+      tempo: "steady",
+      rhythm: "smooth",
+    }),
+    media_urls: [],
+    bg_gradient: "linear-gradient(135deg,#00B4D8,#FF006E)",
+    created_at: "2026-06-19T22:30:00.000Z",
+  },
+  {
+    id: "70707070-7002-4702-8702-707070700002",
+    author_id: VOCAB_BOT_ID,
+    post_type: "text",
+    canvas_html: canvas({
+      text: [
+        "Niềm vui bất ngờ khi gặp điều may mắn.",
+        "Từ này bắt đầu bằng chữ S.",
+        "Cả từ gồm 11 chữ cái.",
+        "Thử đoán xem, bạn tìm ra không?",
+        "Serendipity",
+      ].join("\n"),
+      font: "Inter",
+      size: 72,
+      color: "#ffffff",
+      weight: 800,
+      letterSpacing: -0.02,
+      entrance: "scale",
+      loop: "pulse",
+      tempo: "steady",
+      rhythm: "stagger",
+    }),
+    media_urls: [],
+    bg_gradient: "linear-gradient(135deg,#F72585,#7209B7)",
+    created_at: "2026-06-19T13:00:00.000Z",
+  },
+  {
+    id: "70707070-7003-4703-8703-707070700003",
+    author_id: VOCAB_BOT_ID,
+    post_type: "text",
+    canvas_html: canvas({
+      text: [
+        "Thứ tồn tại rất ngắn, thoáng qua rồi tan.",
+        "Từ này bắt đầu bằng chữ E.",
+        "Cả từ gồm 9 chữ cái.",
+        "Đoán tiếp đi, bạn nghĩ ra chưa?",
+        "Ephemeral",
+      ].join("\n"),
+      font: "Inter",
+      size: 72,
+      color: "#ffffff",
+      weight: 800,
+      letterSpacing: -0.02,
+      entrance: "slide",
+      loop: "float",
+      tempo: "slow",
+      rhythm: "smooth",
+    }),
+    media_urls: [],
+    bg_gradient: "linear-gradient(135deg,#3A86FF,#8338EC)",
+    created_at: "2026-06-19T06:45:00.000Z",
+  },
   {
     id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa1",
     author_id: MOCK_ME_ID,
@@ -217,7 +306,7 @@ const MOCK_POSTS: MockPost[] = [
     media_urls: [
       "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=900&q=80",
     ],
-    bg_gradient: "linear-gradient(135deg,#073B4C,#118AB2)",
+    bg_gradient: "linear-gradient(135deg,#00B4D8,#FF006E)",
     created_at: "2026-06-16T07:19:30.000Z",
   },
   {
@@ -234,7 +323,7 @@ const MOCK_POSTS: MockPost[] = [
       tempo: "slow",
     }),
     media_urls: [],
-    bg_gradient: "linear-gradient(135deg,#073B4C,#06D6A0)",
+    bg_gradient: "linear-gradient(135deg,#00B4D8,#FF006E)",
     created_at: "2026-06-16T07:19:00.000Z",
   },
   {
@@ -395,7 +484,7 @@ const MOCK_POSTS: MockPost[] = [
     media_urls: [
       "https://images.unsplash.com/photo-1519608487953-e999c86e7455?auto=format&fit=crop&w=900&q=80",
     ],
-    bg_gradient: "linear-gradient(135deg,#0F172A,#7C3AED)",
+    bg_gradient: "linear-gradient(135deg,#00B4D8,#FF006E)",
     created_at: "2026-06-16T06:58:00.000Z",
   },
   {
@@ -412,7 +501,7 @@ const MOCK_POSTS: MockPost[] = [
       rotation: -2,
     }),
     media_urls: [],
-    bg_gradient: "linear-gradient(135deg,#06283D,#06D6A0)",
+    bg_gradient: "linear-gradient(135deg,#00B4D8,#FF006E)",
     created_at: "2026-06-16T06:32:00.000Z",
   },
   {
@@ -449,7 +538,7 @@ const MOCK_POSTS: MockPost[] = [
       y: 55,
     }),
     media_urls: ["https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"],
-    bg_gradient: "linear-gradient(180deg,#000000,#1a1a2e)",
+    bg_gradient: "linear-gradient(135deg,#00B4D8,#FF006E)",
     created_at: "2026-06-15T22:15:00.000Z",
   },
   {
@@ -513,7 +602,7 @@ const MOCK_POSTS: MockPost[] = [
       loop: "pulse",
     }),
     media_urls: [],
-    bg_gradient: "linear-gradient(135deg,#073B4C,#118AB2)",
+    bg_gradient: "linear-gradient(135deg,#00B4D8,#FF006E)",
     created_at: "2026-06-14T14:18:00.000Z",
   },
   {

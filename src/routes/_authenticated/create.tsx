@@ -123,7 +123,7 @@ const ANIMATION_TEMPLATES: AnimationTemplate[] = [
     id: "editorial-drift",
     label: "editorial drift",
     mood: "slow · smooth",
-    gradient: "linear-gradient(135deg,#073B4C,#06D6A0)",
+    gradient: "linear-gradient(135deg,#00B4D8,#FF006E)",
     spec: {
       font: "Playfair Display",
       size: 76,
@@ -143,7 +143,7 @@ const ANIMATION_TEMPLATES: AnimationTemplate[] = [
     id: "mono-sprint",
     label: "mono sprint",
     mood: "snappy · stagger",
-    gradient: "linear-gradient(180deg,#000000,#1a1a2e)",
+    gradient: "linear-gradient(135deg,#00B4D8,#FF006E)",
     spec: {
       font: "JetBrains Mono",
       size: 64,
