@@ -67,18 +67,21 @@ export type Database = {
           created_at: string
           post_id: string | null
           run_date: string
+          slot_index: number
         }
         Insert: {
           agent_id: string
           created_at?: string
           post_id?: string | null
           run_date: string
+          slot_index?: number
         }
         Update: {
           agent_id?: string
           created_at?: string
           post_id?: string | null
           run_date?: string
+          slot_index?: number
         }
         Relationships: [
           {
@@ -277,6 +280,10 @@ export type Database = {
     Functions: {
       publish_daily_bot_posts: {
         Args: { p_run_date?: string }
+        Returns: number
+      }
+      publish_vocabulary_bot_post: {
+        Args: { p_run_at?: string }
         Returns: number
       }
     }
