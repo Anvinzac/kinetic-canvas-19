@@ -14,6 +14,107 @@ export type Database = {
   }
   public: {
     Tables: {
+      agent_content_items: {
+        Row: {
+          available_at: string
+          claimed_at: string | null
+          claimed_by_agent_id: string | null
+          content_key: string
+          created_at: string
+          id: string
+          payload: Json
+          source_key: string
+          status: string
+          updated_at: string
+          used_at: string | null
+          used_by_agent_id: string | null
+          used_post_id: string | null
+        }
+        Insert: {
+          available_at?: string
+          claimed_at?: string | null
+          claimed_by_agent_id?: string | null
+          content_key: string
+          created_at?: string
+          id?: string
+          payload: Json
+          source_key: string
+          status?: string
+          updated_at?: string
+          used_at?: string | null
+          used_by_agent_id?: string | null
+          used_post_id?: string | null
+        }
+        Update: {
+          available_at?: string
+          claimed_at?: string | null
+          claimed_by_agent_id?: string | null
+          content_key?: string
+          created_at?: string
+          id?: string
+          payload?: Json
+          source_key?: string
+          status?: string
+          updated_at?: string
+          used_at?: string | null
+          used_by_agent_id?: string | null
+          used_post_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_content_items_claimed_by_agent_id_fkey"
+            columns: ["claimed_by_agent_id"]
+            isOneToOne: false
+            referencedRelation: "bot_agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agent_content_items_source_key_fkey"
+            columns: ["source_key"]
+            isOneToOne: false
+            referencedRelation: "agent_content_sources"
+            referencedColumns: ["key"]
+          },
+          {
+            foreignKeyName: "agent_content_items_used_by_agent_id_fkey"
+            columns: ["used_by_agent_id"]
+            isOneToOne: false
+            referencedRelation: "bot_agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agent_content_items_used_post_id_fkey"
+            columns: ["used_post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agent_content_sources: {
+        Row: {
+          active: boolean
+          created_at: string
+          item_type: string
+          key: string
+          label: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          item_type: string
+          key: string
+          label: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          item_type?: string
+          key?: string
+          label?: string
+        }
+        Relationships: []
+      }
       bot_agents: {
         Row: {
           active: boolean
@@ -278,6 +379,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      enqueue_agent_content_item: {
+        Args: {
+          p_available_at?: string
+          p_content_key: string
+          p_payload: Json
+          p_source_key: string
+        }
+        Returns: string
+      }
       publish_daily_bot_posts: {
         Args: { p_run_date?: string }
         Returns: number
