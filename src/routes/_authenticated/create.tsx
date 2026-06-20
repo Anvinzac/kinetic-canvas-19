@@ -1269,8 +1269,10 @@ function getComposerTransitionColors(gradients: readonly string[]) {
   const colors = gradients.reduce<string[]>((items, gradient, index) => {
     const stops = extractGradientColors(gradient);
     if (stops.length < 2) return items;
-    if (index === 0) items.push(stops[0]);
-    items.push(stops[stops.length - 1]);
+    const first = stops[0];
+    const last = stops[stops.length - 1];
+    if (index === 0 && first) items.push(first);
+    if (last) items.push(last);
     return items;
   }, []);
 

@@ -271,7 +271,7 @@ function pickBestColor(
       return { color, score };
     })
     .filter(Boolean)
-    .sort((a, b) => b.score - a.score);
+    .sort((a, b) => (b?.score ?? 0) - (a?.score ?? 0));
 
   return ranked[0]?.color ?? candidates[0] ?? "#ffffff";
 }
