@@ -1,11 +1,11 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, useRouter } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getNotifications } from "@/lib/discovery.functions";
 import { parseCanvas } from "@/lib/canvas";
 import { isDemoSession } from "@/lib/demo-session";
 import { getMockNotifications, type MockNotificationsData } from "@/lib/mock-data";
-import { Heart, MessageCircle, UserPlus } from "lucide-react";
+import { ChevronLeft, Heart, MessageCircle, UserPlus } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/notifications")({
   component: NotificationsPage,
@@ -21,7 +21,15 @@ function timeAgo(iso: string) {
 
 function NotificationsPage() {
   const fn = useServerFn(getNotifications);
+  const navigate = useNavigate();
+  const router = useRouter();
   const demoMode = isDemoSession();
+
+  function handleBack() {
+    if (router.history.length > 1) router.history.back();
+    else navigate({ to: "/feed" });
+  }
+
   const { data, isLoading } = useQuery<MockNotificationsData>({
     queryKey: ["notifications", demoMode ? "demo" : "live"],
     queryFn: () => (demoMode ? getMockNotifications() : (fn() as Promise<MockNotificationsData>)),
@@ -30,7 +38,15 @@ function NotificationsPage() {
 
   return (
     <div className="min-h-[100dvh] pb-8">
-      <header className="sticky top-0 z-30 glass border-b border-white/10 px-4 pt-[max(env(safe-area-inset-top),12px)] pb-3">
+      <header className="sticky top-0 z-30 glass flex items-center gap-3 border-b border-white/10 px-4 pt-[max(env(safe-area-inset-top),12px)] pb-3">
+        <button
+          type="button"
+          onClick={handleBack}
+          className="-ml-1 grid size-8 place-items-center"
+          aria-label="Back"
+        >
+          <ChevronLeft className="size-5" />
+        </button>
         <h1 className="font-impact text-2xl tracking-wider">ACTIVITY</h1>
       </header>
       {isLoading || !data ? (

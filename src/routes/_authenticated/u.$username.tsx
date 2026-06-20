@@ -1,9 +1,11 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, useRouter } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useState, type ReactNode } from "react";
+import { Fragment, useState, type ReactNode } from "react";
 import { getProfile } from "@/lib/social.functions";
 import { getMe, toggleFollow } from "@/lib/discovery.functions";
+import { PostCard, paginateText } from "@/components/PostCard";
+import { KineticText } from "@/components/KineticText";
 import { parseCanvas } from "@/lib/canvas";
 import { isDemoSession } from "@/lib/demo-session";
 import {
@@ -11,25 +13,24 @@ import {
   getMockProfile,
   toggleMockFollow,
   type MockMeData,
+  type MockPost,
   type MockProfileData,
 } from "@/lib/mock-data";
 import {
-  CalendarDays,
+  ArrowLeft,
   Clapperboard,
+  Clock,
+  Flame,
   Grid3X3,
-  Heart,
   Image as ImageIcon,
-  MessageCircle,
   Newspaper,
-  Radio,
   Settings,
   Share2,
-  Sparkles,
+  Shuffle,
   Type,
   UserCheck,
   UserPlus,
   Video,
-  Wand2,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -39,15 +40,8 @@ export const Route = createFileRoute("/_authenticated/u/$username")({
 
 type PostKind = "text" | "image" | "video" | "slideshow" | "link";
 type PostFilter = "all" | PostKind;
+type PostSort = "recent" | "popular" | "shuffle";
 type Engagement = { likes: number; comments: number };
-type ProfilePost = {
-  id: string;
-  post_type: string;
-  canvas_html: string;
-  media_urls: string[] | null;
-  bg_gradient: string | null;
-  created_at: string;
-};
 
 const FILTERS: { id: PostFilter; label: string; icon: ReactNode }[] = [
   { id: "all", label: "all", icon: <Grid3X3 className="size-3.5" /> },
@@ -60,14 +54,18 @@ const FILTERS: { id: PostFilter; label: string; icon: ReactNode }[] = [
 
 const POST_KINDS: PostKind[] = ["text", "image", "video", "slideshow", "link"];
 
+
 function ProfilePage() {
   const { username } = Route.useParams();
   const navigate = useNavigate();
+  const router = useRouter();
   const qc = useQueryClient();
   const fetchProfile = useServerFn(getProfile);
   const fetchMe = useServerFn(getMe);
   const followFn = useServerFn(toggleFollow);
   const [filter, setFilter] = useState<PostFilter>("all");
+  const [sort, setSort] = useState<PostSort>("recent");
+  const [shuffleSeed, setShuffleSeed] = useState(0);
   const demoMode = isDemoSession();
 
   const { data, isLoading } = useQuery<MockProfileData>({
@@ -101,18 +99,18 @@ function ProfilePage() {
 
   const isMe = me?.profile?.id === data.profile.id;
   const isFollowing = me?.followingIds?.includes(data.profile.id) ?? false;
-  const posts = data.posts as ProfilePost[];
+  const posts = data.posts as MockPost[];
   const engagementByPost = data.engagementByPost as Record<string, Engagement>;
   const counts = getTypeCounts(posts);
-  const visiblePosts = filter === "all" ? posts : posts.filter((post) => post.post_type === filter);
-  const favoriteKind = getFavoriteKind(counts);
-  const spotlight = getSpotlight(posts, engagementByPost);
-  const profileCompletion = getProfileCompletion({
-    displayName: data.profile.display_name,
-    bio: data.profile.bio,
-    avatar: data.profile.avatar_url,
-    posts: posts.length,
-  });
+  const profilesById = new Map([[data.profile.id, data.profile]]);
+  const currentUserId = me?.profile?.id ?? null;
+
+  const visiblePosts = getSortedPosts(
+    filter === "all" ? posts : posts.filter((post) => post.post_type === filter),
+    sort,
+    engagementByPost,
+    shuffleSeed,
+  );
 
   async function handleShare() {
     const url = `${window.location.origin}/u/${username}`;
@@ -127,55 +125,81 @@ function ProfilePage() {
     }
   }
 
-  return (
-    <div className="min-h-[100dvh] pb-8">
-      <div className="grad-aurora relative h-48 overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.22),transparent_28%),linear-gradient(to_bottom,transparent,rgba(0,0,0,0.5),var(--background))]" />
-        <div className="absolute left-4 top-[max(env(safe-area-inset-top),12px)] rounded-full bg-black/35 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.18em] text-white/80 backdrop-blur">
-          @{data.profile.username}
-        </div>
-        <div className="absolute right-4 top-[max(env(safe-area-inset-top),12px)] flex gap-2">
-          <button
-            onClick={handleShare}
-            className="grid size-9 place-items-center rounded-full bg-black/40 backdrop-blur transition hover:bg-black/55"
-            aria-label="Share"
-          >
-            <Share2 className="size-4 text-white" />
-          </button>
-          {isMe && (
-            <button
-              onClick={() => navigate({ to: "/settings" })}
-              className="grid size-9 place-items-center rounded-full bg-black/40 backdrop-blur transition hover:bg-black/55"
-              aria-label="Settings"
-            >
-              <Settings className="size-4 text-white" />
-            </button>
-          )}
-        </div>
-      </div>
+  function handleBack() {
+    if (router.history.length > 1) {
+      router.history.back();
+    } else {
+      navigate({ to: "/feed" });
+    }
+  }
 
-      <div className="-mt-16 px-5">
-        <div className="flex items-end justify-between gap-3">
-          <div className="grad-aurora inline-block shrink-0 rounded-full p-[3px]">
+  return (
+    <div className="h-[100dvh] snap-y snap-mandatory overflow-y-scroll scrollbar-hide">
+      {/* Page 1: Profile info */}
+      <div className="flex h-[100dvh] flex-col px-5 pb-4 pt-2 snap-start">
+        {/* Avatar + info with back button inline */}
+        <div className="flex items-center gap-3">
+          <button
+            onClick={handleBack}
+            className="grid size-8 shrink-0 place-items-center rounded-full bg-white/10 ring-1 ring-white/10 transition hover:bg-white/15 active:scale-95"
+            aria-label="Go back"
+          >
+            <ArrowLeft className="size-3.5" />
+          </button>
+          <div className="grad-aurora inline-block shrink-0 rounded-full p-[2px]">
             <img
               src={data.profile.avatar_url ?? ""}
               alt=""
-              className="size-28 rounded-full border-4 border-background object-cover"
+              className="size-20 rounded-full border-[3px] border-background object-cover"
             />
           </div>
-          <div className="mb-2 flex min-w-0 flex-1 justify-end">
-            {isMe ? (
+          <div className="min-w-0 flex-1">
+            <h1 className="truncate font-display text-xl font-black leading-tight">
+              {data.profile.display_name}
+            </h1>
+            <p className="font-mono text-[11px] text-muted-foreground">@{data.profile.username}</p>
+            <div className="mt-1.5 flex items-center gap-3 font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+              <span>
+                <strong className="text-foreground">{formatCount(posts.length)}</strong> posts
+              </span>
+              <span>
+                <strong className="text-foreground">{formatCount(data.followers)}</strong> followers
+              </span>
+              <span>
+                <strong className="text-foreground">{formatCount(data.following)}</strong> following
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {data.profile.bio && (
+          <p className="mt-2 text-sm leading-relaxed text-foreground/85">{data.profile.bio}</p>
+        )}
+
+        {/* Action buttons */}
+        <div className="mt-2.5 flex items-center gap-2">
+          {isMe ? (
+            <>
               <Link
                 to="/edit-profile"
-                className="rounded-full bg-white/10 px-4 py-2 text-sm font-bold ring-1 ring-white/10 transition hover:bg-white/15"
+                className="flex-1 rounded-full bg-white/10 px-4 py-2 text-center text-sm font-bold ring-1 ring-white/10 transition hover:bg-white/15"
               >
                 edit profile
               </Link>
-            ) : (
+              <button
+                onClick={() => navigate({ to: "/settings" })}
+                className="grid size-9 place-items-center rounded-full bg-white/10 ring-1 ring-white/10 transition hover:bg-white/15"
+                aria-label="Settings"
+              >
+                <Settings className="size-4" />
+              </button>
+            </>
+          ) : (
+            <>
               <button
                 onClick={() => followMut.mutate(data.profile.id)}
                 disabled={followMut.isPending}
-                className={`flex items-center justify-center gap-2 rounded-full px-5 py-2 text-sm font-bold transition ${
+                className={`flex flex-1 items-center justify-center gap-2 rounded-full px-5 py-2 text-sm font-bold transition ${
                   isFollowing
                     ? "bg-white/10 ring-1 ring-white/10 hover:bg-white/15"
                     : "grad-aurora text-white shadow-[var(--shadow-glow)]"
@@ -184,227 +208,244 @@ function ProfilePage() {
                 {isFollowing ? <UserCheck className="size-4" /> : <UserPlus className="size-4" />}
                 {isFollowing ? "following" : "follow"}
               </button>
-            )}
+              <button
+                onClick={handleShare}
+                className="grid size-9 place-items-center rounded-full bg-white/10 ring-1 ring-white/10 transition hover:bg-white/15"
+                aria-label="Share"
+              >
+                <Share2 className="size-4" />
+              </button>
+            </>
+          )}
+        </div>
+
+        {/* Horizontal masonry post preview library — 9:16 ratio, alternating tall + stacked pair */}
+        {posts.length > 0 && (
+          <div className="mt-3 flex-1 min-h-0 overflow-hidden">
+            <div className="flex h-full gap-1.5 overflow-x-auto scrollbar-hide">
+              {Array.from(
+                { length: Math.ceil(posts.length / 3) },
+                (_, groupIdx) => {
+                  const tallPost = posts[groupIdx * 3];
+                  const shortPostA = posts[groupIdx * 3 + 1];
+                  const shortPostB = posts[groupIdx * 3 + 2];
+
+                  return (
+                    <Fragment key={groupIdx}>
+                      {/* Tall card — full height, 9:16 */}
+                      {tallPost && (
+                        <MasonryCard
+                          post={tallPost}
+                          className="h-full aspect-[9/16] shrink-0"
+                        />
+                      )}
+                      {/* Two short cards stacked — each half height, 9:16 */}
+                      {(shortPostA || shortPostB) && (
+                        <div className="flex h-full flex-col gap-1.5 shrink-0">
+                          {shortPostA && (
+                            <MasonryCard
+                              post={shortPostA}
+                              className="aspect-[9/16] h-1/2"
+                            />
+                          )}
+                          {shortPostB && (
+                            <MasonryCard
+                              post={shortPostB}
+                              className="aspect-[9/16] h-1/2"
+                            />
+                          )}
+                        </div>
+                      )}
+                    </Fragment>
+                  );
+                },
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Filter + sort controls */}
+        <div className="mt-3 shrink-0">
+          <div className="mb-2 flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide">
+            {FILTERS.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => setFilter(item.id)}
+                className={`flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-bold transition ${
+                  filter === item.id
+                    ? "bg-white text-black"
+                    : "bg-white/5 text-muted-foreground ring-1 ring-white/10 hover:text-foreground"
+                }`}
+              >
+                {item.icon}
+                {item.label}
+                <span className="font-mono text-[10px] opacity-70">
+                  {item.id === "all" ? posts.length : counts[item.id]}
+                </span>
+              </button>
+            ))}
+          </div>
+
+          <div className="flex items-center gap-1.5">
+            <SortButton
+              active={sort === "recent"}
+              onClick={() => setSort("recent")}
+              icon={<Clock className="size-3" />}
+              label="recent"
+            />
+            <SortButton
+              active={sort === "popular"}
+              onClick={() => setSort("popular")}
+              icon={<Flame className="size-3" />}
+              label="popular"
+            />
+            <SortButton
+              active={sort === "shuffle"}
+              onClick={() => {
+                setSort("shuffle");
+                setShuffleSeed((s) => s + 1);
+              }}
+              icon={<Shuffle className="size-3" />}
+              label="shuffle"
+            />
           </div>
         </div>
 
-        <h1 className="mt-3 text-balance font-display text-3xl font-black leading-tight">
-          {data.profile.display_name}
-        </h1>
-        <p className="font-mono text-xs text-muted-foreground">@{data.profile.username}</p>
-        {data.profile.bio ? (
-          <p className="mt-3 max-w-xl text-sm leading-relaxed text-foreground/90">
-            {data.profile.bio}
-          </p>
-        ) : (
-          <p className="mt-3 font-mono text-xs text-muted-foreground">
-            {isMe ? "add a bio to give this profile more signal" : "no bio yet"}
-          </p>
-        )}
-
-        <div className="mt-5 grid grid-cols-3 gap-2">
-          <StatTile n={posts.length} label="posts" />
-          <StatTile n={data.followers} label="followers" />
-          <StatTile n={data.following} label="following" />
-        </div>
-
-        <div className="mt-3 grid grid-cols-2 gap-2">
-          <InfoTile icon={<Sparkles />} label="sparks" value={formatCount(data.totalLikes)} />
-          <InfoTile
-            icon={<MessageCircle />}
-            label="replies"
-            value={formatCount(data.totalComments)}
-          />
-          <InfoTile
-            icon={<CalendarDays />}
-            label="since"
-            value={formatMonth(data.profile.created_at)}
-          />
-          <InfoTile icon={<Wand2 />} label="format" value={readableKind(favoriteKind)} />
-        </div>
-
-        {isMe && profileCompletion < 100 && (
-          <Link
-            to="/edit-profile"
-            className="mt-3 block rounded-2xl bg-white/5 p-3 ring-1 ring-white/10 transition hover:ring-primary/60"
-          >
-            <div className="flex items-center justify-between gap-3">
-              <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-                profile signal
-              </span>
-              <span className="font-mono text-xs text-muted-foreground">{profileCompletion}%</span>
-            </div>
-            <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/10">
-              <div
-                className="h-full rounded-full bg-primary"
-                style={{ width: `${profileCompletion}%` }}
-              />
-            </div>
-          </Link>
-        )}
-      </div>
-
-      {spotlight && (
-        <section className="mt-6 px-5">
-          <div className="mb-2 flex items-center justify-between">
-            <h2 className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-              spotlight
-            </h2>
-            <span className="font-mono text-[10px] text-muted-foreground">
-              {timeAgo(spotlight.created_at)}
+        {visiblePosts.length > 0 && (
+          <div className="flex shrink-0 flex-col items-center gap-1 pb-2 pt-4">
+            <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground/60">
+              scroll for posts
             </span>
-          </div>
-          <SpotlightPost post={spotlight} engagement={engagementByPost[spotlight.id]} />
-        </section>
-      )}
-
-      <section className="mt-6 px-1">
-        <div className="mb-3 flex gap-2 overflow-x-auto px-4 pb-1 scrollbar-hide">
-          {FILTERS.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => setFilter(item.id)}
-              className={`flex shrink-0 items-center gap-1.5 rounded-full px-3 py-2 text-xs font-bold transition ${
-                filter === item.id
-                  ? "bg-white text-black"
-                  : "bg-white/5 text-muted-foreground ring-1 ring-white/10 hover:text-foreground"
-              }`}
-            >
-              {item.icon}
-              {item.label}
-              <span className="font-mono text-[10px] opacity-70">
-                {item.id === "all" ? posts.length : counts[item.id]}
-              </span>
-            </button>
-          ))}
-        </div>
-
-        <div className="grid grid-cols-3 gap-1">
-          {visiblePosts.map((post) => (
-            <PostTile key={post.id} post={post} engagement={engagementByPost[post.id]} />
-          ))}
-        </div>
-        {visiblePosts.length === 0 && (
-          <div className="mx-4 rounded-2xl bg-white/5 px-5 py-12 text-center ring-1 ring-white/10">
-            <Radio className="mx-auto size-7 text-muted-foreground" />
-            <p className="mt-3 font-mono text-xs text-muted-foreground">nothing in this lane yet</p>
+            <span className="h-4 w-px bg-muted-foreground/30" />
           </div>
         )}
-      </section>
-    </div>
-  );
-}
-
-function StatTile({ n, label }: { n: number; label: string }) {
-  return (
-    <div className="rounded-2xl bg-white/5 px-3 py-3 ring-1 ring-white/10">
-      <div className="font-display text-2xl font-black leading-none">{formatCount(n)}</div>
-      <div className="mt-1 truncate font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-        {label}
       </div>
-    </div>
-  );
-}
 
-function InfoTile({ icon, label, value }: { icon: ReactNode; label: string; value: ReactNode }) {
-  return (
-    <div className="flex items-center gap-3 rounded-2xl bg-white/5 px-3 py-3 ring-1 ring-white/10">
-      <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-white/5 text-muted-foreground [&_svg]:size-4">
-        {icon}
-      </span>
-      <div className="min-w-0">
-        <div className="truncate font-display text-sm font-bold">{value}</div>
-        <div className="truncate font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-          {label}
+      {/* Posts: each is a full-screen kinetic PostCard */}
+      {visiblePosts.map((post) => (
+        <div key={post.id} className="h-[100dvh] snap-start">
+          <PostCard
+            post={post}
+            author={data.profile}
+            profilesById={profilesById}
+            currentUserId={currentUserId}
+            likes={engagementByPost[post.id]?.likes ?? 0}
+            comments={[]}
+            liked={false}
+            onLike={() => {}}
+            onComment={() => {}}
+          />
         </div>
-      </div>
+      ))}
+
+      {visiblePosts.length === 0 && (
+        <div className="flex h-[100dvh] snap-start items-center justify-center px-5">
+          <div className="rounded-2xl bg-white/5 px-5 py-12 text-center ring-1 ring-white/10">
+            <p className="font-mono text-xs text-muted-foreground">no posts in this lane yet</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
-function SpotlightPost({ post, engagement }: { post: ProfilePost; engagement?: Engagement }) {
+function MasonryCard({
+  post,
+  className,
+}: {
+  post: MockPost;
+  className?: string;
+}) {
   const spec = parseCanvas(post.canvas_html);
-  return (
-    <div className="grid grid-cols-[104px_1fr] gap-3 rounded-2xl bg-white/5 p-3 ring-1 ring-white/10">
-      <PostPreview post={post} className="h-32 rounded-xl" />
-      <div className="min-w-0 py-1">
-        <div className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-          <PostKindIcon kind={post.post_type} />
-          {readableKind(post.post_type)}
-        </div>
-        <p className="mt-2 line-clamp-3 text-sm font-bold leading-snug">{spec.text}</p>
-        <div className="mt-4 flex gap-3 font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-          <span className="inline-flex items-center gap-1">
-            <Heart className="size-3" /> {engagement?.likes ?? 0}
-          </span>
-          <span className="inline-flex items-center gap-1">
-            <MessageCircle className="size-3" /> {engagement?.comments ?? 0}
-          </span>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function PostTile({ post, engagement }: { post: ProfilePost; engagement?: Engagement }) {
-  const spec = parseCanvas(post.canvas_html);
-  return (
-    <div className="relative aspect-[3/4] overflow-hidden rounded-md group">
-      <PostPreview post={post} className="absolute inset-0" />
-      <div
-        className="absolute inset-0 flex items-center justify-center p-2 text-center"
-        style={{ fontFamily: spec.font, color: spec.color, fontWeight: spec.weight }}
-      >
-        <span className="line-clamp-3 text-[11px] font-bold drop-shadow">{spec.text}</span>
-      </div>
-      <div className="absolute inset-x-0 bottom-0 flex items-center justify-between bg-gradient-to-t from-black/70 to-transparent px-2 pb-1.5 pt-6 font-mono text-[9px] text-white/85">
-        <span className="inline-flex items-center gap-1">
-          <PostKindIcon kind={post.post_type} />
-          {readableKind(post.post_type)}
-        </span>
-        <span>{(engagement?.likes ?? 0) + (engagement?.comments ?? 0)}</span>
-      </div>
-    </div>
-  );
-}
-
-function PostPreview({ post, className }: { post: ProfilePost; className?: string }) {
+  // Show only the first page — a single full sentence laid out exactly as it
+  // looks after one run on the canvas — instead of cramming the whole poem into
+  // unreadable tiny text.
+  const firstPage = paginateText(spec.text)[0] ?? spec.text;
+  const previewSpec = { ...spec, text: firstPage };
   const media = post.media_urls ?? [];
-  const spec = parseCanvas(post.canvas_html);
+  const hasImage =
+    (post.post_type === "image" || post.post_type === "slideshow") && Boolean(media[0]);
+
   return (
     <div
-      className={`relative overflow-hidden ${className ?? ""}`}
+      className={`relative overflow-hidden rounded-lg ring-1 ring-white/10 ${className ?? ""}`}
       style={{ background: post.bg_gradient ?? "#111" }}
     >
-      {post.post_type === "image" && media[0] && (
-        <img src={media[0]} alt="" className="absolute inset-0 size-full object-cover opacity-90" />
+      {hasImage && (
+        <img src={media[0]!} alt="" className="absolute inset-0 size-full object-cover" />
       )}
-      {post.post_type === "video" && media[0] && (
-        <video
-          src={media[0]}
-          muted
-          playsInline
-          className="absolute inset-0 size-full object-cover opacity-80"
-        />
+      {post.post_type !== "text" && (
+        <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-transparent to-black/55" />
       )}
-      {post.post_type === "slideshow" && media[0] && (
-        <img src={media[0]} alt="" className="absolute inset-0 size-full object-cover opacity-90" />
-      )}
-      {post.post_type === "link" && <ArticleMiniClip title={spec.link?.title ?? spec.text} />}
-      {post.post_type !== "text" && <div className="absolute inset-0 bg-black/25" />}
+      <div className="absolute inset-0">
+        <KineticText spec={previewSpec} paused scaleToCanvas background={post.bg_gradient} />
+      </div>
     </div>
   );
 }
 
-function PostKindIcon({ kind }: { kind: string }) {
-  if (kind === "image") return <ImageIcon className="size-3" />;
-  if (kind === "video") return <Video className="size-3" />;
-  if (kind === "slideshow") return <Clapperboard className="size-3" />;
-  if (kind === "link") return <Newspaper className="size-3" />;
-  return <Type className="size-3" />;
+function SortButton({
+  active,
+  onClick,
+  icon,
+  label,
+}: {
+  active: boolean;
+  onClick: () => void;
+  icon: ReactNode;
+  label: string;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] transition ${
+        active
+          ? "bg-white/15 text-foreground ring-1 ring-white/20"
+          : "text-muted-foreground hover:text-foreground"
+      }`}
+    >
+      {icon}
+      {label}
+    </button>
+  );
 }
 
-function getTypeCounts(posts: ProfilePost[]) {
+function getSortedPosts(
+  posts: MockPost[],
+  sort: PostSort,
+  engagementByPost: Record<string, Engagement>,
+  shuffleSeed: number,
+): MockPost[] {
+  if (sort === "popular") {
+    return [...posts].sort((a, b) => {
+      const scoreA =
+        (engagementByPost[a.id]?.likes ?? 0) + (engagementByPost[a.id]?.comments ?? 0);
+      const scoreB =
+        (engagementByPost[b.id]?.likes ?? 0) + (engagementByPost[b.id]?.comments ?? 0);
+      return scoreB - scoreA;
+    });
+  }
+  if (sort === "shuffle") {
+    return [...posts].sort((a, b) => {
+      const hashA = seededHash(a.id, shuffleSeed);
+      const hashB = seededHash(b.id, shuffleSeed);
+      return hashA - hashB;
+    });
+  }
+  // recent (default) - already sorted by created_at desc from the data source
+  return posts;
+}
+
+function seededHash(value: string, seed: number): number {
+  let h = seed * 2654435761;
+  for (let i = 0; i < value.length; i++) {
+    h ^= value.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+}
+
+function getTypeCounts(posts: MockPost[]) {
   const counts: Record<PostKind, number> = { text: 0, image: 0, video: 0, slideshow: 0, link: 0 };
   for (const post of posts) {
     if (POST_KINDS.includes(post.post_type as PostKind)) counts[post.post_type as PostKind] += 1;
@@ -412,73 +453,6 @@ function getTypeCounts(posts: ProfilePost[]) {
   return counts;
 }
 
-function getFavoriteKind(counts: Record<PostKind, number>) {
-  const [favorite] = [...POST_KINDS].sort((a, b) => counts[b] - counts[a]);
-  return counts[favorite] > 0 ? favorite : "text";
-}
-
-function ArticleMiniClip({ title }: { title: string }) {
-  return (
-    <div className="absolute inset-x-2 bottom-2 z-10 rounded-sm bg-[#f5f0df] p-2 text-[#17140f] shadow-lg">
-      <div className="mb-1 flex items-center justify-between border-b border-black/25 pb-0.5 font-serif text-[7px] font-black uppercase tracking-widest">
-        <span>Article</span>
-        <Newspaper className="size-2.5" />
-      </div>
-      <p className="line-clamp-2 font-serif text-[10px] font-black leading-none">{title}</p>
-    </div>
-  );
-}
-
-function getSpotlight(posts: ProfilePost[], engagementByPost: Record<string, Engagement>) {
-  if (posts.length === 0) return null;
-  return posts.reduce((best, post) => {
-    const bestScore = getEngagementScore(best, engagementByPost);
-    const score = getEngagementScore(post, engagementByPost);
-    if (score > bestScore) return post;
-    if (score === bestScore && post.created_at > best.created_at) return post;
-    return best;
-  }, posts[0]);
-}
-
-function getEngagementScore(post: ProfilePost, engagementByPost: Record<string, Engagement>) {
-  const engagement = engagementByPost[post.id];
-  return (engagement?.likes ?? 0) + (engagement?.comments ?? 0);
-}
-
-function getProfileCompletion({
-  displayName,
-  bio,
-  avatar,
-  posts,
-}: {
-  displayName: string;
-  bio: string | null;
-  avatar: string | null;
-  posts: number;
-}) {
-  const checks = [displayName.trim().length > 0, !!bio?.trim(), !!avatar, posts > 0];
-  return Math.round((checks.filter(Boolean).length / checks.length) * 100);
-}
-
-function readableKind(kind: string) {
-  if (kind === "slideshow") return "slides";
-  return kind;
-}
-
 function formatCount(n: number) {
   return new Intl.NumberFormat("en", { notation: n > 999 ? "compact" : "standard" }).format(n);
-}
-
-function formatMonth(iso: string) {
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return "new";
-  return new Intl.DateTimeFormat("en", { month: "short", year: "numeric" }).format(date);
-}
-
-function timeAgo(iso: string) {
-  const seconds = Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 1000));
-  if (seconds < 60) return `${seconds}s ago`;
-  if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
-  if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
-  return `${Math.floor(seconds / 86400)}d ago`;
 }

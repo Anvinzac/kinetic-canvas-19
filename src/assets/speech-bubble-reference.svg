@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="20 45 242 253" preserveAspectRatio="none" color="#fff">
+  <g transform="translate(262 0) rotate(90)">
+    <path
+      fill="currentColor"
+      d="M82 26H262C282 26 298 43 298 64V163C298 184 282 201 261 201H153C148 216 135 227 114 235C105 238 96 241 88 242C99 234 104 221 103 201H82C61 201 45 184 45 163V64C45 43 61 26 82 26Z"
+    />
+  </g>
+</svg>

@@ -40,7 +40,10 @@ function AuthedLayout() {
   const qc = useQueryClient();
   const pathname = useRouterState({ select: (state) => state.location.pathname });
   const demoMode = isDemoSession();
-  const showShellMenu = !pathname.startsWith("/feed") && !pathname.startsWith("/create");
+  const showShellMenu =
+    !pathname.startsWith("/feed") &&
+    !pathname.startsWith("/create") &&
+    !pathname.startsWith("/u/");
 
   useEffect(() => {
     setMenuOpen(false);

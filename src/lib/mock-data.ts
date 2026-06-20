@@ -1,4 +1,9 @@
-import { parseCanvas, serializeCanvas, type CanvasSpec } from "@/lib/canvas";
+import {
+  parseCanvas,
+  serializeCanvas,
+  TRANSITION_GRADIENT_PATHS,
+  type CanvasSpec,
+} from "@/lib/canvas";
 import { DEMO_AUTH_USER_ID } from "@/lib/demo-session";
 
 export const MOCK_ME_ID = "11111111-1111-4111-8111-111111111111";
@@ -11,6 +16,13 @@ const LIKED_POSTS_KEY = "kinetic.demo.likedPosts";
 const FOLLOWING_KEY = "kinetic.demo.following";
 const MOCK_FEED_LIMIT = 60;
 const COLD_START_FOLLOWING_THRESHOLD = 3;
+const DEMO_TRANSITION_GRADIENTS = [
+  ...(TRANSITION_GRADIENT_PATHS[0]?.gradients ?? [
+    "linear-gradient(135deg,#FF006E,#8338EC)",
+    "linear-gradient(135deg,#3A86FF,#06FFA5)",
+    "linear-gradient(135deg,#FFBE0B,#FF006E)",
+  ]),
+];
 
 type PostType = "text" | "image" | "video" | "slideshow" | "link";
 
@@ -169,9 +181,11 @@ const MOCK_POSTS: MockPost[] = [
       color: "#ffffff",
       entrance: "scale",
       loop: "pulse",
+      backgroundStyle: "transition",
+      gradientPath: DEMO_TRANSITION_GRADIENTS,
     }),
     media_urls: [],
-    bg_gradient: "linear-gradient(135deg,#FF006E,#8338EC)",
+    bg_gradient: DEMO_TRANSITION_GRADIENTS[0] ?? "linear-gradient(135deg,#FF006E,#8338EC)",
     created_at: "2026-06-16T07:20:00.000Z",
   },
   {
@@ -392,7 +406,7 @@ const MOCK_POSTS: MockPost[] = [
       text: "Tiny drafts count. Slow mornings count. The loop is proof you came back.",
       font: "Playfair Display",
       size: 76,
-      color: "#FFBE0B",
+      color: "#ffffff",
       entrance: "blur",
       loop: "float",
       rotation: -2,
@@ -626,11 +640,25 @@ const MOCK_COMMENTS: MockComment[] = [
     "2026-06-16T07:24:00.000Z",
   ),
   comment(
+    "10000000-0000-4000-8000-000000000030",
+    "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa1",
+    "55555555-5555-4555-8555-555555555555",
+    "fire",
+    "2026-06-16T07:25:00.000Z",
+  ),
+  comment(
     "10000000-0000-4000-8000-000000000002",
     "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa1",
     "33333333-3333-4333-8333-333333333333",
     "I would save this because it explains the whole app",
     "2026-06-16T07:28:00.000Z",
+  ),
+  comment(
+    "10000000-0000-4000-8000-000000000031",
+    "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa1",
+    "66666666-6666-4666-8666-666666666666",
+    "mind-blown",
+    "2026-06-16T07:29:00.000Z",
   ),
   comment(
     "10000000-0000-4000-8000-000000000003",
@@ -647,6 +675,13 @@ const MOCK_COMMENTS: MockComment[] = [
     "2026-06-16T07:23:00.000Z",
   ),
   comment(
+    "10000000-0000-4000-8000-000000000032",
+    "19191919-0619-4619-8619-191919191919",
+    "66666666-6666-4666-8666-666666666666",
+    "dịu ghê",
+    "2026-06-16T07:24:00.000Z",
+  ),
+  comment(
     "10000000-0000-4000-8000-000000000021",
     "19191919-0619-4619-8619-191919191919",
     MOCK_ME_ID,
@@ -659,6 +694,13 @@ const MOCK_COMMENTS: MockComment[] = [
     "22222222-2222-4222-8222-222222222222",
     "Bài này giúp kiểm tra nhịp đọc rất rõ",
     "2026-06-16T07:21:00.000Z",
+  ),
+  comment(
+    "10000000-0000-4000-8000-000000000033",
+    "dadadada-dada-4ada-8ada-dadadadada05",
+    "55555555-5555-4555-8555-555555555555",
+    "đúng nhịp",
+    "2026-06-16T07:22:00.000Z",
   ),
   comment(
     "10000000-0000-4000-8000-000000000016",
@@ -675,11 +717,25 @@ const MOCK_COMMENTS: MockComment[] = [
     "2026-06-16T07:24:00.000Z",
   ),
   comment(
+    "10000000-0000-4000-8000-000000000034",
+    "bebebebe-bebe-4ebe-8ebe-bebebebebe06",
+    "33333333-3333-4333-8333-333333333333",
+    "rất rõ",
+    "2026-06-16T07:25:00.000Z",
+  ),
+  comment(
     "10000000-0000-4000-8000-000000000018",
     "fafafafa-fafa-4afa-8afa-fafafafafa07",
     MOCK_ME_ID,
     "Không khí Hà Nội chuyển thành nhịp khá mềm",
     "2026-06-16T07:18:00.000Z",
+  ),
+  comment(
+    "10000000-0000-4000-8000-000000000035",
+    "fafafafa-fafa-4afa-8afa-fafafafafa07",
+    "22222222-2222-4222-8222-222222222222",
+    "êm thật",
+    "2026-06-16T07:19:00.000Z",
   ),
   comment(
     "10000000-0000-4000-8000-000000000019",

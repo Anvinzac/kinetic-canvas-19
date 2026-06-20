@@ -1,14 +1,16 @@
 import {
+  useCallback,
   useEffect,
   useLayoutEffect,
   useMemo,
   useRef,
   useState,
-  type CSSProperties,
   type MouseEvent as ReactMouseEvent,
+  type PointerEvent as ReactPointerEvent,
   type ReactNode,
 } from "react";
 import { AnimatePresence, motion, type PanInfo } from "framer-motion";
+import speechBubbleReferenceUrl from "@/assets/speech-bubble-reference.svg?url";
 import {
   ArrowUpRight,
   Bell,
@@ -17,7 +19,6 @@ import {
   Home,
   Info,
   Link2,
-  MessageCircle,
   MoreHorizontal,
   Play,
   Plus,
@@ -31,6 +32,8 @@ import {
 import { Link } from "@tanstack/react-router";
 import {
   COMMENT_CHIPS,
+  getCanvasEmphasisColor,
+  getCanvasTextColor,
   parseCanvas,
   type CanvasLinkPreview,
   type CanvasSpec,
@@ -71,44 +74,41 @@ type CommentStory = {
 
 // Keep kinetic text clear of the canvas edge without stealing its scale.
 const TEXT_SAFE_MAX_WIDTH = "min(92%, calc(100% - 2rem))";
-const MIN_TEXT_FIT_SCALE = 0.08;
+const MIN_TEXT_FIT_SCALE = 0.58;
+const MIN_ENGLISH_TEXT_FIT_SCALE = 0.72;
+const EMPHASIS_SCALE_FIT_GUARD = 1.14;
+// Emphasized words render this many times larger than the base font. Applied via
+// fontSize (not transform: scale) so the extra width occupies real layout space.
+const EMPHASIS_FONT_SCALE = 1.12;
+const VIETNAMESE_SCALE_FIT_GUARD = 1.06;
+const ARC_BUTTON_TAP = { scale: 0.94, y: 2 };
+const ARC_BUTTON_TAP_TRANSITION = { type: "spring" as const, stiffness: 400, damping: 24 };
 const useIsomorphicLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
 
-// Single speech-bubble outline for comment-story stack thumbnails. Drawn in a
-// 90x170 viewBox; the left 12 units form the curved tail so it matches the
-// full-screen comment player language.
-const BUBBLE_PATH_D =
-  "M 26 0 H 74 C 83 0 90 7 90 16 V 154 C 90 163 83 170 74 170 H 26 C 17 170 12 163 12 154 V 58 C 8 50 3 38 1 31 C 0 26 4 24 7 29 C 10 34 12 39 12 45 V 16 C 12 7 17 0 26 0 Z";
-const BUBBLE_MASK_URL = `url("data:image/svg+xml,${encodeURIComponent(
-  `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 90 170' preserveAspectRatio='none'><path d='${BUBBLE_PATH_D}' fill='black'/></svg>`,
-)}")`;
-const BUBBLE_MASK_STYLE = {
-  WebkitMaskImage: BUBBLE_MASK_URL,
-  maskImage: BUBBLE_MASK_URL,
+const SPEECH_BUBBLE_MASK_IMAGE = `url("${speechBubbleReferenceUrl}")`;
+const SPEECH_BUBBLE_MASK_STYLE = {
+  WebkitMaskImage: SPEECH_BUBBLE_MASK_IMAGE,
+  maskImage: SPEECH_BUBBLE_MASK_IMAGE,
   WebkitMaskSize: "100% 100%",
   maskSize: "100% 100%",
   WebkitMaskRepeat: "no-repeat",
   maskRepeat: "no-repeat",
 } as const;
 
-// Full comment player shape. Body is the existing 9:16 card; the visible tail
-// keeps the previous -22px left offset and 18%-34% vertical span, but the whole
-// bubble is now a single masked silhouette with a rounded upward arc.
-const STORY_PLAYER_BUBBLE_PATH_D =
-  "M 52 0 H 352 C 368 0 382 14 382 30 V 610 C 382 626 368 640 352 640 H 52 C 36 640 22 626 22 610 V 218 C 16 199 8 158 2 126 C 0 116 4 111 10 119 C 17 128 21 143 22 156 V 30 C 22 14 36 0 52 0 Z";
-const STORY_PLAYER_BUBBLE_MASK_URL = `url("data:image/svg+xml,${encodeURIComponent(
-  `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 382 640' preserveAspectRatio='none'><path d='${STORY_PLAYER_BUBBLE_PATH_D}' fill='black'/></svg>`,
-)}")`;
-const STORY_PLAYER_BUBBLE_MASK_STYLE = {
-  WebkitMaskImage: STORY_PLAYER_BUBBLE_MASK_URL,
-  maskImage: STORY_PLAYER_BUBBLE_MASK_URL,
-  WebkitMaskSize: "100% 100%",
-  maskSize: "100% 100%",
-  WebkitMaskRepeat: "no-repeat",
-  maskRepeat: "no-repeat",
-} as const;
+function CommentBubbleIcon({ className }: { className?: string }) {
+  return (
+    <span
+      className={`inline-block bg-current ${className ?? ""}`}
+      style={SPEECH_BUBBLE_MASK_STYLE}
+      aria-hidden
+    />
+  );
+}
 
 const FLOATING_COMMENT_MAX_WORDS = 3;
+// Extra px a flying comment chip travels past each screen edge so it glides fully
+// out of view before being hidden, instead of stopping at the edge (abrupt pop).
+const CHIP_EXIT_PAD = 56;
 const MAX_COMMENT_WORDS = 36;
 const MAX_COMMENT_CHARS = 240;
 const COMMENT_STORY_WORDS_PER_PAGE = 8;
@@ -180,6 +180,7 @@ export function PostCard({
   const [slide, setSlide] = useState(0);
   const [textPage, setTextPage] = useState(0);
   const [playKey, setPlayKey] = useState(0);
+  const [backgroundShiftPage, setBackgroundShiftPage] = useState(0);
   const [showChips, setShowChips] = useState(false);
   const [customComment, setCustomComment] = useState("");
   const [activeComment, setActiveComment] = useState<FlowComment | null>(null);
@@ -190,21 +191,103 @@ export function PostCard({
   const [storyFastMode, setStoryFastMode] = useState(false);
   const [actionMenuOpen, setActionMenuOpen] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
   const [pageRevealed, setPageRevealed] = useState(false);
   const [canvasWidth, setCanvasWidth] = useState(390);
+  const [canvasEl, setCanvasEl] = useState<HTMLElement | null>(null);
   const flyId = useRef(0);
   const localCommentId = useRef(0);
   const manualCommentHoldUntil = useRef(0);
   const canvasRef = useRef<HTMLElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
+  // Collection picker (long-press on heart)
+  const [showCollectionPicker, setShowCollectionPicker] = useState(false);
+  const [selectedFolders, setSelectedFolders] = useState<Set<string>>(new Set());
+  const [selectedTags, setSelectedTags] = useState<Set<string>>(new Set());
+  const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const didLongPressRef = useRef(false);
+
+  function handleLikePointerDown(e: ReactPointerEvent) {
+    e.stopPropagation();
+    didLongPressRef.current = false;
+    longPressTimerRef.current = setTimeout(() => {
+      didLongPressRef.current = true;
+      setShowChips(false);
+      setActionMenuOpen(false);
+      setActiveComment(null);
+      setShowCollectionPicker(true);
+      setIsPaused(true);
+    }, 520);
+  }
+
+  function handleLikePointerUp(e: ReactPointerEvent) {
+    e.stopPropagation();
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+    if (!didLongPressRef.current) {
+      onLike();
+    }
+  }
+
+  function handleLikePointerCancel() {
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+  }
+
+  function handleToggleFolder(id: string) {
+    setSelectedFolders((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  function handleToggleTag(tag: string) {
+    setSelectedTags((prev) => {
+      const next = new Set(prev);
+      if (next.has(tag)) next.delete(tag);
+      else next.add(tag);
+      return next;
+    });
+  }
+
+  function handleCollectionSave() {
+    // TODO: persist selection to backend
+    setShowCollectionPicker(false);
+    setIsPaused(false);
+  }
+
+  function handleCollectionClose() {
+    setShowCollectionPicker(false);
+    setIsPaused(false);
+  }
+
   const media = post.media_urls ?? [];
   const articlePreview = getArticlePreview(spec, media);
   const commentLaneWidth = Math.max(180, canvasWidth - 96);
   const commentMaxWidth = Math.min(commentLaneWidth * 0.78, 290);
-  const commentStartX = commentLaneWidth + 16;
-  const commentEndX = -(commentMaxWidth + 24);
+  // Flight path uses the lane's max chip width (a stable upper bound) rather than
+  // the post-render measured width, so the path is fixed before the first frame and
+  // never re-targets mid-flight. CHIP_EXIT_PAD adds extra travel past each screen
+  // edge so the chip glides fully out before it is hidden — no abrupt pop.
+  const commentTravelHalf = (canvasWidth + commentMaxWidth) / 2 + CHIP_EXIT_PAD;
+  // Start: chip fully outside the right edge.
+  const commentStartX = commentTravelHalf;
+  // End: chip's right edge clears the left edge with CHIP_EXIT_PAD to spare.
+  const commentEndX = -commentTravelHalf;
   const currentText = textPages[textPage] ?? textPages[0] ?? "";
+  const slidingCanvasBackground = useMemo(
+    () => getSlidingCanvasBackground(spec, post.bg_gradient, backgroundShiftPage),
+    [backgroundShiftPage, post.bg_gradient, spec],
+  );
+  const hasTransitionBackground = !!slidingCanvasBackground;
+  const staticCanvasBackground = post.bg_gradient ?? "#000";
   const activeStory = commentStories[storyIndex] ?? null;
   const storyPages = useMemo(
     () => (activeStory ? getCommentStoryPages(activeStory.text, storyFastMode) : []),
@@ -223,18 +306,51 @@ export function PostCard({
     () => getPostViewCount(post, likes, chronologicalComments.length),
     [chronologicalComments.length, likes, post],
   );
+  // Calculate uniform font size for all pages — size based on the SMALLEST
+  // page (fewest words) so all pages can display large. Never shrinks below
+  // minimum threshold.
+  const uniformPageSize = useMemo(
+    () => getUniformPageTextSize(spec.size, textPages, spec.text),
+    [spec.size, textPages, spec.text],
+  );
+
+  // Every page can require a different shrink to fit (longer/wider lines shrink
+  // more), which made some pages render noticeably smaller than others. To keep
+  // a consistent immersive size, each page is measured off-screen and the single
+  // SMALLEST fit that satisfies every page is applied uniformly to all of them.
+  const [pageFitScales, setPageFitScales] = useState<Record<number, number>>({});
+  const reportPageFit = useCallback((page: number, scale: number) => {
+    setPageFitScales((prev) =>
+      prev[page] !== undefined && Math.abs(prev[page] - scale) < 0.005
+        ? prev
+        : { ...prev, [page]: scale },
+    );
+  }, []);
+  useEffect(() => {
+    setPageFitScales({});
+  }, [textPages, uniformPageSize, canvasWidth]);
+  const needsSharedFit = textPages.length > 1;
+  const allPagesMeasured = needsSharedFit && Object.keys(pageFitScales).length >= textPages.length;
+  const sharedFitScale = allPagesMeasured ? Math.min(...Object.values(pageFitScales)) : 1;
+  const displaySize = Math.max(
+    MIN_FONT_SIZE,
+    allPagesMeasured ? uniformPageSize * sharedFitScale : uniformPageSize,
+  );
+
   const displaySpec: CanvasSpec = {
     ...spec,
     text: currentText,
-    size: getPageTextSize(spec.size, currentText),
+    size: displaySize,
     entrance: "fade",
   };
 
   useEffect(() => {
     setTextPage(0);
+    setBackgroundShiftPage(0);
     setSlide(0);
     setPlayKey(0);
     setIsPaused(false);
+    setIsVisible(false);
     setStoryOpen(false);
     setStoryIndex(0);
     setStoryPage(0);
@@ -242,6 +358,9 @@ export function PostCard({
     setActionMenuOpen(false);
     setPageRevealed(false);
     setLocalComments([]);
+    setShowCollectionPicker(false);
+    setSelectedFolders(new Set());
+    setSelectedTags(new Set());
   }, [post.id, spec.text]);
 
   useEffect(() => {
@@ -265,6 +384,15 @@ export function PostCard({
   }, [commentStories.length]);
 
   useEffect(() => {
+    if (!canvasEl) return;
+    const observer = new IntersectionObserver(([entry]) => setIsVisible(entry.isIntersecting), {
+      threshold: 0.4,
+    });
+    observer.observe(canvasEl);
+    return () => observer.disconnect();
+  }, [canvasEl]);
+
+  useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -279,7 +407,7 @@ export function PostCard({
   }, []);
 
   useEffect(() => {
-    if (isPaused) return;
+    if (isPaused || !isVisible) return;
     if (pageRevealed) return;
     if (textPages.length < 2) return;
     const timer = window.setTimeout(
@@ -287,6 +415,7 @@ export function PostCard({
         // Rule: slideshow media advances only with text pages, never mid-sentence.
         const nextPage = (textPage + 1) % textPages.length;
         setTextPage(nextPage);
+        setBackgroundShiftPage((page) => page + 1);
         setPageRevealed(false);
         if (post.post_type === "slideshow" && media.length > 1) {
           setSlide(nextPage % media.length);
@@ -299,6 +428,7 @@ export function PostCard({
   }, [
     currentText,
     isPaused,
+    isVisible,
     media.length,
     pageRevealed,
     post.id,
@@ -309,7 +439,7 @@ export function PostCard({
   ]);
 
   useEffect(() => {
-    if (isPaused || storyOpen) {
+    if (isPaused || !isVisible || storyOpen) {
       setActiveComment(null);
       return;
     }
@@ -348,7 +478,7 @@ export function PostCard({
       cancelled = true;
       if (timer) window.clearTimeout(timer);
     };
-  }, [commentFlowKey, floatingComments, isPaused, storyOpen]);
+  }, [commentFlowKey, floatingComments, isPaused, isVisible, storyOpen]);
 
   useEffect(() => {
     if (!storyOpen) return;
@@ -392,12 +522,12 @@ export function PostCard({
     if (post.post_type !== "video") return;
     const video = videoRef.current;
     if (!video) return;
-    if (isPaused) {
+    if (isPaused || !isVisible) {
       video.pause();
       return;
     }
     video.play().catch(() => undefined);
-  }, [isPaused, post.post_type]);
+  }, [isPaused, isVisible, post.post_type]);
 
   function showNextTextPage(revealed: boolean) {
     if (textPages.length < 2) {
@@ -408,6 +538,7 @@ export function PostCard({
 
     const nextPage = (textPage + 1) % textPages.length;
     setTextPage(nextPage);
+    setBackgroundShiftPage((page) => page + 1);
     setPageRevealed(revealed);
     if (post.post_type === "slideshow" && media.length > 1) {
       setSlide(nextPage % media.length);
@@ -445,6 +576,7 @@ export function PostCard({
   function replayFromBeginning() {
     setIsPaused(false);
     setTextPage(0);
+    setBackgroundShiftPage(0);
     setSlide(0);
     setPageRevealed(false);
     setPlayKey((key) => key + 1);
@@ -485,6 +617,7 @@ export function PostCard({
   function selectTextPage(page: number) {
     setIsPaused(false);
     setTextPage(page);
+    setBackgroundShiftPage(page);
     setPageRevealed(false);
     if (post.post_type === "slideshow" && media.length > 1) {
       setSlide(page % media.length);
@@ -539,13 +672,47 @@ export function PostCard({
   return (
     <section className="relative flex h-[100dvh] w-full snap-start items-center justify-center overflow-hidden bg-background">
       <article
-        ref={canvasRef}
-        className="relative h-full w-full overflow-hidden bg-black sm:aspect-[9/16] sm:h-[min(90dvh,764px)] sm:w-auto sm:rounded-[28px] sm:shadow-[0_24px_90px_rgba(0,0,0,0.45)] sm:ring-1 sm:ring-white/10"
-        style={{
-          background: post.bg_gradient ?? "#000",
+        ref={(el) => {
+          canvasRef.current = el;
+          setCanvasEl(el);
         }}
+        className="relative h-full w-full overflow-hidden bg-black sm:aspect-[9/16] sm:h-[min(90dvh,764px)] sm:w-auto sm:rounded-[28px] sm:shadow-[0_24px_90px_rgba(0,0,0,0.45)] sm:ring-1 sm:ring-white/10"
         onClick={handleCanvasTap}
       >
+        {slidingCanvasBackground ? (
+          <motion.div
+            aria-hidden
+            className="absolute inset-y-0 left-0"
+            style={{
+              background: slidingCanvasBackground.background,
+              width: slidingCanvasBackground.width,
+            }}
+            initial={false}
+            animate={{ x: slidingCanvasBackground.x }}
+            transition={{ duration: 1.25, ease: [0.22, 1, 0.36, 1] }}
+          />
+        ) : (
+          <div
+            aria-hidden
+            className="absolute inset-0"
+            style={{ background: staticCanvasBackground }}
+          />
+        )}
+        {hasTransitionBackground && (
+          <motion.div
+            key={`sheen-${post.id}-${backgroundShiftPage}`}
+            aria-hidden
+            className="absolute inset-0 opacity-40 mix-blend-screen"
+            style={{
+              background:
+                "linear-gradient(115deg,rgba(255,255,255,0.22),transparent 42%,rgba(255,255,255,0.14))",
+            }}
+            initial={{ x: "-18%", opacity: 0 }}
+            animate={{ x: "0%", opacity: 0.34 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 1.15, ease: [0.22, 1, 0.36, 1] }}
+          />
+        )}
         {post.post_type === "image" && media[0] && (
           <img src={media[0]} alt="" className="absolute inset-0 size-full object-cover" />
         )}
@@ -583,20 +750,44 @@ export function PostCard({
           <motion.div
             key={`${textPage}-${playKey}`}
             initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+            animate={{ opacity: isVisible ? 1 : 0 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.45 }}
             className="absolute inset-0"
           >
-            <WordSequenceText
-              spec={displaySpec}
-              playKey={playKey}
-              paused={isPaused}
-              revealed={pageRevealed}
-              canvasWidth={canvasWidth}
-            />
+            {isVisible && (
+              <WordSequenceText
+                spec={displaySpec}
+                playKey={playKey}
+                paused={isPaused}
+                revealed={pageRevealed}
+                canvasWidth={canvasWidth}
+                disableFit={allPagesMeasured}
+                background={staticCanvasBackground}
+              />
+            )}
           </motion.div>
         </AnimatePresence>
+
+        {/* Off-screen measurers: one per page at the uniform base size, so the
+            smallest required fit can be shared across all pages (consistent size). */}
+        {needsSharedFit && isVisible && (
+          <div className="pointer-events-none absolute inset-0" aria-hidden>
+            {textPages.map((pageText, pageIndex) => (
+              <WordSequenceText
+                key={`measure-${pageIndex}-${pageText.length}`}
+                spec={{ ...spec, text: pageText, size: uniformPageSize, entrance: "fade" }}
+                playKey={0}
+                paused
+                revealed
+                measure
+                canvasWidth={canvasWidth}
+                onFitScale={(scale) => reportPageFit(pageIndex, scale)}
+                background={staticCanvasBackground}
+              />
+            ))}
+          </div>
+        )}
 
         {textPages.length > 1 && (
           <div
@@ -641,7 +832,6 @@ export function PostCard({
         {commentStories.length > 0 && !storyOpen && (
           <CommentStoryStack
             stories={commentStories}
-            profilesById={profilesById}
             onOpen={(event) => {
               event.stopPropagation();
               openCommentStories();
@@ -649,19 +839,21 @@ export function PostCard({
           />
         )}
 
-        <button
+        <motion.button
           type="button"
+          whileTap={{ scale: 0.88, backgroundColor: "rgba(255,255,255,0.12)" }}
+          transition={{ type: "spring", stiffness: 400, damping: 24 }}
           onClick={(e) => {
             e.stopPropagation();
             setShowChips(false);
             setActionMenuOpen((open) => !open);
           }}
-          className="absolute right-3 top-4 z-30 grid size-10 place-items-center rounded-full bg-black/40 text-white shadow-[0_12px_30px_rgba(0,0,0,0.3)] ring-1 ring-white/15 backdrop-blur transition active:scale-95"
+          className="absolute right-3 top-4 z-30 grid size-10 place-items-center rounded-full bg-black/40 text-white shadow-[0_12px_30px_rgba(0,0,0,0.3)] ring-1 ring-white/15 backdrop-blur"
           aria-label="More choices"
           aria-expanded={actionMenuOpen}
         >
           <MoreHorizontal className="size-5" />
-        </button>
+        </motion.button>
 
         <AnimatePresence mode="wait">
           {actionMenuOpen ? (
@@ -673,104 +865,158 @@ export function PostCard({
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 36 }}
               transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
-              className="absolute bottom-36 right-0 z-20 flex w-[72px] translate-x-[26px] flex-col divide-y divide-white/15 overflow-hidden rounded-l-[50%] bg-black/55 pr-[24px] shadow-[0_16px_40px_rgba(0,0,0,0.45)] ring-1 ring-white/10 backdrop-blur"
+              className="absolute bottom-36 right-0 z-30 flex w-[72px] translate-x-[26px] flex-col overflow-hidden rounded-l-[50%] bg-black/65 pr-[24px] shadow-[0_16px_40px_rgba(0,0,0,0.45)] ring-1 ring-white/10 backdrop-blur-xl"
             >
-              <Link
-                to="/create"
-                onClick={(e) => e.stopPropagation()}
-                aria-label="Create"
-                className="grid h-14 w-full place-items-center pl-3 pt-3 text-white transition active:bg-white/5"
-              >
-                <Plus className="size-6" strokeWidth={2.5} />
-              </Link>
-
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onLike();
-                }}
-                aria-label="Like"
-                aria-pressed={liked}
-                className="flex h-14 w-full flex-col items-center justify-center gap-0.5 transition active:bg-white/5"
-              >
-                <Heart
-                  className={`size-5 transition ${
-                    liked
-                      ? "scale-110 fill-[var(--color-magenta)] text-[var(--color-magenta)]"
-                      : "text-white"
-                  }`}
+              {[1, 2, 3].map((line) => (
+                <span
+                  key={line}
+                  aria-hidden
+                  className="pointer-events-none absolute left-0 right-[24px] z-0 h-px bg-white/15"
+                  style={{ top: `${line * 3.5}rem` }}
                 />
-                <span className="font-mono text-[8px] font-bold uppercase tracking-wider text-white/70">
-                  {likes}
-                </span>
-              </button>
+              ))}
+              <motion.div
+                className="relative z-10 h-14 w-full rounded-l-full"
+                whileTap={{ ...ARC_BUTTON_TAP, backgroundColor: "rgba(255,255,255,0.1)" }}
+                transition={ARC_BUTTON_TAP_TRANSITION}
+              >
+                <Link
+                  to="/create"
+                  onClick={(e) => e.stopPropagation()}
+                  aria-label="Create"
+                  className="grid h-full w-full place-items-center pl-3 pt-3 text-white [filter:drop-shadow(0_1px_3px_rgba(0,0,0,0.7))]"
+                >
+                  <Plus className="size-6" strokeWidth={2.5} />
+                </Link>
+              </motion.div>
 
-              <button
+              <motion.button
+                type="button"
+                whileTap={{ ...ARC_BUTTON_TAP, backgroundColor: "rgba(255,255,255,0.1)" }}
+                transition={ARC_BUTTON_TAP_TRANSITION}
+                onPointerDown={handleLikePointerDown}
+                onPointerUp={handleLikePointerUp}
+                onPointerCancel={handleLikePointerCancel}
+                onContextMenu={(e) => e.preventDefault()}
+                aria-label="Like (hold to save to collection)"
+                aria-pressed={liked}
+                className="relative z-10 grid h-14 w-full touch-none place-items-center pl-3 [filter:drop-shadow(0_1px_3px_rgba(0,0,0,0.7))]"
+              >
+                <span className="relative grid size-8 -translate-x-1 place-items-center">
+                  <Heart
+                    className={`absolute inset-0 size-8 transition ${
+                      liked
+                        ? "scale-105 fill-[var(--color-magenta)] text-[var(--color-magenta)]"
+                        : "fill-black/15 text-white/80"
+                    }`}
+                    strokeWidth={liked ? 1.2 : 0.9}
+                  />
+                  {likes > 0 && (
+                    <span
+                      className="relative mt-0.5 max-w-[1.8rem] truncate text-center font-mono text-[10px] font-black leading-none text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)]"
+                      style={{ fontSize: 10 }}
+                    >
+                      {formatCompactCount(likes)}
+                    </span>
+                  )}
+                </span>
+              </motion.button>
+
+              <motion.button
+                type="button"
+                whileTap={{ ...ARC_BUTTON_TAP, backgroundColor: "rgba(255,255,255,0.1)" }}
+                transition={ARC_BUTTON_TAP_TRANSITION}
                 onClick={(e) => {
                   e.stopPropagation();
                   setShowChips((s) => !s);
                 }}
                 aria-label="Comment"
-                className="flex h-14 w-full flex-col items-center justify-center gap-0.5 transition active:bg-white/5"
+                className="relative z-10 grid h-14 w-full place-items-center [filter:drop-shadow(0_1px_3px_rgba(0,0,0,0.7))]"
               >
-                <MessageCircle className="size-5 text-white" />
-                <span className="font-mono text-[8px] font-bold uppercase tracking-wider text-white/70">
-                  {comments.length}
+                <span className="relative grid size-7 place-items-center">
+                  <CommentBubbleIcon className="absolute inset-0 size-7 text-white" />
+                  {comments.length > 0 && (
+                    <span
+                      className="relative mt-0.5 max-w-[1.8rem] truncate text-center font-mono text-[10px] font-black leading-none text-black"
+                      style={{ fontSize: 10 }}
+                    >
+                      {formatCompactCount(comments.length)}
+                    </span>
+                  )}
                 </span>
-              </button>
+              </motion.button>
 
-              <button
+              <motion.button
+                type="button"
+                whileTap={{ ...ARC_BUTTON_TAP, backgroundColor: "rgba(255,255,255,0.1)" }}
+                transition={ARC_BUTTON_TAP_TRANSITION}
                 onClick={(e) => {
                   e.stopPropagation();
                   if (navigator.share)
                     navigator.share({ title: "kinetic", url: window.location.href });
                 }}
                 aria-label="Share"
-                className="grid h-14 w-full place-items-center pb-3 pl-3 text-white transition active:bg-white/5"
+                className="relative z-10 grid h-14 w-full place-items-center pb-3 pl-3 text-white [filter:drop-shadow(0_1px_3px_rgba(0,0,0,0.7))]"
               >
                 <Share2 className="size-5" />
-              </button>
+              </motion.button>
             </motion.div>
           )}
         </AnimatePresence>
 
-        <div className="pointer-events-none absolute bottom-16 left-0 right-24 z-30 h-28 overflow-hidden">
+        <AnimatePresence>
+          {showCollectionPicker && (
+            <CollectionPicker
+              selectedFolders={selectedFolders}
+              selectedTags={selectedTags}
+              onToggleFolder={handleToggleFolder}
+              onToggleTag={handleToggleTag}
+              onSave={handleCollectionSave}
+              onClose={handleCollectionClose}
+            />
+          )}
+        </AnimatePresence>
+
+        <div className="pointer-events-none absolute bottom-4 left-1/2 z-20 flex w-full -translate-x-1/2 flex-col items-center gap-1 overflow-hidden">
           <AnimatePresence mode="wait">
             {showingFlyingComment && (
               <motion.div
                 key={activeComment.key}
-                initial={false}
+                initial={{ x: commentStartX }}
+                animate={{ x: commentEndX }}
                 exit={{ opacity: 0, transition: { duration: 0.18 } }}
-                className="pointer-events-auto absolute left-0 top-0 z-30 flex flex-col items-center gap-1"
-                style={
-                  {
-                    maxWidth: commentMaxWidth,
-                    "--chip-start-x": `${commentStartX}px`,
-                    "--chip-end-x": `${commentEndX}px`,
-                    animation: `chip-fly ${getCommentFlightDuration(getFloatingCommentLabel(activeCommentLabel))}ms linear forwards`,
-                  } as CSSProperties & Record<string, string | number>
-                }
+                transition={{
+                  x: {
+                    duration:
+                      getCommentFlightDuration(getFloatingCommentLabel(activeCommentLabel)) / 1000,
+                    ease: "linear",
+                  },
+                }}
+                className="pointer-events-auto z-30 flex flex-col items-center gap-0.5"
+                style={{ maxWidth: commentMaxWidth }}
               >
-                <div className="relative max-w-full rounded-2xl rounded-bl-md bg-white/90 px-3 py-1.5 text-center text-sm font-semibold leading-snug text-black shadow-lg">
-                  {getFloatingCommentLabel(activeCommentLabel)}
-                  <span className="absolute -bottom-1 left-5 h-3 w-3 rotate-45 rounded-[2px] bg-white/90" />
-                </div>
-                <div className="flex items-center gap-1 rounded-full bg-black/35 px-2 py-0.5 font-mono text-[9px] uppercase tracking-wider text-white/75 backdrop-blur">
+                <div className="flex items-center gap-1 font-mono text-[9px] uppercase tracking-wider text-white/75">
                   {activeCommentAuthor ? (
                     <Link
                       to="/u/$username"
                       params={{ username: activeCommentAuthor.username }}
                       onClick={(event) => event.stopPropagation()}
-                      className="font-bold text-white"
+                      className="font-bold text-white drop-shadow"
                     >
-                      {getProfileDisplayLabel(activeCommentAuthor)}
+                      @{activeCommentAuthor.username}
                     </Link>
                   ) : (
-                    <span>someone</span>
+                    <span className="drop-shadow">someone</span>
                   )}
-                  <span className="text-white/35">/</span>
-                  <span>{formatShortDateTime(activeComment.created_at)}</span>
                 </div>
+                <div className="relative max-w-full rounded-2xl bg-white px-3 py-1.5 shadow-[0_8px_28px_rgba(0,0,0,0.45)] ring-1 ring-black/5">
+                  <p className="text-center text-sm font-semibold leading-snug text-black">
+                    {getFloatingCommentLabel(activeCommentLabel)}
+                  </p>
+                </div>
+                <span className="font-mono text-[8px] uppercase tracking-wider text-white/50">
+                  {formatShortDateTime(activeComment.created_at)}
+                </span>
               </motion.div>
             )}
           </AnimatePresence>
@@ -778,7 +1024,7 @@ export function PostCard({
 
         <div
           className={`absolute bottom-4 left-4 z-20 max-w-[min(70%,260px)] text-white transition-opacity duration-300 ${
-            showingFlyingComment ? "opacity-30" : "opacity-100"
+            showingFlyingComment ? "opacity-20" : "opacity-100"
           }`}
         >
           {articlePreview && (
@@ -827,7 +1073,7 @@ export function PostCard({
         </div>
 
         <AnimatePresence>
-          {isPaused && !storyOpen && (
+          {isPaused && !storyOpen && !showCollectionPicker && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -942,11 +1188,11 @@ export function PostCard({
 function PostMenuRail() {
   return (
     <motion.div
-      initial={{ opacity: 0, x: 16 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: 16 }}
-      transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
-      className="absolute bottom-36 right-3 z-30 flex flex-col items-end gap-2"
+      initial={{ opacity: 0, y: -8, scale: 0.98 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: -8, scale: 0.98 }}
+      transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+      className="absolute right-3 top-[62px] z-30 flex origin-top-right flex-col items-end gap-2"
       onClick={(event) => event.stopPropagation()}
     >
       <RailMenuLink to="/create" label="create" icon={<Plus className="size-5" />} emphasized />
@@ -972,30 +1218,37 @@ function RailMenuLink({
   emphasized?: boolean;
 }) {
   return (
-    <Link to={to} className="group flex items-center gap-2 text-white">
-      <span className="rounded-full bg-black/40 px-2.5 py-1 text-right font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-white/80 opacity-95 shadow-[0_8px_24px_rgba(0,0,0,0.25)] backdrop-blur transition group-hover:text-white">
-        {label}
-      </span>
-      <span
-        className={`grid size-10 place-items-center rounded-full shadow-[0_12px_30px_rgba(0,0,0,0.3)] transition group-active:scale-95 ${
-          emphasized
-            ? "bg-white text-black"
-            : "bg-black/45 text-white ring-1 ring-white/15 backdrop-blur"
-        }`}
+    <motion.div
+      whileTap={{ scale: 0.93, x: -2 }}
+      transition={{ type: "spring", stiffness: 560, damping: 24 }}
+    >
+      <Link
+        to={to}
+        className="group flex min-h-10 items-center gap-2 text-white outline-none"
+        aria-label={label}
       >
-        {icon}
-      </span>
-    </Link>
+        <span className="pr-1 text-right font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-white/75 drop-shadow-[0_2px_10px_rgba(0,0,0,0.85)] transition group-hover:text-white group-active:translate-x-0.5 group-active:text-white">
+          {label}
+        </span>
+        <span
+          className={`grid size-10 place-items-center rounded-full shadow-[0_12px_30px_rgba(0,0,0,0.3)] transition duration-150 group-active:scale-90 group-active:ring-2 group-active:ring-white/80 ${
+            emphasized
+              ? "bg-white text-black group-active:bg-white/85"
+              : "bg-black/45 text-white ring-1 ring-white/15 backdrop-blur group-active:bg-white group-active:text-black"
+          }`}
+        >
+          {icon}
+        </span>
+      </Link>
+    </motion.div>
   );
 }
 
 function CommentStoryStack({
   stories,
-  profilesById,
   onOpen,
 }: {
   stories: CommentStory[];
-  profilesById: Map<string, Profile>;
   onOpen: (event: ReactMouseEvent<HTMLButtonElement>) => void;
 }) {
   const preview = stories.slice(-3);
@@ -1004,20 +1257,19 @@ function CommentStoryStack({
     <button
       type="button"
       onClick={onOpen}
-      className="absolute bottom-4 right-3 z-30 h-[104px] w-[66px]"
+      className="absolute bottom-4 right-3 z-30 h-[88px] w-[82px]"
       aria-label="Open animated comments"
     >
       {preview.map((story, index) => {
         const offset = preview.length - 1 - index;
         const background = getCommentStoryGradient(story.index);
-        const storyAuthor = profilesById.get(story.user_id);
         return (
           <span
             key={story.id}
-            className="absolute bottom-0 right-0 h-[102px] w-[54px] text-white"
+            className="absolute bottom-0 right-0 h-[86px] w-[68px] text-white"
             style={{
               zIndex: index + 1,
-              transform: `translate(${-offset * 6}px, ${-offset * 7}px) rotate(${-offset * 3}deg)`,
+              transform: `translate(${-offset * 7}px, ${-offset * 6}px) rotate(${-offset * 3}deg)`,
             }}
           >
             <span
@@ -1025,27 +1277,28 @@ function CommentStoryStack({
               className="absolute inset-0"
               style={{
                 background,
-                ...BUBBLE_MASK_STYLE,
+                ...SPEECH_BUBBLE_MASK_STYLE,
                 filter: "drop-shadow(0 12px 30px rgba(0,0,0,0.45))",
               }}
             />
             <span
               aria-hidden
               className="absolute inset-0 bg-gradient-to-b from-white/10 via-transparent to-black/45"
-              style={BUBBLE_MASK_STYLE}
+              style={SPEECH_BUBBLE_MASK_STYLE}
             />
-            <span className="absolute inset-y-0 left-[7px] right-0 overflow-hidden rounded-[14px]">
-              <span className="absolute inset-x-1.5 top-1.5 flex gap-0.5">
+            <span className="absolute inset-y-0 left-[10px] right-0 overflow-hidden rounded-[14px]">
+              <span className="absolute inset-x-1.5 top-3 flex gap-0.5">
                 <span className="h-0.5 flex-1 rounded-full bg-white/80" />
                 <span className="h-0.5 flex-1 rounded-full bg-white/30" />
               </span>
-              {storyAuthor && (
-                <span className="absolute left-2 top-3.5 max-w-[78%] truncate font-mono text-[7px] font-bold uppercase tracking-[0.08em] text-white/70">
-                  {getProfileDisplayLabel(storyAuthor)}
-                </span>
-              )}
-              <span className="absolute inset-x-1 bottom-2 line-clamp-3 px-1 text-left text-[9px] font-black leading-[0.95] drop-shadow">
-                {getCommentPreview(story.text)}
+              <span className="absolute left-2 top-5 flex w-[78%] gap-0.5">
+                <span className="h-0.5 flex-[3] rounded-full bg-white/50" />
+                <span className="h-0.5 flex-1 rounded-full bg-white/25" />
+              </span>
+              <span className="absolute inset-x-2 bottom-3 flex flex-col gap-[3px]">
+                <span className="h-0.5 w-[85%] rounded-full bg-white/40" />
+                <span className="h-0.5 w-[65%] rounded-full bg-white/30" />
+                <span className="h-0.5 w-[75%] rounded-full bg-white/25" />
               </span>
             </span>
           </span>
@@ -1104,115 +1357,102 @@ function CommentStoryPlayer({
         animate={{ y: 0, scale: 1, opacity: 1 }}
         exit={{ y: 48, scale: 0.94, opacity: 0 }}
         transition={{ type: "spring", stiffness: 260, damping: 26 }}
-        className="relative aspect-[9/16] h-[85%] max-h-[85%] max-w-[92%] text-white drop-shadow-[0_24px_80px_rgba(0,0,0,0.55)]"
+        className="relative aspect-[9/16] h-[85%] max-h-[85%] max-w-[92%] overflow-hidden rounded-[28px] text-white shadow-[0_24px_80px_rgba(0,0,0,0.55)] ring-1 ring-white/15"
       >
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-y-0 -left-[22px] right-0"
-          style={{
-            background,
-            ...STORY_PLAYER_BUBBLE_MASK_STYLE,
-          }}
-        />
-        <div
-          className="absolute inset-y-0 -left-[22px] right-0 overflow-hidden"
-          style={STORY_PLAYER_BUBBLE_MASK_STYLE}
-        >
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_15%,rgba(255,255,255,0.22),transparent_30%),linear-gradient(180deg,rgba(0,0,0,0.08),rgba(0,0,0,0.52))]" />
+        <div aria-hidden className="absolute inset-0" style={{ background }} />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_15%,rgba(255,255,255,0.22),transparent_30%),linear-gradient(180deg,rgba(0,0,0,0.08),rgba(0,0,0,0.52))]" />
 
-          <div className="absolute inset-y-0 left-[22px] right-0">
-            <div className="absolute inset-x-4 top-4 z-10">
-              <div className="mb-3 flex gap-1">
-                {Array.from({ length: storyCount }).map((_, index) => (
-                  <span
-                    key={index}
-                    className={`h-1 flex-1 rounded-full ${
-                      index === storyIndex ? "bg-white" : "bg-white/25"
-                    }`}
-                  />
-                ))}
-              </div>
-              <div className="flex items-start justify-between gap-2">
-                {author ? (
-                  <Link
-                    to="/u/$username"
-                    params={{ username: author.username }}
-                    onClick={(event) => event.stopPropagation()}
-                    className="flex h-10 min-w-0 items-center gap-2"
-                  >
-                    <img
-                      src={author.avatar_url ?? ""}
-                      alt=""
-                      className="size-10 shrink-0 rounded-full border-2 border-white/80"
-                    />
-                    <div className="min-w-0 leading-tight">
-                      <p className="truncate text-sm font-bold text-white drop-shadow">
-                        @{author.username}
-                      </p>
-                      <p className="font-mono text-[10px] uppercase tracking-widest text-white/70 drop-shadow">
-                        {formatShortDateTime(story.created_at)}
-                      </p>
-                    </div>
-                  </Link>
-                ) : (
-                  <div className="flex h-10 items-center gap-2">
-                    <span className="size-10 rounded-full border-2 border-white/40 bg-white/15" />
-                    <div className="leading-tight">
-                      <p className="text-sm font-bold text-white drop-shadow">someone</p>
-                      <p className="font-mono text-[10px] uppercase tracking-widest text-white/70 drop-shadow">
-                        {formatShortDateTime(story.created_at)}
-                      </p>
-                    </div>
-                  </div>
-                )}
-                <div className="flex shrink-0 gap-2 pt-1">
-                  <button
-                    type="button"
-                    onClick={onToggleFast}
-                    className={`flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.12em] backdrop-blur ${
-                      fastMode ? "bg-white text-black" : "bg-black/30 text-white"
-                    }`}
-                  >
-                    <FastForward className="size-3" />
-                    fast
-                  </button>
-                  <button
-                    type="button"
-                    onClick={onClose}
-                    className="grid size-7 place-items-center rounded-full bg-black/30 text-white backdrop-blur"
-                    aria-label="Close animated comments"
-                  >
-                    <X className="size-4" />
-                  </button>
+        <div className="absolute inset-x-4 top-4 z-20">
+          <div className="mb-3 flex gap-1">
+            {Array.from({ length: storyCount }).map((_, index) => (
+              <span
+                key={index}
+                className={`h-1 flex-1 rounded-full ${
+                  index === storyIndex ? "bg-white" : "bg-white/25"
+                }`}
+              />
+            ))}
+          </div>
+          <div className="flex items-start justify-between gap-2">
+            {author ? (
+              <Link
+                to="/u/$username"
+                params={{ username: author.username }}
+                onClick={(event) => event.stopPropagation()}
+                className="flex h-10 min-w-0 items-center gap-2"
+              >
+                <img
+                  src={author.avatar_url ?? ""}
+                  alt=""
+                  className="size-10 shrink-0 rounded-full border-2 border-white/80"
+                />
+                <div className="min-w-0 leading-tight">
+                  <p className="truncate text-sm font-bold text-white drop-shadow">
+                    @{author.username}
+                  </p>
+                  <p className="font-mono text-[10px] uppercase tracking-widest text-white/70 drop-shadow">
+                    {formatShortDateTime(story.created_at)}
+                  </p>
+                </div>
+              </Link>
+            ) : (
+              <div className="flex h-10 items-center gap-2">
+                <span className="size-10 rounded-full border-2 border-white/40 bg-white/15" />
+                <div className="leading-tight">
+                  <p className="text-sm font-bold text-white drop-shadow">someone</p>
+                  <p className="font-mono text-[10px] uppercase tracking-widest text-white/70 drop-shadow">
+                    {formatShortDateTime(story.created_at)}
+                  </p>
                 </div>
               </div>
-            </div>
-
-            <AnimatedCommentStoryText
-              text={pageText}
-              fullText={story.text}
-              playKey={playKey}
-              fastMode={fastMode}
-            />
-
-            {!fastMode && storyPageCount > 1 && (
-              <div className="absolute bottom-16 left-1/2 z-10 flex -translate-x-1/2 gap-1.5">
-                {Array.from({ length: storyPageCount }).map((_, index) => (
-                  <span
-                    key={index}
-                    className={`h-1.5 rounded-full transition ${
-                      index === storyPage ? "w-5 bg-white" : "w-1.5 bg-white/35"
-                    }`}
-                  />
-                ))}
-              </div>
             )}
-
-            <p className="absolute inset-x-4 bottom-4 z-10 text-right font-mono text-[9px] uppercase tracking-[0.14em] text-white/55">
-              swipe to skip
-            </p>
+            <div className="flex shrink-0 gap-2 pt-1">
+              <button
+                type="button"
+                onClick={onToggleFast}
+                className={`flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.12em] backdrop-blur ${
+                  fastMode ? "bg-white text-black" : "bg-black/30 text-white"
+                }`}
+              >
+                <FastForward className="size-3" />
+                fast
+              </button>
+              <button
+                type="button"
+                onClick={onClose}
+                className="grid size-8 place-items-center rounded-full bg-black/35 text-white shadow-[0_8px_24px_rgba(0,0,0,0.35)] ring-1 ring-white/20 backdrop-blur"
+                aria-label="Close animated comments"
+              >
+                <X className="size-4" />
+              </button>
+            </div>
           </div>
         </div>
+
+        <AnimatedCommentStoryText
+          text={pageText}
+          fullText={story.text}
+          playKey={playKey}
+          fastMode={fastMode}
+          background={background}
+        />
+
+        {!fastMode && storyPageCount > 1 && (
+          <div className="absolute bottom-16 left-1/2 z-20 flex -translate-x-1/2 gap-1.5">
+            {Array.from({ length: storyPageCount }).map((_, index) => (
+              <span
+                key={index}
+                className={`h-1.5 rounded-full transition ${
+                  index === storyPage ? "w-5 bg-white" : "w-1.5 bg-white/35"
+                }`}
+              />
+            ))}
+          </div>
+        )}
+
+        <p className="absolute inset-x-4 bottom-4 z-20 text-right font-mono text-[9px] uppercase tracking-[0.14em] text-white/55">
+          swipe to skip
+        </p>
       </motion.div>
     </motion.div>
   );
@@ -1223,15 +1463,19 @@ function AnimatedCommentStoryText({
   fullText,
   playKey,
   fastMode,
+  background,
 }: {
   text: string;
   fullText: string;
   playKey: number;
   fastMode: boolean;
+  background: string;
 }) {
   const displayText = fastMode ? fullText : text;
   const words = getWords(displayText);
   const emphasized = getEmphasizedWordIndexes(words);
+  const textColor = getCanvasTextColor({ color: "#ffffff" }, background);
+  const emphasisColor = getCanvasEmphasisColor({ color: textColor }, background);
 
   if (fastMode) {
     return (
@@ -1241,7 +1485,7 @@ function AnimatedCommentStoryText({
           initial={{ opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
           className="max-h-full overflow-hidden text-center font-black leading-[1.02] text-white drop-shadow-[0_8px_34px_rgba(0,0,0,0.55)]"
-          style={{ fontSize: "clamp(1.15rem, 3.5vh, 1.85rem)" }}
+          style={{ color: textColor, fontSize: "clamp(1.15rem, 3.5vh, 1.85rem)" }}
         >
           {displayText}
         </motion.p>
@@ -1284,7 +1528,7 @@ function AnimatedCommentStoryText({
               }}
               className="inline-flex"
               style={{
-                color: important ? "#FFBE0B" : "#ffffff",
+                color: important ? emphasisColor : textColor,
               }}
             >
               {word}
@@ -1296,7 +1540,7 @@ function AnimatedCommentStoryText({
   );
 }
 
-function paginateText(text: string) {
+export function paginateText(text: string) {
   const blocks = text
     .replace(/\r\n?/g, "\n")
     .split("\n")
@@ -1304,7 +1548,7 @@ function paginateText(text: string) {
     .filter(Boolean);
   if (blocks.length === 0) return [""];
 
-  return blocks.flatMap((block) => paginateTextBlock(block));
+  return mergeShortTextPages(blocks.flatMap((block) => paginateTextBlock(block)));
 }
 
 function paginateTextBlock(text: string) {
@@ -1324,19 +1568,101 @@ function chunkSentenceByWords(sentence: string, wordLimit: number) {
   const chunks: string[] = [];
 
   for (let i = 0; i < words.length; i += targetWordsPerPage) {
-    chunks.push(words.slice(i, i + targetWordsPerPage).join(" "));
+    let chunkEnd = Math.min(i + targetWordsPerPage, words.length);
+
+    // The page word limit is a guide, not a hard rule: never orphan only 1-2
+    // words on a following page just because the current page reached the cap.
+    const remainingWords = words.length - chunkEnd;
+    if (remainingWords > 0 && remainingWords <= 2) {
+      chunkEnd = words.length;
+    }
+
+    if (chunkEnd > i) {
+      chunks.push(words.slice(i, chunkEnd).join(" "));
+    }
   }
 
   return chunks;
 }
 
-function getPageTextSize(baseSize: number, text: string) {
+const MIN_STANDALONE_PAGE_WORDS = 3;
+
+function mergeShortTextPages(pages: string[]) {
+  const merged: string[] = [];
+
+  for (const page of pages) {
+    const normalized = page.trim();
+    if (!normalized) continue;
+
+    if (getWords(normalized).length < MIN_STANDALONE_PAGE_WORDS && merged.length > 0) {
+      merged[merged.length - 1] = joinTextPages(merged[merged.length - 1], normalized);
+      continue;
+    }
+
+    merged.push(normalized);
+  }
+
+  while (merged.length > 1 && getWords(merged[0]).length < MIN_STANDALONE_PAGE_WORDS) {
+    merged[1] = joinTextPages(merged[0], merged[1]);
+    merged.shift();
+  }
+
+  return merged;
+}
+
+function joinTextPages(left: string, right: string) {
+  return `${left.trim()} ${right.trim()}`.trim();
+}
+
+const MIN_FONT_SIZE = 64;
+
+function getUniformPageTextSize(baseSize: number, pages: string[], fullText: string): number {
+  // Single page: use its optimal size
+  if (pages.length <= 1) {
+    return Math.max(
+      MIN_FONT_SIZE,
+      getPageTextSize(baseSize, pages[0] ?? "", isLikelyVietnameseText(fullText)),
+    );
+  }
+
+  // Multi-page: find the SMALLEST page (fewest words) to determine a uniform
+  // size that works for all. This makes all pages display large and consistent.
+  // Never shrinks below MIN_FONT_SIZE.
+  const isVietnamese = isLikelyVietnameseText(fullText);
+  const minWordCount = Math.min(...pages.map((p) => getWords(p).length));
+
+  let size: number;
+  if (isVietnamese) {
+    if (minWordCount >= 9) size = Math.min(baseSize, 78);
+    else if (minWordCount >= 7) size = Math.min(baseSize, 84);
+    else if (minWordCount >= 5) size = Math.min(baseSize, 92);
+    else if (minWordCount >= 3) size = Math.min(baseSize, 104);
+    else size = baseSize;
+  } else {
+    // English: bump size based on min word count (smaller pages get larger fonts)
+    if (minWordCount >= 14) size = Math.max(baseSize, 80);
+    else if (minWordCount >= 10) size = Math.max(baseSize, 86);
+    else if (minWordCount >= 6) size = Math.max(baseSize, 92);
+    else size = Math.max(baseSize, 96);
+  }
+
+  return Math.max(MIN_FONT_SIZE, size);
+}
+
+function getPageTextSize(baseSize: number, text: string, isVietnamese: boolean) {
   const wordCount = getWords(text).length;
-  if (wordCount >= 9) return Math.min(baseSize, 72);
-  if (wordCount >= 7) return Math.min(baseSize, 78);
-  if (wordCount >= 5) return Math.min(baseSize, 88);
-  if (wordCount >= 3) return Math.min(baseSize, 98);
-  return baseSize;
+  if (isVietnamese) {
+    if (wordCount >= 9) return Math.min(baseSize, 78);
+    if (wordCount >= 7) return Math.min(baseSize, 84);
+    if (wordCount >= 5) return Math.min(baseSize, 92);
+    if (wordCount >= 3) return Math.min(baseSize, 104);
+    return baseSize;
+  }
+  // English text: bump base size so it fills the canvas like Vietnamese posts.
+  if (wordCount >= 14) return Math.max(baseSize, 80);
+  if (wordCount >= 10) return Math.max(baseSize, 86);
+  if (wordCount >= 6) return Math.max(baseSize, 92);
+  return Math.max(baseSize, 96);
 }
 
 function getPageDuration(text: string, tempo: Tempo) {
@@ -1412,14 +1738,53 @@ function getCommentStoryGradient(index: number) {
   return gradients[index % gradients.length];
 }
 
-function getCommentPreview(text: string) {
-  const words = getWords(text);
-  if (words.length <= 5) return text;
-  return `${words.slice(0, 5).join(" ")}...`;
+function getGradientTransitionPath(spec: CanvasSpec) {
+  if (spec.backgroundStyle !== "transition") return [];
+  return (spec.gradientPath ?? []).map((gradient) => gradient.trim()).filter(Boolean);
 }
 
-function getProfileDisplayLabel(profile: Profile) {
-  return profile.display_name.trim() || `@${profile.username}`;
+function getSlidingCanvasBackground(spec: CanvasSpec, fallback: string | null, shiftPage: number) {
+  const colors = getTransitionColorCycle(spec, fallback);
+  if (colors.length < 2) return null;
+
+  const segmentCount = Math.max(64, colors.length * 12);
+  const stripColors = Array.from(
+    { length: segmentCount + 1 },
+    (_, index) => colors[index % colors.length],
+  );
+  const stops = stripColors
+    .map((color, index) => `${color} ${((index / segmentCount) * 100).toFixed(3)}%`)
+    .join(", ");
+
+  return {
+    background: `linear-gradient(100deg, ${stops})`,
+    width: `${segmentCount * 100}%`,
+    x: `-${shiftPage * (100 / segmentCount)}%`,
+  };
+}
+
+function getTransitionColorCycle(spec: CanvasSpec, fallback: string | null) {
+  const gradients = getGradientTransitionPath(spec);
+  const colors = gradients.reduce<string[]>((items, gradient, index) => {
+    const stops = extractGradientColors(gradient);
+    if (stops.length < 2) return items;
+    if (index === 0) items.push(stops[0]);
+    items.push(stops[stops.length - 1]);
+    return items;
+  }, []);
+
+  const fallbackStops = fallback ? extractGradientColors(fallback) : [];
+  const cycle = colors.length >= 2 ? colors : fallbackStops;
+  if (cycle.length < 2) return [];
+  return cycle[0] === cycle[cycle.length - 1] ? cycle.slice(0, -1) : cycle;
+}
+
+function extractGradientColors(value: string) {
+  return (
+    value.match(
+      /#[0-9a-fA-F]{3,8}\b|rgba?\([^)]*\)|hsla?\([^)]*\)|oklch\([^)]*\)|color\([^)]*\)/g,
+    ) ?? []
+  );
 }
 
 function getPostHashtags(text: string, postType: string) {
@@ -1473,27 +1838,48 @@ function WordSequenceText({
   paused,
   revealed,
   canvasWidth,
+  measure = false,
+  onFitScale,
+  disableFit = false,
+  background,
 }: {
   spec: CanvasSpec;
   playKey: number;
   paused: boolean;
   revealed: boolean;
   canvasWidth: number;
+  // measure: render static + invisible, only to report the fit scale this page needs.
+  measure?: boolean;
+  onFitScale?: (scale: number) => void;
+  // disableFit: spec.size is already the shared, pre-fitted size — skip per-page shrink.
+  disableFit?: boolean;
+  background?: string | null;
 }) {
   const words = getWords(spec.text);
   const isVietnamese = isLikelyVietnameseText(spec.text);
   const vietnameseLines = isVietnamese ? getVietnameseWordLines(words) : [];
   const emphasized = getEmphasizedWordIndexes(words);
+  const layoutMode = getKineticTextLayoutMode(spec.text, isVietnamese, words.length, emphasized);
+  const leftAnchoredText = layoutMode !== "center";
+  const spotlightEmphasis = layoutMode === "left-spotlight";
   const tempo = tempoConfig[spec.tempo];
   const wrapperRef = useRef<HTMLDivElement>(null);
   const textRef = useRef<HTMLDivElement>(null);
   const [fitScale, setFitScale] = useState(1);
-  const fontSize = spec.size * fitScale;
+  const staticRender = revealed || measure;
+  const fontSize = spec.size * (disableFit ? 1 : fitScale);
+  const textColor = getCanvasTextColor(spec, background);
+  const emphasisColor = getCanvasEmphasisColor({ ...spec, color: textColor }, background);
+  const visualScaleGuard = Math.max(
+    emphasized.size > 0 ? EMPHASIS_SCALE_FIT_GUARD : 1,
+    isVietnamese ? VIETNAMESE_SCALE_FIT_GUARD : 1,
+  );
 
-  useEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     setFitScale(1);
   }, [
     canvasWidth,
+    background,
     spec.color,
     spec.font,
     spec.letterSpacing,
@@ -1504,6 +1890,7 @@ function WordSequenceText({
   ]);
 
   useIsomorphicLayoutEffect(() => {
+    if (disableFit) return;
     const wrapper = wrapperRef.current;
     const text = textRef.current;
     const canvas = wrapper?.parentElement?.parentElement;
@@ -1515,14 +1902,29 @@ function WordSequenceText({
 
     const verticalRoom = (canvasHeight * Math.min(spec.y, 100 - spec.y) * 2) / 100;
     const maxHeight = Math.max(canvasHeight * 0.45, verticalRoom * 0.86);
-    const widthRatio = wrapperWidth / Math.max(text.scrollWidth, 1);
+    const measuredWidth = getMeasuredTextWidth(text, wrapper, leftAnchoredText);
+    const widthRatio = wrapperWidth / Math.max(measuredWidth * visualScaleGuard, 1);
     const heightRatio = maxHeight / Math.max(text.scrollHeight, 1);
-    const nextFit = Math.min(1, fitScale * Math.min(widthRatio, heightRatio) * 0.98);
+    const finalSizeFloor = Math.min(1, MIN_FONT_SIZE / Math.max(spec.size, 1));
+    const floor = Math.max(
+      isVietnamese ? MIN_TEXT_FIT_SCALE : MIN_ENGLISH_TEXT_FIT_SCALE,
+      finalSizeFloor,
+    );
+    const nextFit = Math.max(
+      floor,
+      Math.min(1, fitScale * Math.min(widthRatio, heightRatio) * 0.98),
+    );
 
     if (nextFit < fitScale - 0.01) {
-      setFitScale(Math.max(MIN_TEXT_FIT_SCALE, nextFit));
+      setFitScale(nextFit);
+    } else {
+      // Converged — report the scale this page needs so the parent can pick a
+      // single shared size that keeps every page the same immersive size.
+      onFitScale?.(nextFit);
     }
   }, [
+    disableFit,
+    onFitScale,
     fitScale,
     fontSize,
     canvasWidth,
@@ -1533,10 +1935,14 @@ function WordSequenceText({
     spec.text,
     spec.weight,
     spec.y,
+    isVietnamese,
+    leftAnchoredText,
+    visualScaleGuard,
   ]);
 
-  const renderWord = (word: string, index: number) => {
+  const renderWord = (word: string, index: number, suppressSpotlight = false) => {
     const important = emphasized.has(index);
+    const spotlightWord = spotlightEmphasis && important && !suppressSpotlight;
     return (
       <motion.span
         key={`${word}-${index}`}
@@ -1544,25 +1950,38 @@ function WordSequenceText({
           hidden: {
             opacity: 0,
             y: important ? 34 : 22,
-            scale: important ? 0.74 : 0.88,
+            scale: important ? 0.66 : 0.88,
             filter: "blur(10px)",
           },
           show: {
             opacity: 1,
             y: 0,
-            scale: important ? 1.12 : 1,
+            // Settle at scale 1. The enlargement is applied via fontSize below so
+            // it occupies real layout width (transform scale does not), which is
+            // what prevents the emphasized word from overlapping its neighbors.
+            scale: 1,
             filter: "blur(0px)",
           },
         }}
         transition={{
-          delay: revealed ? 0 : getWordDelay(index, spec.tempo, spec.rhythm),
-          duration: revealed ? 0.01 : important ? tempo.wordDuration * 1.22 : tempo.wordDuration,
+          delay: staticRender ? 0 : getWordDelay(index, spec.tempo, spec.rhythm),
+          duration: staticRender
+            ? 0.01
+            : important
+              ? tempo.wordDuration * 1.22
+              : tempo.wordDuration,
           ease: [0.22, 1, 0.36, 1],
         }}
         className={important ? "relative inline-flex" : "inline-flex"}
         style={{
-          color: important ? getEmphasisColor(spec.color) : spec.color,
-          display: "inline-block",
+          color: important ? emphasisColor : textColor,
+          display: spotlightWord ? "inline-flex" : "inline-block",
+          flexBasis: spotlightWord ? "100%" : undefined,
+          justifyContent: spotlightWord ? "center" : undefined,
+          textAlign: spotlightWord ? "center" : undefined,
+          // Emphasized words render larger via fontSize so the extra width is
+          // reserved in the flex flow (transform: scale would overlap neighbors).
+          fontSize: important ? `${EMPHASIS_FONT_SCALE}em` : undefined,
           fontWeight: important ? 900 : spec.weight,
           overflowWrap: "normal",
           whiteSpace: "nowrap",
@@ -1571,6 +1990,13 @@ function WordSequenceText({
             ? "0 0 22px rgba(255,255,255,0.35), 0 5px 36px rgba(0,0,0,0.55)"
             : "0 4px 40px rgba(0,0,0,0.45)",
           animationPlayState: paused ? "paused" : "running",
+          transformOrigin: leftAnchoredText && !spotlightWord ? "left center" : "center",
+          // Small breathing room on top of the reserved fontSize width so the
+          // bolder glyphs never kiss the adjacent words.
+          marginTop: spotlightWord ? "0.08em" : undefined,
+          marginBottom: spotlightWord ? "0.08em" : undefined,
+          marginLeft: important && !spotlightWord ? "0.06em" : undefined,
+          marginRight: important && !spotlightWord ? "0.06em" : undefined,
         }}
       >
         {word}
@@ -1581,35 +2007,40 @@ function WordSequenceText({
   return (
     <div
       ref={wrapperRef}
+      aria-hidden={measure || undefined}
       className="pointer-events-none absolute select-none"
       style={{
         left: `${spec.x}%`,
         top: `${spec.y}%`,
         transform: "translate(-50%, -50%)",
-        width: isVietnamese ? TEXT_SAFE_MAX_WIDTH : undefined,
+        width: TEXT_SAFE_MAX_WIDTH,
         maxWidth: TEXT_SAFE_MAX_WIDTH,
+        visibility: measure ? "hidden" : undefined,
       }}
     >
       <motion.div
         ref={textRef}
-        key={`${playKey}-${revealed ? "revealed" : "animated"}`}
+        key={`${playKey}-${staticRender ? "revealed" : "animated"}`}
         className={
           isVietnamese
             ? "flex flex-col items-stretch"
-            : "flex flex-wrap items-center justify-center"
+            : leftAnchoredText
+              ? "flex flex-wrap items-baseline justify-start"
+              : "flex flex-wrap items-center justify-center"
         }
-        initial={revealed ? false : "hidden"}
+        initial={staticRender ? false : "hidden"}
         animate="show"
         style={{
-          columnGap: isVietnamese ? undefined : "0.24em",
+          width: "100%",
+          columnGap: isVietnamese ? undefined : "0.34em",
           rowGap: isVietnamese ? undefined : "0.08em",
           fontFamily: spec.font,
           fontSize,
-          color: spec.color,
+          color: textColor,
           fontWeight: spec.weight,
           letterSpacing: `${spec.letterSpacing}em`,
           lineHeight: isVietnamese ? 1.04 : 0.9,
-          textAlign: isVietnamese ? "left" : "center",
+          textAlign: leftAnchoredText ? "left" : "center",
           textShadow: "0 4px 40px rgba(0,0,0,0.45)",
           transform: `rotate(${spec.rotation}deg)`,
           animation: getLoopAnimation(spec.loop, spec.tempo),
@@ -1619,20 +2050,39 @@ function WordSequenceText({
         {isVietnamese
           ? vietnameseLines.map((line, lineIndex) => (
               <div
-                key={`${lineIndex}-${line.indentCh}`}
+                key={`${lineIndex}-${line.indentEm}`}
                 className="flex flex-wrap items-baseline justify-start"
                 style={{
+                  alignSelf: "stretch",
                   boxSizing: "border-box",
                   columnGap: "0.24em",
                   rowGap: "0.08em",
                   marginTop: lineIndex === 0 ? 0 : "0.06em",
                   minWidth: 0,
-                  paddingLeft: `${line.indentCh}ch`,
+                  paddingLeft: `${line.indentEm}em`,
                   paddingRight: "2%",
                   width: "100%",
                 }}
               >
-                {line.words.map(({ text, index }) => renderWord(text, index))}
+                {line.segments.map((segment) => {
+                  const spotlightSegment =
+                    spotlightEmphasis && segment.words.some(({ index }) => emphasized.has(index));
+                  return (
+                    <span
+                      key={segment.key}
+                      className="inline-flex flex-nowrap items-baseline whitespace-nowrap"
+                      style={{
+                        columnGap: "0.24em",
+                        flexBasis: spotlightSegment ? "100%" : undefined,
+                        justifyContent: spotlightSegment ? "center" : undefined,
+                        marginBottom: spotlightSegment ? "0.08em" : undefined,
+                        marginTop: spotlightSegment ? "0.08em" : undefined,
+                      }}
+                    >
+                      {segment.words.map(({ text, index }) => renderWord(text, index, true))}
+                    </span>
+                  );
+                })}
               </div>
             ))
           : words.map((word, index) => renderWord(word, index))}
@@ -1641,8 +2091,33 @@ function WordSequenceText({
   );
 }
 
+function getKineticTextLayoutMode(
+  text: string,
+  isVietnamese: boolean,
+  wordCount: number,
+  emphasized: Set<number>,
+) {
+  const hasEmphasis = emphasized.size > 0;
+  const seed = getStableNumber(text);
+  if (isVietnamese) return hasEmphasis && seed % 4 === 0 ? "left-spotlight" : "left";
+  if (wordCount <= 3) return "center";
+  if (hasEmphasis && seed % 5 === 0) return "left-spotlight";
+  return seed % 2 === 0 || wordCount >= 6 ? "left" : "center";
+}
+
 function getWords(text: string) {
   return text.match(/\S+/g) ?? [];
+}
+
+function getMeasuredTextWidth(text: HTMLElement, wrapper: HTMLElement, leftAnchored: boolean) {
+  if (!leftAnchored) return text.scrollWidth;
+
+  const wrapperLeft = wrapper.getBoundingClientRect().left;
+  const rightEdge = Array.from(text.querySelectorAll("span")).reduce((maxRight, element) => {
+    return Math.max(maxRight, element.getBoundingClientRect().right - wrapperLeft);
+  }, 0);
+
+  return rightEdge || text.scrollWidth;
 }
 
 function normalizeComment(value: string) {
@@ -1682,13 +2157,6 @@ function getWordImportance(word: string, index: number, total: number) {
   if (index === total - 1 && cleaned.length > 3) score += 2;
   if (word === word.toUpperCase() && /[A-Z]/.test(word)) score += 2;
   return score;
-}
-
-function getEmphasisColor(color: string) {
-  const normalized = color.trim().toLowerCase();
-  if (normalized === "#000000" || normalized === "black") return "#8338EC";
-  if (normalized === "#ffbe0b") return "#ffffff";
-  return "#FFBE0B";
 }
 
 const COMMON_SECOND_LEVEL_SUFFIXES = new Set([
@@ -1842,4 +2310,162 @@ function formatPostDate(iso: string) {
     hour: "numeric",
     minute: "2-digit",
   }).format(date);
+}
+
+// Placeholder collections
+const PLACEHOLDER_FOLDERS = [
+  { id: "favorites", label: "Favorites", emoji: "\u2764\ufe0f" },
+  { id: "inspiration", label: "Inspiration", emoji: "\u2728" },
+  { id: "read-later", label: "Read Later", emoji: "\ud83d\udcda" },
+  { id: "design", label: "Design", emoji: "\ud83c\udfa8" },
+  { id: "code", label: "Code", emoji: "\ud83d\udcbb" },
+  { id: "research", label: "Research", emoji: "\ud83d\udd2c" },
+  { id: "archive", label: "Archive", emoji: "\ud83d\udcc1" },
+  { id: "tutorials", label: "Tutorials", emoji: "\ud83c\udf93" },
+  { id: "entertainment", label: "Fun", emoji: "\ud83c\udfad" },
+];
+
+const PLACEHOLDER_TAGS = [
+  "Motivational",
+  "Technical",
+  "Creative",
+  "Educational",
+  "Entertaining",
+  "News",
+  "Lifestyle",
+  "Tutorial",
+  "Deep Dive",
+  "Quick Tip",
+];
+
+function CollectionPicker({
+  selectedFolders,
+  selectedTags,
+  onToggleFolder,
+  onToggleTag,
+  onSave,
+  onClose,
+}: {
+  selectedFolders: Set<string>;
+  selectedTags: Set<string>;
+  onToggleFolder: (id: string) => void;
+  onToggleTag: (tag: string) => void;
+  onSave: () => void;
+  onClose: () => void;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.16 }}
+      className="absolute inset-0 z-50"
+      onClick={(e) => {
+        e.stopPropagation();
+        onClose();
+      }}
+    >
+      <motion.div
+        initial={{ opacity: 0, y: 14, scale: 0.96 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: 14, scale: 0.96 }}
+        transition={{ type: "spring", stiffness: 420, damping: 32 }}
+        onClick={(e) => e.stopPropagation()}
+        className="absolute bottom-[190px] left-[46%] w-[min(304px,calc(100%-5.5rem))] origin-[88%_75%]"
+        style={{ x: "-50%" }}
+      >
+        <span
+          aria-hidden
+          className="absolute -right-2 bottom-[88px] size-4 rotate-45 bg-[#171717] shadow-[6px_-6px_22px_rgba(0,0,0,0.28)] ring-1 ring-white/10"
+        />
+        <div className="relative flex max-h-[min(58dvh,430px)] flex-col overflow-hidden rounded-2xl bg-[#171717]/95 shadow-[0_18px_55px_rgba(0,0,0,0.58)] ring-1 ring-white/10 backdrop-blur-xl">
+          <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
+            <div>
+              <h3 className="text-sm font-black text-white">Save</h3>
+              <p className="font-mono text-[9px] uppercase tracking-[0.16em] text-white/45">
+                collections · tags
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={onClose}
+              className="grid size-8 place-items-center rounded-full bg-white/10 text-white/70 transition hover:bg-white/20"
+              aria-label="Close collection picker"
+            >
+              <X className="size-4" />
+            </button>
+          </div>
+
+          <div className="flex-1 overflow-y-auto px-3 py-3">
+            <p className="mb-2 font-mono text-[9px] font-bold uppercase tracking-[0.16em] text-white/45">
+              Folders
+            </p>
+            <div className="grid grid-cols-3 gap-1.5">
+              {PLACEHOLDER_FOLDERS.map((folder) => {
+                const isSelected = selectedFolders.has(folder.id);
+                return (
+                  <button
+                    key={folder.id}
+                    type="button"
+                    onClick={() => onToggleFolder(folder.id)}
+                    className={`flex min-h-16 flex-col items-center justify-center gap-1 rounded-xl border px-1.5 py-2 transition active:scale-95 ${
+                      isSelected
+                        ? "border-white/[0.45] bg-white/[0.16] shadow-[0_0_16px_rgba(255,255,255,0.08)]"
+                        : "border-white/10 bg-white/[0.06] hover:bg-white/10"
+                    }`}
+                  >
+                    <span className="text-base">{folder.emoji}</span>
+                    <span
+                      className={`max-w-full truncate text-[10px] font-bold leading-none ${
+                        isSelected ? "text-white" : "text-white/[0.62]"
+                      }`}
+                    >
+                      {folder.label}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <p className="mb-2 mt-4 font-mono text-[9px] font-bold uppercase tracking-[0.16em] text-white/45">
+              Tags
+            </p>
+            <div className="flex flex-wrap gap-1.5">
+              {PLACEHOLDER_TAGS.map((tag) => {
+                const isSelected = selectedTags.has(tag);
+                return (
+                  <button
+                    key={tag}
+                    type="button"
+                    onClick={() => onToggleTag(tag)}
+                    className={`rounded-full border px-2.5 py-1.5 text-[11px] font-bold transition active:scale-95 ${
+                      isSelected
+                        ? "border-white/[0.45] bg-white/[0.22] text-white"
+                        : "border-white/10 bg-white/[0.06] text-white/55 hover:bg-white/10 hover:text-white/75"
+                    }`}
+                  >
+                    {tag}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="border-t border-white/10 px-3 py-3">
+            <button
+              type="button"
+              onClick={onSave}
+              disabled={selectedFolders.size === 0 && selectedTags.size === 0}
+              className="w-full rounded-full bg-white py-2.5 text-sm font-black text-black transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-30"
+            >
+              save
+              {selectedFolders.size + selectedTags.size > 0
+                ? ` ${selectedFolders.size + selectedTags.size}`
+                : ""}
+            </button>
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
 }

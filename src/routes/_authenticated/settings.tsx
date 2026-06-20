@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, useRouter } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getMe } from "@/lib/discovery.functions";
@@ -9,6 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import {
   AtSign,
   Bell,
+  ChevronLeft,
   ChevronRight,
   Copy,
   Download,
@@ -67,7 +68,14 @@ const DEFAULT_PREFS: Preferences = {
 
 function SettingsPage() {
   const navigate = useNavigate();
+  const router = useRouter();
   const qc = useQueryClient();
+
+  function handleBack() {
+    if (router.history.length > 1) router.history.back();
+    else navigate({ to: "/feed" });
+  }
+
   const fetchMe = useServerFn(getMe);
   const demoMode = isDemoSession();
   const { data } = useQuery<MockMeData>({
@@ -123,7 +131,17 @@ function SettingsPage() {
   return (
     <div className="min-h-[100dvh] pb-8">
       <header className="sticky top-0 z-30 glass flex items-center justify-between border-b border-white/10 px-4 pt-[max(env(safe-area-inset-top),12px)] pb-3">
-        <h1 className="font-impact text-2xl tracking-wider">SETTINGS</h1>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={handleBack}
+            className="-ml-1 grid size-8 place-items-center"
+            aria-label="Back"
+          >
+            <ChevronLeft className="size-5" />
+          </button>
+          <h1 className="font-impact text-2xl tracking-wider">SETTINGS</h1>
+        </div>
         <button
           type="button"
           onClick={resetPreferences}

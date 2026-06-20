@@ -1,9 +1,9 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, useRouter } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState, useEffect } from "react";
 import { search, getDiscover } from "@/lib/discovery.functions";
-import { parseCanvas } from "@/lib/canvas";
+import { getCanvasTextColor, parseCanvas } from "@/lib/canvas";
 import { isDemoSession } from "@/lib/demo-session";
 import {
   getMockDiscover,
@@ -12,7 +12,7 @@ import {
   type MockPost,
   type MockSearchData,
 } from "@/lib/mock-data";
-import { Newspaper, Search as SearchIcon } from "lucide-react";
+import { ChevronLeft, Newspaper, Search as SearchIcon } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/discover")({
   component: DiscoverPage,
@@ -21,7 +21,15 @@ export const Route = createFileRoute("/_authenticated/discover")({
 function DiscoverPage() {
   const fetchDiscover = useServerFn(getDiscover);
   const searchFn = useServerFn(search);
+  const navigate = useNavigate();
+  const router = useRouter();
   const [q, setQ] = useState("");
+
+  function handleBack() {
+    if (router.history.length > 1) router.history.back();
+    else navigate({ to: "/feed" });
+  }
+
   const debounced = useDebounced(q, 250);
   const demoMode = isDemoSession();
 
@@ -44,7 +52,17 @@ function DiscoverPage() {
   return (
     <div className="min-h-[100dvh] pb-8">
       <header className="sticky top-0 z-30 glass border-b border-white/10 px-4 pt-[max(env(safe-area-inset-top),12px)] pb-3">
-        <h1 className="font-impact text-2xl tracking-wider">DISCOVER</h1>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={handleBack}
+            className="-ml-1 grid size-8 place-items-center"
+            aria-label="Back"
+          >
+            <ChevronLeft className="size-5" />
+          </button>
+          <h1 className="font-impact text-2xl tracking-wider">DISCOVER</h1>
+        </div>
         <div className="mt-3 flex items-center gap-2 rounded-full bg-white/5 px-4 py-2.5 ring-1 ring-white/10 focus-within:ring-primary/60 transition">
           <SearchIcon className="size-4 text-muted-foreground" />
           <input
@@ -165,6 +183,7 @@ function PostGrid({ posts, className }: { posts: MockPost[]; className?: string 
     <div className={`grid grid-cols-3 gap-1 ${className ?? ""}`}>
       {posts.map((p) => {
         const spec = parseCanvas(p.canvas_html);
+        const textColor = getCanvasTextColor(spec, p.bg_gradient);
         return (
           <div
             key={p.id}
@@ -181,7 +200,7 @@ function PostGrid({ posts, className }: { posts: MockPost[]; className?: string 
             {p.post_type === "link" && <ArticleMiniClip title={spec.link?.title ?? spec.text} />}
             <div
               className="absolute inset-0 flex items-center justify-center p-1 text-center"
-              style={{ fontFamily: spec.font, color: spec.color, fontWeight: spec.weight }}
+              style={{ fontFamily: spec.font, color: textColor, fontWeight: spec.weight }}
             >
               <span className="line-clamp-3 text-[10px] font-bold drop-shadow">{spec.text}</span>
             </div>

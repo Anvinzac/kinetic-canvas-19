@@ -162,13 +162,3 @@
     transform: translateX(4px) rotate(1deg);
   }
 }
-@keyframes chip-fly {
-  0% {
-    transform: translateX(var(--chip-start-x));
-    opacity: 1;
-  }
-  100% {
-    transform: translateX(var(--chip-end-x));
-    opacity: 1;
-  }
-}

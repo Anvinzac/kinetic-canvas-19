@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
+import { motion } from "framer-motion";
 import {
   Check,
   ChevronLeft,
@@ -29,8 +30,10 @@ import {
   RHYTHMS,
   serializeCanvas,
   TEMPOS,
+  TRANSITION_GRADIENT_PATHS,
   type CanvasLinkPreview,
   type CanvasSpec,
+  type GradientTransitionPath,
 } from "@/lib/canvas";
 import { createPost } from "@/lib/social.functions";
 import { isDemoSession } from "@/lib/demo-session";
@@ -41,7 +44,7 @@ export const Route = createFileRoute("/_authenticated/create")({
   component: CreatePage,
 });
 
-type BackgroundMode = "gradient" | "photo" | "upload";
+type BackgroundMode = "gradient" | "transition" | "photo" | "upload";
 type StudioPage = "write" | "background" | "font" | "color" | "layout" | "motion";
 type AnimationTemplate = {
   id: string;
@@ -124,7 +127,7 @@ const ANIMATION_TEMPLATES: AnimationTemplate[] = [
     spec: {
       font: "Playfair Display",
       size: 76,
-      color: "#FFBE0B",
+      color: "#ffffff",
       weight: 800,
       letterSpacing: -0.02,
       entrance: "blur",
@@ -200,11 +203,18 @@ const ANIMATION_TEMPLATES: AnimationTemplate[] = [
 
 const PAGE_TITLES: Record<StudioPage, { title: string; subtitle: string }> = {
   write: { title: "STATUS STUDIO", subtitle: "type · preview · post" },
-  background: { title: "BACKGROUND", subtitle: "gradient · photo · upload" },
+  background: { title: "BACKGROUND", subtitle: "gradient · flow · photo" },
   font: { title: "FONT", subtitle: "family · scale · weight" },
   color: { title: "COLOR", subtitle: "text tone" },
   layout: { title: "LAYOUT", subtitle: "placement" },
   motion: { title: "MOTION", subtitle: "style · speed · rhythm" },
+};
+
+const DEFAULT_TRANSITION_PATH: GradientTransitionPath = TRANSITION_GRADIENT_PATHS[0] ?? {
+  id: "aurora-rush",
+  label: "aurora rush",
+  mood: "hot pink -> electric blue -> acid green",
+  gradients: [GRADIENTS[0], GRADIENTS[1], GRADIENTS[5]],
 };
 
 function CreatePage() {
@@ -216,6 +226,8 @@ function CreatePage() {
   const [spec, setSpec] = useState<CanvasSpec>(STATUS_CANVAS);
   const [bg, setBg] = useState<string>(GRADIENTS[0]);
   const [backgroundMode, setBackgroundMode] = useState<BackgroundMode>("gradient");
+  const [selectedGradientPath, setSelectedGradientPath] =
+    useState<GradientTransitionPath>(DEFAULT_TRANSITION_PATH);
   const [selectedPhoto, setSelectedPhoto] = useState(PRELOADED_PHOTOS[0].url);
   const [uploadedPhoto, setUploadedPhoto] = useState<string | null>(null);
   const [articleUrl, setArticleUrl] = useState("");
@@ -227,11 +239,7 @@ function CreatePage() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const activePhoto =
-    backgroundMode === "upload"
-      ? uploadedPhoto
-      : backgroundMode === "photo"
-        ? selectedPhoto
-        : null;
+    backgroundMode === "upload" ? uploadedPhoto : backgroundMode === "photo" ? selectedPhoto : null;
   const normalizedArticleUrl = articleOpen ? normalizeArticleUrl(articleUrl) : "";
   const articlePreview = normalizedArticleUrl
     ? {
@@ -240,9 +248,26 @@ function CreatePage() {
         title: getArticleTitle(spec.text),
       }
     : null;
-  const articleInvalid =
-    articleOpen && articleUrl.trim().length > 0 && !articlePreview;
-  const publishSpec: CanvasSpec = articlePreview ? { ...spec, link: articlePreview } : spec;
+  const articleInvalid = articleOpen && articleUrl.trim().length > 0 && !articlePreview;
+  const selectedTransitionGradients =
+    selectedGradientPath.gradients.length > 0 ? selectedGradientPath.gradients : [bg];
+  const backgroundSpec =
+    backgroundMode === "transition"
+      ? ({
+          backgroundStyle: "transition",
+          gradientPath: [...selectedTransitionGradients],
+        } satisfies Pick<CanvasSpec, "backgroundStyle" | "gradientPath">)
+      : ({
+          backgroundStyle: "static",
+          gradientPath: [],
+        } satisfies Pick<CanvasSpec, "backgroundStyle" | "gradientPath">);
+  const publishSpec: CanvasSpec = {
+    ...spec,
+    ...backgroundSpec,
+    link: articlePreview,
+  };
+  const publishBackground =
+    backgroundMode === "transition" ? (selectedTransitionGradients[0] ?? bg) : bg;
   const postType = articlePreview ? "link" : activePhoto ? "image" : "text";
   const mediaUrls = articlePreview ? [articlePreview.url] : activePhoto ? [activePhoto] : [];
   const canPost = spec.text.trim().length > 0 && !posting && !articleInvalid;
@@ -250,14 +275,24 @@ function CreatePage() {
   const backgroundSummary =
     backgroundMode === "gradient"
       ? "gradient"
-      : backgroundMode === "photo"
-        ? "preloaded photo"
-        : "library photo";
+      : backgroundMode === "transition"
+        ? selectedGradientPath.label
+        : backgroundMode === "photo"
+          ? "preloaded photo"
+          : "library photo";
   const fontSummary = `${spec.font} · ${spec.size}px`;
   const colorSummary = spec.color;
   const layoutSummary = PLACEMENTS.find((placement) => placement.y === spec.y)?.label ?? "custom";
   const motionSummary = `${spec.entrance} · ${spec.tempo} · ${spec.rhythm}`;
   const previewPaneHeight = "min(70dvh, 576px, calc((100vw - 152px) * 16 / 9))";
+  const previewBackground =
+    backgroundMode === "transition"
+      ? (selectedTransitionGradients[playKey % selectedTransitionGradients.length] ?? bg)
+      : bg;
+  const previewSlidingBackground =
+    backgroundMode === "transition"
+      ? getComposerSlidingBackground(selectedTransitionGradients, playKey)
+      : null;
 
   useEffect(() => {
     const el = textareaRef.current;
@@ -315,7 +350,7 @@ function CreatePage() {
           post_type: postType,
           canvas_html: serializeCanvas(publishSpec),
           media_urls: mediaUrls,
-          bg_gradient: bg,
+          bg_gradient: publishBackground,
         });
         qc.setQueryData(["feed", "demo"], getMockFeed());
         qc.invalidateQueries({ queryKey: ["discover"] });
@@ -330,7 +365,7 @@ function CreatePage() {
           post_type: postType,
           canvas_html: serializeCanvas(publishSpec),
           media_urls: mediaUrls,
-          bg_gradient: bg,
+          bg_gradient: publishBackground,
         },
       });
       toast.success("posted");
@@ -396,9 +431,42 @@ function CreatePage() {
               type="button"
               onClick={replayPreview}
               className="relative aspect-[9/16] shrink-0 overflow-hidden rounded-[24px] bg-black shadow-[0_24px_70px_rgba(0,0,0,0.45)] ring-1 ring-white/10"
-              style={{ background: bg, height: previewPaneHeight }}
+              style={{ height: previewPaneHeight }}
               aria-label="Replay preview"
             >
+              {previewSlidingBackground ? (
+                <motion.span
+                  aria-hidden
+                  className="absolute inset-y-0 left-0"
+                  style={{
+                    background: previewSlidingBackground.background,
+                    width: previewSlidingBackground.width,
+                  }}
+                  initial={false}
+                  animate={{ x: previewSlidingBackground.x }}
+                  transition={{ duration: 0.95, ease: [0.22, 1, 0.36, 1] }}
+                />
+              ) : (
+                <span
+                  aria-hidden
+                  className="absolute inset-0"
+                  style={{ background: previewBackground }}
+                />
+              )}
+              {backgroundMode === "transition" && (
+                <motion.span
+                  key={`${previewBackground}-sheen`}
+                  aria-hidden
+                  className="absolute inset-0 opacity-45 mix-blend-screen"
+                  style={{
+                    background:
+                      "linear-gradient(120deg,rgba(255,255,255,0.24),transparent 44%,rgba(255,255,255,0.16))",
+                  }}
+                  initial={{ x: "-18%", opacity: 0 }}
+                  animate={{ x: "0%", opacity: 0.45 }}
+                  transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+                />
+              )}
               {activePhoto && (
                 <img src={activePhoto} alt="" className="absolute inset-0 size-full object-cover" />
               )}
@@ -406,7 +474,12 @@ function CreatePage() {
                 <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/10 to-black/55" />
               )}
               {spec.text.trim() ? (
-                <KineticText spec={spec} playKey={playKey} scaleToCanvas />
+                <KineticText
+                  spec={spec}
+                  playKey={playKey}
+                  scaleToCanvas
+                  background={backgroundMode === "transition" ? selectedTransitionGradients : bg}
+                />
               ) : (
                 <div className="absolute inset-0 grid place-items-center px-8 text-center">
                   <div>
@@ -569,9 +642,10 @@ function CreatePage() {
           {activePage === "background" && (
             <div className="space-y-4">
               <Panel icon={<ImageIcon />} title="background source">
-                <div className="grid grid-cols-3 gap-1 rounded-2xl bg-black/25 p-1">
+                <div className="grid grid-cols-4 gap-1 rounded-2xl bg-black/25 p-1">
                   {[
                     { id: "gradient", label: "gradient", icon: <Palette className="size-3" /> },
+                    { id: "transition", label: "flow", icon: <Sparkles className="size-3" /> },
                     { id: "photo", label: "photos", icon: <ImageIcon className="size-3" /> },
                     { id: "upload", label: "upload", icon: <Upload className="size-3" /> },
                   ].map((item) => (
@@ -603,6 +677,23 @@ function CreatePage() {
                         }`}
                         style={{ background: gradient }}
                         aria-label="Choose gradient background"
+                      />
+                    ))}
+                  </div>
+                )}
+
+                {backgroundMode === "transition" && (
+                  <div className="mt-3 space-y-2">
+                    {TRANSITION_GRADIENT_PATHS.map((path) => (
+                      <GradientPathButton
+                        key={path.id}
+                        path={path}
+                        active={selectedGradientPath.id === path.id}
+                        onClick={() => {
+                          setSelectedGradientPath(path);
+                          setBg(path.gradients[0] ?? GRADIENTS[0]);
+                          replayPreview();
+                        }}
                       />
                     ))}
                   </div>
@@ -871,33 +962,35 @@ function TemplateButton({
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      className={`group relative grid w-full grid-cols-[40px_minmax(0,1fr)] items-center gap-2 overflow-hidden rounded-xl p-1.5 text-left transition ${
+      className={`group relative grid w-full grid-cols-[40px_minmax(0,1fr)] items-center gap-2 overflow-visible rounded-xl p-1.5 text-left transition ${
         active
           ? "bg-white/[0.10] ring-2 ring-white shadow-[0_4px_14px_-8px_rgba(255,255,255,0.5)]"
           : "bg-white/[0.04] ring-1 ring-white/10 hover:bg-white/[0.07] hover:ring-white/25"
       }`}
     >
-      <span
-        className="relative block aspect-square w-full overflow-hidden rounded-lg"
-        style={{ background: template.gradient }}
-      >
-        <span className="pointer-events-none absolute inset-0 bg-[radial-gradient(120%_60%_at_25%_0%,rgba(255,255,255,0.28),transparent_60%)]" />
+      <span className="relative block w-full">
         <span
-          className="absolute left-1/2 top-1/2 leading-none"
-          style={{
-            color: template.spec.color,
-            fontFamily: template.spec.font,
-            fontWeight: template.spec.weight ?? 900,
-            letterSpacing: `${template.spec.letterSpacing ?? -0.02}em`,
-            fontSize: 15,
-            transform: `translate(-50%, -50%) rotate(${template.spec.rotation ?? 0}deg)`,
-            textShadow: "0 1px 6px rgba(0,0,0,0.32)",
-          }}
+          className="relative block aspect-square w-full overflow-hidden rounded-lg"
+          style={{ background: template.gradient }}
         >
-          Aa
+          <span className="pointer-events-none absolute inset-0 bg-[radial-gradient(120%_60%_at_25%_0%,rgba(255,255,255,0.28),transparent_60%)]" />
+          <span
+            className="absolute left-1/2 top-1/2 leading-none"
+            style={{
+              color: template.spec.color,
+              fontFamily: template.spec.font,
+              fontWeight: template.spec.weight ?? 900,
+              letterSpacing: `${template.spec.letterSpacing ?? -0.02}em`,
+              fontSize: 15,
+              transform: `translate(-50%, -50%) rotate(${template.spec.rotation ?? 0}deg)`,
+              textShadow: "0 1px 6px rgba(0,0,0,0.32)",
+            }}
+          >
+            Aa
+          </span>
         </span>
         {active && (
-          <span className="absolute -right-0.5 -top-0.5 grid size-3.5 place-items-center rounded-full bg-white text-black ring-1 ring-black/40">
+          <span className="absolute -right-1.5 -top-1.5 grid size-3.5 place-items-center rounded-full bg-white text-black shadow-[0_3px_10px_rgba(0,0,0,0.35)] ring-1 ring-black/40">
             <Check className="size-2" strokeWidth={4} />
           </span>
         )}
@@ -910,6 +1003,49 @@ function TemplateButton({
           {template.mood}
         </span>
       </span>
+    </button>
+  );
+}
+
+function GradientPathButton({
+  path,
+  active,
+  onClick,
+}: {
+  path: GradientTransitionPath;
+  active: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={`flex w-full items-center gap-3 rounded-2xl p-2 text-left transition ${
+        active ? "bg-white text-black" : "bg-white/[0.06] text-white hover:bg-white/[0.10]"
+      }`}
+    >
+      <span className="flex h-12 w-24 shrink-0 overflow-hidden rounded-xl ring-1 ring-white/15">
+        {path.gradients.map((gradient, index) => (
+          <span
+            key={`${path.id}-${index}`}
+            className="min-w-0 flex-1"
+            style={{ background: gradient }}
+            aria-hidden
+          />
+        ))}
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block text-sm font-black">{path.label}</span>
+        <span
+          className={`mt-0.5 block truncate font-mono text-[9px] uppercase tracking-[0.14em] ${
+            active ? "text-black/55" : "text-white/55"
+          }`}
+        >
+          {path.mood}
+        </span>
+      </span>
+      {active && <Check className="size-4 shrink-0" strokeWidth={3} />}
     </button>
   );
 }
@@ -1107,4 +1243,45 @@ function getArticleTitle(text: string) {
   const sentence = text.replace(/\s+/g, " ").trim();
   if (!sentence) return "Linked article";
   return sentence.length > 72 ? `${sentence.slice(0, 69).trim()}...` : sentence;
+}
+
+function getComposerSlidingBackground(gradients: readonly string[], shiftPage: number) {
+  const colors = getComposerTransitionColors(gradients);
+  if (colors.length < 2) return null;
+
+  const segmentCount = Math.max(64, colors.length * 12);
+  const stripColors = Array.from(
+    { length: segmentCount + 1 },
+    (_, index) => colors[index % colors.length],
+  );
+  const stops = stripColors
+    .map((color, index) => `${color} ${((index / segmentCount) * 100).toFixed(3)}%`)
+    .join(", ");
+
+  return {
+    background: `linear-gradient(100deg, ${stops})`,
+    width: `${segmentCount * 100}%`,
+    x: `-${shiftPage * (100 / segmentCount)}%`,
+  };
+}
+
+function getComposerTransitionColors(gradients: readonly string[]) {
+  const colors = gradients.reduce<string[]>((items, gradient, index) => {
+    const stops = extractGradientColors(gradient);
+    if (stops.length < 2) return items;
+    if (index === 0) items.push(stops[0]);
+    items.push(stops[stops.length - 1]);
+    return items;
+  }, []);
+
+  if (colors.length < 2) return [];
+  return colors[0] === colors[colors.length - 1] ? colors.slice(0, -1) : colors;
+}
+
+function extractGradientColors(value: string) {
+  return (
+    value.match(
+      /#[0-9a-fA-F]{3,8}\b|rgba?\([^)]*\)|hsla?\([^)]*\)|oklch\([^)]*\)|color\([^)]*\)/g,
+    ) ?? []
+  );
 }
