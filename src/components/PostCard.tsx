@@ -313,7 +313,7 @@ export function PostCard({
   const currentText = textPages[textPage] ?? textPages[0] ?? "";
   const staticCanvasBackground = getResolvedPostBackground(post);
   const slidingCanvasBackground = useMemo(
-    () => getSlidingCanvasBackground(spec, staticCanvasBackground, backgroundShiftPage),
+    () => getSlidingCanvasBackground(spec, staticCanvasBackground ?? null, backgroundShiftPage),
     [backgroundShiftPage, spec, staticCanvasBackground],
   );
   const hasTransitionBackground = !!slidingCanvasBackground;
