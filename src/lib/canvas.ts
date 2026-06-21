@@ -174,6 +174,7 @@ const BRIGHT_EMPHASIS_ACCENT_COLORS = [
 // Perceived luminance (0-255) at/above which text counts as light, so its
 // emphasis should be drawn from the bright palette.
 const LIGHT_TEXT_LUMINANCE = 180;
+const MIN_EMPHASIS_TEXT_DISTANCE = 92;
 const GREEN_BACKGROUND_MIN_HUE = 78;
 const GREEN_BACKGROUND_MAX_HUE = 190;
 const YELLOW_MIN_HUE = 35;
@@ -219,6 +220,15 @@ export function getCanvasEmphasisColor(
     avoidYellowOnGreen: true,
     avoidColor: safeTextColor,
   });
+}
+
+export function getCanvasEmphasisWordColor(
+  variant: string | null | undefined,
+  textColor: string,
+  emphasisColor: string,
+) {
+  if (variant === "halo" || variant === "glow") return textColor;
+  return getDistinctEmphasisColor(textColor, emphasisColor);
 }
 
 function isLightColor(color: string) {
@@ -301,6 +311,32 @@ function getFallbackEmphasisColor(color: string) {
   if (normalized === "#000000" || normalized === "black") return "#8338EC";
   if (normalized === "#ffbe0b") return "#ffffff";
   return "#FFBE0B";
+}
+
+function getDistinctEmphasisColor(textColor: string, emphasisColor: string) {
+  const textRgb = parseCssColor(textColor);
+  const emphasisRgb = parseCssColor(emphasisColor);
+  if (
+    textRgb &&
+    emphasisRgb &&
+    getColorDistance(textRgb, emphasisRgb) >= MIN_EMPHASIS_TEXT_DISTANCE
+  ) {
+    return emphasisColor;
+  }
+
+  const fallbackPalette = isLightColor(textColor)
+    ? ["#FF006E", "#3A86FF", "#FB5607", "#8338EC", "#00B4D8"]
+    : ["#FFBE0B", "#FF006E", "#06FFA5", "#3A86FF", "#ffffff"];
+
+  return (
+    fallbackPalette.find((color) => {
+      const fallbackRgb = parseCssColor(color);
+      return (
+        fallbackRgb &&
+        (!textRgb || getColorDistance(fallbackRgb, textRgb) >= MIN_EMPHASIS_TEXT_DISTANCE)
+      );
+    }) ?? fallbackPalette[0]
+  );
 }
 
 function isRenderableCanvasBackground(value: string) {

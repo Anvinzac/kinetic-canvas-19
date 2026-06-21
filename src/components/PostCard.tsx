@@ -42,6 +42,7 @@ import {
   COMMENT_CHIPS,
   SAFE_CANVAS_BACKGROUND,
   getCanvasEmphasisColor,
+  getCanvasEmphasisWordColor,
   getCanvasTextColor,
   isTooDarkCanvasBackground,
   isUsableCanvasBackground,
@@ -2150,7 +2151,7 @@ function WordSequenceText({
       ? getEmphasisVariant(spec.text, word, index, !isDimEmphasisColor(emphasisColor))
       : null;
     const wordColor = important
-      ? getEmphasisWordColor(emphasisVariant, textColor, emphasisColor)
+      ? getCanvasEmphasisWordColor(emphasisVariant, textColor, emphasisColor)
       : textColor;
     const entranceDelay = staticRender ? 0 : getWordDelay(index, spec.tempo, spec.rhythm);
     const entranceDuration = staticRender
@@ -2550,17 +2551,6 @@ function getEmphasisInnerAnimation(variant: EmphasisVariant | null, staticRender
   if (variant === "pulse") return "kinetic-emphasis-pulse 1.35s ease-in-out infinite";
   if (variant === "glow") return "kinetic-emphasis-glow 1.6s ease-in-out infinite";
   return undefined;
-}
-
-// Luminous variants (halo, glow) read as light around the word — recoloring them
-// on top of that glow hurts the eyes, so they keep the normal text color. Every
-// other variant shifts to the emphasis color so it pops visually.
-function getEmphasisWordColor(
-  variant: EmphasisVariant | null,
-  textColor: string,
-  emphasisColor: string,
-) {
-  return variant === "halo" || variant === "glow" ? textColor : emphasisColor;
 }
 
 function getAuraColor(textColor: string) {

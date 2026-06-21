@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
 import {
   getCanvasEmphasisColor,
+  getCanvasEmphasisWordColor,
   getCanvasTextColor,
   type CanvasSpec,
   type Rhythm,
@@ -299,7 +300,7 @@ function renderAnimatedWord(
     ? getPreviewEmphasisVariant(spec.text, word, index, !isDimPreviewColor(emphasisColor))
     : null;
   const wordColor = important
-    ? getPreviewEmphasisWordColor(emphasisVariant, textColor, emphasisColor)
+    ? getCanvasEmphasisWordColor(emphasisVariant, textColor, emphasisColor)
     : textColor;
   const entranceDelay = getRhythmDelay(index, spec.tempo, spec.rhythm);
   const entranceDuration = Math.max(0.28, tempo.duration * 0.62);
@@ -473,17 +474,6 @@ function getPreviewEmphasisInnerAnimation(variant: PreviewEmphasisVariant | null
   if (variant === "pulse") return "kinetic-emphasis-pulse 1.35s ease-in-out infinite";
   if (variant === "glow") return "kinetic-emphasis-glow 1.6s ease-in-out infinite";
   return undefined;
-}
-
-// Luminous variants (halo, glow) read as light around the word — recoloring them
-// on top of that glow hurts the eyes, so they keep the normal text color. Every
-// other variant shifts to the emphasis color so it pops visually.
-function getPreviewEmphasisWordColor(
-  variant: PreviewEmphasisVariant | null,
-  textColor: string,
-  emphasisColor: string,
-) {
-  return variant === "halo" || variant === "glow" ? textColor : emphasisColor;
 }
 
 function getPreviewAuraColor(textColor: string) {

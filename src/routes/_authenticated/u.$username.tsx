@@ -137,7 +137,7 @@ function ProfilePage() {
   return (
     <div
       ref={scrollRef}
-      className="h-[100dvh] snap-y snap-mandatory overflow-y-scroll overscroll-contain scrollbar-hide"
+      className="h-[100dvh] snap-y snap-mandatory overflow-y-scroll overscroll-contain scrollbar-hide [touch-action:none]"
     >
       {/* Page 1: Profile info */}
       <div
