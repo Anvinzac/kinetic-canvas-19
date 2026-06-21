@@ -6,6 +6,7 @@ import { getFeed, toggleLike, addComment } from "@/lib/social.functions";
 import { PostCard } from "@/components/PostCard";
 import { supabase } from "@/integrations/supabase/client";
 import { isDemoSession } from "@/lib/demo-session";
+import { useStatusScrollSnap } from "@/lib/use-status-scroll-snap";
 import {
   addMockComment,
   getMockFeed,
@@ -31,6 +32,7 @@ function FeedPage() {
     queryFn: () => (demoMode ? getMockFeed() : (fetchFeed() as Promise<MockFeedData>)),
     staleTime: 30_000,
   });
+  const scrollRef = useStatusScrollSnap(data?.posts.length ?? 0);
 
   const [myProfileId, setMyProfileId] = useState<string | null>(null);
 
@@ -100,7 +102,10 @@ function FeedPage() {
 
   return (
     <div className="relative">
-      <main className="scrollbar-hide h-[100dvh] snap-y snap-mandatory overflow-y-scroll">
+      <main
+        ref={scrollRef}
+        className="scrollbar-hide h-[100dvh] snap-y snap-mandatory overflow-y-scroll overscroll-contain"
+      >
         {data.posts.map((p) => (
           <PostCard
             key={p.id}

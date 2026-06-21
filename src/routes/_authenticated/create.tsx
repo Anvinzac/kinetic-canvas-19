@@ -28,9 +28,12 @@ import {
   LOOPS,
   PALETTE,
   RHYTHMS,
+  SAFE_CANVAS_BACKGROUND,
   serializeCanvas,
   TEMPOS,
   TRANSITION_GRADIENT_PATHS,
+  isUsableCanvasBackground,
+  resolveCanvasBackground,
   type CanvasLinkPreview,
   type CanvasSpec,
   type GradientTransitionPath,
@@ -214,7 +217,7 @@ const DEFAULT_TRANSITION_PATH: GradientTransitionPath = TRANSITION_GRADIENT_PATH
   id: "aurora-rush",
   label: "aurora rush",
   mood: "hot pink -> electric blue -> acid green",
-  gradients: [GRADIENTS[0], GRADIENTS[1], GRADIENTS[5]],
+  gradients: [GRADIENTS[0], GRADIENTS[1], SAFE_CANVAS_BACKGROUND],
 };
 
 function CreatePage() {
@@ -249,8 +252,11 @@ function CreatePage() {
       }
     : null;
   const articleInvalid = articleOpen && articleUrl.trim().length > 0 && !articlePreview;
+  const safeBg = resolveCanvasBackground(bg, "composer");
   const selectedTransitionGradients =
-    selectedGradientPath.gradients.length > 0 ? selectedGradientPath.gradients : [bg];
+    selectedGradientPath.gradients.filter(isUsableCanvasBackground).length > 0
+      ? selectedGradientPath.gradients.filter(isUsableCanvasBackground)
+      : [safeBg];
   const backgroundSpec =
     backgroundMode === "transition"
       ? ({
@@ -267,7 +273,9 @@ function CreatePage() {
     link: articlePreview,
   };
   const publishBackground =
-    backgroundMode === "transition" ? (selectedTransitionGradients[0] ?? bg) : bg;
+    backgroundMode === "transition"
+      ? resolveCanvasBackground(selectedTransitionGradients[0], "publish")
+      : safeBg;
   const postType = articlePreview ? "link" : activePhoto ? "image" : "text";
   const mediaUrls = articlePreview ? [articlePreview.url] : activePhoto ? [activePhoto] : [];
   const canPost = spec.text.trim().length > 0 && !posting && !articleInvalid;
@@ -287,8 +295,11 @@ function CreatePage() {
   const previewPaneHeight = "min(70dvh, 576px, calc((100vw - 152px) * 16 / 9))";
   const previewBackground =
     backgroundMode === "transition"
-      ? (selectedTransitionGradients[playKey % selectedTransitionGradients.length] ?? bg)
-      : bg;
+      ? resolveCanvasBackground(
+          selectedTransitionGradients[playKey % selectedTransitionGradients.length],
+          "preview",
+        )
+      : safeBg;
   const previewSlidingBackground =
     backgroundMode === "transition"
       ? getComposerSlidingBackground(selectedTransitionGradients, playKey)
@@ -478,7 +489,9 @@ function CreatePage() {
                   spec={spec}
                   playKey={playKey}
                   scaleToCanvas
-                  background={backgroundMode === "transition" ? selectedTransitionGradients : bg}
+                  background={
+                    backgroundMode === "transition" ? selectedTransitionGradients : safeBg
+                  }
                 />
               ) : (
                 <div className="absolute inset-0 grid place-items-center px-8 text-center">

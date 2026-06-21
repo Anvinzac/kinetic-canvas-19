@@ -43,6 +43,7 @@ function AuthedLayout() {
   const showShellMenu =
     !pathname.startsWith("/feed") &&
     !pathname.startsWith("/create") &&
+    !pathname.startsWith("/p/") &&
     !pathname.startsWith("/u/");
 
   useEffect(() => {

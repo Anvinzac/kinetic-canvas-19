@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState, useEffect } from "react";
 import { search, getDiscover } from "@/lib/discovery.functions";
-import { getCanvasTextColor, parseCanvas } from "@/lib/canvas";
+import { getCanvasTextColor, parseCanvas, resolveCanvasBackground } from "@/lib/canvas";
 import { isDemoSession } from "@/lib/demo-session";
 import {
   getMockDiscover,
@@ -183,12 +183,13 @@ function PostGrid({ posts, className }: { posts: MockPost[]; className?: string 
     <div className={`grid grid-cols-3 gap-1 ${className ?? ""}`}>
       {posts.map((p) => {
         const spec = parseCanvas(p.canvas_html);
-        const textColor = getCanvasTextColor(spec, p.bg_gradient);
+        const background = resolveCanvasBackground(p.bg_gradient, p.id);
+        const textColor = getCanvasTextColor(spec, background);
         return (
           <div
             key={p.id}
             className="relative aspect-[3/4] overflow-hidden rounded-md"
-            style={{ background: p.bg_gradient ?? "#111" }}
+            style={{ background }}
           >
             {(p.post_type === "image" || p.post_type === "slideshow") && p.media_urls?.[0] && (
               <img

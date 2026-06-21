@@ -35,6 +35,9 @@ export interface CanvasSpec {
 type RgbColor = { r: number; g: number; b: number };
 type HslColor = { h: number; s: number; l: number };
 type CanvasBackgroundInput = string | null | undefined | readonly (string | null | undefined)[];
+type CanvasBackgroundSeed = string | number | null | undefined;
+
+export const SAFE_CANVAS_BACKGROUND = "linear-gradient(135deg,#00B4D8,#FF006E)";
 
 export const DEFAULT_CANVAS: CanvasSpec = {
   text: "TYPE.",
@@ -87,7 +90,7 @@ export const GRADIENTS = [
   "linear-gradient(135deg,#06D6A0,#118AB2)",
   "linear-gradient(135deg,#00B4D8,#FF006E)",
   "linear-gradient(135deg,#9D4EDD,#FF006E)",
-  "linear-gradient(135deg,#00B4D8,#FF006E)",
+  SAFE_CANVAS_BACKGROUND,
 ];
 
 export type GradientTransitionPath = {
@@ -157,6 +160,20 @@ const EMPHASIS_ACCENT_COLORS = [
   "#ffffff",
   "#111827",
 ] as const;
+// When the surrounding text is white/light, an emphasized word must POP brighter,
+// never duck into a dark color. Restricted to vivid, high-energy hues only —
+// yellow, orange, lime, bright blue, hot pink, cyan — with no dark/neutral option.
+const BRIGHT_EMPHASIS_ACCENT_COLORS = [
+  "#FFBE0B",
+  "#FB5607",
+  "#9EF01A",
+  "#3A86FF",
+  "#FF006E",
+  "#00E5FF",
+] as const;
+// Perceived luminance (0-255) at/above which text counts as light, so its
+// emphasis should be drawn from the bright palette.
+const LIGHT_TEXT_LUMINANCE = 180;
 const GREEN_BACKGROUND_MIN_HUE = 78;
 const GREEN_BACKGROUND_MAX_HUE = 190;
 const YELLOW_MIN_HUE = 35;
@@ -192,10 +209,23 @@ export function getCanvasEmphasisColor(
   const safeTextColor = getCanvasTextColor(spec, background);
   if (backgroundColors.length === 0) return getFallbackEmphasisColor(safeTextColor);
 
-  return pickBestColor(EMPHASIS_ACCENT_COLORS, backgroundColors, {
+  // Light/white text gets a bright-only palette so emphasis pops up, never down
+  // into a dark color that would vanish against the background.
+  const palette = isLightColor(safeTextColor)
+    ? BRIGHT_EMPHASIS_ACCENT_COLORS
+    : EMPHASIS_ACCENT_COLORS;
+
+  return pickBestColor(palette, backgroundColors, {
     avoidYellowOnGreen: true,
     avoidColor: safeTextColor,
   });
+}
+
+function isLightColor(color: string) {
+  const rgb = parseCssColor(color);
+  if (!rgb) return false;
+  const luminance = 0.2126 * rgb.r + 0.7152 * rgb.g + 0.0722 * rgb.b;
+  return luminance >= LIGHT_TEXT_LUMINANCE;
 }
 
 export function parseCanvas(raw: string | null | undefined): CanvasSpec {
@@ -212,11 +242,92 @@ export function serializeCanvas(spec: CanvasSpec): string {
   return JSON.stringify(spec);
 }
 
+export function resolveCanvasBackground(
+  background: string | null | undefined,
+  seed: CanvasBackgroundSeed = "kinetic",
+) {
+  const value = background?.trim();
+  if (isUsableCanvasBackground(value)) return value;
+  return getFallbackCanvasBackground(seed);
+}
+
+export function getFallbackCanvasBackground(seed: CanvasBackgroundSeed = "kinetic") {
+  const gradients = [
+    "linear-gradient(135deg,#FF006E,#8338EC)",
+    "linear-gradient(135deg,#3A86FF,#06FFA5)",
+    "linear-gradient(135deg,#F72585,#118AB2)",
+    "linear-gradient(135deg,#FFD60A,#FF006E)",
+    SAFE_CANVAS_BACKGROUND,
+  ];
+  return gradients[getStableCanvasNumber(String(seed ?? "kinetic")) % gradients.length];
+}
+
+export function isUsableCanvasBackground(
+  background: string | null | undefined,
+): background is string {
+  const value = background?.trim();
+  if (!value) return false;
+
+  const normalized = value.toLowerCase();
+  if (
+    normalized === "none" ||
+    normalized === "transparent" ||
+    normalized === "black" ||
+    normalized === "#000" ||
+    normalized === "#000000"
+  ) {
+    return false;
+  }
+
+  if (!isRenderableCanvasBackground(value)) return false;
+  if (normalized.startsWith("url(")) return true;
+  return !isTooDarkCanvasBackground(value);
+}
+
+export function isTooDarkCanvasBackground(background: string) {
+  const tokens = extractCssColors(background);
+  const colors = tokens.map(parseCssColor).filter(Boolean) as RgbColor[];
+  if (colors.length === 0) return tokens.length === 0;
+
+  const luminance = colors.map(getRelativeLuminance);
+  const average = luminance.reduce((sum, value) => sum + value, 0) / luminance.length;
+  return (
+    luminance.every((value) => value < 0.035) || (Math.min(...luminance) < 0.05 && average < 0.34)
+  );
+}
+
 function getFallbackEmphasisColor(color: string) {
   const normalized = color.trim().toLowerCase();
   if (normalized === "#000000" || normalized === "black") return "#8338EC";
   if (normalized === "#ffbe0b") return "#ffffff";
   return "#FFBE0B";
+}
+
+function isRenderableCanvasBackground(value: string) {
+  if (typeof CSS !== "undefined" && typeof CSS.supports === "function") {
+    return CSS.supports("background-image", value) || CSS.supports("background", value);
+  }
+  if (value.trim().toLowerCase().startsWith("url(")) return true;
+  const colors = extractCssColors(value);
+  return colors.length > 0 && colors.every(isParseableColorToken);
+}
+
+function isParseableColorToken(token: string) {
+  const value = token.trim().toLowerCase();
+  if (value.startsWith("#")) {
+    const hex = value.slice(1);
+    return [3, 4, 6, 8].includes(hex.length) && /^[0-9a-f]+$/.test(hex);
+  }
+  return /^(rgba?|hsla?|oklch|color)\(/.test(value);
+}
+
+function getStableCanvasNumber(value: string) {
+  let hash = 2166136261;
+  for (let i = 0; i < value.length; i += 1) {
+    hash ^= value.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  return hash >>> 0;
 }
 
 function getCanvasBackgroundColors(

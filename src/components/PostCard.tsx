@@ -10,7 +10,13 @@ import {
   type CSSProperties,
   type ReactNode,
 } from "react";
-import { AnimatePresence, motion, type PanInfo } from "framer-motion";
+import {
+  AnimatePresence,
+  motion,
+  type PanInfo,
+  type TargetAndTransition,
+  type Transition,
+} from "framer-motion";
 import speechBubbleReferenceUrl from "@/assets/speech-bubble-reference.svg?url";
 import {
   ArrowUpRight,
@@ -31,11 +37,16 @@ import {
   X,
 } from "lucide-react";
 import { Link } from "@tanstack/react-router";
+import { toast } from "sonner";
 import {
   COMMENT_CHIPS,
+  SAFE_CANVAS_BACKGROUND,
   getCanvasEmphasisColor,
   getCanvasTextColor,
+  isTooDarkCanvasBackground,
+  isUsableCanvasBackground,
   parseCanvas,
+  resolveCanvasBackground,
   type CanvasLinkPreview,
   type CanvasSpec,
   type Rhythm,
@@ -75,6 +86,8 @@ type CommentStory = {
 
 // Keep kinetic text clear of the canvas edge without stealing its scale.
 const TEXT_SAFE_MAX_WIDTH = "min(92%, calc(100% - 2rem))";
+const TEXT_SAFE_TOP_PX = 72;
+const TEXT_SAFE_BOTTOM_PX = 132;
 const MIN_TEXT_FIT_SCALE = 0.58;
 const MIN_ENGLISH_TEXT_FIT_SCALE = 0.72;
 // A single-word page (e.g. a one-word reveal) cannot wrap, so it is allowed to
@@ -99,7 +112,7 @@ const EMPHASIS_VARIANTS = [
 // the non-luminous set only.
 const NON_LUMINOUS_EMPHASIS_VARIANTS = ["color", "underline", "jiggle", "pulse", "frame"] as const;
 const VIETNAMESE_SCALE_FIT_GUARD = 1.06;
-const DEFAULT_CANVAS_BACKGROUND = "linear-gradient(135deg,#00B4D8,#FF006E)";
+const DEFAULT_CANVAS_BACKGROUND = SAFE_CANVAS_BACKGROUND;
 const ARC_BUTTON_TAP = { scale: 0.94, y: 2 };
 const ARC_BUTTON_TAP_TRANSITION = { type: "spring" as const, stiffness: 400, damping: 24 };
 const useIsomorphicLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
@@ -213,6 +226,9 @@ export function PostCard({
   const [showChips, setShowChips] = useState(false);
   const [customComment, setCustomComment] = useState("");
   const [activeComment, setActiveComment] = useState<FlowComment | null>(null);
+  // True only while a flying chip is actually passing over the bottom-left info
+  // block — drives the brief translucency. The info is opaque the rest of the time.
+  const [commentOverlapsInfo, setCommentOverlapsInfo] = useState(false);
   const [storyOpen, setStoryOpen] = useState(false);
   const [storyIndex, setStoryIndex] = useState(0);
   const [storyPage, setStoryPage] = useState(0);
@@ -229,6 +245,7 @@ export function PostCard({
   const manualCommentHoldUntil = useRef(0);
   const canvasRef = useRef<HTMLElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const postUrl = getPostShareUrl(post.id);
 
   // Collection picker (long-press on heart)
   const [showCollectionPicker, setShowCollectionPicker] = useState(false);
@@ -310,6 +327,15 @@ export function PostCard({
   const commentStartX = commentTravelHalf;
   // End: chip's right edge clears the left edge with CHIP_EXIT_PAD to spare.
   const commentEndX = -commentTravelHalf;
+  // Horizontal band (in the chip's centered translate space) where a flying chip
+  // overlaps the bottom-left info block. The info hugs the left edge (left-4) and
+  // spans up to its max width; we use that upper bound so the dim leads the
+  // overlap slightly and the two never visibly collide. Outside this band the
+  // info stays fully opaque.
+  const commentInfoRightEdge = -canvasWidth / 2 + 16 + Math.min(canvasWidth * 0.7, 260);
+  const commentInfoLeftEdge = -canvasWidth / 2 + 16;
+  const commentOverlapEnterX = commentInfoRightEdge + commentMaxWidth / 2;
+  const commentOverlapExitX = commentInfoLeftEdge - commentMaxWidth / 2;
   const currentText = textPages[textPage] ?? textPages[0] ?? "";
   const staticCanvasBackground = getResolvedPostBackground(post);
   const slidingCanvasBackground = useMemo(
@@ -327,6 +353,13 @@ export function PostCard({
   const activeCommentAuthor = activeComment ? profilesById.get(activeComment.user_id) : undefined;
   const showingFlyingComment =
     !isPaused && !!activeComment && shouldFloatComment(activeCommentLabel);
+
+  // When no chip is in flight (gaps between comments, paused, scrolled away), the
+  // info must return to fully opaque — the overlap flag only goes true while a
+  // chip is actively crossing the block.
+  useEffect(() => {
+    if (!showingFlyingComment) setCommentOverlapsInfo(false);
+  }, [showingFlyingComment]);
   const postHashtags = useMemo(
     () => getPostHashtags(spec.text, post.post_type, textPages),
     [post.post_type, spec.text, textPages],
@@ -711,13 +744,16 @@ export function PostCard({
   }
 
   return (
-    <section className="relative flex h-[100dvh] w-full snap-start items-center justify-center overflow-hidden bg-background">
+    <section
+      data-status-snap-item="true"
+      className="relative flex h-[100dvh] w-full snap-start snap-always items-center justify-center overflow-hidden bg-background"
+    >
       <article
         ref={(el) => {
           canvasRef.current = el;
           setCanvasEl(el);
         }}
-        className="relative h-full w-full overflow-hidden bg-black sm:aspect-[9/16] sm:h-[min(90dvh,764px)] sm:w-auto sm:rounded-[28px] sm:shadow-[0_24px_90px_rgba(0,0,0,0.45)] sm:ring-1 sm:ring-white/10"
+        className="relative h-full w-full overflow-hidden bg-black sm:aspect-[9/16] sm:h-[min(90dvh,764px)] sm:w-auto sm:shadow-[0_24px_90px_rgba(0,0,0,0.45)] sm:ring-1 sm:ring-white/10"
         onClick={handleCanvasTap}
       >
         {slidingCanvasBackground ? (
@@ -809,6 +845,7 @@ export function PostCard({
                 canvasWidth={canvasWidth}
                 disableFit={useSharedSize}
                 background={staticCanvasBackground}
+                entranceSeed={spec.text}
               />
             )}
           </motion.div>
@@ -998,10 +1035,21 @@ export function PostCard({
                 type="button"
                 whileTap={{ ...ARC_BUTTON_TAP, backgroundColor: "rgba(255,255,255,0.1)" }}
                 transition={ARC_BUTTON_TAP_TRANSITION}
-                onClick={(e) => {
+                onClick={async (e) => {
                   e.stopPropagation();
-                  if (navigator.share)
-                    navigator.share({ title: "kinetic", url: window.location.href });
+                  try {
+                    if (navigator.share) {
+                      await navigator.share({
+                        title: author ? `${author.display_name} on Kinetic` : "Kinetic status",
+                        url: postUrl,
+                      });
+                    } else {
+                      await navigator.clipboard.writeText(postUrl);
+                      toast.success("post link copied");
+                    }
+                  } catch (error) {
+                    if ((error as Error).name !== "AbortError") toast.error("could not share post");
+                  }
                 }}
                 aria-label="Share"
                 className="relative z-10 grid h-14 w-full place-items-center pb-3 pl-3 text-white [filter:drop-shadow(0_1px_3px_rgba(0,0,0,0.7))]"
@@ -1040,6 +1088,14 @@ export function PostCard({
                     ease: "linear",
                   },
                 }}
+                // Dim the bottom-left info only while this chip is actually over
+                // it. State flips just twice per flight (enter/exit the band).
+                onUpdate={(latest) => {
+                  const x = typeof latest.x === "number" ? latest.x : parseFloat(String(latest.x));
+                  const overlapping = x <= commentOverlapEnterX && x >= commentOverlapExitX;
+                  setCommentOverlapsInfo((prev) => (prev === overlapping ? prev : overlapping));
+                }}
+                onAnimationComplete={() => setCommentOverlapsInfo(false)}
                 className="pointer-events-auto z-30 flex flex-col items-center gap-0.5"
                 style={{ maxWidth: commentMaxWidth }}
               >
@@ -1072,7 +1128,7 @@ export function PostCard({
 
         <div
           className={`absolute bottom-4 left-4 z-20 max-w-[min(70%,260px)] text-white transition-opacity duration-300 ${
-            showingFlyingComment ? "opacity-20" : "opacity-100"
+            commentOverlapsInfo ? "opacity-20" : "opacity-100"
           }`}
         >
           {articlePreview && (
@@ -1844,68 +1900,7 @@ function getGradientTransitionPath(spec: CanvasSpec) {
 }
 
 function getResolvedPostBackground(post: Post) {
-  const background = post.bg_gradient?.trim();
-  if (isUsableCanvasBackground(background)) return background;
-  return getPostFallbackGradient(post.id);
-}
-
-function getPostFallbackGradient(id: string) {
-  const gradients = [
-    "linear-gradient(135deg,#FF006E,#8338EC)",
-    "linear-gradient(135deg,#3A86FF,#06FFA5)",
-    "linear-gradient(135deg,#F72585,#118AB2)",
-    "linear-gradient(135deg,#FFD60A,#FF006E)",
-    "linear-gradient(135deg,#00B4D8,#FF006E)",
-  ];
-  return gradients[getStableNumber(id) % gradients.length];
-}
-
-function isTooDarkCanvasBackground(background: string) {
-  const colors = extractGradientColors(background);
-  if (colors.length === 0) return true;
-  const luminance = colors.map(getHexColorLuminance);
-  const average = luminance.reduce((sum, value) => sum + value, 0) / luminance.length;
-  return (
-    luminance.every((value) => value < 0.035) || (Math.min(...luminance) < 0.05 && average < 0.34)
-  );
-}
-
-function isUsableCanvasBackground(background: string | null | undefined) {
-  const value = background?.trim();
-  if (!value) return false;
-
-  const normalized = value.toLowerCase();
-  if (
-    normalized === "none" ||
-    normalized === "transparent" ||
-    normalized === "black" ||
-    normalized === "#000" ||
-    normalized === "#000000"
-  ) {
-    return false;
-  }
-
-  if (normalized.startsWith("url(")) return true;
-  return !isTooDarkCanvasBackground(value);
-}
-
-function getHexColorLuminance(color: string) {
-  const hex = color.trim().replace(/^#/, "");
-  if (![3, 6, 8].includes(hex.length)) return 1;
-  const normalized =
-    hex.length === 3
-      ? hex
-          .split("")
-          .map((char) => char + char)
-          .join("")
-      : hex.slice(0, 6);
-  const int = Number.parseInt(normalized, 16);
-  if (Number.isNaN(int)) return 1;
-  const rgb = [(int >> 16) & 255, (int >> 8) & 255, int & 255].map((channel) => {
-    const value = channel / 255;
-    return value <= 0.03928 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
-  });
-  return 0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2];
+  return resolveCanvasBackground(post.bg_gradient, post.id);
 }
 
 function getSlidingCanvasBackground(spec: CanvasSpec, fallback: string | null, shiftPage: number) {
@@ -2017,6 +2012,7 @@ function WordSequenceText({
   onFitScale,
   disableFit = false,
   background,
+  entranceSeed,
 }: {
   spec: CanvasSpec;
   playKey: number;
@@ -2029,8 +2025,12 @@ function WordSequenceText({
   // disableFit: spec.size is already the shared, pre-fitted size — skip per-page shrink.
   disableFit?: boolean;
   background?: string | null;
+  // Stable seed (the full post text) so every page of one post shares the same
+  // auto-picked entrance personality. Falls back to the page text when absent.
+  entranceSeed?: string;
 }) {
   const words = getWords(spec.text);
+  const entranceStyle = getEntranceStyle(entranceSeed ?? spec.text);
   const isVietnamese = isLikelyVietnameseText(spec.text);
   const vietnameseLines = isVietnamese ? getVietnameseWordLines(words) : [];
   const emphasized = getEmphasizedWordIndexes(words);
@@ -2042,6 +2042,7 @@ function WordSequenceText({
   const textRef = useRef<HTMLDivElement>(null);
   const [fitScale, setFitScale] = useState(1);
   const [soloInlineScale, setSoloInlineScale] = useState(1);
+  const [safeCenterY, setSafeCenterY] = useState(spec.y);
   const staticRender = revealed || measure;
   const fontSize = spec.size * (disableFit ? 1 : fitScale);
   const textColor = getCanvasTextColor(spec, background);
@@ -2054,6 +2055,7 @@ function WordSequenceText({
   useIsomorphicLayoutEffect(() => {
     setFitScale(1);
     setSoloInlineScale(1);
+    setSafeCenterY(spec.y);
   }, [
     canvasWidth,
     background,
@@ -2064,10 +2066,10 @@ function WordSequenceText({
     spec.size,
     spec.text,
     spec.weight,
+    spec.y,
   ]);
 
   useIsomorphicLayoutEffect(() => {
-    if (disableFit) return;
     const wrapper = wrapperRef.current;
     const text = textRef.current;
     const canvas = wrapper?.parentElement?.parentElement;
@@ -2077,8 +2079,9 @@ function WordSequenceText({
     const canvasHeight = canvas.getBoundingClientRect().height;
     if (!wrapperWidth || !canvasHeight) return;
 
-    const verticalRoom = (canvasHeight * Math.min(spec.y, 100 - spec.y) * 2) / 100;
-    const maxHeight = Math.max(canvasHeight * 0.45, verticalRoom * 0.86);
+    const safeInsets = getTextSafeInsets(canvasHeight);
+    const safeHeight = Math.max(160, canvasHeight - safeInsets.top - safeInsets.bottom);
+    const maxHeight = safeHeight * 0.92;
     const measuredWidth = getMeasuredTextWidth(text, wrapper, leftAnchoredText);
     const widthRatio = wrapperWidth / Math.max(measuredWidth * visualScaleGuard, 1);
     const heightRatio = maxHeight / Math.max(text.scrollHeight, 1);
@@ -2097,8 +2100,17 @@ function WordSequenceText({
       ? Math.max(floor, Math.min(1, Math.max(widthFit, SOLO_REVEAL_MIN_FIT), heightFit))
       : Math.max(floor, Math.min(1, widthFit, heightFit));
     const nextSoloInlineScale = isSolo ? Math.min(1, widthFit / Math.max(nextFit, 0.01)) : 1;
+    const textHeight = text.scrollHeight;
+    const requestedCenter = (canvasHeight * spec.y) / 100;
+    const halfText = Math.min(textHeight / 2, safeHeight / 2);
+    const minCenter = safeInsets.top + halfText;
+    const maxCenter = canvasHeight - safeInsets.bottom - halfText;
+    const nextCenterY =
+      minCenter <= maxCenter
+        ? (clampNumber(requestedCenter, minCenter, maxCenter) / canvasHeight) * 100
+        : ((safeInsets.top + safeHeight / 2) / canvasHeight) * 100;
 
-    if (nextFit < fitScale - 0.01) {
+    if (!disableFit && nextFit < fitScale - 0.01) {
       setFitScale(nextFit);
     } else {
       // Converged — report the scale this page needs so the parent can pick a
@@ -2107,6 +2119,9 @@ function WordSequenceText({
     }
     if (Math.abs(nextSoloInlineScale - soloInlineScale) > 0.01) {
       setSoloInlineScale(nextSoloInlineScale);
+    }
+    if (Math.abs(nextCenterY - safeCenterY) > 0.2) {
+      setSafeCenterY(nextCenterY);
     }
   }, [
     disableFit,
@@ -2125,6 +2140,7 @@ function WordSequenceText({
     leftAnchoredText,
     visualScaleGuard,
     soloInlineScale,
+    safeCenterY,
   ]);
 
   const renderWord = (word: string, index: number, suppressSpotlight = false) => {
@@ -2160,27 +2176,14 @@ function WordSequenceText({
       <motion.span
         key={`${word}-${index}`}
         variants={{
-          hidden: {
-            opacity: 0,
-            y: important ? 34 : 22,
-            scale: important ? 0.66 : 0.88,
-            filter: "blur(10px)",
-          },
-          show: {
-            opacity: 1,
-            y: 0,
-            // Settle at scale 1. The enlargement is applied via fontSize below so
-            // it occupies real layout width (transform scale does not), which is
-            // what prevents the emphasized word from overlapping its neighbors.
-            scale: 1,
-            filter: "blur(0px)",
-          },
+          // The starting pose comes from the post's auto-picked entrance style;
+          // every style settles to the shared neutral rest below. Emphasis size
+          // is applied via fontSize (not scale), so settling to scale 1 keeps the
+          // enlarged word from overlapping its neighbors.
+          hidden: getEntranceHidden(entranceStyle, important, index),
+          show: ENTRANCE_REST,
         }}
-        transition={{
-          delay: entranceDelay,
-          duration: entranceDuration,
-          ease: [0.22, 1, 0.36, 1],
-        }}
+        transition={getEntranceTransition(entranceStyle, entranceDelay, entranceDuration)}
         className={important ? "relative inline-flex" : "inline-flex"}
         style={{
           color: wordColor,
@@ -2262,7 +2265,7 @@ function WordSequenceText({
       className="pointer-events-none absolute select-none"
       style={{
         left: `${spec.x}%`,
-        top: `${spec.y}%`,
+        top: `${safeCenterY}%`,
         transform: "translate(-50%, -50%)",
         width: TEXT_SAFE_MAX_WIDTH,
         maxWidth: TEXT_SAFE_MAX_WIDTH,
@@ -2361,6 +2364,22 @@ function getWords(text: string) {
   return text.match(/\S+/g) ?? [];
 }
 
+function getPostShareUrl(postId: string) {
+  if (typeof window === "undefined") return `/p/${postId}`;
+  return `${window.location.origin}/p/${postId}`;
+}
+
+function getTextSafeInsets(canvasHeight: number) {
+  return {
+    top: Math.max(TEXT_SAFE_TOP_PX, canvasHeight * 0.09),
+    bottom: Math.max(TEXT_SAFE_BOTTOM_PX, canvasHeight * 0.17),
+  };
+}
+
+function clampNumber(value: number, min: number, max: number) {
+  return Math.min(Math.max(value, min), max);
+}
+
 function getMeasuredTextWidth(text: HTMLElement, wrapper: HTMLElement, leftAnchored: boolean) {
   if (!leftAnchored) return text.scrollWidth;
 
@@ -2412,6 +2431,89 @@ function getEmphasisVariant(
   return pool[getStableNumber(`${text}|${word}|${index}`) % pool.length];
 }
 
+// Every post is auto-assigned one of these word-entrance "personalities", picked
+// stably from its text so replays look identical and the creator never has to
+// choose. Only the starting (`hidden`) state and the transition curve differ —
+// all of them settle to the exact same neutral resting state, so layout, fit and
+// emphasis sizing are unaffected no matter which entrance plays.
+const ENTRANCE_STYLES = ["rise", "fall", "pop", "drift", "tilt", "focus"] as const;
+type EntranceStyle = (typeof ENTRANCE_STYLES)[number];
+
+// Shared resting state — resets every transform any hidden state touches (x, y,
+// scale, rotate, blur) so words always land in the same place.
+const ENTRANCE_REST: TargetAndTransition = {
+  opacity: 1,
+  x: 0,
+  y: 0,
+  scale: 1,
+  rotate: 0,
+  filter: "blur(0px)",
+};
+
+function getEntranceStyle(seed: string): EntranceStyle {
+  return ENTRANCE_STYLES[getStableNumber(`entrance|${seed}`) % ENTRANCE_STYLES.length];
+}
+
+// The starting pose a word springs in from. Emphasized words travel a little
+// further / scale a little harder so their arrival reads as the accent it is.
+// `dir` alternates per word so the directional styles fan in instead of marching.
+function getEntranceHidden(
+  style: EntranceStyle,
+  important: boolean,
+  index: number,
+): TargetAndTransition {
+  const dir = index % 2 === 0 ? -1 : 1;
+  switch (style) {
+    case "fall":
+      // Drop down from above and settle.
+      return {
+        opacity: 0,
+        y: important ? -38 : -26,
+        scale: important ? 0.72 : 0.9,
+        filter: "blur(8px)",
+      };
+    case "pop":
+      // Punch up from tiny with a spring overshoot.
+      return { opacity: 0, scale: important ? 0.24 : 0.42, filter: "blur(4px)" };
+    case "drift":
+      // Fan in from alternating sides.
+      return { opacity: 0, x: dir * (important ? 54 : 40), y: 6, filter: "blur(8px)" };
+    case "tilt":
+      // Swing into place with a small rotation.
+      return {
+        opacity: 0,
+        y: important ? 22 : 15,
+        rotate: dir * 9,
+        scale: important ? 0.74 : 0.9,
+        filter: "blur(7px)",
+      };
+    case "focus":
+      // Cinematic rack-focus: bloom in from slightly oversized + heavy blur.
+      return { opacity: 0, scale: important ? 1.5 : 1.2, filter: "blur(16px)" };
+    case "rise":
+    default:
+      // The original: float up from below with a soft blur.
+      return {
+        opacity: 0,
+        y: important ? 34 : 22,
+        scale: important ? 0.66 : 0.88,
+        filter: "blur(10px)",
+      };
+  }
+}
+
+function getEntranceTransition(style: EntranceStyle, delay: number, duration: number): Transition {
+  if (style === "pop") {
+    return { delay, type: "spring", stiffness: 380, damping: 17, mass: 0.7 };
+  }
+  if (style === "tilt") {
+    return { delay, type: "spring", stiffness: 300, damping: 19, mass: 0.8 };
+  }
+  // Slower, softer easing for the blur-heavy reveals so they breathe rather than snap.
+  const stretch = style === "focus" ? 1.12 : style === "drift" ? 1.05 : 1;
+  return { delay, duration: duration * stretch, ease: [0.22, 1, 0.36, 1] };
+}
+
 // True for dim/dark colors where a glow or halo would look muddy. Uses HSV value
 // (the brightest channel) so vibrant pink/blue/purple still count as bright.
 function isDimEmphasisColor(color: string) {
@@ -2450,12 +2552,15 @@ function getEmphasisInnerAnimation(variant: EmphasisVariant | null, staticRender
   return undefined;
 }
 
+// Luminous variants (halo, glow) read as light around the word — recoloring them
+// on top of that glow hurts the eyes, so they keep the normal text color. Every
+// other variant shifts to the emphasis color so it pops visually.
 function getEmphasisWordColor(
   variant: EmphasisVariant | null,
   textColor: string,
   emphasisColor: string,
 ) {
-  return variant === "color" ? emphasisColor : textColor;
+  return variant === "halo" || variant === "glow" ? textColor : emphasisColor;
 }
 
 function getAuraColor(textColor: string) {

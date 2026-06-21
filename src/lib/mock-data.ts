@@ -73,6 +73,13 @@ export type MockFeedData = {
   comments: MockComment[];
 };
 
+export type MockPostData = {
+  post: MockPost;
+  profiles: MockProfile[];
+  likes: MockLike[];
+  comments: MockComment[];
+};
+
 export type MockProfileData = {
   profile: MockProfile;
   posts: MockPost[];
@@ -957,6 +964,26 @@ export function getMockFeed(): MockFeedData {
     profiles: getAllMockProfiles(),
     likes: likes.filter((likeItem) => postIds.has(likeItem.post_id)),
     comments: comments.filter((commentItem) => postIds.has(commentItem.post_id)),
+  };
+}
+
+export function getMockPost(postId: string): MockPostData {
+  const post = getAllMockPosts().find((item) => item.id === postId);
+  if (!post) throw new Error("Post not found");
+
+  const likes = getMockLikes().filter((likeItem) => likeItem.post_id === post.id);
+  const comments = getMockComments().filter((commentItem) => commentItem.post_id === post.id);
+  const profileIds = new Set([
+    post.author_id,
+    ...comments.map((commentItem) => commentItem.user_id),
+  ]);
+  const profiles = getAllMockProfiles().filter((profile) => profileIds.has(profile.id));
+
+  return {
+    post,
+    profiles,
+    likes,
+    comments,
   };
 }
 

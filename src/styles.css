@@ -246,46 +246,19 @@
   border: 0.05em solid transparent;
   isolation: isolate;
 }
-.kinetic-emph-frame::before,
 .kinetic-emph-frame::after {
   content: "";
   position: absolute;
   inset: 0;
   border-radius: inherit;
   pointer-events: none;
-}
-.kinetic-emph-frame::before {
-  z-index: -1;
-  background: color-mix(in srgb, currentColor 13%, transparent);
-  opacity: 1;
-}
-.kinetic-emph-frame::after {
   border: 0.05em solid color-mix(in srgb, currentColor 80%, transparent);
-  box-shadow:
-    0 0 0.5em color-mix(in srgb, currentColor 42%, transparent),
-    inset 0 0 0.42em color-mix(in srgb, currentColor 16%, transparent);
+  box-shadow: 0 0 0.5em color-mix(in srgb, currentColor 42%, transparent);
   clip-path: inset(0 0 0 0);
 }
-.kinetic-emph-frame.is-animated::before {
-  animation: kinetic-emph-frame-fill 0.74s cubic-bezier(0.22, 1, 0.36, 1)
-    var(--kinetic-emphasis-delay, 0.68s) both;
-}
 .kinetic-emph-frame.is-animated::after {
-  animation:
-    kinetic-emph-frame-draw 0.74s cubic-bezier(0.22, 1, 0.36, 1)
-      var(--kinetic-emphasis-delay, 0.68s) both,
-    kinetic-emph-frame-pulse 2.1s ease-in-out calc(var(--kinetic-emphasis-delay, 0.68s) + 0.74s)
-      infinite;
-}
-@keyframes kinetic-emph-frame-fill {
-  from {
-    opacity: 0;
-    transform: scaleX(0.12);
-  }
-  to {
-    opacity: 1;
-    transform: scaleX(1);
-  }
+  animation: kinetic-emph-frame-draw 0.74s cubic-bezier(0.22, 1, 0.36, 1)
+    var(--kinetic-emphasis-delay, 0.68s) both;
 }
 @keyframes kinetic-emph-frame-draw {
   from {
@@ -295,19 +268,6 @@
   to {
     opacity: 1;
     clip-path: inset(0 0 0 0);
-  }
-}
-@keyframes kinetic-emph-frame-pulse {
-  0%,
-  100% {
-    box-shadow:
-      0 0 0.38em color-mix(in srgb, currentColor 32%, transparent),
-      inset 0 0 0.32em color-mix(in srgb, currentColor 12%, transparent);
-  }
-  50% {
-    box-shadow:
-      0 0 0.82em color-mix(in srgb, currentColor 64%, transparent),
-      inset 0 0 0.58em color-mix(in srgb, currentColor 28%, transparent);
   }
 }
 

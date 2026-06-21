@@ -475,12 +475,15 @@ function getPreviewEmphasisInnerAnimation(variant: PreviewEmphasisVariant | null
   return undefined;
 }
 
+// Luminous variants (halo, glow) read as light around the word — recoloring them
+// on top of that glow hurts the eyes, so they keep the normal text color. Every
+// other variant shifts to the emphasis color so it pops visually.
 function getPreviewEmphasisWordColor(
   variant: PreviewEmphasisVariant | null,
   textColor: string,
   emphasisColor: string,
 ) {
-  return variant === "color" ? emphasisColor : textColor;
+  return variant === "halo" || variant === "glow" ? textColor : emphasisColor;
 }
 
 function getPreviewAuraColor(textColor: string) {

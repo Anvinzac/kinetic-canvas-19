@@ -20,6 +20,16 @@ export type WordSegment = {
 // never collapses narrow pages.
 const VIETNAMESE_LINE_INDENT_EM = [0, 0.22, 0.38, 0.5] as const;
 const VIETNAMESE_MAX_LINE_CHARS = 9;
+// A thin column of single-word lines reads as unbalanced. Vietnamese meaningful
+// words are usually two syllables, so a line should prefer to carry a pair. We
+// never allow more than this many single-segment lines in a row.
+const VIETNAMESE_MAX_CONSECUTIVE_SOLO_LINES = 3;
+// How far the soft line capacity may stretch to pull a second segment up so the
+// line isn't left as a single word. The gentle value applies everywhere (to
+// discourage solo lines); the hard value is used once the consecutive-solo cap
+// is reached and a pair must be forced.
+const VIETNAMESE_PAIR_RELAX_CHARS = 3;
+const VIETNAMESE_PAIR_FORCE_CHARS = 6;
 const VIETNAMESE_BOUND_PHRASES = [
   "ý tưởng",
   "y tuong",
@@ -109,32 +119,66 @@ export function getVietnameseWordLines(words: string[]): WordLine[] {
 
   const segments = getVietnameseWordSegments(words);
   const lines: WordLine[] = [];
-  let currentSegments: WordSegment[] = [];
-  let currentTextLength = 0;
+  let index = 0;
+  let consecutiveSolo = 0;
 
-  for (const segment of segments) {
-    const nextLength = getSegmentVisibleLength(segment);
-    const lineCapacity = getVietnameseLineCapacity(lines.length);
-    const projectedLength = currentTextLength + (currentSegments.length > 0 ? 1 : 0) + nextLength;
+  while (index < segments.length) {
+    const capacity = getVietnameseLineCapacity(lines.length);
+    // Once we've stacked the max run of single-word lines, the next line must
+    // carry a pair so the column can't grow any thinner.
+    const forcePair = consecutiveSolo >= VIETNAMESE_MAX_CONSECUTIVE_SOLO_LINES;
 
-    if (currentSegments.length > 0 && projectedLength > lineCapacity) {
-      lines.push({
-        indentEm: getVietnameseLineIndentEm(lines.length),
-        segments: currentSegments,
-      });
-      currentSegments = [];
-      currentTextLength = 0;
+    const lineSegments: WordSegment[] = [];
+    let lineLength = 0;
+    // Visual word count for the line. A bound phrase ("hình ảnh") is one segment
+    // but two words, so a line holding it alone is already balanced — thinness is
+    // measured in words, not segments.
+    let lineWords = 0;
+
+    while (index < segments.length) {
+      const segment = segments[index];
+      const segmentLength = getSegmentVisibleLength(segment);
+      const segmentWords = segment.words.length;
+      const projected = lineLength + (lineSegments.length > 0 ? 1 : 0) + segmentLength;
+
+      // The first segment always lands on the line, however wide it is.
+      if (lineSegments.length === 0) {
+        lineSegments.push(segment);
+        lineLength = segmentLength;
+        lineWords = segmentWords;
+        index += 1;
+        continue;
+      }
+
+      // Within the soft capacity — keep filling.
+      if (projected <= capacity) {
+        lineSegments.push(segment);
+        lineLength = projected;
+        lineWords += segmentWords;
+        index += 1;
+        continue;
+      }
+
+      // Over capacity, but the line is still a single word. Reach a little
+      // further to pull a partner up rather than leave a one-word line. The reach
+      // is wider when a pair is being forced by the consecutive-solo cap.
+      if (lineWords === 1) {
+        const reach = capacity + (forcePair ? VIETNAMESE_PAIR_FORCE_CHARS : VIETNAMESE_PAIR_RELAX_CHARS);
+        if (forcePair || projected <= reach) {
+          lineSegments.push(segment);
+          lineLength = projected;
+          lineWords += segmentWords;
+          index += 1;
+        }
+      }
+      break;
     }
 
-    currentSegments.push(segment);
-    currentTextLength += (currentSegments.length > 1 ? 1 : 0) + nextLength;
-  }
-
-  if (currentSegments.length > 0) {
     lines.push({
       indentEm: getVietnameseLineIndentEm(lines.length),
-      segments: currentSegments,
+      segments: lineSegments,
     });
+    consecutiveSolo = lineWords === 1 ? consecutiveSolo + 1 : 0;
   }
 
   return lines;
