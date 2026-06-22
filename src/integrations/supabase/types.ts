@@ -396,6 +396,10 @@ export type Database = {
         Args: { p_run_at?: string }
         Returns: number
       }
+      vocabulary_reveal_word_from_canvas: {
+        Args: { p_canvas_html: string }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never
