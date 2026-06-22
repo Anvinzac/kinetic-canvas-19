@@ -241,8 +241,9 @@
 
 /* FRAME — a crisp, glowing token box framing the word. */
 .kinetic-emph-frame {
+  --kinetic-frame-radius: 0.28em;
   padding: 0.05em 0.3em 0.1em;
-  border-radius: 0.28em;
+  border-radius: var(--kinetic-frame-radius);
   border: 0.05em solid transparent;
   isolation: isolate;
 }
@@ -254,7 +255,7 @@
   pointer-events: none;
   border: 0.05em solid color-mix(in srgb, currentColor 80%, transparent);
   box-shadow: 0 0 0.5em color-mix(in srgb, currentColor 42%, transparent);
-  clip-path: inset(0 0 0 0);
+  clip-path: inset(0 0 0 0 round var(--kinetic-frame-radius));
 }
 .kinetic-emph-frame.is-animated::after {
   animation: kinetic-emph-frame-draw 0.74s cubic-bezier(0.22, 1, 0.36, 1)
@@ -263,11 +264,11 @@
 @keyframes kinetic-emph-frame-draw {
   from {
     opacity: 0;
-    clip-path: inset(0 100% 0 0);
+    clip-path: inset(0 100% 0 0 round var(--kinetic-frame-radius));
   }
   to {
     opacity: 1;
-    clip-path: inset(0 0 0 0);
+    clip-path: inset(0 0 0 0 round var(--kinetic-frame-radius));
   }
 }
 
@@ -294,8 +295,7 @@
   filter: drop-shadow(0 4px 18px rgba(0, 0, 0, 0.5));
 }
 .kinetic-emph-sweep.is-animated {
-  animation: kinetic-emph-sweep-glide 2.3s ease-in-out var(--kinetic-emphasis-delay, 0.68s)
-    infinite;
+  animation: kinetic-emph-sweep-glide 2.3s ease-in-out var(--kinetic-emphasis-delay, 0.68s) infinite;
 }
 @keyframes kinetic-emph-sweep-glide {
   0% {
