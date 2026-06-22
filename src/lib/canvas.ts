@@ -30,6 +30,9 @@ export interface CanvasSpec {
   link?: CanvasLinkPreview | null;
   backgroundStyle?: BackgroundStyle;
   gradientPath?: string[];
+  // Id of a seamless tiling pattern backdrop (see canvas-patterns.ts). When set,
+  // it replaces the gradient backdrop and pans a fixed step per page turn.
+  backgroundPattern?: string;
 }
 
 type RgbColor = { r: number; g: number; b: number };
@@ -339,11 +342,17 @@ function getDistinctEmphasisColor(textColor: string, emphasisColor: string) {
   );
 }
 
+// Canvas backgrounds are always consumed as `background-image` (see PostCard),
+// never `background-color` — a value that's valid background shorthand but not a
+// valid <image> (e.g. a bare hex color) would silently fail to paint there and
+// expose whatever sits underneath. Validate against `background-image` specifically.
 function isRenderableCanvasBackground(value: string) {
   if (typeof CSS !== "undefined" && typeof CSS.supports === "function") {
-    return CSS.supports("background-image", value) || CSS.supports("background", value);
+    return CSS.supports("background-image", value);
   }
-  if (value.trim().toLowerCase().startsWith("url(")) return true;
+  const normalized = value.trim().toLowerCase();
+  if (normalized.startsWith("url(")) return true;
+  if (!/-?gradient\(/.test(normalized)) return false;
   const colors = extractCssColors(value);
   return colors.length > 0 && colors.every(isParseableColorToken);
 }

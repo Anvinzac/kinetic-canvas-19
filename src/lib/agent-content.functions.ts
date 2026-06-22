@@ -18,6 +18,13 @@ const ingestItemSchema = z.object({
   availableAt: z.string().datetime().optional(),
 });
 
+const vocabularyPayloadSchema = z.object({
+  word: z.string().min(1).max(64),
+  vi_definition: z.string().min(1).max(240),
+  hints: z.array(z.string().min(1).max(160)).optional(),
+  difficulty: z.string().min(1).max(32).optional(),
+});
+
 export const ingestAgentContent = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => ingestItemSchema.parse(d))
   .handler(async ({ data }) => {
@@ -27,17 +34,33 @@ export const ingestAgentContent = createServerFn({ method: "POST" })
       throw new Error(`Unknown source_key: ${data.sourceKey}`);
     }
 
+    const normalized = normalizeAgentContent(data);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: itemId, error } = await supabaseAdmin.rpc("enqueue_agent_content_item", {
-      p_source_key: data.sourceKey,
-      p_content_key: data.contentKey,
-      p_payload: data.payload as unknown as Json,
+      p_source_key: normalized.sourceKey,
+      p_content_key: normalized.contentKey,
+      p_payload: normalized.payload as unknown as Json,
       p_available_at: data.availableAt,
     });
 
     if (error) throw new Error(`enqueue_agent_content_item failed: ${error.message}`);
     return { id: itemId };
   });
+
+function normalizeAgentContent(data: z.infer<typeof ingestItemSchema>) {
+  if (data.sourceKey !== "vocabulary.en_vi") return data;
+
+  const payload = vocabularyPayloadSchema.parse(data.payload);
+  return {
+    ...data,
+    contentKey: normalizeVocabularyWord(payload.word),
+    payload,
+  };
+}
+
+function normalizeVocabularyWord(word: string) {
+  return word.trim().toLowerCase().replace(/\s+/g, " ");
+}
 
 function assertValidApiKey() {
   const expected = process.env.AGENT_INGEST_API_KEY ?? "";

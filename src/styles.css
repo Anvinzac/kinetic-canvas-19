@@ -272,39 +272,56 @@
   }
 }
 
-/* SWEEP — a recolored word with a bright highlight gliding across it. The fill is
-   a gradient clipped to the glyphs (base = the word's emphasis color via
-   currentColor, with a brighter band), animated by sliding the background. Because
-   the fill is clipped, a text-shadow can't show through — a drop-shadow filter
-   carries legibility instead. */
+/* SWEEP — keep the word fully painted, then pass a soft spotlight over it. */
 .kinetic-emph-sweep {
+  isolation: isolate;
+  overflow: visible;
+}
+/* The shine is a fixed overlay locked to the word's box (inset: 0). It glides by
+   moving the gradient's `background-position` WITHIN that box — not by
+   translating the box — so the bright band is only ever painted across the word
+   itself and can never run out across the screen. A 220%-wide, no-repeat
+   gradient means the highlight simply isn't on the box while it's "off" either
+   edge, so no clip of the glyphs or the word's glow is needed. */
+.kinetic-emph-sweep::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
   background-image: linear-gradient(
     100deg,
-    currentColor 0%,
-    currentColor 38%,
-    color-mix(in srgb, currentColor 30%, #ffffff) 50%,
-    currentColor 62%,
-    currentColor 100%
+    transparent 0%,
+    color-mix(in srgb, #ffffff 10%, transparent) 34%,
+    color-mix(in srgb, #ffffff 78%, currentColor 22%) 48%,
+    color-mix(in srgb, #ffffff 12%, transparent) 62%,
+    transparent 100%
   );
-  background-size: 250% 100%;
-  background-position: 140% 0;
+  background-size: 220% 100%;
   background-repeat: no-repeat;
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  filter: drop-shadow(0 4px 18px rgba(0, 0, 0, 0.5));
+  background-position: 150% 0;
+  filter: blur(0.03em);
+  mix-blend-mode: screen;
+  opacity: 0;
 }
-.kinetic-emph-sweep.is-animated {
-  animation: kinetic-emph-sweep-glide 2.3s ease-in-out var(--kinetic-emphasis-delay, 0.68s) infinite;
+.kinetic-emph-sweep.is-animated::after {
+  animation: kinetic-emph-sweep-glide 2.3s ease-in-out var(--kinetic-emphasis-delay, 0.68s)
+    infinite;
 }
 @keyframes kinetic-emph-sweep-glide {
   0% {
-    background-position: 140% 0;
+    opacity: 0;
+    background-position: 150% 0;
+  }
+  14%,
+  46% {
+    opacity: 0.86;
   }
   /* Hold at rest a moment between glides so it shines rather than strobes. */
   55%,
   100% {
-    background-position: -40% 0;
+    opacity: 0;
+    background-position: -50% 0;
   }
 }
 

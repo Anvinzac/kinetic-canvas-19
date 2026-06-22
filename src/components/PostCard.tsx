@@ -53,6 +53,7 @@ import {
   type Rhythm,
   type Tempo,
 } from "@/lib/canvas";
+import { getCanvasPatternTheme, getPatternBackgroundPosition } from "@/lib/canvas-patterns";
 import {
   getTextPageWordLimit,
   getVietnameseWordLines,
@@ -95,6 +96,18 @@ const MIN_ENGLISH_TEXT_FIT_SCALE = 0.72;
 // shrink this far to fit a long word fully on screen.
 const SOLO_TEXT_MIN_FIT = 0.3;
 const SOLO_REVEAL_MIN_FIT = 0.62;
+// The reveal word is the punchline of a guessing post — it should dominate the
+// canvas. Solved-for directly as a share of the real canvas width, so a short
+// word ("Dawn") grows well past its nominal size and a long one ("Persistence")
+// shrinks just enough to land on the same target, never leaving empty margins.
+// Held a touch under the safe edge (a hard 85%) so the word keeps its hero size
+// while still leaving margin for the emphasis pulse/entrance overshoot — i.e. it
+// never spills off either side even mid-animation.
+const SOLO_REVEAL_TARGET_WIDTH_FRACTION = 0.85;
+// Horizontal-only correction (transform: scaleX) closing any gap between the
+// chosen font scale and the target width, without touching letter height.
+const SOLO_REVEAL_MIN_INLINE_SCALE = 0.45;
+const SOLO_REVEAL_MAX_STRETCH = 1.7;
 const EMPHASIS_SCALE_FIT_GUARD = 1.14;
 // Emphasized words render this many times larger than the base font. Applied via
 // fontSize (not transform: scale) so the extra width occupies real layout space.
@@ -347,10 +360,17 @@ export function PostCard({
   const commentOverlapEnterX = commentInfoRightEdge + commentMaxWidth / 2;
   const commentOverlapExitX = commentInfoLeftEdge - commentMaxWidth / 2;
   const currentText = textPages[textPage] ?? textPages[0] ?? "";
-  const staticCanvasBackground = getResolvedPostBackground(post);
+  const patternTheme = getCanvasPatternTheme(spec.backgroundPattern);
+  const resolvedPostBackground = getResolvedPostBackground(post);
+  // Pattern posts ignore the gradient backdrop entirely; the theme's solid base
+  // is what sits under the pattern and what the text-contrast picker reads.
+  const staticCanvasBackground = patternTheme ? patternTheme.base : resolvedPostBackground;
   const slidingCanvasBackground = useMemo(
-    () => getSlidingCanvasBackground(spec, staticCanvasBackground ?? null, backgroundShiftPage),
-    [backgroundShiftPage, spec, staticCanvasBackground],
+    () =>
+      patternTheme
+        ? null
+        : getSlidingCanvasBackground(spec, staticCanvasBackground ?? null, backgroundShiftPage),
+    [patternTheme, backgroundShiftPage, spec, staticCanvasBackground],
   );
   const hasTransitionBackground = !!slidingCanvasBackground;
   const activeStory = commentStories[storyIndex] ?? null;
@@ -763,10 +783,26 @@ export function PostCard({
           canvasRef.current = el;
           setCanvasEl(el);
         }}
-        className="relative h-full w-full overflow-hidden bg-black sm:aspect-[9/16] sm:h-[min(90dvh,764px)] sm:w-auto sm:shadow-[0_24px_90px_rgba(0,0,0,0.45)] sm:ring-1 sm:ring-white/10"
+        className="relative h-full w-full overflow-hidden bg-[url('/canvas-fallback.svg')] bg-cover bg-center sm:aspect-[9/16] sm:h-[min(90dvh,764px)] sm:w-auto sm:shadow-[0_24px_90px_rgba(0,0,0,0.45)] sm:ring-1 sm:ring-white/10"
         onClick={handleCanvasTap}
       >
-        {slidingCanvasBackground ? (
+        {patternTheme ? (
+          <div
+            aria-hidden
+            className="absolute inset-0"
+            style={{
+              backgroundColor: patternTheme.base,
+              backgroundImage: patternTheme.image,
+              backgroundSize: patternTheme.size,
+              backgroundRepeat: "repeat",
+              // Drift the tiling pattern a fixed step per page turn. Because the
+              // pattern repeats infinitely, any offset is seamless — there is no
+              // edge to reach. CSS handles the slide so it needs no JS ticker.
+              backgroundPosition: getPatternBackgroundPosition(patternTheme, backgroundShiftPage),
+              transition: "background-position 1.25s cubic-bezier(0.22,1,0.36,1)",
+            }}
+          />
+        ) : slidingCanvasBackground ? (
           <motion.div
             aria-hidden
             className="absolute inset-y-0 left-0"
@@ -789,7 +825,7 @@ export function PostCard({
             }}
           />
         )}
-        {hasTransitionBackground && (
+        {(hasTransitionBackground || patternTheme) && (
           <motion.div
             key={`sheen-${post.id}-${backgroundShiftPage}`}
             aria-hidden
@@ -1083,7 +1119,7 @@ export function PostCard({
           )}
         </AnimatePresence>
 
-        <div className="pointer-events-none absolute bottom-4 left-1/2 z-20 flex w-full -translate-x-1/2 flex-col items-center gap-1 overflow-hidden">
+        <div className="pointer-events-none absolute bottom-2 left-1/2 z-20 flex w-full -translate-x-1/2 flex-col items-center gap-1 px-3 pb-4">
           <AnimatePresence mode="wait">
             {showingFlyingComment && (
               <motion.div
@@ -2040,6 +2076,11 @@ function WordSequenceText({
   entranceSeed?: string;
 }) {
   const words = getWords(spec.text);
+  // A solo reveal word is measured post-emphasis via scrollWidth (see
+  // getMeasuredTextWidth below), and has no neighbor to protect from overlap —
+  // so it must skip the emphasis fit guard further down, which exists only to
+  // stop a multi-word line's emphasized word from crowding its neighbors.
+  const isSolo = words.length <= 1;
   const entranceStyle = getEntranceStyle(entranceSeed ?? spec.text);
   const isVietnamese = isLikelyVietnameseText(spec.text);
   const vietnameseLines = isVietnamese ? getVietnameseWordLines(words) : [];
@@ -2048,25 +2089,43 @@ function WordSequenceText({
   const leftAnchoredText = layoutMode !== "center";
   const spotlightEmphasis = layoutMode === "left-spotlight";
   const tempo = tempoConfig[spec.tempo];
+  const visualScaleGuard = Math.max(
+    emphasized.size > 0 && !isSolo ? EMPHASIS_SCALE_FIT_GUARD : 1,
+    isVietnamese ? VIETNAMESE_SCALE_FIT_GUARD : 1,
+  );
+  // A solo reveal word fits itself (it never joins the shared sizing), so size
+  // it the moment it renders instead of waiting for the layout effect: this
+  // predicted fit guarantees the first painted frame — including server-rendered
+  // markup that no effect ever touches — is already inside the canvas, never the
+  // full-width overflow the effect would otherwise have to claw back.
+  const soloInitialFit =
+    isSolo && !disableFit
+      ? estimateSoloRevealFit(
+          spec.text,
+          spec.size,
+          canvasWidth,
+          visualScaleGuard,
+          spec.font,
+          spec.weight,
+          emphasized.size > 0 ? EMPHASIS_FONT_SCALE : 1,
+        )
+      : 1;
   const wrapperRef = useRef<HTMLDivElement>(null);
   const textRef = useRef<HTMLDivElement>(null);
-  const [fitScale, setFitScale] = useState(1);
+  const [fitScale, setFitScale] = useState(soloInitialFit);
   const [soloInlineScale, setSoloInlineScale] = useState(1);
   const [safeCenterY, setSafeCenterY] = useState(spec.y);
   const staticRender = revealed || measure;
   const fontSize = spec.size * (disableFit ? 1 : fitScale);
   const textColor = getCanvasTextColor(spec, background);
   const emphasisColor = getCanvasEmphasisColor({ ...spec, color: textColor }, background);
-  const visualScaleGuard = Math.max(
-    emphasized.size > 0 ? EMPHASIS_SCALE_FIT_GUARD : 1,
-    isVietnamese ? VIETNAMESE_SCALE_FIT_GUARD : 1,
-  );
 
   useIsomorphicLayoutEffect(() => {
-    setFitScale(1);
+    setFitScale(soloInitialFit);
     setSoloInlineScale(1);
     setSafeCenterY(spec.y);
   }, [
+    soloInitialFit,
     canvasWidth,
     background,
     spec.color,
@@ -2092,24 +2151,54 @@ function WordSequenceText({
     const safeInsets = getTextSafeInsets(canvasHeight);
     const safeHeight = Math.max(160, canvasHeight - safeInsets.top - safeInsets.bottom);
     const maxHeight = safeHeight * 0.92;
-    const measuredWidth = getMeasuredTextWidth(text, wrapper, leftAnchoredText);
+    // A solo page's text container is forced to width:100% (see the textRef
+    // style below) so it centers within the wrapper — its scrollWidth is just
+    // that 100% width, not the word's actual glyph width. Measure the
+    // innermost word span directly instead, undoing the scaleX already
+    // applied so we recover the word's true intrinsic width.
+    const measuredWidth = isSolo
+      ? getMeasuredSoloWordWidth(text, soloInlineScale)
+      : getMeasuredTextWidth(text, wrapper, leftAnchoredText);
     const widthRatio = wrapperWidth / Math.max(measuredWidth * visualScaleGuard, 1);
     const heightRatio = maxHeight / Math.max(text.scrollHeight, 1);
     // A single word cannot wrap, so the usual immersive minimums must not block
     // it from shrinking enough to fit. For reveal words, keep the letters tall
     // and condense the word horizontally only when that is needed to stay inside
     // the canvas bounds.
-    const isSolo = words.length <= 1;
     const finalSizeFloor = Math.min(1, MIN_FONT_SIZE / Math.max(spec.size, 1));
     const floor = isSolo
       ? SOLO_TEXT_MIN_FIT
       : Math.max(isVietnamese ? MIN_TEXT_FIT_SCALE : MIN_ENGLISH_TEXT_FIT_SCALE, finalSizeFloor);
     const widthFit = Math.min(1, fitScale * widthRatio * 0.98);
     const heightFit = Math.min(1, fitScale * heightRatio * 0.98);
+    // The hard safety boundary (uncapped) — the actual scale beyond which the
+    // word would spill outside the wrapper/safe-height. Unlike widthFit/heightFit
+    // above (capped at the page's own configured size), this is allowed to exceed
+    // 1 so a short reveal word can grow past its nominal size.
+    const widthFitRaw = fitScale * widthRatio * 0.98;
+    const heightFitRaw = fitScale * heightRatio * 0.98;
+    // A solo reveal word is the punchline — it should be the single biggest,
+    // boldest moment on the page, not capped at the body lines' font size. Solve
+    // directly for the scale that makes the word fill the target share of the
+    // real canvas width (grows past 1x for short words, shrinks for long ones),
+    // then let the height ceiling and a soft floor bound it.
+    const targetWidthRatio =
+      (canvasWidth * SOLO_REVEAL_TARGET_WIDTH_FRACTION) / Math.max(measuredWidth * visualScaleGuard, 1);
+    const widthFitTarget = fitScale * targetWidthRatio;
     const nextFit = isSolo
-      ? Math.max(floor, Math.min(1, Math.max(widthFit, SOLO_REVEAL_MIN_FIT), heightFit))
+      ? Math.max(floor, Math.min(Math.max(widthFitTarget, SOLO_REVEAL_MIN_FIT), heightFitRaw))
       : Math.max(floor, Math.min(1, widthFit, heightFit));
-    const nextSoloInlineScale = isSolo ? Math.min(1, widthFit / Math.max(nextFit, 0.01)) : 1;
+    // Close any remaining gap between the chosen font scale and the target width
+    // with a horizontal-only stretch/squish so the letters stay their full height
+    // even when the height ceiling capped the font scale below the target, or the
+    // soft floor held it above what the long word's true fit would allow.
+    const nextSoloInlineScale = isSolo
+      ? clampNumber(
+          Math.min(widthFitTarget, widthFitRaw) / Math.max(nextFit, 0.01),
+          SOLO_REVEAL_MIN_INLINE_SCALE,
+          SOLO_REVEAL_MAX_STRETCH,
+        )
+      : 1;
     const textHeight = text.scrollHeight;
     const requestedCenter = (canvasHeight * spec.y) / 100;
     const halfText = Math.min(textHeight / 2, safeHeight / 2);
@@ -2120,7 +2209,10 @@ function WordSequenceText({
         ? (clampNumber(requestedCenter, minCenter, maxCenter) / canvasHeight) * 100
         : ((safeInsets.top + safeHeight / 2) / canvasHeight) * 100;
 
-    if (!disableFit && nextFit < fitScale - 0.01) {
+    // Solo pages may need to grow fitScale past its initial 1 (to fill the
+    // target width), not just shrink — react to either direction. Multi-word
+    // pages never compute a nextFit above 1, so this stays shrink-only for them.
+    if (!disableFit && Math.abs(nextFit - fitScale) > 0.01) {
       setFitScale(nextFit);
     } else {
       // Converged — report the scale this page needs so the parent can pick a
@@ -2181,7 +2273,7 @@ function WordSequenceText({
     const innerAnimation = important
       ? getEmphasisInnerAnimation(emphasisVariant, staticRender)
       : undefined;
-    const isSoloRevealWord = words.length <= 1;
+    const isSoloRevealWord = isSolo;
     return (
       <motion.span
         key={`${word}-${index}`}
@@ -2392,6 +2484,68 @@ function clampNumber(value: number, min: number, max: number) {
   return Math.min(Math.max(value, min), max);
 }
 
+// Average glyph advance as a fraction of the font size for the heavy sans we
+// render reveal words in. Deliberately on the wide side so the predicted width
+// is never an under-estimate — the word starts a touch small and the precise
+// layout effect grows it to the exact target, rather than ever flashing wider
+// than the canvas before the effect runs.
+const AVG_GLYPH_WIDTH_EM = 0.62;
+
+let soloMeasureCtx: CanvasRenderingContext2D | null | undefined;
+
+// Best-effort intrinsic width of a single word at a given font size, computed
+// synchronously at render time (no DOM, no layout pass). On the client this
+// uses a shared 2D-canvas text metric; during SSR — where the real overflow
+// flash happens, since layout effects never run there — it falls back to a
+// glyph-count estimate so the very first painted frame is already in-bounds.
+function estimateWordWidth(word: string, size: number, font: string, weight: number) {
+  const trimmed = word.trim();
+  if (!trimmed) return 0;
+  if (typeof document !== "undefined") {
+    if (soloMeasureCtx === undefined) {
+      soloMeasureCtx = document.createElement("canvas").getContext("2d");
+    }
+    if (soloMeasureCtx) {
+      soloMeasureCtx.font = `${weight} ${size}px ${font}, system-ui, sans-serif`;
+      const measured = soloMeasureCtx.measureText(trimmed).width;
+      if (measured > 0) return measured;
+    }
+  }
+  return trimmed.length * size * AVG_GLYPH_WIDTH_EM;
+}
+
+// The fit scale a solo reveal word should START at so it already fills (without
+// exceeding) the target share of the canvas on the very first paint — before
+// the layout effect has a chance to measure and refine. Mirrors the width math
+// in the layout effect (target fraction ÷ estimated width), clamped to the same
+// solo bounds. The effect then converges to the exact pixel-measured fit.
+function estimateSoloRevealFit(
+  text: string,
+  size: number,
+  canvasWidth: number,
+  visualScaleGuard: number,
+  font: string,
+  weight: number,
+  // Reveal words are emphasized, so they render EMPHASIS_FONT_SCALE bigger than
+  // `size`. Fold that in or the first paint over-sizes the word (and spills past
+  // the canvas) until the DOM-measured layout effect — which DOES see the
+  // emphasis — claws it back.
+  emphasisFactor: number,
+) {
+  const estWidth =
+    estimateWordWidth(text, size, font, weight) * Math.max(visualScaleGuard, 1) * emphasisFactor;
+  if (estWidth <= 0 || canvasWidth <= 0) return 1;
+  const target = (canvasWidth * SOLO_REVEAL_TARGET_WIDTH_FRACTION) / estWidth;
+  return clampNumber(target, SOLO_REVEAL_MIN_FIT, SOLO_REVEAL_MAX_STRETCH);
+}
+
+function getMeasuredSoloWordWidth(text: HTMLElement, soloInlineScale: number) {
+  const spans = Array.from(text.querySelectorAll("span"));
+  const glyphSpan = spans.find((span) => span.querySelector("span") === null);
+  const raw = glyphSpan ? glyphSpan.getBoundingClientRect().width : text.scrollWidth;
+  return raw / Math.max(soloInlineScale, 0.01);
+}
+
 function getMeasuredTextWidth(text: HTMLElement, wrapper: HTMLElement, leftAnchored: boolean) {
   if (!leftAnchored) return text.scrollWidth;
 
@@ -2542,10 +2696,8 @@ function getEmphasisTextShadow(variant: EmphasisVariant | null) {
   if (variant === "color") {
     return "0 4px 40px rgba(0,0,0,0.45)";
   }
-  // sweep clips the fill to a moving gradient, so a text-shadow wouldn't show
-  // through; legibility comes from the drop-shadow filter in its CSS class.
   if (variant === "sweep") {
-    return "none";
+    return "0 0 22px rgba(255,255,255,0.3), 0 5px 36px rgba(0,0,0,0.55)";
   }
   if (variant === "halo") {
     return "0 4px 40px rgba(0,0,0,0.45)";
@@ -2583,6 +2735,11 @@ function getWordImportance(word: string, index: number, total: number) {
   if (!cleaned || STOP_WORDS.has(cleaned)) return 0;
 
   let score = 0;
+  // A standalone number is the punchline of a clue sentence — a count, a
+  // quantity, the fact the reader is meant to register. Always let the digits
+  // win the emphasis (e.g. "Cả từ gồm 9 chữ cái." highlights the 9, never the
+  // trailing noun), so it outscores every other bonus combined.
+  if (/^\d+$/.test(cleaned)) score += 12;
   if (EMPHASIS_WORDS.has(cleaned)) score += 4;
   if (cleaned.length >= 8) score += 3;
   else if (cleaned.length >= 6) score += 2;

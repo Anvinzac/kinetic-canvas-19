@@ -467,7 +467,7 @@ function getPreviewEmphasisTextShadow(variant: PreviewEmphasisVariant | null) {
     return "0 4px 40px rgba(0,0,0,0.45)";
   }
   if (variant === "sweep") {
-    return "none";
+    return "0 0 22px rgba(255,255,255,0.3), 0 5px 36px rgba(0,0,0,0.55)";
   }
   if (variant === "halo") {
     return "0 4px 40px rgba(0,0,0,0.45)";
