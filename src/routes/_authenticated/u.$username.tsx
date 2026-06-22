@@ -100,7 +100,9 @@ function ProfilePage() {
 
   const isMe = me?.profile?.id === data.profile.id;
   const isFollowing = me?.followingIds?.includes(data.profile.id) ?? false;
-  const posts = data.posts as MockPost[];
+  const rawPosts = data.posts as MockPost[];
+  const posts =
+    data.profile.username === "do_chu_bot" ? prioritizeVietnamYesterdayPosts(rawPosts) : rawPosts;
   const engagementByPost = data.engagementByPost as Record<string, Engagement>;
   const counts = getTypeCounts(posts);
   const profilesById = new Map([[data.profile.id, data.profile]]);
@@ -137,7 +139,7 @@ function ProfilePage() {
   return (
     <div
       ref={scrollRef}
-      className="h-[100dvh] snap-y snap-mandatory overflow-y-scroll overscroll-contain scrollbar-hide [touch-action:none]"
+      className="h-[100dvh] snap-y snap-mandatory overflow-y-scroll overscroll-contain scrollbar-hide [touch-action:pan-y]"
     >
       {/* Page 1: Profile info */}
       <div
@@ -425,6 +427,30 @@ function getSortedPosts(
   }
   // recent (default) - already sorted by created_at desc from the data source
   return posts;
+}
+
+function prioritizeVietnamYesterdayPosts(posts: MockPost[]) {
+  const yesterdayKey = getVietnamDateKey(Date.now() - 24 * 60 * 60 * 1000);
+  const yesterdayPosts = posts.filter(
+    (post) => getVietnamDateKey(post.created_at) === yesterdayKey,
+  );
+  if (yesterdayPosts.length < 3) return posts;
+
+  const yesterdayIds = new Set(yesterdayPosts.map((post) => post.id));
+  return [
+    ...yesterdayPosts.sort((a, b) => b.created_at.localeCompare(a.created_at)),
+    ...posts.filter((post) => !yesterdayIds.has(post.id)),
+  ];
+}
+
+function getVietnamDateKey(value: string | number) {
+  const date = typeof value === "string" ? new Date(value) : value;
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Ho_Chi_Minh",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(date);
 }
 
 function seededHash(value: string, seed: number): number {

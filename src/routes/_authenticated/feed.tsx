@@ -104,7 +104,7 @@ function FeedPage() {
     <div className="relative">
       <main
         ref={scrollRef}
-        className="scrollbar-hide h-[100dvh] snap-y snap-mandatory overflow-y-scroll overscroll-contain [touch-action:none]"
+        className="scrollbar-hide h-[100dvh] snap-y snap-mandatory overflow-y-scroll overscroll-contain [touch-action:pan-y]"
       >
         {data.posts.map((p) => (
           <PostCard

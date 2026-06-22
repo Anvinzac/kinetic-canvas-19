@@ -101,6 +101,7 @@ const EMPHASIS_SCALE_FIT_GUARD = 1.14;
 const EMPHASIS_FONT_SCALE = 1.12;
 const EMPHASIS_VARIANTS = [
   "color",
+  "sweep",
   "glow",
   "underline",
   "jiggle",
@@ -110,8 +111,16 @@ const EMPHASIS_VARIANTS = [
 ] as const;
 // glow and halo are luminous auras — they only read well on bright colors. On a
 // dim/dark emphasis color they turn into an ugly muddy blob, so those colors get
-// the non-luminous set only.
-const NON_LUMINOUS_EMPHASIS_VARIANTS = ["color", "underline", "jiggle", "pulse", "frame"] as const;
+// the non-luminous set only. sweep is a recolor + gliding shine, so it reads on
+// any color.
+const NON_LUMINOUS_EMPHASIS_VARIANTS = [
+  "color",
+  "sweep",
+  "underline",
+  "jiggle",
+  "pulse",
+  "frame",
+] as const;
 const VIETNAMESE_SCALE_FIT_GUARD = 1.06;
 const DEFAULT_CANVAS_BACKGROUND = SAFE_CANVAS_BACKGROUND;
 const ARC_BUTTON_TAP = { scale: 0.94, y: 2 };
@@ -2239,7 +2248,9 @@ function WordSequenceText({
                         ? " kinetic-emph-frame"
                         : emphasisVariant === "underline"
                           ? " kinetic-emph-underline"
-                          : ""
+                          : emphasisVariant === "sweep"
+                            ? " kinetic-emph-sweep"
+                            : ""
                   }${staticRender ? "" : " is-animated"}`
                 : undefined
             }
@@ -2530,6 +2541,11 @@ function isDimEmphasisColor(color: string) {
 function getEmphasisTextShadow(variant: EmphasisVariant | null) {
   if (variant === "color") {
     return "0 4px 40px rgba(0,0,0,0.45)";
+  }
+  // sweep clips the fill to a moving gradient, so a text-shadow wouldn't show
+  // through; legibility comes from the drop-shadow filter in its CSS class.
+  if (variant === "sweep") {
+    return "none";
   }
   if (variant === "halo") {
     return "0 4px 40px rgba(0,0,0,0.45)";

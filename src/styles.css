@@ -271,6 +271,43 @@
   }
 }
 
+/* SWEEP — a recolored word with a bright highlight gliding across it. The fill is
+   a gradient clipped to the glyphs (base = the word's emphasis color via
+   currentColor, with a brighter band), animated by sliding the background. Because
+   the fill is clipped, a text-shadow can't show through — a drop-shadow filter
+   carries legibility instead. */
+.kinetic-emph-sweep {
+  background-image: linear-gradient(
+    100deg,
+    currentColor 0%,
+    currentColor 38%,
+    color-mix(in srgb, currentColor 30%, #ffffff) 50%,
+    currentColor 62%,
+    currentColor 100%
+  );
+  background-size: 250% 100%;
+  background-position: 140% 0;
+  background-repeat: no-repeat;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 4px 18px rgba(0, 0, 0, 0.5));
+}
+.kinetic-emph-sweep.is-animated {
+  animation: kinetic-emph-sweep-glide 2.3s ease-in-out var(--kinetic-emphasis-delay, 0.68s)
+    infinite;
+}
+@keyframes kinetic-emph-sweep-glide {
+  0% {
+    background-position: 140% 0;
+  }
+  /* Hold at rest a moment between glides so it shines rather than strobes. */
+  55%,
+  100% {
+    background-position: -40% 0;
+  }
+}
+
 @keyframes kinetic-emphasis-jiggle {
   0%,
   100% {

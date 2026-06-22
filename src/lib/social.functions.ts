@@ -8,6 +8,8 @@ import { z } from "zod";
 const FEED_LIMIT = 60;
 const FEED_POOL_LIMIT = 180;
 const COLD_START_FOLLOWING_THRESHOLD = 3;
+const BOT_AUTHOR_RECENCY_WINDOW_HOURS = 30;
+const BOT_AUTHOR_RECENCY_BOOST = 6_000;
 
 type FeedPost = {
   id: string;
@@ -43,6 +45,11 @@ export const getFeed = createServerFn({ method: "GET" })
       ? await supabaseAdmin.from("follows").select("following_id").eq("follower_id", viewer.id)
       : { data: [] as { following_id: string }[] };
     const followingIds = (following ?? []).map((follow) => follow.following_id);
+    const { data: activeBots } = await supabaseAdmin
+      .from("bot_agents")
+      .select("profile_id")
+      .eq("active", true);
+    const botAuthorIds = (activeBots ?? []).map((bot) => bot.profile_id).filter(Boolean);
 
     const { data: feedPool, error } = await supabaseAdmin
       .from("posts")
@@ -72,6 +79,7 @@ export const getFeed = createServerFn({ method: "GET" })
       likes,
       comments,
       followingIds,
+      botAuthorIds,
       viewerId: viewer?.id ?? null,
     }).slice(0, FEED_LIMIT);
 
@@ -144,21 +152,38 @@ function rankFeedPosts({
   likes,
   comments,
   followingIds,
+  botAuthorIds,
   viewerId,
 }: {
   posts: FeedPost[];
   likes: FeedLike[];
   comments: FeedComment[];
   followingIds: string[];
+  botAuthorIds: string[];
   viewerId: string | null;
 }) {
   const following = new Set(followingIds);
+  const botAuthors = new Set(botAuthorIds);
   const engagement = buildFeedEngagement(likes, comments);
   const isColdStart = followingIds.length < COLD_START_FOLLOWING_THRESHOLD;
 
   return [...posts].sort((a, b) => {
-    const scoreA = getFeedRankScore(a, engagement.get(a.id), following, viewerId, isColdStart);
-    const scoreB = getFeedRankScore(b, engagement.get(b.id), following, viewerId, isColdStart);
+    const scoreA = getFeedRankScore(
+      a,
+      engagement.get(a.id),
+      following,
+      botAuthors,
+      viewerId,
+      isColdStart,
+    );
+    const scoreB = getFeedRankScore(
+      b,
+      engagement.get(b.id),
+      following,
+      botAuthors,
+      viewerId,
+      isColdStart,
+    );
     if (scoreA !== scoreB) return scoreB - scoreA;
     return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
   });
@@ -183,6 +208,7 @@ function getFeedRankScore(
   post: FeedPost,
   engagement: { likes: number; comments: number } | undefined,
   following: Set<string>,
+  botAuthors: Set<string>,
   viewerId: string | null,
   isColdStart: boolean,
 ) {
@@ -198,7 +224,11 @@ function getFeedRankScore(
 
   const relationshipBoost =
     following.has(post.author_id) || (viewerId != null && post.author_id === viewerId) ? 10_000 : 0;
-  return relationshipBoost + popularity * 25 + recency;
+  const botRecencyBoost =
+    botAuthors.has(post.author_id) && ageHours <= BOT_AUTHOR_RECENCY_WINDOW_HOURS
+      ? BOT_AUTHOR_RECENCY_BOOST
+      : 0;
+  return relationshipBoost + botRecencyBoost + popularity * 25 + recency;
 }
 
 export const getProfile = createServerFn({ method: "GET" })
@@ -429,11 +459,12 @@ export const createDemoAccount = createServerFn({ method: "POST" }).handler(asyn
     bio: "demo account · kinetic typography",
   });
 
-  // Auto-follow the 5 seeded creators
+  // Auto-follow the seeded creators and active content bots so demo feeds show
+  // scheduled network content immediately.
   const { data: seeded } = await supabaseAdmin
     .from("profiles")
     .select("id")
-    .in("username", ["nova_rae", "kai_loop", "mira_aux", "zeph_404", "lila_om"]);
+    .in("username", ["nova_rae", "kai_loop", "mira_aux", "zeph_404", "lila_om", "do_chu_bot"]);
   const { data: me } = await supabaseAdmin
     .from("profiles")
     .select("id")

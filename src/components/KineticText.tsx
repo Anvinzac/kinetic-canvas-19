@@ -18,6 +18,7 @@ const MIN_TEXT_FIT_SCALE = 0.08;
 const VIETNAMESE_SCALE_FIT_GUARD = 1.24;
 const PREVIEW_EMPHASIS_VARIANTS = [
   "color",
+  "sweep",
   "glow",
   "underline",
   "jiggle",
@@ -25,7 +26,14 @@ const PREVIEW_EMPHASIS_VARIANTS = [
   "halo",
   "frame",
 ] as const;
-const PREVIEW_NON_LUMINOUS_VARIANTS = ["color", "underline", "jiggle", "pulse", "frame"] as const;
+const PREVIEW_NON_LUMINOUS_VARIANTS = [
+  "color",
+  "sweep",
+  "underline",
+  "jiggle",
+  "pulse",
+  "frame",
+] as const;
 const useIsomorphicLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
 
 const tempoConfig: Record<Tempo, { duration: number; wordDelay: number; loopSeconds: number }> = {
@@ -350,7 +358,9 @@ function renderAnimatedWord(
                     ? " kinetic-emph-frame"
                     : emphasisVariant === "underline"
                       ? " kinetic-emph-underline"
-                      : ""
+                      : emphasisVariant === "sweep"
+                        ? " kinetic-emph-sweep"
+                        : ""
               }${paused ? "" : " is-animated"}`
             : undefined
         }
@@ -455,6 +465,9 @@ function isDimPreviewColor(color: string) {
 function getPreviewEmphasisTextShadow(variant: PreviewEmphasisVariant | null) {
   if (variant === "color") {
     return "0 4px 40px rgba(0,0,0,0.45)";
+  }
+  if (variant === "sweep") {
+    return "none";
   }
   if (variant === "halo") {
     return "0 4px 40px rgba(0,0,0,0.45)";

@@ -188,14 +188,12 @@ function getVietnameseWordSegments(words: string[]): WordSegment[] {
   const segments: WordSegment[] = [];
 
   for (let index = 0; index < words.length; ) {
-    // Bound phrases are kept together only when they still fit a line; otherwise a
-    // single wide phrase would pin the whole page to a tiny font. Splitting on the
-    // word boundary lets constrained pages wrap narrower and stay immersive.
-    const boundLength = getBoundPhraseLength(words, index);
-    const phraseLength =
-      boundLength > 1 && getPhraseVisibleLength(words, index, boundLength) > VIETNAMESE_MAX_LINE_CHARS
-        ? 1
-        : boundLength;
+    // A bound phrase is one meaningful Vietnamese word (two syllables). It is
+    // ALWAYS kept whole as a single, unbreakable segment — the line packer never
+    // splits a segment, so a compound word can never straddle two lines. A phrase
+    // wider than a line simply lands alone and the page font shrinks to fit it;
+    // we never break the word to save space.
+    const phraseLength = getBoundPhraseLength(words, index);
     const segmentWords = words.slice(index, index + phraseLength).map((text, offset) => ({
       text,
       index: index + offset,
@@ -209,14 +207,6 @@ function getVietnameseWordSegments(words: string[]): WordSegment[] {
   }
 
   return segments;
-}
-
-function getPhraseVisibleLength(words: string[], startIndex: number, length: number) {
-  let total = 0;
-  for (let offset = 0; offset < length; offset += 1) {
-    total += getVisibleWordLength(words[startIndex + offset]) + (offset > 0 ? 1 : 0);
-  }
-  return total;
 }
 
 function getBoundPhraseLength(words: string[], startIndex: number) {
