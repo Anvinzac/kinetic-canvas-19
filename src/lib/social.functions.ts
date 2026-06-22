@@ -424,8 +424,8 @@ export const addComment = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
-// ===== Demo one-click signup (creates real auth user via admin, returns tokens) =====
-// Note: this is intentionally public so first-time visitors can try the app.
+// ===== Demo one-click signup (creates a viewer account only; content is pre-seeded) =====
+// Note: this is intentionally public so first-time visitors can try the real network.
 
 const ADJ = ["nova", "kai", "mira", "zeph", "lila", "echo", "vex", "rune", "iris", "axl"];
 const NOUN = ["loop", "aux", "404", "om", "rae", "wave", "kid", "drift", "muse", "void"];
@@ -458,23 +458,6 @@ export const createDemoAccount = createServerFn({ method: "POST" }).handler(asyn
     avatar_url: `https://i.pravatar.cc/200?u=${handle}`,
     bio: "demo account · kinetic typography",
   });
-
-  // Auto-follow the seeded creators and active content bots so demo feeds show
-  // scheduled network content immediately.
-  const { data: seeded } = await supabaseAdmin
-    .from("profiles")
-    .select("id")
-    .in("username", ["nova_rae", "kai_loop", "mira_aux", "zeph_404", "lila_om", "do_chu_bot"]);
-  const { data: me } = await supabaseAdmin
-    .from("profiles")
-    .select("id")
-    .eq("auth_user_id", created.user.id)
-    .single();
-  if (me && seeded) {
-    await supabaseAdmin
-      .from("follows")
-      .insert(seeded.map((s) => ({ follower_id: me.id, following_id: s.id })));
-  }
 
   // Sign in to retrieve session tokens
   const { data: signin, error: signErr } = await supabaseAdmin.auth.signInWithPassword({
