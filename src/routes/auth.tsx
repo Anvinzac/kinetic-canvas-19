@@ -4,7 +4,10 @@ import { useServerFn } from "@tanstack/react-start";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
-import { createDemoAccount, ensureProfile } from "@/lib/social.functions";
+import { ensureProfile } from "@/lib/social.functions";
+
+const DEMO_EMAIL = "demo@kinetic.local";
+const DEMO_PASSWORD = "demo-kinetic-shared-2026";
 import { endDemoSession, isDemoSession } from "@/lib/demo-session";
 import { toast } from "sonner";
 
@@ -17,7 +20,6 @@ function AuthPage() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState<string | null>(null);
   const ensureFn = useServerFn(ensureProfile);
-  const demoFn = useServerFn(createDemoAccount);
 
   useEffect(() => {
     if (isDemoSession()) {
@@ -50,10 +52,9 @@ function AuthPage() {
     setLoading("demo");
     try {
       endDemoSession();
-      const session = await demoFn();
-      const { error } = await supabase.auth.setSession({
-        access_token: session.access_token,
-        refresh_token: session.refresh_token,
+      const { error } = await supabase.auth.signInWithPassword({
+        email: DEMO_EMAIL,
+        password: DEMO_PASSWORD,
       });
       if (error) throw error;
       toast.success("welcome, demo creator");
