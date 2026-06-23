@@ -20,7 +20,6 @@ function AuthPage() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState<string | null>(null);
   const ensureFn = useServerFn(ensureProfile);
-  const demoFn = useServerFn(createDemoAccount);
 
   useEffect(() => {
     if (isDemoSession()) {
