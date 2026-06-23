@@ -103,6 +103,26 @@ const PLACEMENTS = [
 
 const ANIMATION_TEMPLATES: AnimationTemplate[] = [
   {
+    id: "rose-verse",
+    label: "rose verse",
+    mood: "slow · poetic",
+    gradient: "linear-gradient(135deg,#F8C8DC,#7C3AED)",
+    spec: {
+      font: "Playfair Display",
+      size: 74,
+      color: "#FFF7ED",
+      weight: 700,
+      letterSpacing: -0.015,
+      entrance: "blur",
+      loop: "float",
+      tempo: "slow",
+      rhythm: "poetic",
+      x: 50,
+      y: 52,
+      rotation: -1,
+    },
+  },
+  {
     id: "neon-burst",
     label: "neon burst",
     mood: "snappy · burst",

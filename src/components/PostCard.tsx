@@ -5,7 +5,6 @@ import {
   useMemo,
   useRef,
   useState,
-  type MouseEvent as ReactMouseEvent,
   type PointerEvent as ReactPointerEvent,
   type CSSProperties,
   type ReactNode,
@@ -17,7 +16,6 @@ import {
   type TargetAndTransition,
   type Transition,
 } from "framer-motion";
-import speechBubbleReferenceUrl from "@/assets/speech-bubble-reference.svg?url";
 import {
   ArrowUpRight,
   Bell,
@@ -26,6 +24,7 @@ import {
   Home,
   Info,
   Link2,
+  MessageCircle,
   MoreHorizontal,
   Play,
   Plus,
@@ -55,6 +54,7 @@ import {
 } from "@/lib/canvas";
 import { getCanvasPatternTheme, getPatternBackgroundPosition } from "@/lib/canvas-patterns";
 import {
+  getSpecialPoeticWordIndexes,
   getTextPageWordLimit,
   getVietnameseWordLines,
   isLikelyVietnameseText,
@@ -138,37 +138,26 @@ const VIETNAMESE_SCALE_FIT_GUARD = 1.06;
 const DEFAULT_CANVAS_BACKGROUND = SAFE_CANVAS_BACKGROUND;
 const ARC_BUTTON_TAP = { scale: 0.94, y: 2 };
 const ARC_BUTTON_TAP_TRANSITION = { type: "spring" as const, stiffness: 400, damping: 24 };
-const useIsomorphicLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
-
-const SPEECH_BUBBLE_MASK_IMAGE = `url("${speechBubbleReferenceUrl}")`;
-const SPEECH_BUBBLE_MASK_STYLE = {
-  WebkitMaskImage: SPEECH_BUBBLE_MASK_IMAGE,
-  maskImage: SPEECH_BUBBLE_MASK_IMAGE,
-  WebkitMaskSize: "100% 100%",
-  maskSize: "100% 100%",
-  WebkitMaskRepeat: "no-repeat",
-  maskRepeat: "no-repeat",
-} as const;
-
-// Outline speech bubble (same shape as the comment canvas) so it matches the
-// stroked Plus / Heart / Share icons in the arc plate instead of a solid fill.
-function CommentBubbleIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="20 45 242 253"
-      className={className}
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={18}
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <g transform="translate(262 0) rotate(90)">
-        <path d="M82 26H262C282 26 298 43 298 64V163C298 184 282 201 261 201H153C148 216 135 227 114 235C105 238 96 241 88 242C99 234 104 221 103 201H82C61 201 45 184 45 163V64C45 43 61 26 82 26Z" />
-      </g>
-    </svg>
-  );
+// Show the comment action as the small hub inside the corner dock.
+const SHOW_CORNER_COMMENT_ACTION = true;
+// A compact cropped corner dock. The comment hub owns the inner half of the
+// radius; the three subtle action cells sit on the outer half.
+const RING_HUB = 24;
+const RING_OUTER = 94;
+const RING_HUB_RADIUS = 47;
+const RING_RADIUS = 70;
+const RING_DIVIDER_INSET = RING_HUB_RADIUS;
+const RING_BTN_HALF = 20; // half of size-10 (40px) action buttons
+const RING_BUTTON_ANGLES = [4, 45, 86];
+const RING_DIVIDER_ANGLES = [23.5, 66.5];
+function ringButtonOffset(angleDeg: number) {
+  const a = (angleDeg * Math.PI) / 180;
+  return {
+    right: Math.round(RING_HUB + RING_RADIUS * Math.sin(a) - RING_BTN_HALF),
+    bottom: Math.round(RING_HUB + RING_RADIUS * Math.cos(a) - RING_BTN_HALF),
+  };
 }
+const useIsomorphicLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
 
 const FLOATING_COMMENT_MAX_WORDS = 3;
 // Extra px a flying comment chip travels past each screen edge so it glides fully
@@ -247,7 +236,10 @@ export function PostCard({
   const [playKey, setPlayKey] = useState(0);
   const [backgroundShiftPage, setBackgroundShiftPage] = useState(0);
   const [showChips, setShowChips] = useState(false);
+  const [showQuickCommentChips, setShowQuickCommentChips] = useState(false);
   const [customComment, setCustomComment] = useState("");
+  const [draftCommentPage, setDraftCommentPage] = useState(0);
+  const [draftCommentPlayKey, setDraftCommentPlayKey] = useState(0);
   const [activeComment, setActiveComment] = useState<FlowComment | null>(null);
   // True only while a flying chip is actually passing over the bottom-left info
   // block — drives the brief translucency. The info is opaque the rest of the time.
@@ -379,6 +371,21 @@ export function PostCard({
     [activeStory, storyFastMode],
   );
   const storyPageText = storyPages[storyPage] ?? storyPages[0] ?? "";
+  const normalizedCustomComment = normalizeComment(customComment);
+  const customCommentHasText = normalizedCustomComment.length > 0;
+  const customCommentIsKinetic =
+    customCommentHasText && !shouldFloatComment(normalizedCustomComment);
+  const commentTrayStoryPlaying = showChips && !customCommentHasText && commentStories.length > 0;
+  const storyPlayerActive = storyOpen || commentTrayStoryPlaying;
+  const draftCommentPages = useMemo(
+    () => (customCommentHasText ? getCommentStoryPages(normalizedCustomComment, false) : []),
+    [customCommentHasText, normalizedCustomComment],
+  );
+  const draftCommentPageText = draftCommentPages[draftCommentPage] ?? draftCommentPages[0] ?? "";
+  const draftCommentBackground = useMemo(
+    () => getCommentStoryGradient(getStableNumber(normalizedCustomComment || "draft") % 8),
+    [normalizedCustomComment],
+  );
   const activeCommentLabel = activeComment ? getCommentLabel(activeComment.chip) : "";
   const activeCommentAuthor = activeComment ? profilesById.get(activeComment.user_id) : undefined;
   const showingFlyingComment =
@@ -526,7 +533,7 @@ export function PostCard({
         }
         setPlayKey((key) => key + 1);
       },
-      getPageDuration(currentText, spec.tempo),
+      getPageDuration(currentText, spec.tempo, spec.rhythm),
     );
     return () => window.clearTimeout(timer);
   }, [
@@ -585,13 +592,43 @@ export function PostCard({
   }, [commentFlowKey, floatingComments, isPaused, isVisible, storyOpen]);
 
   useEffect(() => {
-    if (!storyOpen) return;
+    if (!storyPlayerActive) return;
     setStoryPage(0);
     setStoryPlayKey((key) => key + 1);
-  }, [storyFastMode, storyIndex, storyOpen]);
+  }, [storyFastMode, storyIndex, storyPlayerActive]);
 
   useEffect(() => {
-    if (!storyOpen || !activeStory || storyPages.length === 0 || commentStories.length === 0) {
+    setDraftCommentPage(0);
+    setDraftCommentPlayKey((key) => key + 1);
+  }, [normalizedCustomComment]);
+
+  useEffect(() => {
+    if (!showChips || !customCommentHasText || draftCommentPages.length === 0) return;
+
+    const timer = window.setTimeout(() => {
+      setDraftCommentPage((page) => {
+        if (draftCommentPages.length <= 1) return 0;
+        return (page + 1) % draftCommentPages.length;
+      });
+      setDraftCommentPlayKey((key) => key + 1);
+    }, getStoryPageDuration(draftCommentPageText));
+
+    return () => window.clearTimeout(timer);
+  }, [
+    customCommentHasText,
+    draftCommentPageText,
+    draftCommentPages.length,
+    showChips,
+    draftCommentPlayKey,
+  ]);
+
+  useEffect(() => {
+    if (
+      !storyPlayerActive ||
+      !activeStory ||
+      storyPages.length === 0 ||
+      commentStories.length === 0
+    ) {
       return;
     }
 
@@ -616,7 +653,7 @@ export function PostCard({
     activeStory,
     commentStories.length,
     storyFastMode,
-    storyOpen,
+    storyPlayerActive,
     storyPage,
     storyPageText,
     storyPages.length,
@@ -690,7 +727,10 @@ export function PostCard({
   function openCommentStories() {
     if (commentStories.length === 0) return;
     setShowChips(false);
+    setShowQuickCommentChips(false);
     setStoryOpen(true);
+    setStoryPage(0);
+    setStoryFastMode(false);
     setIsPaused(true);
     setStoryPlayKey((key) => key + 1);
   }
@@ -771,6 +811,18 @@ export function PostCard({
     onComment(normalized);
     setCustomComment("");
     setShowChips(false);
+    setShowQuickCommentChips(false);
+    setDraftCommentPage(0);
+    setDraftCommentPlayKey((key) => key + 1);
+  }
+
+  function updateCustomComment(value: string) {
+    const limited = limitCommentText(value);
+    const normalized = normalizeComment(limited);
+    setCustomComment(limited);
+    if (normalized && !shouldFloatComment(normalized)) {
+      setShowQuickCommentChips(false);
+    }
   }
 
   return (
@@ -960,23 +1012,12 @@ export function PostCard({
           </Link>
         )}
 
-        {commentStories.length > 0 && !storyOpen && (
-          <CommentStoryStack
-            stories={commentStories}
-            onOpen={(event) => {
-              event.stopPropagation();
-              openCommentStories();
-            }}
-          />
-        )}
-
         <motion.button
           type="button"
           whileTap={{ scale: 0.88, backgroundColor: "rgba(255,255,255,0.12)" }}
           transition={{ type: "spring", stiffness: 400, damping: 24 }}
           onClick={(e) => {
             e.stopPropagation();
-            setShowChips(false);
             setActionMenuOpen((open) => !open);
           }}
           className="absolute right-3 top-4 z-30 grid size-10 place-items-center rounded-full bg-black/40 text-white shadow-[0_12px_30px_rgba(0,0,0,0.3)] ring-1 ring-white/15 backdrop-blur"
@@ -986,125 +1027,188 @@ export function PostCard({
           <MoreHorizontal className="size-5" />
         </motion.button>
 
-        <AnimatePresence mode="wait">
-          {actionMenuOpen ? (
-            <PostMenuRail key="menu" />
-          ) : (
-            <motion.div
-              key="actions"
-              initial={{ opacity: 0, x: 36 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 36 }}
-              transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
-              className="absolute bottom-36 right-0 z-30 flex w-[72px] translate-x-[26px] flex-col overflow-hidden rounded-l-[50%] bg-black/65 pr-[24px] shadow-[0_16px_40px_rgba(0,0,0,0.45)] ring-1 ring-white/10 backdrop-blur-xl"
-            >
-              {[1, 2, 3].map((line) => (
-                <span
-                  key={line}
-                  aria-hidden
-                  className="pointer-events-none absolute left-0 right-[24px] z-0 h-px bg-white/15"
-                  style={{ top: `${line * 3.5}rem` }}
-                />
-              ))}
-              <motion.div
-                className="relative z-10 h-14 w-full rounded-l-full"
-                whileTap={{ ...ARC_BUTTON_TAP, backgroundColor: "rgba(255,255,255,0.1)" }}
-                transition={ARC_BUTTON_TAP_TRANSITION}
-              >
-                <Link
-                  to="/create"
-                  onClick={(e) => e.stopPropagation()}
-                  aria-label="Create"
-                  className="grid h-full w-full place-items-center pl-3 pt-3 text-white [filter:drop-shadow(0_1px_3px_rgba(0,0,0,0.7))]"
-                >
-                  <Plus className="size-6" strokeWidth={2.5} />
-                </Link>
-              </motion.div>
+        <AnimatePresence>{actionMenuOpen && <PostMenuRail key="menu" />}</AnimatePresence>
 
-              <motion.button
-                type="button"
-                whileTap={{ ...ARC_BUTTON_TAP, backgroundColor: "rgba(255,255,255,0.1)" }}
-                transition={ARC_BUTTON_TAP_TRANSITION}
-                onPointerDown={handleLikePointerDown}
-                onPointerUp={handleLikePointerUp}
-                onPointerCancel={handleLikePointerCancel}
-                onContextMenu={(e) => e.preventDefault()}
-                aria-label="Like (hold to save to collection)"
-                aria-pressed={liked}
-                className="relative z-10 grid h-14 w-full touch-none place-items-center pl-3 [filter:drop-shadow(0_1px_3px_rgba(0,0,0,0.7))]"
-              >
-                <span className="relative grid size-8 -translate-x-1 place-items-center">
-                  <Heart
-                    className={`absolute inset-0 size-8 transition ${
-                      liked
-                        ? "scale-105 fill-[var(--color-magenta)] text-[var(--color-magenta)]"
-                        : "fill-black/15 text-white/80"
-                    }`}
-                    strokeWidth={liked ? 1.2 : 0.9}
-                  />
-                  {likes > 0 && (
-                    <span
-                      className="relative mt-0.5 max-w-[1.8rem] truncate text-center font-mono text-[10px] font-black leading-none text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)]"
-                      style={{ fontSize: 10 }}
-                    >
-                      {formatCompactCount(likes)}
-                    </span>
-                  )}
-                </span>
-              </motion.button>
-
-              <motion.button
-                type="button"
-                whileTap={{ ...ARC_BUTTON_TAP, backgroundColor: "rgba(255,255,255,0.1)" }}
-                transition={ARC_BUTTON_TAP_TRANSITION}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowChips((s) => !s);
+        <motion.div
+          key="actions"
+          initial={{ opacity: 0, scale: 0.85, x: 18, y: 18 }}
+          animate={{ opacity: 1, scale: 1, x: 0, y: 0 }}
+          transition={{ duration: 0.26, ease: [0.22, 1, 0.36, 1] }}
+          className="absolute bottom-0 right-0 z-30 size-[148px]"
+        >
+          {/* Single cropped corner disc with three divided action zones. */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute"
+            style={{
+              width: RING_OUTER * 2,
+              height: RING_OUTER * 2,
+              right: RING_HUB - RING_OUTER,
+              bottom: RING_HUB - RING_OUTER,
+            }}
+          >
+            <div className="absolute inset-0 rounded-full border border-white/12 bg-black/45 shadow-[0_14px_36px_rgba(0,0,0,0.4)] backdrop-blur-xl" />
+            {RING_DIVIDER_ANGLES.map((phi) => (
+              <div
+                key={phi}
+                className="absolute left-1/2 top-1/2 h-px origin-left bg-white/18 shadow-[0_0_2px_rgba(0,0,0,0.35)]"
+                style={{
+                  width: RING_OUTER - RING_DIVIDER_INSET,
+                  transform: `rotate(${-(90 + phi)}deg) translateX(${RING_DIVIDER_INSET}px)`,
                 }}
-                aria-label="Comment"
-                className="relative z-10 grid h-14 w-full place-items-center [filter:drop-shadow(0_1px_3px_rgba(0,0,0,0.7))]"
-              >
-                <span className="relative grid size-7 place-items-center">
-                  <CommentBubbleIcon className="absolute inset-0 size-7 text-white" />
-                  {comments.length > 0 && (
-                    <span
-                      className="relative -mt-0.5 max-w-[1.8rem] truncate text-center font-mono text-[10px] font-black leading-none text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)]"
-                      style={{ fontSize: 10 }}
-                    >
-                      {formatCompactCount(comments.length)}
-                    </span>
-                  )}
-                </span>
-              </motion.button>
+              />
+            ))}
+          </div>
 
-              <motion.button
-                type="button"
-                whileTap={{ ...ARC_BUTTON_TAP, backgroundColor: "rgba(255,255,255,0.1)" }}
-                transition={ARC_BUTTON_TAP_TRANSITION}
-                onClick={async (e) => {
-                  e.stopPropagation();
-                  try {
-                    if (navigator.share) {
-                      await navigator.share({
-                        title: author ? `${author.display_name} on Kinetic` : "Kinetic status",
-                        url: postUrl,
-                      });
-                    } else {
-                      await navigator.clipboard.writeText(postUrl);
-                      toast.success("post link copied");
-                    }
-                  } catch (error) {
-                    if ((error as Error).name !== "AbortError") toast.error("could not share post");
+          {/* Comment — inner half-radius hub tucked into the corner. */}
+          {SHOW_CORNER_COMMENT_ACTION && (
+            <motion.button
+              type="button"
+              whileTap={{ ...ARC_BUTTON_TAP, backgroundColor: "rgba(255,255,255,0.12)" }}
+              transition={ARC_BUTTON_TAP_TRANSITION}
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowChips((open) => {
+                  const next = !open;
+                  if (next) {
+                    setStoryIndex(0);
+                    setStoryPage(0);
+                    setStoryFastMode(false);
+                    setStoryPlayKey((key) => key + 1);
+                  } else {
+                    setShowQuickCommentChips(false);
                   }
-                }}
-                aria-label="Share"
-                className="relative z-10 grid h-14 w-full place-items-center pb-3 pl-3 text-white [filter:drop-shadow(0_1px_3px_rgba(0,0,0,0.7))]"
-              >
-                <Share2 className="size-5" />
-              </motion.button>
-            </motion.div>
+                  return next;
+                });
+              }}
+              aria-label="Comment"
+              className="absolute grid place-items-center rounded-full bg-black/55 text-white ring-1 ring-white/15 backdrop-blur-md [filter:drop-shadow(0_1px_3px_rgba(0,0,0,0.7))]"
+              style={{
+                width: RING_HUB_RADIUS * 2,
+                height: RING_HUB_RADIUS * 2,
+                right: RING_HUB - RING_HUB_RADIUS,
+                bottom: RING_HUB - RING_HUB_RADIUS,
+              }}
+            >
+              <span className="relative grid size-8 -translate-x-2 -translate-y-2.5 place-items-center">
+                <MessageCircle
+                  className="absolute inset-0 size-8 fill-black/15 text-white"
+                  strokeWidth={1.7}
+                />
+                {comments.length > 0 && (
+                  <span
+                    className="relative -mt-0.5 max-w-[1.8rem] truncate text-center font-mono text-[10px] font-black leading-none text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)]"
+                    style={{ fontSize: 10 }}
+                  >
+                    {formatCompactCount(comments.length)}
+                  </span>
+                )}
+              </span>
+            </motion.button>
           )}
-        </AnimatePresence>
+
+          {/* Create · Like · Share — on the outer ring */}
+          {(() => {
+            const ringActions: { key: string; el: ReactNode }[] = [
+              {
+                key: "create",
+                el: (
+                  <motion.div
+                    whileTap={{ ...ARC_BUTTON_TAP, backgroundColor: "rgba(255,255,255,0.12)" }}
+                    transition={ARC_BUTTON_TAP_TRANSITION}
+                    className="grid size-10 place-items-center rounded-full text-white [filter:drop-shadow(0_1px_3px_rgba(0,0,0,0.7))]"
+                  >
+                    <Link
+                      to="/create"
+                      onClick={(e) => e.stopPropagation()}
+                      aria-label="Create"
+                      className="grid size-full place-items-center"
+                    >
+                      <Plus className="size-5" strokeWidth={2.5} />
+                    </Link>
+                  </motion.div>
+                ),
+              },
+              {
+                key: "like",
+                el: (
+                  <motion.button
+                    type="button"
+                    whileTap={{ ...ARC_BUTTON_TAP, backgroundColor: "rgba(255,255,255,0.12)" }}
+                    transition={ARC_BUTTON_TAP_TRANSITION}
+                    onPointerDown={handleLikePointerDown}
+                    onPointerUp={handleLikePointerUp}
+                    onPointerCancel={handleLikePointerCancel}
+                    onContextMenu={(e) => e.preventDefault()}
+                    aria-label="Like (hold to save to collection)"
+                    aria-pressed={liked}
+                    className="grid size-10 touch-none place-items-center rounded-full [filter:drop-shadow(0_1px_3px_rgba(0,0,0,0.7))]"
+                  >
+                    <span className="relative grid size-7 place-items-center">
+                      <Heart
+                        className={`absolute inset-0 size-7 transition ${
+                          liked
+                            ? "scale-105 fill-[var(--color-magenta)] text-[var(--color-magenta)]"
+                            : "fill-black/15 text-white/80"
+                        }`}
+                        strokeWidth={liked ? 1.2 : 0.9}
+                      />
+                      {likes > 0 && (
+                        <span
+                          className="relative mt-0.5 max-w-[1.8rem] truncate text-center font-mono text-[10px] font-black leading-none text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)]"
+                          style={{ fontSize: 10 }}
+                        >
+                          {formatCompactCount(likes)}
+                        </span>
+                      )}
+                    </span>
+                  </motion.button>
+                ),
+              },
+              {
+                key: "share",
+                el: (
+                  <motion.button
+                    type="button"
+                    whileTap={{ ...ARC_BUTTON_TAP, backgroundColor: "rgba(255,255,255,0.12)" }}
+                    transition={ARC_BUTTON_TAP_TRANSITION}
+                    onClick={async (e) => {
+                      e.stopPropagation();
+                      try {
+                        if (navigator.share) {
+                          await navigator.share({
+                            title: author ? `${author.display_name} on Kinetic` : "Kinetic status",
+                            url: postUrl,
+                          });
+                        } else {
+                          await navigator.clipboard.writeText(postUrl);
+                          toast.success("post link copied");
+                        }
+                      } catch (error) {
+                        if ((error as Error).name !== "AbortError")
+                          toast.error("could not share post");
+                      }
+                    }}
+                    aria-label="Share"
+                    className="grid size-10 place-items-center rounded-full text-white [filter:drop-shadow(0_1px_3px_rgba(0,0,0,0.7))]"
+                  >
+                    <Share2 className="size-5" />
+                  </motion.button>
+                ),
+              },
+            ];
+            return ringActions.map((action, index) => {
+              const { right, bottom } = ringButtonOffset(
+                RING_BUTTON_ANGLES[index] ?? RING_BUTTON_ANGLES[0],
+              );
+              return (
+                <div key={action.key} className="absolute" style={{ right, bottom }}>
+                  {action.el}
+                </div>
+              );
+            });
+          })()}
+        </motion.div>
 
         <AnimatePresence>
           {showCollectionPicker && (
@@ -1283,11 +1387,55 @@ export function PostCard({
               initial={{ y: 100, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: 100, opacity: 0 }}
-              className="absolute inset-x-0 bottom-16 z-30 glass mx-3 rounded-2xl p-3"
+              className="absolute inset-x-0 bottom-3 top-4 z-40 glass mx-3 flex flex-col justify-end rounded-[28px] p-3"
               onClick={(e) => e.stopPropagation()}
             >
+              <AnimatePresence initial={false}>
+                {commentTrayStoryPlaying && activeStory && (
+                  <motion.div
+                    key="existing-comment-story"
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 12 }}
+                    transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+                    className="mb-3 min-h-0 flex-1 overflow-hidden"
+                  >
+                    <EmbeddedCommentStoryCanvas
+                      story={activeStory}
+                      author={profilesById.get(activeStory.user_id)}
+                      storyCount={commentStories.length}
+                      storyIndex={storyIndex}
+                      storyPage={storyPage}
+                      storyPageCount={storyPages.length}
+                      pageText={storyPageText}
+                      playKey={storyPlayKey}
+                      fastMode={storyFastMode}
+                      onToggleFast={() => setStoryFastMode((fast) => !fast)}
+                    />
+                  </motion.div>
+                )}
+                {customCommentHasText && (
+                  <motion.div
+                    key="draft-comment-story"
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 12 }}
+                    transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+                    className="mb-3 min-h-0 flex-1 overflow-hidden"
+                  >
+                    <KineticCommentDraftCanvas
+                      text={normalizedCustomComment}
+                      pageText={draftCommentPageText}
+                      page={draftCommentPage}
+                      pageCount={draftCommentPages.length}
+                      playKey={draftCommentPlayKey}
+                      background={draftCommentBackground}
+                    />
+                  </motion.div>
+                )}
+              </AnimatePresence>
               <form
-                className="mb-3 flex gap-2"
+                className="flex shrink-0 gap-2"
                 onSubmit={(event) => {
                   event.preventDefault();
                   submitComment(customComment);
@@ -1295,38 +1443,55 @@ export function PostCard({
               >
                 <input
                   value={customComment}
-                  onChange={(event) => setCustomComment(limitCommentText(event.target.value))}
-                  placeholder="add an animated comment"
+                  onFocus={() => setShowQuickCommentChips(true)}
+                  onChange={(event) => {
+                    setShowQuickCommentChips(true);
+                    updateCustomComment(event.target.value);
+                  }}
+                  placeholder="write a comment"
                   className="min-w-0 flex-1 rounded-xl bg-white/10 px-3 py-2 text-sm text-white outline-none ring-1 ring-white/10 placeholder:text-white/40 focus:ring-primary/70"
                 />
                 <button
                   type="submit"
-                  disabled={!normalizeComment(customComment)}
+                  disabled={!normalizedCustomComment}
                   className="rounded-xl bg-white px-3 text-xs font-bold text-black transition disabled:opacity-40"
                 >
-                  send
+                  {customCommentIsKinetic ? "kinetic" : "send"}
                 </button>
               </form>
-              <div className="mb-2 flex items-center justify-between gap-3 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                <span>quick react</span>
-                <span>
-                  {getWords(customComment).length}/{MAX_COMMENT_WORDS}
-                </span>
-              </div>
-              <div className="flex flex-wrap justify-center gap-2">
-                {COMMENT_CHIPS.map((chip) => (
-                  <button
-                    key={chip.id}
-                    onClick={() => {
-                      submitComment(chip.id);
-                    }}
-                    className="rounded-full bg-white/10 px-3 py-2 text-sm font-medium text-white transition hover:bg-white/20 active:scale-90"
+              <AnimatePresence initial={false}>
+                {showQuickCommentChips && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="overflow-hidden"
                   >
-                    <span className="mr-1">{chip.emoji}</span>
-                    {chip.label}
-                  </button>
-                ))}
-              </div>
+                    <div className="mb-2 mt-3 flex items-center justify-between gap-3 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                      <span>quick flick</span>
+                      <span>
+                        {getWords(customComment).length}/{MAX_COMMENT_WORDS}
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap justify-center gap-2">
+                      {COMMENT_CHIPS.map((chip) => (
+                        <button
+                          key={chip.id}
+                          type="button"
+                          onClick={() => {
+                            submitComment(chip.id);
+                          }}
+                          className="rounded-full bg-white/10 px-3 py-2 text-sm font-medium text-white transition hover:bg-white/20 active:scale-90"
+                        >
+                          <span className="mr-1">{chip.emoji}</span>
+                          {chip.label}
+                        </button>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </motion.div>
           )}
         </AnimatePresence>
@@ -1391,73 +1556,6 @@ function RailMenuLink({
         </span>
       </Link>
     </motion.div>
-  );
-}
-
-function CommentStoryStack({
-  stories,
-  onOpen,
-}: {
-  stories: CommentStory[];
-  onOpen: (event: ReactMouseEvent<HTMLButtonElement>) => void;
-}) {
-  const preview = stories.slice(-3);
-
-  return (
-    <button
-      type="button"
-      onClick={onOpen}
-      className="absolute bottom-4 right-3 z-30 h-[88px] w-[82px]"
-      aria-label="Open animated comments"
-    >
-      {preview.map((story, index) => {
-        const offset = preview.length - 1 - index;
-        const background = getCommentStoryGradient(story.index);
-        return (
-          <span
-            key={story.id}
-            className="absolute bottom-0 right-0 h-[86px] w-[68px] text-white"
-            style={{
-              zIndex: index + 1,
-              transform: `translate(${-offset * 7}px, ${-offset * 6}px) rotate(${-offset * 3}deg)`,
-            }}
-          >
-            <span
-              aria-hidden
-              className="absolute inset-0"
-              style={{
-                background,
-                ...SPEECH_BUBBLE_MASK_STYLE,
-                filter: "drop-shadow(0 12px 30px rgba(0,0,0,0.45))",
-              }}
-            />
-            <span
-              aria-hidden
-              className="absolute inset-0 bg-gradient-to-b from-white/10 via-transparent to-black/45"
-              style={SPEECH_BUBBLE_MASK_STYLE}
-            />
-            <span className="absolute inset-y-0 left-[10px] right-0 overflow-hidden rounded-[14px]">
-              <span className="absolute inset-x-1.5 top-3 flex gap-0.5">
-                <span className="h-0.5 flex-1 rounded-full bg-white/80" />
-                <span className="h-0.5 flex-1 rounded-full bg-white/30" />
-              </span>
-              <span className="absolute left-2 top-5 flex w-[78%] gap-0.5">
-                <span className="h-0.5 flex-[3] rounded-full bg-white/50" />
-                <span className="h-0.5 flex-1 rounded-full bg-white/25" />
-              </span>
-              <span className="absolute inset-x-2 bottom-3 flex flex-col gap-[3px]">
-                <span className="h-0.5 w-[85%] rounded-full bg-white/40" />
-                <span className="h-0.5 w-[65%] rounded-full bg-white/30" />
-                <span className="h-0.5 w-[75%] rounded-full bg-white/25" />
-              </span>
-            </span>
-          </span>
-        );
-      })}
-      <span className="absolute -right-1 -top-1 z-10 grid size-6 place-items-center rounded-full bg-white text-[10px] font-black text-black ring-2 ring-black">
-        {stories.length}
-      </span>
-    </button>
   );
 }
 
@@ -1608,6 +1706,169 @@ function CommentStoryPlayer({
   );
 }
 
+function EmbeddedCommentStoryCanvas({
+  story,
+  author,
+  storyCount,
+  storyIndex,
+  storyPage,
+  storyPageCount,
+  pageText,
+  playKey,
+  fastMode,
+  onToggleFast,
+}: {
+  story: CommentStory;
+  author?: Profile;
+  storyCount: number;
+  storyIndex: number;
+  storyPage: number;
+  storyPageCount: number;
+  pageText: string;
+  playKey: number;
+  fastMode: boolean;
+  onToggleFast: () => void;
+}) {
+  const background = getCommentStoryGradient(story.index);
+
+  return (
+    <motion.div
+      className="relative mx-auto aspect-[9/16] h-full max-h-full max-w-full overflow-hidden rounded-[24px] text-white shadow-[0_22px_64px_rgba(0,0,0,0.42)] ring-1 ring-white/15"
+      initial={{ scale: 0.96 }}
+      animate={{ scale: 1 }}
+      transition={{ type: "spring", stiffness: 300, damping: 24 }}
+    >
+      <div aria-hidden className="absolute inset-0" style={{ background }} />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_15%,rgba(255,255,255,0.22),transparent_30%),linear-gradient(180deg,rgba(0,0,0,0.08),rgba(0,0,0,0.52))]" />
+
+      <div className="absolute inset-x-3 top-3 z-20">
+        <div className="mb-3 flex gap-1">
+          {Array.from({ length: storyCount }).map((_, index) => (
+            <span
+              key={index}
+              className={`h-1 flex-1 rounded-full ${
+                index === storyIndex ? "bg-white" : "bg-white/25"
+              }`}
+            />
+          ))}
+        </div>
+        <div className="flex items-start justify-between gap-2">
+          {author ? (
+            <Link
+              to="/u/$username"
+              params={{ username: author.username }}
+              onClick={(event) => event.stopPropagation()}
+              className="flex h-9 min-w-0 items-center gap-2"
+            >
+              <img
+                src={author.avatar_url ?? ""}
+                alt=""
+                className="size-9 shrink-0 rounded-full border-2 border-white/80"
+              />
+              <div className="min-w-0 leading-tight">
+                <p className="truncate text-sm font-bold text-white drop-shadow">
+                  @{author.username}
+                </p>
+                <p className="font-mono text-[9px] uppercase tracking-widest text-white/70 drop-shadow">
+                  {formatShortDateTime(story.created_at)}
+                </p>
+              </div>
+            </Link>
+          ) : (
+            <div className="flex h-9 items-center gap-2">
+              <span className="size-9 rounded-full border-2 border-white/40 bg-white/15" />
+              <div className="leading-tight">
+                <p className="text-sm font-bold text-white drop-shadow">someone</p>
+                <p className="font-mono text-[9px] uppercase tracking-widest text-white/70 drop-shadow">
+                  {formatShortDateTime(story.created_at)}
+                </p>
+              </div>
+            </div>
+          )}
+          <button
+            type="button"
+            onClick={onToggleFast}
+            className={`flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.12em] backdrop-blur ${
+              fastMode ? "bg-white text-black" : "bg-black/30 text-white"
+            }`}
+          >
+            <FastForward className="size-3" />
+            fast
+          </button>
+        </div>
+      </div>
+
+      <AnimatedCommentStoryText
+        text={pageText}
+        fullText={story.text}
+        playKey={playKey}
+        fastMode={fastMode}
+        background={background}
+      />
+
+      {!fastMode && storyPageCount > 1 && (
+        <div className="absolute bottom-4 left-1/2 z-20 flex -translate-x-1/2 gap-1">
+          {Array.from({ length: storyPageCount }).map((_, index) => (
+            <span
+              key={index}
+              className={`h-1 rounded-full transition ${
+                index === storyPage ? "w-5 bg-white" : "w-1 bg-white/35"
+              }`}
+            />
+          ))}
+        </div>
+      )}
+    </motion.div>
+  );
+}
+
+function KineticCommentDraftCanvas({
+  text,
+  pageText,
+  page,
+  pageCount,
+  playKey,
+  background,
+}: {
+  text: string;
+  pageText: string;
+  page: number;
+  pageCount: number;
+  playKey: number;
+  background: string;
+}) {
+  return (
+    <motion.div
+      className="relative mx-auto aspect-[9/16] h-full max-h-full max-w-full overflow-hidden rounded-[24px] text-white shadow-[0_20px_55px_rgba(0,0,0,0.38)] ring-1 ring-white/15"
+      initial={{ scale: 0.96 }}
+      animate={{ scale: 1 }}
+      transition={{ type: "spring", stiffness: 300, damping: 24 }}
+    >
+      <div aria-hidden className="absolute inset-0" style={{ background }} />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_15%,rgba(255,255,255,0.22),transparent_30%),linear-gradient(180deg,rgba(0,0,0,0.08),rgba(0,0,0,0.52))]" />
+      <AnimatedCommentStoryText
+        text={pageText}
+        fullText={text}
+        playKey={playKey}
+        fastMode={false}
+        background={background}
+      />
+      {pageCount > 1 && (
+        <div className="absolute bottom-3 left-1/2 z-20 flex -translate-x-1/2 gap-1">
+          {Array.from({ length: pageCount }).map((_, index) => (
+            <span
+              key={index}
+              className={`h-1 rounded-full transition ${
+                index === page ? "w-5 bg-white" : "w-1 bg-white/35"
+              }`}
+            />
+          ))}
+        </div>
+      )}
+    </motion.div>
+  );
+}
+
 function AnimatedCommentStoryText({
   text,
   fullText,
@@ -1622,10 +1883,22 @@ function AnimatedCommentStoryText({
   background: string;
 }) {
   const displayText = fastMode ? fullText : text;
-  const words = getWords(displayText);
-  const emphasized = getEmphasizedWordIndexes(words);
   const textColor = getCanvasTextColor({ color: "#ffffff" }, background);
-  const emphasisColor = getCanvasEmphasisColor({ color: textColor }, background);
+  const commentSpec: CanvasSpec = {
+    ...DEFAULT_CANVAS,
+    text: displayText,
+    font: "Space Grotesk",
+    size: fastMode ? 42 : 72,
+    color: textColor,
+    weight: 900,
+    letterSpacing: -0.035,
+    x: 50,
+    y: 52,
+    entrance: "fade",
+    loop: "float",
+    tempo: "steady",
+    rhythm: "stagger",
+  };
 
   if (fastMode) {
     return (
@@ -1644,49 +1917,15 @@ function AnimatedCommentStoryText({
   }
 
   return (
-    <div className="absolute inset-x-6 top-[20%] bottom-[18%] z-10 grid place-items-center">
-      <motion.div
-        key={playKey}
-        className="flex flex-wrap items-center justify-center text-center font-black leading-[0.9] drop-shadow-[0_8px_34px_rgba(0,0,0,0.55)]"
-        style={{
-          columnGap: "0.25em",
-          rowGap: "0.1em",
-          fontSize: "clamp(2rem, 6vh, 3.5rem)",
-        }}
-      >
-        {words.map((word, index) => {
-          const important = emphasized.has(index);
-          return (
-            <motion.span
-              key={`${word}-${index}`}
-              initial={{
-                opacity: 0,
-                y: important ? 34 : 22,
-                scale: important ? 0.74 : 0.9,
-                filter: "blur(10px)",
-              }}
-              animate={{
-                opacity: 1,
-                y: 0,
-                scale: important ? 1.1 : 1,
-                filter: "blur(0px)",
-              }}
-              transition={{
-                delay: index * 0.14,
-                duration: important ? 0.58 : 0.46,
-                ease: [0.22, 1, 0.36, 1],
-              }}
-              className="inline-flex"
-              style={{
-                color: important ? emphasisColor : textColor,
-              }}
-            >
-              {word}
-            </motion.span>
-          );
-        })}
-      </motion.div>
-    </div>
+    <WordSequenceText
+      spec={commentSpec}
+      playKey={playKey}
+      paused={false}
+      revealed={false}
+      canvasWidth={390}
+      background={background}
+      entranceSeed={fullText}
+    />
   );
 }
 
@@ -1865,10 +2104,11 @@ function getPageTextSize(baseSize: number, text: string, isVietnamese: boolean) 
   return Math.max(baseSize, 96);
 }
 
-function getPageDuration(text: string, tempo: Tempo) {
+function getPageDuration(text: string, tempo: Tempo, rhythm: Rhythm) {
   const wordCount = getWords(text).length;
   const base = Math.max(3200, Math.min(5200, 1900 + wordCount * 430));
-  return base * tempoConfig[tempo].pageMultiplier;
+  const rhythmMultiplier = rhythm === "poetic" ? 1.18 : 1;
+  return base * tempoConfig[tempo].pageMultiplier * rhythmMultiplier;
 }
 
 function getCommentFlightDuration(label: string) {
@@ -1882,6 +2122,7 @@ function getLoopAnimation(loop: CanvasSpec["loop"], tempo: Tempo) {
 
 function getWordDelay(index: number, tempo: Tempo, rhythm: Rhythm) {
   const base = tempoConfig[tempo].wordDelay;
+  if (rhythm === "poetic") return index * base * 1.45;
   if (rhythm === "smooth") return index * base * 0.58;
   if (rhythm === "burst") return Math.min(index * base * 0.42, 0.38);
   return index * base;
@@ -2081,7 +2322,7 @@ function WordSequenceText({
   // so it must skip the emphasis fit guard further down, which exists only to
   // stop a multi-word line's emphasized word from crowding its neighbors.
   const isSolo = words.length <= 1;
-  const entranceStyle = getEntranceStyle(entranceSeed ?? spec.text);
+  const entranceStyle = getEntranceStyle(entranceSeed ?? spec.text, spec.rhythm);
   const isVietnamese = isLikelyVietnameseText(spec.text);
   const vietnameseLines = isVietnamese ? getVietnameseWordLines(words) : [];
   const emphasized = getEmphasizedWordIndexes(words);
@@ -2183,7 +2424,8 @@ function WordSequenceText({
     // real canvas width (grows past 1x for short words, shrinks for long ones),
     // then let the height ceiling and a soft floor bound it.
     const targetWidthRatio =
-      (canvasWidth * SOLO_REVEAL_TARGET_WIDTH_FRACTION) / Math.max(measuredWidth * visualScaleGuard, 1);
+      (canvasWidth * SOLO_REVEAL_TARGET_WIDTH_FRACTION) /
+      Math.max(measuredWidth * visualScaleGuard, 1);
     const widthFitTarget = fitScale * targetWidthRatio;
     const nextFit = isSolo
       ? Math.max(floor, Math.min(Math.max(widthFitTarget, SOLO_REVEAL_MIN_FIT), heightFitRaw))
@@ -2255,11 +2497,10 @@ function WordSequenceText({
       ? getCanvasEmphasisWordColor(emphasisVariant, textColor, emphasisColor)
       : textColor;
     const entranceDelay = staticRender ? 0 : getWordDelay(index, spec.tempo, spec.rhythm);
+    const rhythmDurationMultiplier = spec.rhythm === "poetic" ? 1.28 : 1;
     const entranceDuration = staticRender
       ? 0.01
-      : important
-        ? tempo.wordDuration * 1.22
-        : tempo.wordDuration;
+      : (important ? tempo.wordDuration * 1.22 : tempo.wordDuration) * rhythmDurationMultiplier;
     const emphasisStyle = important
       ? ({
           "--kinetic-emphasis-delay": `${entranceDelay + entranceDuration + 0.18}s`,
@@ -2569,6 +2810,9 @@ function limitCommentText(value: string) {
 }
 
 function getEmphasizedWordIndexes(words: string[]) {
+  const poeticIndexes = getSpecialPoeticWordIndexes(words);
+  if (poeticIndexes.size > 0) return poeticIndexes;
+
   const candidates = words
     .map((word, index) => ({
       index,
@@ -2603,7 +2847,10 @@ function getEmphasisVariant(
 // all of them settle to the exact same neutral resting state, so layout, fit and
 // emphasis sizing are unaffected no matter which entrance plays.
 const ENTRANCE_STYLES = ["rise", "fall", "pop", "drift", "tilt", "focus"] as const;
+const POETIC_ENTRANCE_STYLES = ["poetic-bloom", "poetic-drift"] as const;
 type EntranceStyle = (typeof ENTRANCE_STYLES)[number];
+type PoeticEntranceStyle = (typeof POETIC_ENTRANCE_STYLES)[number];
+type ResolvedEntranceStyle = EntranceStyle | PoeticEntranceStyle;
 
 // Shared resting state — resets every transform any hidden state touches (x, y,
 // scale, rotate, blur) so words always land in the same place.
@@ -2616,7 +2863,12 @@ const ENTRANCE_REST: TargetAndTransition = {
   filter: "blur(0px)",
 };
 
-function getEntranceStyle(seed: string): EntranceStyle {
+function getEntranceStyle(seed: string, rhythm?: Rhythm): ResolvedEntranceStyle {
+  if (rhythm === "poetic") {
+    return POETIC_ENTRANCE_STYLES[
+      getStableNumber(`poetic-entrance|${seed}`) % POETIC_ENTRANCE_STYLES.length
+    ];
+  }
   return ENTRANCE_STYLES[getStableNumber(`entrance|${seed}`) % ENTRANCE_STYLES.length];
 }
 
@@ -2624,12 +2876,29 @@ function getEntranceStyle(seed: string): EntranceStyle {
 // further / scale a little harder so their arrival reads as the accent it is.
 // `dir` alternates per word so the directional styles fan in instead of marching.
 function getEntranceHidden(
-  style: EntranceStyle,
+  style: ResolvedEntranceStyle,
   important: boolean,
   index: number,
 ): TargetAndTransition {
   const dir = index % 2 === 0 ? -1 : 1;
   switch (style) {
+    case "poetic-bloom":
+      // A slow focus-and-breath reveal: no spring, no punch, just a soft bloom.
+      return {
+        opacity: 0,
+        y: important ? 14 : 10,
+        scale: important ? 1.12 : 1.06,
+        filter: "blur(18px)",
+      };
+    case "poetic-drift":
+      // A barely-there lateral drift, like a line settling on paper.
+      return {
+        opacity: 0,
+        x: dir * (important ? 16 : 10),
+        y: important ? 12 : 8,
+        scale: important ? 1.08 : 1.03,
+        filter: "blur(16px)",
+      };
     case "fall":
       // Drop down from above and settle.
       return {
@@ -2668,7 +2937,14 @@ function getEntranceHidden(
   }
 }
 
-function getEntranceTransition(style: EntranceStyle, delay: number, duration: number): Transition {
+function getEntranceTransition(
+  style: ResolvedEntranceStyle,
+  delay: number,
+  duration: number,
+): Transition {
+  if (style === "poetic-bloom" || style === "poetic-drift") {
+    return { delay, duration: duration * 1.55, ease: [0.16, 1, 0.3, 1] };
+  }
   if (style === "pop") {
     return { delay, type: "spring", stiffness: 380, damping: 17, mass: 0.7 };
   }
@@ -2960,13 +3236,15 @@ function CollectionPicker({
         exit={{ opacity: 0, y: 14, scale: 0.96 }}
         transition={{ type: "spring", stiffness: 420, damping: 32 }}
         onClick={(e) => e.stopPropagation()}
-        className="absolute bottom-[190px] left-[46%] w-[min(304px,calc(100%-5.5rem))] origin-[88%_75%]"
-        style={{ x: "-50%" }}
+        className="absolute bottom-[136px] right-6 w-[min(304px,calc(100%-5.5rem))] origin-[78%_100%]"
       >
         <span
           aria-hidden
-          className="absolute -right-2 bottom-[88px] size-4 rotate-45 bg-[#171717] shadow-[6px_-6px_22px_rgba(0,0,0,0.28)] ring-1 ring-white/10"
-        />
+          className="pointer-events-none absolute -bottom-[62px] right-10 h-[62px] w-5"
+        >
+          <span className="absolute left-1/2 top-0 h-full w-px -translate-x-1/2 bg-gradient-to-b from-[#171717] via-[#171717]/85 to-transparent shadow-[0_0_16px_rgba(0,0,0,0.4)]" />
+          <span className="absolute bottom-0 left-1/2 size-3 -translate-x-1/2 rotate-45 bg-[#171717] shadow-[6px_-6px_22px_rgba(0,0,0,0.28)] ring-1 ring-white/10" />
+        </span>
         <div className="relative flex max-h-[min(58dvh,430px)] flex-col overflow-hidden rounded-2xl bg-[#171717]/95 shadow-[0_18px_55px_rgba(0,0,0,0.58)] ring-1 ring-white/10 backdrop-blur-xl">
           <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
             <div>

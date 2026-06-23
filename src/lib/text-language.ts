@@ -83,7 +83,39 @@ const VIETNAMESE_BOUND_PHRASES = [
   "tựa gối",
   "tua goi",
 ] as const;
+const VIETNAMESE_POETIC_EMPHASIS_PHRASES = [
+  "lơ lửng",
+  "lo lung",
+  "tẻo teo",
+  "teo teo",
+  "lạnh lẽo",
+  "lanh leo",
+  "trong veo",
+  "sóng biếc",
+  "song biec",
+  "hơi gợn",
+  "hoi gon",
+  "lá vàng",
+  "la vang",
+  "khẽ đưa",
+  "khe dua",
+  "xanh ngắt",
+  "xanh ngat",
+  "vắng teo",
+  "vang teo",
+  "chân bèo",
+  "chan beo",
+  "hơi sương",
+  "hoi suong",
+  "khoảng thở",
+  "khoang tho",
+  "cảm xúc",
+  "cam xuc",
+] as const;
 const VIETNAMESE_BOUND_PHRASE_KEYS = VIETNAMESE_BOUND_PHRASES.map((phrase) =>
+  phrase.split(/\s+/).map(normalizeVietnameseToken),
+);
+const VIETNAMESE_POETIC_EMPHASIS_KEYS = VIETNAMESE_POETIC_EMPHASIS_PHRASES.map((phrase) =>
   phrase.split(/\s+/).map(normalizeVietnameseToken),
 );
 const LONGEST_VIETNAMESE_BOUND_PHRASE = Math.max(
@@ -182,6 +214,24 @@ export function getVietnameseWordLines(words: string[]): WordLine[] {
   }
 
   return lines;
+}
+
+export function getSpecialPoeticWordIndexes(words: string[]) {
+  const selected = new Set<number>();
+  const normalizedWords = words.map(normalizeVietnameseToken);
+
+  for (const phrase of VIETNAMESE_POETIC_EMPHASIS_KEYS) {
+    for (let index = 0; index + phrase.length <= normalizedWords.length; index += 1) {
+      if (phrase.every((token, offset) => token === normalizedWords[index + offset])) {
+        for (let offset = 0; offset < phrase.length; offset += 1) {
+          selected.add(index + offset);
+        }
+        return selected;
+      }
+    }
+  }
+
+  return selected;
 }
 
 function getVietnameseWordSegments(words: string[]): WordSegment[] {

@@ -5,10 +5,7 @@ import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { ensureProfile } from "@/lib/social.functions";
-
-const DEMO_EMAIL = "demo@kinetic.local";
-const DEMO_PASSWORD = "demo-kinetic-shared-2026";
-import { endDemoSession, isDemoSession } from "@/lib/demo-session";
+import { endDemoSession, isDemoSession, startDemoSession } from "@/lib/demo-session";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/auth")({
@@ -52,11 +49,7 @@ function AuthPage() {
     setLoading("demo");
     try {
       endDemoSession();
-      const { error } = await supabase.auth.signInWithPassword({
-        email: DEMO_EMAIL,
-        password: DEMO_PASSWORD,
-      });
-      if (error) throw error;
+      startDemoSession();
       toast.success("welcome, demo creator");
       navigate({ to: "/feed" });
     } catch (e) {

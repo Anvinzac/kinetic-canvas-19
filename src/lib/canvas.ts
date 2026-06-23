@@ -4,7 +4,7 @@
 export type Entrance = "fade" | "slide" | "scale" | "blur" | "split";
 export type Loop = "pulse" | "float" | "shake" | "none";
 export type Tempo = "slow" | "steady" | "snappy";
-export type Rhythm = "smooth" | "stagger" | "burst";
+export type Rhythm = "smooth" | "stagger" | "burst" | "poetic";
 export type BackgroundStyle = "static" | "transition";
 
 export interface CanvasLinkPreview {
@@ -71,7 +71,7 @@ export const FONTS = [
 export const ENTRANCES: Entrance[] = ["fade", "slide", "scale", "blur", "split"];
 export const LOOPS: Loop[] = ["pulse", "float", "shake", "none"];
 export const TEMPOS: Tempo[] = ["slow", "steady", "snappy"];
-export const RHYTHMS: Rhythm[] = ["smooth", "stagger", "burst"];
+export const RHYTHMS: Rhythm[] = ["smooth", "stagger", "burst", "poetic"];
 
 export const PALETTE = [
   "#ffffff",
@@ -93,6 +93,7 @@ export const GRADIENTS = [
   "linear-gradient(135deg,#06D6A0,#118AB2)",
   "linear-gradient(135deg,#00B4D8,#FF006E)",
   "linear-gradient(135deg,#9D4EDD,#FF006E)",
+  "linear-gradient(135deg,#F8C8DC,#7C3AED)",
   SAFE_CANVAS_BACKGROUND,
 ];
 
@@ -140,6 +141,17 @@ export const TRANSITION_GRADIENT_PATHS: readonly GradientTransitionPath[] = [
       "linear-gradient(135deg,#3A86FF,#FFBE0B)",
     ],
   },
+  {
+    id: "rose-lullaby",
+    label: "rose lullaby",
+    mood: "blush -> lavender -> moonlit blue",
+    gradients: [
+      "linear-gradient(135deg,#F8C8DC,#7C3AED)",
+      "linear-gradient(135deg,#7C3AED,#3A86FF)",
+      "linear-gradient(135deg,#3A86FF,#B8F7D4)",
+      "linear-gradient(135deg,#B8F7D4,#F8C8DC)",
+    ],
+  },
 ] as const;
 
 export const COMMENT_CHIPS: { id: string; emoji: string; label: string }[] = [
@@ -182,6 +194,10 @@ const GREEN_BACKGROUND_MIN_HUE = 78;
 const GREEN_BACKGROUND_MAX_HUE = 190;
 const YELLOW_MIN_HUE = 35;
 const YELLOW_MAX_HUE = 68;
+const MIN_READABLE_TEXT_CONTRAST = 3.15;
+const DARK_TEXT_LUMINANCE = 0.18;
+const DARK_BACKGROUND_LUMINANCE = 0.24;
+const SUBTLE_LIGHT_TEXT = "#FFF7ED";
 
 export function getCanvasTextColor(
   spec: Pick<CanvasSpec, "color" | "backgroundStyle" | "gradientPath">,
@@ -197,12 +213,26 @@ export function getCanvasTextColor(
   }
 
   const minimumContrast = getMinimumContrast(requestedRgb, backgroundColors);
-  if (minimumContrast >= 1.75) return requestedColor;
+  const tooDarkOnDark =
+    getRelativeLuminance(requestedRgb) < DARK_TEXT_LUMINANCE &&
+    getMaximumLuminance(backgroundColors) < DARK_BACKGROUND_LUMINANCE;
+  if (!tooDarkOnDark && minimumContrast >= MIN_READABLE_TEXT_CONTRAST) return requestedColor;
 
-  return pickBestColor(["#ffffff", "#111827", "#FF006E", "#8338EC"], backgroundColors, {
-    avoidYellowOnGreen: true,
-    avoidColor: requestedColor,
-  });
+  if (
+    tooDarkOnDark &&
+    getMinimumContrast(parseCssColor(SUBTLE_LIGHT_TEXT)!, backgroundColors) >= 3
+  ) {
+    return SUBTLE_LIGHT_TEXT;
+  }
+
+  return pickBestColor(
+    [SUBTLE_LIGHT_TEXT, "#ffffff", "#111827", "#FF006E", "#3A86FF"],
+    backgroundColors,
+    {
+      avoidYellowOnGreen: true,
+      avoidColor: requestedColor,
+    },
+  );
 }
 
 export function getCanvasEmphasisColor(
@@ -558,6 +588,10 @@ function getColorDistance(a: RgbColor, b: RgbColor) {
 
 function getMinimumContrast(color: RgbColor, backgrounds: RgbColor[]) {
   return Math.min(...backgrounds.map((background) => getContrastRatio(color, background)));
+}
+
+function getMaximumLuminance(colors: RgbColor[]) {
+  return Math.max(...colors.map(getRelativeLuminance));
 }
 
 function getContrastRatio(a: RgbColor, b: RgbColor) {

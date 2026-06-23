@@ -8,7 +8,11 @@ import {
   type Rhythm,
   type Tempo,
 } from "@/lib/canvas";
-import { getVietnameseWordLines, isLikelyVietnameseText } from "@/lib/text-language";
+import {
+  getSpecialPoeticWordIndexes,
+  getVietnameseWordLines,
+  isLikelyVietnameseText,
+} from "@/lib/text-language";
 
 const FULL_CANVAS_MAX_HEIGHT = 764;
 const CANVAS_RATIO = 16 / 9;
@@ -42,7 +46,14 @@ const tempoConfig: Record<Tempo, { duration: number; wordDelay: number; loopSeco
   snappy: { duration: 0.48, wordDelay: 0.08, loopSeconds: 1.45 },
 };
 
-function entranceVariants(entrance: CanvasSpec["entrance"]) {
+function entranceVariants(entrance: CanvasSpec["entrance"], rhythm?: Rhythm) {
+  if (rhythm === "poetic") {
+    return {
+      initial: { opacity: 0, y: 12, scale: 1.05, filter: "blur(18px)" },
+      animate: { opacity: 1, y: 0, scale: 1, filter: "blur(0px)" },
+    };
+  }
+
   switch (entrance) {
     case "fade":
       return { initial: { opacity: 0 }, animate: { opacity: 1 } };
@@ -73,7 +84,7 @@ export function KineticText({
   scaleToCanvas?: boolean;
   background?: string | readonly string[] | null;
 }) {
-  const wordVariants = entranceVariants(spec.entrance);
+  const wordVariants = entranceVariants(spec.entrance, spec.rhythm);
   const words = getWords(spec.text);
   const isVietnamese = isLikelyVietnameseText(spec.text);
   const vietnameseLines = isVietnamese ? getVietnameseWordLines(words) : [];
@@ -311,7 +322,8 @@ function renderAnimatedWord(
     ? getCanvasEmphasisWordColor(emphasisVariant, textColor, emphasisColor)
     : textColor;
   const entranceDelay = getRhythmDelay(index, spec.tempo, spec.rhythm);
-  const entranceDuration = Math.max(0.28, tempo.duration * 0.62);
+  const rhythmDurationMultiplier = spec.rhythm === "poetic" ? 1.28 : 1;
+  const entranceDuration = Math.max(0.28, tempo.duration * 0.62 * rhythmDurationMultiplier);
   const emphasisStyle = important
     ? ({
         "--kinetic-emphasis-delay": `${entranceDelay + entranceDuration + 0.18}s`,
@@ -328,8 +340,8 @@ function renderAnimatedWord(
       animate={wordVariants.animate}
       transition={{
         delay: entranceDelay,
-        duration: entranceDuration,
-        ease: [0.22, 1, 0.36, 1],
+        duration: spec.rhythm === "poetic" ? entranceDuration * 1.42 : entranceDuration,
+        ease: spec.rhythm === "poetic" ? [0.16, 1, 0.3, 1] : [0.22, 1, 0.36, 1],
       }}
       style={{
         display: spotlightWord ? "inline-flex" : "inline-block",
@@ -384,6 +396,7 @@ function getLoopAnimation(loop: CanvasSpec["loop"], tempo: Tempo) {
 
 function getRhythmDelay(index: number, tempo: Tempo, rhythm: Rhythm) {
   const base = tempoConfig[tempo].wordDelay;
+  if (rhythm === "poetic") return index * base * 1.45;
   if (rhythm === "smooth") return index * base * 0.8;
   if (rhythm === "burst") return index * base * 0.7;
   return index * base;
@@ -424,6 +437,9 @@ function getKineticTextLayoutMode(
 }
 
 function getPreviewEmphasizedWordIndexes(words: string[]) {
+  const poeticIndexes = getSpecialPoeticWordIndexes(words);
+  if (poeticIndexes.size > 0) return poeticIndexes;
+
   const candidates = words
     .map((word, index) => ({
       index,
