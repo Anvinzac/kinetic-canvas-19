@@ -52,10 +52,9 @@ function AuthPage() {
     setLoading("demo");
     try {
       endDemoSession();
-      const session = await demoFn();
-      const { error } = await supabase.auth.setSession({
-        access_token: session.access_token,
-        refresh_token: session.refresh_token,
+      const { error } = await supabase.auth.signInWithPassword({
+        email: DEMO_EMAIL,
+        password: DEMO_PASSWORD,
       });
       if (error) throw error;
       toast.success("welcome, demo creator");
