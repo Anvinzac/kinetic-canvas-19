@@ -424,52 +424,7 @@ export const addComment = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
-// ===== Demo one-click signup (creates a viewer account only; content is pre-seeded) =====
-// Note: this is intentionally public so first-time visitors can try the real network.
+// Demo account is a single shared auth user seeded via migration
+// (email: demo@kinetic.local). The auth page signs in client-side with
+// supabase.auth.signInWithPassword — no server function needed.
 
-const ADJ = ["nova", "kai", "mira", "zeph", "lila", "echo", "vex", "rune", "iris", "axl"];
-const NOUN = ["loop", "aux", "404", "om", "rae", "wave", "kid", "drift", "muse", "void"];
-
-export const createDemoAccount = createServerFn({ method: "POST" }).handler(async () => {
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const tag = Math.random().toString(36).slice(2, 8);
-  const handle = `${ADJ[Math.floor(Math.random() * ADJ.length)]}_${NOUN[Math.floor(Math.random() * NOUN.length)]}_${tag.slice(0, 3)}`;
-  const email = `demo-${tag}@kinetic.local`;
-  const password = `Demo!${tag}${Math.random().toString(36).slice(2, 8)}`;
-
-  const { data: created, error: createErr } = await supabaseAdmin.auth.admin.createUser({
-    email,
-    password,
-    email_confirm: true,
-    user_metadata: {
-      full_name: handle,
-      name: handle,
-      avatar_url: `https://i.pravatar.cc/200?u=${handle}`,
-    },
-  });
-  if (createErr || !created.user)
-    throw new Error(createErr?.message ?? "Could not create demo account");
-
-  // Insert profile directly (we have admin)
-  await supabaseAdmin.from("profiles").insert({
-    auth_user_id: created.user.id,
-    username: handle,
-    display_name: handle.replace(/_/g, " "),
-    avatar_url: `https://i.pravatar.cc/200?u=${handle}`,
-    bio: "demo account · kinetic typography",
-  });
-
-  // Sign in to retrieve session tokens
-  const { data: signin, error: signErr } = await supabaseAdmin.auth.signInWithPassword({
-    email,
-    password,
-  });
-  if (signErr || !signin.session)
-    throw new Error(signErr?.message ?? "Could not start demo session");
-
-  return {
-    access_token: signin.session.access_token,
-    refresh_token: signin.session.refresh_token,
-    handle,
-  };
-});
