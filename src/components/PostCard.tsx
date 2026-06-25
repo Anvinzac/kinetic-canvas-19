@@ -38,6 +38,7 @@ import {
 } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
+import { CanvasStickerLayer } from "@/components/CanvasStickerLayer";
 import {
   COMMENT_CHIPS,
   SAFE_CANVAS_BACKGROUND,
@@ -54,6 +55,7 @@ import {
   type Tempo,
 } from "@/lib/canvas";
 import { getCanvasPatternTheme, getPatternBackgroundPosition } from "@/lib/canvas-patterns";
+import { getCanvasSceneTheme, getSceneBackgroundStyle } from "@/lib/canvas-scenes";
 import {
   getSpecialPoeticWordIndexes,
   getTextPageWordLimit,
@@ -354,17 +356,22 @@ export function PostCard({
   const commentOverlapEnterX = commentInfoRightEdge + commentMaxWidth / 2;
   const commentOverlapExitX = commentInfoLeftEdge - commentMaxWidth / 2;
   const currentText = textPages[textPage] ?? textPages[0] ?? "";
+  const sceneTheme = getCanvasSceneTheme(spec.backgroundScene);
   const patternTheme = getCanvasPatternTheme(spec.backgroundPattern);
   const resolvedPostBackground = getResolvedPostBackground(post);
-  // Pattern posts ignore the gradient backdrop entirely; the theme's solid base
-  // is what sits under the pattern and what the text-contrast picker reads.
-  const staticCanvasBackground = patternTheme ? patternTheme.base : resolvedPostBackground;
+  // Scene/pattern posts ignore the gradient backdrop entirely; each theme's
+  // solid base is what sits under the artwork and what the contrast picker reads.
+  const staticCanvasBackground = sceneTheme
+    ? sceneTheme.base
+    : patternTheme
+      ? patternTheme.base
+      : resolvedPostBackground;
   const slidingCanvasBackground = useMemo(
     () =>
-      patternTheme
+      sceneTheme || patternTheme
         ? null
         : getSlidingCanvasBackground(spec, staticCanvasBackground ?? null, backgroundShiftPage),
-    [patternTheme, backgroundShiftPage, spec, staticCanvasBackground],
+    [sceneTheme, patternTheme, backgroundShiftPage, spec, staticCanvasBackground],
   );
   const hasTransitionBackground = !!slidingCanvasBackground;
   const activeStory = commentStories[storyIndex] ?? null;
@@ -934,7 +941,13 @@ export function PostCard({
         className="relative h-full w-full overflow-hidden bg-[url('/canvas-fallback.svg')] bg-cover bg-center sm:aspect-[9/16] sm:h-[min(90dvh,764px)] sm:w-auto sm:shadow-[0_24px_90px_rgba(0,0,0,0.45)] sm:ring-1 sm:ring-white/10"
         onClick={handleCanvasTap}
       >
-        {patternTheme ? (
+        {sceneTheme ? (
+          <div
+            aria-hidden
+            className="absolute inset-0"
+            style={getSceneBackgroundStyle(sceneTheme, backgroundShiftPage)}
+          />
+        ) : patternTheme ? (
           <div
             aria-hidden
             className="absolute inset-0"
@@ -973,7 +986,7 @@ export function PostCard({
             }}
           />
         )}
-        {(hasTransitionBackground || patternTheme) && (
+        {(hasTransitionBackground || patternTheme || sceneTheme) && (
           <motion.div
             key={`sheen-${post.id}-${backgroundShiftPage}`}
             aria-hidden
@@ -1044,6 +1057,13 @@ export function PostCard({
             )}
           </motion.div>
         </AnimatePresence>
+
+        <CanvasStickerLayer
+          stickers={spec.stickers}
+          text={currentText}
+          layout={displaySpec}
+          playKey={`${textPage}-${playKey}`}
+        />
 
         {isExporting && <ExportWatermark author={author} />}
 
@@ -2574,6 +2594,9 @@ function WordSequenceText({
   const fontSize = spec.size * (disableFit ? 1 : fitScale);
   const textColor = getCanvasTextColor(spec, background);
   const emphasisColor = getCanvasEmphasisColor({ ...spec, color: textColor }, background);
+  const textSafeMaxWidth = hasVisibleStickerAccent(spec.stickers, spec.text)
+    ? "min(90%, calc(100% - 2.5rem))"
+    : TEXT_SAFE_MAX_WIDTH;
 
   useIsomorphicLayoutEffect(() => {
     setFitScale(soloInitialFit);
@@ -2732,6 +2755,8 @@ function WordSequenceText({
     return (
       <motion.span
         key={`${word}-${index}`}
+        data-kinetic-word={getWordAnchorKey(word)}
+        data-kinetic-word-index={index}
         variants={{
           // The starting pose comes from the post's auto-picked entrance style;
           // every style settles to the shared neutral rest below. Emphasis size
@@ -2826,8 +2851,8 @@ function WordSequenceText({
         left: `${spec.x}%`,
         top: `${safeCenterY}%`,
         transform: "translate(-50%, -50%)",
-        width: TEXT_SAFE_MAX_WIDTH,
-        maxWidth: TEXT_SAFE_MAX_WIDTH,
+        width: textSafeMaxWidth,
+        maxWidth: textSafeMaxWidth,
         visibility: measure ? "hidden" : undefined,
       }}
     >
@@ -2921,6 +2946,20 @@ function getKineticTextLayoutMode(
 
 function getWords(text: string) {
   return text.match(/\S+/g) ?? [];
+}
+
+function hasVisibleStickerAccent(stickers: CanvasSpec["stickers"], text: string) {
+  const normalizedText = text.toLowerCase();
+  return (stickers ?? []).some((sticker) => normalizedText.includes(sticker.word.toLowerCase()));
+}
+
+function getWordAnchorKey(word: string) {
+  return word
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/^[^a-z0-9]+|[^a-z0-9]+$/g, "")
+    .replace(/[^a-z0-9'-]/g, "");
 }
 
 function getPostShareUrl(postId: string) {

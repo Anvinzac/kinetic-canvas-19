@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { motion } from "framer-motion";
@@ -13,12 +13,17 @@ import {
   Move,
   Newspaper,
   Palette,
+  Plus,
   Send,
   SlidersHorizontal,
+  Smile,
   Sparkles,
   Type,
   Upload,
+  Video,
+  X,
 } from "lucide-react";
+import { CanvasStickerLayer } from "@/components/CanvasStickerLayer";
 import { KineticText } from "@/components/KineticText";
 import {
   DEFAULT_CANVAS,
@@ -36,8 +41,25 @@ import {
   resolveCanvasBackground,
   type CanvasLinkPreview,
   type CanvasSpec,
+  type CanvasSticker,
   type GradientTransitionPath,
 } from "@/lib/canvas";
+import {
+  CANVAS_PATTERN_THEMES,
+  getCanvasPatternTheme,
+  getPatternBackgroundPosition,
+} from "@/lib/canvas-patterns";
+import {
+  CANVAS_SCENE_THEMES,
+  getCanvasSceneTheme,
+  getSceneBackgroundStyle,
+} from "@/lib/canvas-scenes";
+import {
+  createEmojiSticker,
+  getAccentKeyword,
+  getAccentRecommendation,
+  type AccentRecommendation,
+} from "@/lib/accent-suggestions";
 import { createPost } from "@/lib/social.functions";
 import { isDemoSession } from "@/lib/demo-session";
 import { addMockPost, getMockFeed } from "@/lib/mock-data";
@@ -47,20 +69,34 @@ export const Route = createFileRoute("/_authenticated/create")({
   component: CreatePage,
 });
 
-type BackgroundMode = "gradient" | "transition" | "photo" | "upload";
+type BackgroundMode =
+  | "gradient"
+  | "transition"
+  | "scene"
+  | "pattern"
+  | "photo"
+  | "upload"
+  | "video";
 type StudioPage = "write" | "background" | "font" | "color" | "layout" | "motion";
+type TemplateBackdrop =
+  | { mode: "gradient"; gradient: string }
+  | { mode: "transition"; path: GradientTransitionPath }
+  | { mode: "scene"; sceneId: string }
+  | { mode: "pattern"; patternId: string }
+  | { mode: "photo"; url: string }
+  | { mode: "video"; url: string };
 type AnimationTemplate = {
   id: string;
   label: string;
   mood: string;
-  gradient: string;
+  backdrop: TemplateBackdrop;
   spec: Partial<Omit<CanvasSpec, "text">>;
 };
 
 const STATUS_CANVAS: CanvasSpec = {
   ...DEFAULT_CANVAS,
   text: "",
-  size: 76,
+  size: 96,
   x: 50,
   y: 50,
   entrance: "scale",
@@ -95,6 +131,14 @@ const PRELOADED_PHOTOS = [
   },
 ];
 
+const PRELOADED_VIDEOS = [
+  {
+    id: "flower",
+    label: "soft motion",
+    url: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
+  },
+];
+
 const PLACEMENTS = [
   { label: "top", x: 50, y: 32 },
   { label: "center", x: 50, y: 50 },
@@ -103,13 +147,34 @@ const PLACEMENTS = [
 
 const ANIMATION_TEMPLATES: AnimationTemplate[] = [
   {
+    id: "paper-headline",
+    label: "paper headline",
+    mood: "scene · editorial",
+    backdrop: { mode: "scene", sceneId: "paper-cut-sunrise" },
+    spec: {
+      font: "Bebas Neue",
+      size: 112,
+      color: "#ffffff",
+      weight: 900,
+      letterSpacing: -0.02,
+      entrance: "slide",
+      loop: "pulse",
+      tempo: "steady",
+      rhythm: "burst",
+      x: 50,
+      y: 50,
+      rotation: -1,
+      backgroundScene: "paper-cut-sunrise",
+    },
+  },
+  {
     id: "rose-verse",
     label: "rose verse",
     mood: "slow · poetic",
-    gradient: "linear-gradient(135deg,#F8C8DC,#7C3AED)",
+    backdrop: { mode: "gradient", gradient: "linear-gradient(135deg,#F8C8DC,#7C3AED)" },
     spec: {
       font: "Playfair Display",
-      size: 74,
+      size: 98,
       color: "#FFF7ED",
       weight: 700,
       letterSpacing: -0.015,
@@ -123,13 +188,76 @@ const ANIMATION_TEMPLATES: AnimationTemplate[] = [
     },
   },
   {
+    id: "ink-memo",
+    label: "ink memo",
+    mood: "scene · quiet print",
+    backdrop: { mode: "scene", sceneId: "paper-cut-noir" },
+    spec: {
+      font: "Playfair Display",
+      size: 96,
+      color: "#FFF7ED",
+      weight: 800,
+      letterSpacing: -0.015,
+      entrance: "blur",
+      loop: "float",
+      tempo: "slow",
+      rhythm: "poetic",
+      x: 50,
+      y: 54,
+      rotation: 0,
+      backgroundScene: "paper-cut-noir",
+    },
+  },
+  {
+    id: "pattern-current",
+    label: "pattern current",
+    mood: "continuous · seamless",
+    backdrop: { mode: "pattern", patternId: "waves" },
+    spec: {
+      font: "Space Grotesk",
+      size: 100,
+      color: "#ffffff",
+      weight: 900,
+      letterSpacing: -0.035,
+      entrance: "slide",
+      loop: "float",
+      tempo: "steady",
+      rhythm: "smooth",
+      x: 50,
+      y: 52,
+      rotation: 0,
+      backgroundPattern: "waves",
+    },
+  },
+  {
+    id: "aqua-fold",
+    label: "aqua fold",
+    mood: "scene · cool cut",
+    backdrop: { mode: "scene", sceneId: "paper-cut-aqua" },
+    spec: {
+      font: "Space Grotesk",
+      size: 102,
+      color: "#ffffff",
+      weight: 900,
+      letterSpacing: -0.04,
+      entrance: "split",
+      loop: "float",
+      tempo: "steady",
+      rhythm: "stagger",
+      x: 50,
+      y: 51,
+      rotation: 1,
+      backgroundScene: "paper-cut-aqua",
+    },
+  },
+  {
     id: "neon-burst",
     label: "neon burst",
     mood: "snappy · burst",
-    gradient: "linear-gradient(135deg,#FF006E,#8338EC)",
+    backdrop: { mode: "gradient", gradient: "linear-gradient(135deg,#FF006E,#8338EC)" },
     spec: {
       font: "Bebas Neue",
-      size: 92,
+      size: 114,
       color: "#ffffff",
       weight: 900,
       letterSpacing: -0.02,
@@ -143,13 +271,33 @@ const ANIMATION_TEMPLATES: AnimationTemplate[] = [
     },
   },
   {
+    id: "photo-memory",
+    label: "photo memory",
+    mood: "image · cinematic",
+    backdrop: { mode: "photo", url: PRELOADED_PHOTOS[4].url },
+    spec: {
+      font: "Playfair Display",
+      size: 98,
+      color: "#FFF7ED",
+      weight: 800,
+      letterSpacing: -0.015,
+      entrance: "blur",
+      loop: "float",
+      tempo: "slow",
+      rhythm: "poetic",
+      x: 50,
+      y: 56,
+      rotation: -1,
+    },
+  },
+  {
     id: "editorial-drift",
     label: "editorial drift",
     mood: "slow · smooth",
-    gradient: "linear-gradient(135deg,#00B4D8,#FF006E)",
+    backdrop: { mode: "gradient", gradient: "linear-gradient(135deg,#00B4D8,#FF006E)" },
     spec: {
       font: "Playfair Display",
-      size: 76,
+      size: 100,
       color: "#ffffff",
       weight: 800,
       letterSpacing: -0.02,
@@ -163,13 +311,33 @@ const ANIMATION_TEMPLATES: AnimationTemplate[] = [
     },
   },
   {
+    id: "video-bloom",
+    label: "video bloom",
+    mood: "video · living backdrop",
+    backdrop: { mode: "video", url: PRELOADED_VIDEOS[0].url },
+    spec: {
+      font: "Inter",
+      size: 96,
+      color: "#ffffff",
+      weight: 900,
+      letterSpacing: -0.035,
+      entrance: "fade",
+      loop: "pulse",
+      tempo: "steady",
+      rhythm: "stagger",
+      x: 50,
+      y: 50,
+      rotation: 0,
+    },
+  },
+  {
     id: "mono-sprint",
     label: "mono sprint",
     mood: "snappy · stagger",
-    gradient: "linear-gradient(135deg,#00B4D8,#FF006E)",
+    backdrop: { mode: "gradient", gradient: "linear-gradient(135deg,#00B4D8,#FF006E)" },
     spec: {
       font: "JetBrains Mono",
-      size: 64,
+      size: 88,
       color: "#06FFA5",
       weight: 800,
       letterSpacing: -0.04,
@@ -186,10 +354,10 @@ const ANIMATION_TEMPLATES: AnimationTemplate[] = [
     id: "soft-signal",
     label: "soft signal",
     mood: "steady · smooth",
-    gradient: "linear-gradient(135deg,#3A86FF,#06FFA5)",
+    backdrop: { mode: "gradient", gradient: "linear-gradient(135deg,#3A86FF,#06FFA5)" },
     spec: {
       font: "Inter",
-      size: 72,
+      size: 98,
       color: "#ffffff",
       weight: 850,
       letterSpacing: -0.03,
@@ -206,10 +374,10 @@ const ANIMATION_TEMPLATES: AnimationTemplate[] = [
     id: "poster-pop",
     label: "poster pop",
     mood: "steady · burst",
-    gradient: "linear-gradient(135deg,#FB5607,#FFBE0B)",
+    backdrop: { mode: "gradient", gradient: "linear-gradient(135deg,#FB5607,#FFBE0B)" },
     spec: {
       font: "Space Grotesk",
-      size: 84,
+      size: 108,
       color: "#000000",
       weight: 900,
       letterSpacing: -0.05,
@@ -240,6 +408,35 @@ const DEFAULT_TRANSITION_PATH: GradientTransitionPath = TRANSITION_GRADIENT_PATH
   gradients: [GRADIENTS[0], GRADIENTS[1], SAFE_CANVAS_BACKGROUND],
 };
 
+const MAX_STATUS_CHARS = 220;
+
+function getComposerPages(text: string) {
+  const pages = text.replace(/\r\n?/g, "\n").split("\n");
+  return pages.length > 0 ? pages : [""];
+}
+
+function limitComposerPages(pages: string[]) {
+  const limited: string[] = [];
+  let used = 0;
+
+  pages.forEach((page, index) => {
+    const separatorSize = index === 0 ? 0 : 1;
+    const remaining = MAX_STATUS_CHARS - used - separatorSize;
+    if (remaining <= 0) return;
+
+    const clipped = page.slice(0, remaining);
+    if (index > 0) used += 1;
+    used += clipped.length;
+    limited.push(clipped);
+  });
+
+  return limited.length > 0 ? limited : [""];
+}
+
+function joinComposerPages(pages: string[]) {
+  return limitComposerPages(pages).join("\n");
+}
+
 function CreatePage() {
   const navigate = useNavigate();
   const qc = useQueryClient();
@@ -251,24 +448,41 @@ function CreatePage() {
   const [backgroundMode, setBackgroundMode] = useState<BackgroundMode>("gradient");
   const [selectedGradientPath, setSelectedGradientPath] =
     useState<GradientTransitionPath>(DEFAULT_TRANSITION_PATH);
+  const [selectedSceneId, setSelectedSceneId] = useState("paper-cut-sunrise");
+  const [selectedPatternId, setSelectedPatternId] = useState("waves");
   const [selectedPhoto, setSelectedPhoto] = useState(PRELOADED_PHOTOS[0].url);
+  const [selectedVideo, setSelectedVideo] = useState(PRELOADED_VIDEOS[0].url);
   const [uploadedPhoto, setUploadedPhoto] = useState<string | null>(null);
   const [articleUrl, setArticleUrl] = useState("");
   const [articleOpen, setArticleOpen] = useState(false);
   const [activePage, setActivePage] = useState<StudioPage>("write");
   const [playKey, setPlayKey] = useState(0);
+  const [previewAnimating, setPreviewAnimating] = useState(false);
   const [posting, setPosting] = useState(false);
   const [advancedOpen, setAdvancedOpen] = useState(false);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [accentRecommendation, setAccentRecommendation] = useState<AccentRecommendation | null>(
+    null,
+  );
+  const [accentLoading, setAccentLoading] = useState(false);
+  const [dismissedAccentKeyword, setDismissedAccentKeyword] = useState<string | null>(null);
+  const [activeTextPage, setActiveTextPage] = useState(0);
+  const textareaRefs = useRef<Array<HTMLTextAreaElement | null>>([]);
 
+  const composerPages = getComposerPages(spec.text);
+  const currentTextPage = composerPages[activeTextPage] ?? composerPages[0] ?? "";
+  const publishText = composerPages
+    .map((page) => page.trim())
+    .filter(Boolean)
+    .join("\n");
   const activePhoto =
     backgroundMode === "upload" ? uploadedPhoto : backgroundMode === "photo" ? selectedPhoto : null;
+  const activeVideo = backgroundMode === "video" ? selectedVideo : null;
   const normalizedArticleUrl = articleOpen ? normalizeArticleUrl(articleUrl) : "";
   const articlePreview = normalizedArticleUrl
     ? {
         url: normalizedArticleUrl,
         host: getUrlHost(normalizedArticleUrl),
-        title: getArticleTitle(spec.text),
+        title: getArticleTitle(publishText),
       }
     : null;
   const articleInvalid = articleOpen && articleUrl.trim().length > 0 && !articlePreview;
@@ -282,32 +496,60 @@ function CreatePage() {
       ? ({
           backgroundStyle: "transition",
           gradientPath: [...selectedTransitionGradients],
-        } satisfies Pick<CanvasSpec, "backgroundStyle" | "gradientPath">)
+          backgroundScene: undefined,
+          backgroundPattern: undefined,
+        } satisfies Pick<
+          CanvasSpec,
+          "backgroundStyle" | "gradientPath" | "backgroundScene" | "backgroundPattern"
+        >)
       : ({
           backgroundStyle: "static",
           gradientPath: [],
-        } satisfies Pick<CanvasSpec, "backgroundStyle" | "gradientPath">);
+          backgroundScene: backgroundMode === "scene" ? selectedSceneId : undefined,
+          backgroundPattern: backgroundMode === "pattern" ? selectedPatternId : undefined,
+        } satisfies Pick<
+          CanvasSpec,
+          "backgroundStyle" | "gradientPath" | "backgroundScene" | "backgroundPattern"
+        >);
+  const previewSpec: CanvasSpec = { ...spec, text: currentTextPage, ...backgroundSpec };
   const publishSpec: CanvasSpec = {
     ...spec,
+    text: publishText,
     ...backgroundSpec,
     link: articlePreview,
   };
   const publishBackground =
     backgroundMode === "transition"
       ? resolveCanvasBackground(selectedTransitionGradients[0], "publish")
-      : safeBg;
-  const postType = articlePreview ? "link" : activePhoto ? "image" : "text";
-  const mediaUrls = articlePreview ? [articlePreview.url] : activePhoto ? [activePhoto] : [];
-  const canPost = spec.text.trim().length > 0 && !posting && !articleInvalid;
+      : backgroundMode === "scene"
+        ? (getCanvasSceneTheme(selectedSceneId)?.base ?? safeBg)
+        : backgroundMode === "pattern"
+          ? (getCanvasPatternTheme(selectedPatternId)?.base ?? safeBg)
+          : safeBg;
+  const postType = articlePreview ? "link" : activeVideo ? "video" : activePhoto ? "image" : "text";
+  const mediaUrls = articlePreview
+    ? [articlePreview.url]
+    : activeVideo
+      ? [activeVideo]
+      : activePhoto
+        ? [activePhoto]
+        : [];
+  const canPost = publishText.length > 0 && !posting && !articleInvalid;
   const pageTitle = PAGE_TITLES[activePage];
   const backgroundSummary =
     backgroundMode === "gradient"
       ? "gradient"
       : backgroundMode === "transition"
         ? selectedGradientPath.label
-        : backgroundMode === "photo"
-          ? "preloaded photo"
-          : "library photo";
+        : backgroundMode === "scene"
+          ? (getCanvasSceneTheme(selectedSceneId)?.label ?? "scene")
+          : backgroundMode === "pattern"
+            ? (getCanvasPatternTheme(selectedPatternId)?.label ?? "pattern")
+            : backgroundMode === "photo"
+              ? "preloaded photo"
+              : backgroundMode === "video"
+                ? "video"
+                : "library photo";
   const fontSummary = `${spec.font} · ${spec.size}px`;
   const colorSummary = spec.color;
   const layoutSummary = PLACEMENTS.find((placement) => placement.y === spec.y)?.label ?? "custom";
@@ -324,42 +566,190 @@ function CreatePage() {
     backgroundMode === "transition"
       ? getComposerSlidingBackground(selectedTransitionGradients, playKey)
       : null;
+  const previewScene = backgroundMode === "scene" ? getCanvasSceneTheme(selectedSceneId) : null;
+  const previewPattern =
+    backgroundMode === "pattern" ? getCanvasPatternTheme(selectedPatternId) : null;
 
   useEffect(() => {
-    const el = textareaRef.current;
-    if (!el) return;
-    el.style.height = "0px";
-    el.style.height = `${Math.min(Math.max(el.scrollHeight, 56), 320)}px`;
+    textareaRefs.current.forEach((el) => {
+      if (!el) return;
+      el.style.height = "0px";
+      el.style.height = `${Math.min(Math.max(el.scrollHeight, 56), 180)}px`;
+    });
   }, [spec.text]);
+
+  useEffect(() => {
+    if (activeTextPage >= composerPages.length) {
+      setActiveTextPage(Math.max(0, composerPages.length - 1));
+    }
+  }, [activeTextPage, composerPages.length]);
+
+  useEffect(() => {
+    const keyword = getAccentKeyword(currentTextPage, dismissedAccentKeyword);
+    if (!keyword || spec.stickers?.some((sticker) => sticker.word === keyword)) {
+      setAccentRecommendation(null);
+      setAccentLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+    setAccentLoading(true);
+    const timer = window.setTimeout(() => {
+      getAccentRecommendation(keyword).then((recommendation) => {
+        if (cancelled) return;
+        setAccentRecommendation(recommendation);
+        setAccentLoading(false);
+      });
+    }, 420);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [currentTextPage, dismissedAccentKeyword, spec.stickers]);
 
   function patch<K extends keyof CanvasSpec>(key: K, value: CanvasSpec[K]) {
     setSpec((s) => ({ ...s, [key]: value }));
   }
 
-  function updateText(value: string) {
-    const text = value.slice(0, 220);
-    setSpec((s) => ({ ...s, text, size: suggestSize(text, s.size) }));
-    setPlayKey((key) => key + 1);
+  function updateTextPage(pageIndex: number, value: string) {
+    const pieces = value.replace(/\r\n?/g, "\n").split("\n");
+    const nextPage = pageIndex + Math.max(0, pieces.length - 1);
+    const previewPages = [...composerPages];
+    previewPages.splice(pageIndex, 1, ...pieces);
+    const limitedPreviewPages = getComposerPages(joinComposerPages(previewPages));
+    const focusedPage = Math.min(nextPage, limitedPreviewPages.length - 1);
+
+    setSpec((s) => {
+      const pages = getComposerPages(s.text);
+      pages.splice(pageIndex, 1, ...pieces);
+      const limitedText = joinComposerPages(pages);
+      const limitedPages = getComposerPages(limitedText);
+      const focusedText = limitedPages[Math.min(nextPage, limitedPages.length - 1)] ?? "";
+      return { ...s, text: limitedText, size: suggestSize(focusedText, s.size) };
+    });
+
+    setActiveTextPage(focusedPage);
+    setPreviewAnimating(false);
+    setAccentRecommendation(null);
+    if (pieces.length > 1) {
+      window.setTimeout(() => textareaRefs.current[focusedPage]?.focus(), 0);
+    }
+  }
+
+  function insertTextPageAfter(pageIndex: number) {
+    if (spec.text.length >= MAX_STATUS_CHARS) return;
+    const nextPage = pageIndex + 1;
+    setSpec((s) => {
+      const pages = getComposerPages(s.text);
+      pages.splice(nextPage, 0, "");
+      return { ...s, text: joinComposerPages(pages) };
+    });
+    setActiveTextPage(nextPage);
+    setPreviewAnimating(false);
+    setAccentRecommendation(null);
+    window.setTimeout(() => textareaRefs.current[nextPage]?.focus(), 0);
+  }
+
+  function removeTextPage(pageIndex: number) {
+    setSpec((s) => {
+      const pages = getComposerPages(s.text);
+      if (pages.length <= 1) return { ...s, text: "" };
+      pages.splice(pageIndex, 1);
+      return { ...s, text: joinComposerPages(pages) };
+    });
+    setActiveTextPage((page) => Math.max(0, Math.min(page, composerPages.length - 2)));
+    setPreviewAnimating(false);
+    setAccentRecommendation(null);
+  }
+
+  function selectTextPage(pageIndex: number) {
+    setActiveTextPage(pageIndex);
+    setPreviewAnimating(false);
+    window.setTimeout(() => textareaRefs.current[pageIndex]?.focus(), 0);
+  }
+
+  function openPageBackdropEditor(pageIndex: number) {
+    setActiveTextPage(pageIndex);
+    setPreviewAnimating(false);
+    setActivePage("background");
+  }
+
+  function acceptEmojiAccent() {
+    if (!accentRecommendation) return;
+    setSpec((s) => ({
+      ...s,
+      stickers: [
+        ...(s.stickers ?? []).filter((sticker) => sticker.word !== accentRecommendation.keyword),
+        createEmojiSticker(
+          accentRecommendation.keyword,
+          accentRecommendation.emoji,
+          s.stickers?.length ?? 0,
+        ),
+      ],
+    }));
+    setAccentRecommendation(null);
+    setDismissedAccentKeyword(accentRecommendation.keyword);
+    setPreviewAnimating(false);
+  }
+
+  function rejectAccent() {
+    if (!accentRecommendation) return;
+    setDismissedAccentKeyword(accentRecommendation.keyword);
+    setAccentRecommendation(null);
+  }
+
+  function removeAccent(id: string) {
+    setSpec((s) => ({
+      ...s,
+      stickers: (s.stickers ?? []).filter((sticker) => sticker.id !== id),
+    }));
+    setPreviewAnimating(false);
   }
 
   function updatePlacement(x: number, y: number) {
     setSpec((s) => ({ ...s, x, y }));
-    setPlayKey((key) => key + 1);
+    setPreviewAnimating(false);
   }
 
   function applyTemplate(template: AnimationTemplate) {
-    setBackgroundMode("gradient");
-    setBg(template.gradient);
+    setBackgroundMode(template.backdrop.mode);
+    if (template.backdrop.mode === "gradient") {
+      setBg(template.backdrop.gradient);
+    }
+    if (template.backdrop.mode === "transition") {
+      setSelectedGradientPath(template.backdrop.path);
+      setBg(template.backdrop.path.gradients[0] ?? GRADIENTS[0]);
+    }
+    if (template.backdrop.mode === "scene") {
+      setSelectedSceneId(template.backdrop.sceneId);
+      setBg(getCanvasSceneTheme(template.backdrop.sceneId)?.base ?? GRADIENTS[0]);
+    }
+    if (template.backdrop.mode === "pattern") {
+      setSelectedPatternId(template.backdrop.patternId);
+      setBg(getCanvasPatternTheme(template.backdrop.patternId)?.base ?? GRADIENTS[0]);
+    }
+    if (template.backdrop.mode === "photo") {
+      setSelectedPhoto(template.backdrop.url);
+    }
+    if (template.backdrop.mode === "video") {
+      setSelectedVideo(template.backdrop.url);
+    }
     setSpec((s) => ({
       ...s,
       ...template.spec,
       text: s.text,
-      size: suggestSize(s.text, template.spec.size ?? s.size),
+      backgroundScene: template.backdrop.mode === "scene" ? template.backdrop.sceneId : undefined,
+      backgroundPattern:
+        template.backdrop.mode === "pattern" ? template.backdrop.patternId : undefined,
+      size: suggestSize(currentTextPage, template.spec.size ?? s.size),
     }));
+    setPreviewAnimating(true);
     setPlayKey((key) => key + 1);
   }
 
   function replayPreview() {
+    setPreviewAnimating(true);
     setPlayKey((key) => key + 1);
   }
 
@@ -372,7 +762,7 @@ function CreatePage() {
   }
 
   async function publish() {
-    if (!spec.text.trim()) return toast.error("type something first");
+    if (!publishText) return toast.error("type something first");
     if (articleInvalid) return toast.error("that article link looks off");
     setPosting(true);
     try {
@@ -465,7 +855,26 @@ function CreatePage() {
               style={{ height: previewPaneHeight }}
               aria-label="Replay preview"
             >
-              {previewSlidingBackground ? (
+              {previewScene ? (
+                <span
+                  aria-hidden
+                  className="absolute inset-0"
+                  style={getSceneBackgroundStyle(previewScene, playKey)}
+                />
+              ) : previewPattern ? (
+                <span
+                  aria-hidden
+                  className="absolute inset-0"
+                  style={{
+                    backgroundColor: previewPattern.base,
+                    backgroundImage: previewPattern.image,
+                    backgroundSize: previewPattern.size,
+                    backgroundRepeat: "repeat",
+                    backgroundPosition: getPatternBackgroundPosition(previewPattern, playKey),
+                    transition: "background-position 0.95s cubic-bezier(0.22,1,0.36,1)",
+                  }}
+                />
+              ) : previewSlidingBackground ? (
                 <motion.span
                   aria-hidden
                   className="absolute inset-y-0 left-0"
@@ -484,7 +893,7 @@ function CreatePage() {
                   style={{ background: previewBackground }}
                 />
               )}
-              {backgroundMode === "transition" && (
+              {(backgroundMode === "transition" || previewPattern || previewScene) && (
                 <motion.span
                   key={`${previewBackground}-sheen`}
                   aria-hidden
@@ -501,18 +910,44 @@ function CreatePage() {
               {activePhoto && (
                 <img src={activePhoto} alt="" className="absolute inset-0 size-full object-cover" />
               )}
-              {activePhoto && (
+              {activeVideo && (
+                <video
+                  src={activeVideo}
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  className="absolute inset-0 size-full object-cover"
+                />
+              )}
+              {(activePhoto || activeVideo) && (
                 <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/10 to-black/55" />
               )}
-              {spec.text.trim() ? (
-                <KineticText
-                  spec={spec}
-                  playKey={playKey}
-                  scaleToCanvas
-                  background={
-                    backgroundMode === "transition" ? selectedTransitionGradients : safeBg
-                  }
-                />
+              {currentTextPage.trim() ? (
+                <>
+                  <KineticText
+                    spec={previewSpec}
+                    playKey={playKey}
+                    scaleToCanvas
+                    staticLayout={!previewAnimating}
+                    background={
+                      backgroundMode === "transition"
+                        ? selectedTransitionGradients
+                        : previewScene
+                          ? previewScene.base
+                          : previewPattern
+                            ? previewPattern.base
+                            : safeBg
+                    }
+                  />
+                  <CanvasStickerLayer
+                    stickers={spec.stickers}
+                    text={currentTextPage}
+                    layout={previewSpec}
+                    playKey={playKey}
+                    compact
+                  />
+                </>
               ) : (
                 <div className="absolute inset-0 grid place-items-center px-8 text-center">
                   <div>
@@ -524,7 +959,9 @@ function CreatePage() {
                 </div>
               )}
               <span className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-black/35 px-3 py-1 font-mono text-[9px] uppercase tracking-[0.16em] text-white/65 backdrop-blur">
-                tap to replay
+                {composerPages.length > 1
+                  ? `page ${activeTextPage + 1}/${composerPages.length}`
+                  : "tap to replay"}
               </span>
               {articlePreview && (
                 <span className="absolute left-3 top-3 z-10 grid size-9 place-items-center rounded-full bg-white text-black shadow-[0_10px_28px_rgba(0,0,0,0.4)]">
@@ -545,7 +982,17 @@ function CreatePage() {
                   <TemplateButton
                     key={template.id}
                     template={template}
-                    active={isTemplateActive(template, spec, bg, backgroundMode)}
+                    active={isTemplateActive(
+                      template,
+                      spec,
+                      bg,
+                      backgroundMode,
+                      selectedGradientPath,
+                      selectedSceneId,
+                      selectedPatternId,
+                      selectedPhoto,
+                      selectedVideo,
+                    )}
                     onClick={() => applyTemplate(template)}
                   />
                 ))}
@@ -558,14 +1005,96 @@ function CreatePage() {
           {activePage === "write" && (
             <div className="space-y-4">
               <Panel icon={<Type />} title="sentence">
-                <textarea
-                  ref={textareaRef}
-                  value={spec.text}
-                  onChange={(event) => updateText(event.target.value)}
-                  rows={2}
-                  placeholder="write one or two sentences..."
-                  className="block w-full resize-none overflow-y-auto rounded-2xl bg-white/7 px-4 py-3 text-base leading-relaxed text-white outline-none ring-1 ring-white/10 placeholder:text-white/35 focus:ring-primary/70"
-                />
+                <div className="space-y-2">
+                  {composerPages.map((pageText, pageIndex) => (
+                    <div
+                      key={pageIndex}
+                      onClick={() => selectTextPage(pageIndex)}
+                      className={`rounded-2xl p-2 ring-1 transition ${
+                        activeTextPage === pageIndex
+                          ? "bg-white/[0.08] ring-primary/70"
+                          : "bg-white/[0.04] ring-white/10 hover:bg-white/[0.06]"
+                      }`}
+                    >
+                      <div className="mb-1.5 flex items-center justify-between px-1 font-mono text-[10px] uppercase tracking-[0.16em]">
+                        <button
+                          type="button"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            selectTextPage(pageIndex);
+                          }}
+                          className={
+                            activeTextPage === pageIndex
+                              ? "text-white"
+                              : "text-muted-foreground transition hover:text-white"
+                          }
+                        >
+                          page {pageIndex + 1}
+                        </button>
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              openPageBackdropEditor(pageIndex);
+                            }}
+                            className="flex h-6 items-center gap-1 rounded-full bg-white/8 px-2 text-[9px] font-bold text-white/70 ring-1 ring-white/10 transition hover:bg-white/12 hover:text-white"
+                            aria-label={`${getPageBackdropActionLabel(backgroundMode)} for page ${
+                              pageIndex + 1
+                            }`}
+                          >
+                            {getPageBackdropActionIcon(backgroundMode)}
+                            {getPageBackdropActionLabel(backgroundMode)}
+                          </button>
+                          {composerPages.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={(event) => {
+                                event.stopPropagation();
+                                removeTextPage(pageIndex);
+                              }}
+                              className="grid size-6 place-items-center rounded-full text-muted-foreground transition hover:bg-white/10 hover:text-white"
+                              aria-label={`Remove page ${pageIndex + 1}`}
+                            >
+                              <X className="size-3.5" />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                      <textarea
+                        ref={(el) => {
+                          textareaRefs.current[pageIndex] = el;
+                        }}
+                        value={pageText}
+                        onFocus={() => {
+                          setActiveTextPage(pageIndex);
+                          setPreviewAnimating(false);
+                        }}
+                        onChange={(event) => updateTextPage(pageIndex, event.target.value)}
+                        onKeyDown={(event) => {
+                          if (event.key !== "Enter") return;
+                          event.preventDefault();
+                          if (!pageText.trim()) return;
+                          insertTextPageAfter(pageIndex);
+                        }}
+                        rows={2}
+                        placeholder={
+                          pageIndex === 0 ? "write one sentence or argument..." : "next page..."
+                        }
+                        className="block w-full resize-none overflow-y-auto rounded-xl bg-black/20 px-3 py-2.5 text-base leading-relaxed text-white outline-none placeholder:text-white/35"
+                      />
+                    </div>
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => insertTextPageAfter(activeTextPage)}
+                  disabled={spec.text.length >= MAX_STATUS_CHARS}
+                  className="mt-2 flex w-full items-center justify-center gap-2 rounded-2xl bg-white/8 px-3 py-2 text-xs font-bold text-white ring-1 ring-white/10 transition hover:bg-white/12 disabled:opacity-40"
+                >
+                  <Plus className="size-3.5" />
+                  add page
+                </button>
                 <div className="mt-2 flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
                   <button
                     type="button"
@@ -579,7 +1108,9 @@ function CreatePage() {
                       className={`size-3 transition ${advancedOpen ? "rotate-90" : ""}`}
                     />
                   </button>
-                  <span>{spec.text.length}/220</span>
+                  <span>
+                    {spec.text.length}/{MAX_STATUS_CHARS}
+                  </span>
                 </div>
 
                 {advancedOpen && (
@@ -616,6 +1147,15 @@ function CreatePage() {
                     />
                   </div>
                 )}
+
+                <AccentRecommendationCard
+                  recommendation={accentRecommendation}
+                  loading={accentLoading}
+                  stickers={spec.stickers ?? []}
+                  onAcceptEmoji={acceptEmojiAccent}
+                  onReject={rejectAccent}
+                  onRemove={removeAccent}
+                />
 
                 <div className="mt-3 border-t border-white/10 pt-3">
                   <button
@@ -675,12 +1215,15 @@ function CreatePage() {
           {activePage === "background" && (
             <div className="space-y-4">
               <Panel icon={<ImageIcon />} title="background source">
-                <div className="grid grid-cols-4 gap-1 rounded-2xl bg-black/25 p-1">
+                <div className="grid grid-cols-3 gap-1 rounded-2xl bg-black/25 p-1">
                   {[
                     { id: "gradient", label: "gradient", icon: <Palette className="size-3" /> },
                     { id: "transition", label: "flow", icon: <Sparkles className="size-3" /> },
+                    { id: "scene", label: "scene", icon: <Newspaper className="size-3" /> },
+                    { id: "pattern", label: "pattern", icon: <Sparkles className="size-3" /> },
                     { id: "photo", label: "photos", icon: <ImageIcon className="size-3" /> },
                     { id: "upload", label: "upload", icon: <Upload className="size-3" /> },
+                    { id: "video", label: "video", icon: <Video className="size-3" /> },
                   ].map((item) => (
                     <button
                       key={item.id}
@@ -705,12 +1248,17 @@ function CreatePage() {
                         key={gradient}
                         type="button"
                         onClick={() => setBg(gradient)}
-                        className={`aspect-square rounded-2xl border-2 transition ${
-                          bg === gradient ? "border-white" : "border-transparent"
+                        className={`relative aspect-square rounded-2xl bg-white/5 p-[2px] transition ring-2 ${
+                          bg === gradient ? "ring-white" : "ring-transparent"
                         }`}
-                        style={{ background: gradient }}
                         aria-label="Choose gradient background"
-                      />
+                      >
+                        <span
+                          className="block size-full overflow-hidden rounded-[14px]"
+                          style={{ background: gradient }}
+                          aria-hidden
+                        />
+                      </button>
                     ))}
                   </div>
                 )}
@@ -728,6 +1276,67 @@ function CreatePage() {
                           replayPreview();
                         }}
                       />
+                    ))}
+                  </div>
+                )}
+
+                {backgroundMode === "scene" && (
+                  <div className="mt-3 grid grid-cols-1 gap-2">
+                    {CANVAS_SCENE_THEMES.map((theme) => (
+                      <button
+                        key={theme.id}
+                        type="button"
+                        onClick={() => {
+                          setSelectedSceneId(theme.id);
+                          setBg(theme.base);
+                          replayPreview();
+                        }}
+                        className={`relative min-h-28 overflow-hidden rounded-2xl p-3 text-left ring-2 transition ${
+                          selectedSceneId === theme.id ? "ring-white" : "ring-transparent"
+                        }`}
+                        style={getSceneBackgroundStyle(theme, 0)}
+                      >
+                        <span className="absolute inset-0 bg-gradient-to-b from-black/5 to-black/45" />
+                        <span className="relative block text-sm font-black text-white">
+                          {theme.label}
+                        </span>
+                        <span className="relative mt-1 block font-mono text-[9px] uppercase tracking-[0.14em] text-white/70">
+                          {theme.mood}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {backgroundMode === "pattern" && (
+                  <div className="mt-3 grid grid-cols-2 gap-2">
+                    {CANVAS_PATTERN_THEMES.map((theme) => (
+                      <button
+                        key={theme.id}
+                        type="button"
+                        onClick={() => {
+                          setSelectedPatternId(theme.id);
+                          setBg(theme.base);
+                          replayPreview();
+                        }}
+                        className={`relative min-h-24 overflow-hidden rounded-2xl p-2 text-left ring-2 transition ${
+                          selectedPatternId === theme.id ? "ring-white" : "ring-transparent"
+                        }`}
+                        style={{
+                          backgroundColor: theme.base,
+                          backgroundImage: theme.image,
+                          backgroundSize: theme.size,
+                          backgroundRepeat: "repeat",
+                        }}
+                      >
+                        <span className="absolute inset-0 bg-gradient-to-b from-black/5 to-black/45" />
+                        <span className="relative block text-xs font-black text-white">
+                          {theme.label}
+                        </span>
+                        <span className="relative mt-1 block font-mono text-[8px] uppercase tracking-[0.12em] text-white/65">
+                          {theme.mood}
+                        </span>
+                      </button>
                     ))}
                   </div>
                 )}
@@ -787,6 +1396,38 @@ function CreatePage() {
                         <Check className="size-4 text-primary" />
                       </div>
                     )}
+                  </div>
+                )}
+
+                {backgroundMode === "video" && (
+                  <div className="mt-3 grid gap-2">
+                    {PRELOADED_VIDEOS.map((video) => (
+                      <button
+                        key={video.id}
+                        type="button"
+                        onClick={() => {
+                          setSelectedVideo(video.url);
+                          setBackgroundMode("video");
+                        }}
+                        className={`relative aspect-[9/16] max-h-64 w-full overflow-hidden rounded-2xl text-left ring-2 transition ${
+                          selectedVideo === video.url ? "ring-white" : "ring-transparent"
+                        }`}
+                      >
+                        <video
+                          src={video.url}
+                          autoPlay
+                          muted
+                          loop
+                          playsInline
+                          className="absolute inset-0 size-full object-cover"
+                        />
+                        <span className="absolute inset-0 bg-gradient-to-b from-black/5 via-transparent to-black/60" />
+                        <span className="absolute bottom-2 left-2 flex items-center gap-2 rounded-full bg-black/45 px-3 py-1.5 text-xs font-bold text-white backdrop-blur">
+                          <Video className="size-3.5" />
+                          {video.label}
+                        </span>
+                      </button>
+                    ))}
                   </div>
                 )}
               </Panel>
@@ -981,6 +1622,97 @@ function Panel({
   );
 }
 
+function AccentRecommendationCard({
+  recommendation,
+  loading,
+  stickers,
+  onAcceptEmoji,
+  onReject,
+  onRemove,
+}: {
+  recommendation: AccentRecommendation | null;
+  loading: boolean;
+  stickers: CanvasSticker[];
+  onAcceptEmoji: () => void;
+  onReject: () => void;
+  onRemove: (id: string) => void;
+}) {
+  if (!recommendation && !loading && stickers.length === 0) return null;
+
+  return (
+    <div className="mt-3 space-y-2 rounded-2xl bg-black/20 p-2 ring-1 ring-white/10">
+      <div className="flex items-center gap-2 px-1 font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+        <Smile className="size-3.5" />
+        smart accents
+      </div>
+
+      {loading && !recommendation && (
+        <div className="flex items-center gap-2 rounded-xl bg-white/[0.06] px-3 py-2 text-xs font-bold text-white/70">
+          <Sparkles className="size-3.5 animate-pulse" />
+          finding a visual match...
+        </div>
+      )}
+
+      {recommendation && (
+        <div className="rounded-xl bg-white/[0.07] p-2 ring-1 ring-white/10">
+          <div className="mb-2 flex items-center justify-between gap-2">
+            <div className="min-w-0">
+              <p className="truncate text-sm font-bold text-white">
+                match "{recommendation.keyword}"
+              </p>
+              <p className="font-mono text-[9px] uppercase tracking-[0.16em] text-muted-foreground">
+                local emoji suggestion
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={onReject}
+              className="grid size-8 shrink-0 place-items-center rounded-full bg-white/10 text-white/70 transition hover:bg-white/15 hover:text-white"
+              aria-label="Reject accent recommendation"
+            >
+              <X className="size-4" />
+            </button>
+          </div>
+
+          <button
+            type="button"
+            onClick={onAcceptEmoji}
+            className="flex min-h-20 w-full items-center gap-3 rounded-xl bg-white px-3 py-2 text-left text-black transition active:scale-[0.98]"
+          >
+            <span className="text-4xl leading-none">{recommendation.emoji}</span>
+            <span className="min-w-0">
+              <span className="block text-xs font-black uppercase">add emoji accent</span>
+              <span className="block truncate font-mono text-[9px] uppercase tracking-[0.12em] text-black/55">
+                appears beside the matched word
+              </span>
+            </span>
+          </button>
+        </div>
+      )}
+
+      {stickers.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {stickers.map((sticker) => (
+            <button
+              key={sticker.id}
+              type="button"
+              onClick={() => onRemove(sticker.id)}
+              className="flex items-center gap-1.5 rounded-full bg-white/10 py-1 pl-2 pr-1 text-[11px] font-bold text-white ring-1 ring-white/10 transition hover:bg-white/15"
+              aria-label={`Remove ${sticker.word} accent`}
+            >
+              <span>{sticker.kind === "emoji" ? sticker.emoji : "GIF"}</span>
+              <span className="max-w-20 truncate">{sticker.word}</span>
+              <span className="grid size-5 place-items-center rounded-full bg-black/25">
+                <X className="size-3" />
+              </span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function TemplateButton({
   template,
   active,
@@ -1002,26 +1734,7 @@ function TemplateButton({
       }`}
     >
       <span className="relative block w-full">
-        <span
-          className="relative block aspect-square w-full overflow-hidden rounded-lg"
-          style={{ background: template.gradient }}
-        >
-          <span className="pointer-events-none absolute inset-0 bg-[radial-gradient(120%_60%_at_25%_0%,rgba(255,255,255,0.28),transparent_60%)]" />
-          <span
-            className="absolute left-1/2 top-1/2 leading-none"
-            style={{
-              color: template.spec.color,
-              fontFamily: template.spec.font,
-              fontWeight: template.spec.weight ?? 900,
-              letterSpacing: `${template.spec.letterSpacing ?? -0.02}em`,
-              fontSize: 15,
-              transform: `translate(-50%, -50%) rotate(${template.spec.rotation ?? 0}deg)`,
-              textShadow: "0 1px 6px rgba(0,0,0,0.32)",
-            }}
-          >
-            Aa
-          </span>
-        </span>
+        <TemplateBackdropThumbnail template={template} />
         {active && (
           <span className="absolute -right-1.5 -top-1.5 grid size-3.5 place-items-center rounded-full bg-white text-black shadow-[0_3px_10px_rgba(0,0,0,0.35)] ring-1 ring-black/40">
             <Check className="size-2" strokeWidth={4} />
@@ -1038,6 +1751,94 @@ function TemplateButton({
       </span>
     </button>
   );
+}
+
+function TemplateBackdropThumbnail({ template }: { template: AnimationTemplate }) {
+  const scene =
+    template.backdrop.mode === "scene" ? getCanvasSceneTheme(template.backdrop.sceneId) : null;
+  const pattern =
+    template.backdrop.mode === "pattern"
+      ? getCanvasPatternTheme(template.backdrop.patternId)
+      : null;
+
+  return (
+    <span
+      className="relative block aspect-square w-full overflow-hidden rounded-lg"
+      style={getTemplateThumbnailStyle(template, scene, pattern)}
+    >
+      {template.backdrop.mode === "photo" && (
+        <img
+          src={template.backdrop.url}
+          alt=""
+          className="absolute inset-0 size-full object-cover"
+        />
+      )}
+      {template.backdrop.mode === "video" && (
+        <video
+          src={template.backdrop.url}
+          autoPlay
+          muted
+          loop
+          playsInline
+          className="absolute inset-0 size-full object-cover"
+        />
+      )}
+      <span className="pointer-events-none absolute inset-0 bg-[radial-gradient(120%_60%_at_25%_0%,rgba(255,255,255,0.28),transparent_60%)]" />
+      {(template.backdrop.mode === "photo" || template.backdrop.mode === "video") && (
+        <span className="absolute inset-0 bg-gradient-to-b from-black/5 to-black/50" />
+      )}
+      {template.backdrop.mode === "video" && (
+        <span className="absolute right-1 top-1 grid size-4 place-items-center rounded-full bg-black/45 text-white">
+          <Video className="size-2.5" />
+        </span>
+      )}
+      <span
+        className="absolute left-1/2 top-1/2 leading-none"
+        style={{
+          color: template.spec.color,
+          fontFamily: template.spec.font,
+          fontWeight: template.spec.weight ?? 900,
+          letterSpacing: `${template.spec.letterSpacing ?? -0.02}em`,
+          fontSize: 15,
+          transform: `translate(-50%, -50%) rotate(${template.spec.rotation ?? 0}deg)`,
+          textShadow: "0 1px 6px rgba(0,0,0,0.32)",
+        }}
+      >
+        Aa
+      </span>
+    </span>
+  );
+}
+
+function getTemplateThumbnailStyle(
+  template: AnimationTemplate,
+  scene: ReturnType<typeof getCanvasSceneTheme>,
+  pattern: ReturnType<typeof getCanvasPatternTheme>,
+): CSSProperties {
+  if (template.backdrop.mode === "scene" && scene) {
+    return getSceneBackgroundStyle(scene, 0);
+  }
+
+  if (template.backdrop.mode === "pattern" && pattern) {
+    return {
+      backgroundColor: pattern.base,
+      backgroundImage: pattern.image,
+      backgroundSize: pattern.size,
+      backgroundRepeat: "repeat",
+    };
+  }
+
+  if (template.backdrop.mode === "gradient") {
+    return { background: template.backdrop.gradient };
+  }
+
+  if (template.backdrop.mode === "transition") {
+    return {
+      background: template.backdrop.path.gradients[0] ?? SAFE_CANVAS_BACKGROUND,
+    };
+  }
+
+  return { background: SAFE_CANVAS_BACKGROUND };
 }
 
 function GradientPathButton({
@@ -1148,21 +1949,55 @@ function StudioLink({
   );
 }
 
+function getPageBackdropActionLabel(backgroundMode: BackgroundMode) {
+  if (backgroundMode === "video") return "change video";
+  if (backgroundMode === "photo" || backgroundMode === "upload") return "change image";
+  return "background";
+}
+
+function getPageBackdropActionIcon(backgroundMode: BackgroundMode) {
+  if (backgroundMode === "video") return <Video className="size-3" />;
+  if (backgroundMode === "photo" || backgroundMode === "upload") {
+    return <ImageIcon className="size-3" />;
+  }
+  return <Palette className="size-3" />;
+}
+
 function isTemplateActive(
   template: AnimationTemplate,
   spec: CanvasSpec,
   bg: string,
   backgroundMode: BackgroundMode,
+  selectedGradientPath: GradientTransitionPath,
+  selectedSceneId: string,
+  selectedPatternId: string,
+  selectedPhoto: string,
+  selectedVideo: string,
 ) {
-  return (
-    backgroundMode === "gradient" &&
-    bg === template.gradient &&
+  const motionMatches =
     spec.font === template.spec.font &&
     spec.entrance === template.spec.entrance &&
     spec.loop === template.spec.loop &&
     spec.tempo === template.spec.tempo &&
-    spec.rhythm === template.spec.rhythm
-  );
+    spec.rhythm === template.spec.rhythm;
+  if (!motionMatches) return false;
+
+  if (template.backdrop.mode === "gradient") {
+    return backgroundMode === "gradient" && bg === template.backdrop.gradient;
+  }
+  if (template.backdrop.mode === "transition") {
+    return backgroundMode === "transition" && selectedGradientPath.id === template.backdrop.path.id;
+  }
+  if (template.backdrop.mode === "scene") {
+    return backgroundMode === "scene" && selectedSceneId === template.backdrop.sceneId;
+  }
+  if (template.backdrop.mode === "pattern") {
+    return backgroundMode === "pattern" && selectedPatternId === template.backdrop.patternId;
+  }
+  if (template.backdrop.mode === "photo") {
+    return backgroundMode === "photo" && selectedPhoto === template.backdrop.url;
+  }
+  return backgroundMode === "video" && selectedVideo === template.backdrop.url;
 }
 
 function DoneButton({ onClick }: { onClick: () => void }) {
@@ -1245,9 +2080,9 @@ function readFileAsDataUrl(file: File) {
 function suggestSize(text: string, current: number) {
   const clean = text.trim();
   if (!clean) return current;
-  if (clean.length > 150) return Math.min(current, 54);
-  if (clean.length > 90) return Math.min(current, 64);
-  if (clean.length > 48) return Math.min(current, 76);
+  if (clean.length > 150) return Math.min(current, 72);
+  if (clean.length > 90) return Math.min(current, 84);
+  if (clean.length > 48) return Math.min(current, 96);
   return current;
 }
 

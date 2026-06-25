@@ -13,6 +13,18 @@ export interface CanvasLinkPreview {
   title: string;
 }
 
+export interface CanvasSticker {
+  id: string;
+  kind: "emoji" | "gif";
+  word: string;
+  emoji?: string;
+  url?: string;
+  title?: string;
+  x: number;
+  y: number;
+  size: number;
+}
+
 export interface CanvasSpec {
   text: string;
   font: string; // "Inter" | "Space Grotesk" | "Bebas Neue" | "Playfair Display" | "JetBrains Mono"
@@ -28,11 +40,15 @@ export interface CanvasSpec {
   rhythm: Rhythm;
   rotation: number; // degrees
   link?: CanvasLinkPreview | null;
+  stickers?: CanvasSticker[];
   backgroundStyle?: BackgroundStyle;
   gradientPath?: string[];
   // Id of a seamless tiling pattern backdrop (see canvas-patterns.ts). When set,
   // it replaces the gradient backdrop and pans a fixed step per page turn.
   backgroundPattern?: string;
+  // Id of a generated layered scene backdrop (see canvas-scenes.ts). Scenes are
+  // composed from CSS sheets/textures rather than gradients, photos, or videos.
+  backgroundScene?: string;
 }
 
 type RgbColor = { r: number; g: number; b: number };
@@ -57,6 +73,7 @@ export const DEFAULT_CANVAS: CanvasSpec = {
   rhythm: "stagger",
   rotation: 0,
   link: null,
+  stickers: [],
   backgroundStyle: "static",
   gradientPath: [],
 };
@@ -275,7 +292,7 @@ export function parseCanvas(raw: string | null | undefined): CanvasSpec {
   if (!raw) return DEFAULT_CANVAS;
   try {
     const obj = JSON.parse(raw);
-    return { ...DEFAULT_CANVAS, ...obj };
+    return { ...DEFAULT_CANVAS, ...obj, stickers: Array.isArray(obj.stickers) ? obj.stickers : [] };
   } catch {
     return { ...DEFAULT_CANVAS, text: raw };
   }

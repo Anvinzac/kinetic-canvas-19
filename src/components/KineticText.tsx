@@ -18,7 +18,7 @@ const FULL_CANVAS_MAX_HEIGHT = 764;
 const CANVAS_RATIO = 16 / 9;
 // Same canvas-safe inset as PostCard: clear the edge without shrinking the status energy.
 const TEXT_SAFE_MAX_WIDTH = "min(92%, calc(100% - 2rem))";
-const MIN_TEXT_FIT_SCALE = 0.08;
+const MIN_TEXT_FIT_SCALE = 0.46;
 const VIETNAMESE_SCALE_FIT_GUARD = 1.24;
 const PREVIEW_EMPHASIS_VARIANTS = [
   "color",
@@ -76,12 +76,14 @@ export function KineticText({
   playKey = 0,
   paused = false,
   scaleToCanvas = false,
+  staticLayout = false,
   background,
 }: {
   spec: CanvasSpec;
   playKey?: number;
   paused?: boolean;
   scaleToCanvas?: boolean;
+  staticLayout?: boolean;
   background?: string | readonly string[] | null;
 }) {
   const wordVariants = entranceVariants(spec.entrance, spec.rhythm);
@@ -101,6 +103,9 @@ export function KineticText({
   const textColor = getCanvasTextColor(spec, background);
   const emphasisColor = getCanvasEmphasisColor({ ...spec, color: textColor }, background);
   const visualScaleGuard = isVietnamese ? VIETNAMESE_SCALE_FIT_GUARD : 1;
+  const textSafeMaxWidth = hasVisibleStickerAccent(spec.stickers, spec.text)
+    ? "min(90%, calc(100% - 2.5rem))"
+    : TEXT_SAFE_MAX_WIDTH;
 
   useEffect(() => {
     if (!scaleToCanvas) {
@@ -159,9 +164,10 @@ export function KineticText({
     const widthRatio = wrapperWidth / Math.max(measuredWidth * visualScaleGuard, 1);
     const heightRatio = maxHeight / Math.max(text.scrollHeight, 1);
     const nextFit = Math.min(1, fitScale * Math.min(widthRatio, heightRatio) * 0.98);
+    const fitFloor = getPreviewFitFloor(spec.text);
 
     if (nextFit < fitScale - 0.01) {
-      setFitScale(Math.max(MIN_TEXT_FIT_SCALE, nextFit));
+      setFitScale(Math.max(fitFloor, nextFit));
     }
   }, [
     fitScale,
@@ -177,7 +183,7 @@ export function KineticText({
     visualScaleGuard,
   ]);
 
-  const loopAnimation = getLoopAnimation(spec.loop, spec.tempo);
+  const loopAnimation = staticLayout ? undefined : getLoopAnimation(spec.loop, spec.tempo);
 
   return (
     <div
@@ -187,8 +193,8 @@ export function KineticText({
         left: `${spec.x}%`,
         top: `${spec.y}%`,
         transform: "translate(-50%, -50%)",
-        width: TEXT_SAFE_MAX_WIDTH,
-        maxWidth: TEXT_SAFE_MAX_WIDTH,
+        width: textSafeMaxWidth,
+        maxWidth: textSafeMaxWidth,
       }}
     >
       <motion.div
@@ -273,6 +279,7 @@ export function KineticText({
                           emphasized.has(index),
                           textColor,
                           emphasisColor,
+                          staticLayout,
                         ),
                       )}
                     </span>
@@ -294,6 +301,7 @@ export function KineticText({
                 emphasized.has(i),
                 textColor,
                 emphasisColor,
+                staticLayout,
               ),
             )}
       </motion.div>
@@ -314,6 +322,7 @@ function renderAnimatedWord(
   important: boolean,
   textColor: string,
   emphasisColor: string,
+  staticLayout: boolean,
 ) {
   const emphasisVariant = important
     ? getPreviewEmphasisVariant(spec.text, word, index, !isDimPreviewColor(emphasisColor))
@@ -332,15 +341,24 @@ function renderAnimatedWord(
           : {}),
       } as CSSProperties)
     : undefined;
-  const innerAnimation = important ? getPreviewEmphasisInnerAnimation(emphasisVariant) : undefined;
+  const innerAnimation =
+    important && !staticLayout ? getPreviewEmphasisInnerAnimation(emphasisVariant) : undefined;
   return (
     <motion.span
       key={`${playKey}-${word}-${index}`}
-      initial={wordVariants.initial}
-      animate={wordVariants.animate}
+      data-kinetic-word={getWordAnchorKey(word)}
+      data-kinetic-word-index={index}
+      initial={staticLayout ? false : wordVariants.initial}
+      animate={
+        staticLayout ? { opacity: 1, y: 0, x: 0, scale: 1, rotate: 0 } : wordVariants.animate
+      }
       transition={{
-        delay: entranceDelay,
-        duration: spec.rhythm === "poetic" ? entranceDuration * 1.42 : entranceDuration,
+        delay: staticLayout ? 0 : entranceDelay,
+        duration: staticLayout
+          ? 0.01
+          : spec.rhythm === "poetic"
+            ? entranceDuration * 1.42
+            : entranceDuration,
         ease: spec.rhythm === "poetic" ? [0.16, 1, 0.3, 1] : [0.22, 1, 0.36, 1],
       }}
       style={{
@@ -373,7 +391,7 @@ function renderAnimatedWord(
                       : emphasisVariant === "sweep"
                         ? " kinetic-emph-sweep"
                         : ""
-              }${paused ? "" : " is-animated"}`
+              }${paused || staticLayout ? "" : " is-animated"}`
             : undefined
         }
         style={{
@@ -404,6 +422,28 @@ function getRhythmDelay(index: number, tempo: Tempo, rhythm: Rhythm) {
 
 function getWords(text: string) {
   return text.match(/\S+/g) ?? [];
+}
+
+function hasVisibleStickerAccent(stickers: CanvasSpec["stickers"], text: string) {
+  const normalizedText = text.toLowerCase();
+  return (stickers ?? []).some((sticker) => normalizedText.includes(sticker.word.toLowerCase()));
+}
+
+function getPreviewFitFloor(text: string) {
+  const words = getWords(text).length;
+  if (words <= 8) return 0.74;
+  if (words <= 14) return 0.62;
+  if (words <= 22) return 0.52;
+  return MIN_TEXT_FIT_SCALE;
+}
+
+function getWordAnchorKey(word: string) {
+  return word
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/^[^a-z0-9]+|[^a-z0-9]+$/g, "")
+    .replace(/[^a-z0-9'-]/g, "");
 }
 
 function getFullCanvasHeight() {
