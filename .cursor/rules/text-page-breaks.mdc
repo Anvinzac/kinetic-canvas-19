@@ -1,0 +1,25 @@
+---
+description: Kinetic text pagination — break at ideas, never mid-phrase
+globs: src/components/PostCard.tsx
+alwaysApply: false
+---
+
+# Text page breaks
+
+When splitting long status text into animated pages (`paginateText` / `chunkSentenceByWords`):
+
+1. **Use the word budget** — long sentences still paginate across multiple screens.
+2. **On overflow, retreat to the last natural break** (comma, semicolon, colon, or full stop) so leftover words move to the next page whole.
+3. **Never split bonded phrases** — `tốc` and `độ` must stay together; hyphen phrases (`word - word`) stay on one page.
+4. **After a full stop or hyphen phrase**, do not add more words to that page.
+5. Comma breaks are for fluidity between ideas (setup on page 1, continuation on page 2).
+
+Bad:
+
+- Page 1: `Trong một cuộc trò chuyện, tốc`
+- Page 2: `độ không phải tất cả.`
+
+Good:
+
+- Page 1: `Trong một cuộc trò chuyện,`
+- Page 2: `tốc độ không phải tất cả.`

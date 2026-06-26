@@ -82,6 +82,8 @@ const VIETNAMESE_BOUND_PHRASES = [
   "ngo truc",
   "tựa gối",
   "tua goi",
+  "im lặng",
+  "im lang",
 ] as const;
 const VIETNAMESE_POETIC_EMPHASIS_PHRASES = [
   "lơ lửng",
@@ -232,6 +234,28 @@ export function getSpecialPoeticWordIndexes(words: string[]) {
   }
 
   return selected;
+}
+
+// Never emphasize one syllable of a bound Vietnamese phrase — expand to the whole word.
+export function expandEmphasisToBoundPhrases(words: string[], selected: Iterable<number>) {
+  const expanded = new Set<number>();
+
+  for (const index of selected) {
+    let matchedPhrase = false;
+    for (let start = 0; start <= index; start += 1) {
+      const length = getBoundPhraseLength(words, start);
+      if (length > 1 && start <= index && index < start + length) {
+        for (let offset = 0; offset < length; offset += 1) {
+          expanded.add(start + offset);
+        }
+        matchedPhrase = true;
+        break;
+      }
+    }
+    if (!matchedPhrase) expanded.add(index);
+  }
+
+  return expanded;
 }
 
 function getVietnameseWordSegments(words: string[]): WordSegment[] {

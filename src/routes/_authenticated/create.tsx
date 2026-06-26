@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { motion } from "framer-motion";
@@ -144,6 +144,9 @@ const PLACEMENTS = [
   { label: "center", x: 50, y: 50 },
   { label: "low", x: 50, y: 68 },
 ];
+
+const TEMPLATE_SIDEBAR_WIDTH_PERCENT = 35;
+const TEMPLATE_SIDEBAR_MIN_WIDTH_PX = 132;
 
 const ANIMATION_TEMPLATES: AnimationTemplate[] = [
   {
@@ -458,8 +461,8 @@ function CreatePage() {
   const [activePage, setActivePage] = useState<StudioPage>("write");
   const [playKey, setPlayKey] = useState(0);
   const [previewAnimating, setPreviewAnimating] = useState(false);
+  const [composerCanvasHeight, setComposerCanvasHeight] = useState<number | null>(null);
   const [posting, setPosting] = useState(false);
-  const [advancedOpen, setAdvancedOpen] = useState(false);
   const [accentRecommendation, setAccentRecommendation] = useState<AccentRecommendation | null>(
     null,
   );
@@ -554,7 +557,11 @@ function CreatePage() {
   const colorSummary = spec.color;
   const layoutSummary = PLACEMENTS.find((placement) => placement.y === spec.y)?.label ?? "custom";
   const motionSummary = `${spec.entrance} · ${spec.tempo} · ${spec.rhythm}`;
-  const previewPaneHeight = "min(70dvh, 576px, calc((100vw - 152px) * 16 / 9))";
+  const templateSidebarWidth = `max(${TEMPLATE_SIDEBAR_MIN_WIDTH_PX}px, min(${TEMPLATE_SIDEBAR_WIDTH_PERCENT}vw, ${TEMPLATE_SIDEBAR_WIDTH_PERCENT}%))`;
+  const previewPaneHeight = "min(70dvh, 576px)";
+  const previewRowHeight = composerCanvasHeight
+    ? `${composerCanvasHeight}px`
+    : previewPaneHeight;
   const previewBackground =
     backgroundMode === "transition"
       ? resolveCanvasBackground(
@@ -846,15 +853,23 @@ function CreatePage() {
       </header>
 
       <main className="mx-auto max-w-md px-4 py-4">
-        <section className="sticky top-[72px] z-20 -mx-4 bg-background/95 px-1 pb-4 backdrop-blur">
-          <div className="flex items-stretch gap-2 overflow-hidden">
-            <button
-              type="button"
-              onClick={replayPreview}
-              className="relative aspect-[9/16] shrink-0 overflow-hidden rounded-[24px] bg-black shadow-[0_24px_70px_rgba(0,0,0,0.45)] ring-1 ring-white/10"
-              style={{ height: previewPaneHeight }}
-              aria-label="Replay preview"
+        <section className="sticky top-[72px] z-20 -mx-4 bg-background/95 px-3 pb-4 backdrop-blur">
+          <div
+            className="flex min-w-0 items-stretch gap-2"
+            style={{ height: previewRowHeight, maxHeight: previewPaneHeight }}
+          >
+            <ComposerPreviewCanvas
+              className="min-w-0 flex-1"
+              style={{ height: "100%" }}
+              maxHeight={previewPaneHeight}
+              onFrameChange={(frame) => setComposerCanvasHeight(frame.height)}
             >
+              <button
+                type="button"
+                onClick={replayPreview}
+                className="relative size-full overflow-hidden rounded-[24px] bg-black shadow-[0_24px_70px_rgba(0,0,0,0.45)] ring-1 ring-white/10"
+                aria-label="Replay preview"
+              >
               {previewScene ? (
                 <span
                   aria-hidden
@@ -968,16 +983,23 @@ function CreatePage() {
                   <Link2 className="size-4" />
                 </span>
               )}
-            </button>
-            <div className="flex w-[124px] shrink-0 flex-col" style={{ height: previewPaneHeight }}>
-              <div className="mb-2 flex items-center justify-between px-0.5 font-mono text-[9px] uppercase tracking-[0.16em] text-white/55">
-                <span className="flex items-center gap-1.5">
-                  <Sparkles className="size-3" />
+              </button>
+            </ComposerPreviewCanvas>
+            <div
+              className="flex shrink-0 flex-col"
+              style={{
+                width: templateSidebarWidth,
+                height: "100%",
+              }}
+            >
+              <div className="mb-1.5 flex items-center justify-between px-0.5 font-mono text-[8px] uppercase tracking-[0.14em] text-white/55">
+                <span className="flex items-center gap-1">
+                  <Sparkles className="size-2.5" />
                   templates
                 </span>
                 <span className="text-white/35">{ANIMATION_TEMPLATES.length}</span>
               </div>
-              <div className="-mr-1 min-h-0 flex-1 space-y-1.5 overflow-y-auto pr-1 scrollbar-hide">
+              <div className="min-h-0 flex-1 space-y-1 overflow-y-auto px-0.5 pt-0.5 scrollbar-hide">
                 {ANIMATION_TEMPLATES.map((template) => (
                   <TemplateButton
                     key={template.id}
@@ -1004,6 +1026,45 @@ function CreatePage() {
         <section className="pt-2">
           {activePage === "write" && (
             <div className="space-y-4">
+              <section className="space-y-2">
+                <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+                  <Sparkles className="size-3.5" />
+                  edit one thing
+                </div>
+                <div className="grid gap-2">
+                  <StudioLink
+                    icon={<Palette />}
+                    label="Background"
+                    value={backgroundSummary}
+                    onClick={() => setActivePage("background")}
+                  />
+                  <StudioLink
+                    icon={<Type />}
+                    label="Font"
+                    value={fontSummary}
+                    onClick={() => setActivePage("font")}
+                  />
+                  <StudioLink
+                    icon={<Palette />}
+                    label="Color"
+                    value={colorSummary}
+                    onClick={() => setActivePage("color")}
+                  />
+                  <StudioLink
+                    icon={<Move />}
+                    label="Layout"
+                    value={layoutSummary}
+                    onClick={() => setActivePage("layout")}
+                  />
+                  <StudioLink
+                    icon={<Sparkles />}
+                    label="Motion"
+                    value={motionSummary}
+                    onClick={() => setActivePage("motion")}
+                  />
+                </div>
+              </section>
+
               <Panel icon={<Type />} title="sentence">
                 <div className="space-y-2">
                   {composerPages.map((pageText, pageIndex) => (
@@ -1095,58 +1156,11 @@ function CreatePage() {
                   <Plus className="size-3.5" />
                   add page
                 </button>
-                <div className="mt-2 flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-                  <button
-                    type="button"
-                    onClick={() => setAdvancedOpen((open) => !open)}
-                    className="flex items-center gap-1.5 text-left text-muted-foreground transition hover:text-white"
-                    aria-expanded={advancedOpen}
-                  >
-                    <SlidersHorizontal className="size-3.5" />
-                    advanced options
-                    <ChevronRight
-                      className={`size-3 transition ${advancedOpen ? "rotate-90" : ""}`}
-                    />
-                  </button>
+                <div className="mt-2 flex items-center justify-end font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
                   <span>
                     {spec.text.length}/{MAX_STATUS_CHARS}
                   </span>
                 </div>
-
-                {advancedOpen && (
-                  <div className="mt-3 grid gap-2">
-                    <StudioLink
-                      icon={<Palette />}
-                      label="Background"
-                      value={backgroundSummary}
-                      onClick={() => setActivePage("background")}
-                    />
-                    <StudioLink
-                      icon={<Type />}
-                      label="Font"
-                      value={fontSummary}
-                      onClick={() => setActivePage("font")}
-                    />
-                    <StudioLink
-                      icon={<Palette />}
-                      label="Color"
-                      value={colorSummary}
-                      onClick={() => setActivePage("color")}
-                    />
-                    <StudioLink
-                      icon={<Move />}
-                      label="Layout"
-                      value={layoutSummary}
-                      onClick={() => setActivePage("layout")}
-                    />
-                    <StudioLink
-                      icon={<Sparkles />}
-                      label="Motion"
-                      value={motionSummary}
-                      onClick={() => setActivePage("motion")}
-                    />
-                  </div>
-                )}
 
                 <AccentRecommendationCard
                   recommendation={accentRecommendation}
@@ -1727,25 +1741,25 @@ function TemplateButton({
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      className={`group relative grid w-full grid-cols-[40px_minmax(0,1fr)] items-center gap-2 overflow-visible rounded-xl p-1.5 text-left transition ${
+      className={`group relative grid w-full grid-cols-[30px_minmax(0,1fr)] items-center gap-1.5 rounded-lg border-2 p-1 text-left transition ${
         active
-          ? "bg-white/[0.10] ring-2 ring-white shadow-[0_4px_14px_-8px_rgba(255,255,255,0.5)]"
-          : "bg-white/[0.04] ring-1 ring-white/10 hover:bg-white/[0.07] hover:ring-white/25"
+          ? "border-white bg-white/[0.10] shadow-[0_4px_14px_-8px_rgba(255,255,255,0.5)]"
+          : "border-white/10 bg-white/[0.04] hover:border-white/25 hover:bg-white/[0.07]"
       }`}
     >
       <span className="relative block w-full">
         <TemplateBackdropThumbnail template={template} />
         {active && (
-          <span className="absolute -right-1.5 -top-1.5 grid size-3.5 place-items-center rounded-full bg-white text-black shadow-[0_3px_10px_rgba(0,0,0,0.35)] ring-1 ring-black/40">
-            <Check className="size-2" strokeWidth={4} />
+          <span className="absolute right-0 top-0 grid size-3 place-items-center rounded-full bg-white text-black shadow-[0_3px_10px_rgba(0,0,0,0.35)] ring-1 ring-black/40">
+            <Check className="size-1.5" strokeWidth={4} />
           </span>
         )}
       </span>
       <span className="min-w-0">
-        <span className="line-clamp-2 block text-[10.5px] font-black leading-[1.1] text-white">
+        <span className="line-clamp-2 block text-[9px] font-black leading-[1.05] text-white">
           {template.label}
         </span>
-        <span className="mt-0.5 block truncate font-mono text-[7.5px] uppercase tracking-[0.14em] text-white/55">
+        <span className="mt-0.5 block line-clamp-2 font-mono text-[6.5px] uppercase leading-tight tracking-[0.12em] text-white/55">
           {template.mood}
         </span>
       </span>
@@ -1799,7 +1813,7 @@ function TemplateBackdropThumbnail({ template }: { template: AnimationTemplate }
           fontFamily: template.spec.font,
           fontWeight: template.spec.weight ?? 900,
           letterSpacing: `${template.spec.letterSpacing ?? -0.02}em`,
-          fontSize: 15,
+          fontSize: 11,
           transform: `translate(-50%, -50%) rotate(${template.spec.rotation ?? 0}deg)`,
           textShadow: "0 1px 6px rgba(0,0,0,0.32)",
         }}
@@ -2111,6 +2125,74 @@ function getArticleTitle(text: string) {
   const sentence = text.replace(/\s+/g, " ").trim();
   if (!sentence) return "Linked article";
   return sentence.length > 72 ? `${sentence.slice(0, 69).trim()}...` : sentence;
+}
+
+const CANVAS_ASPECT_RATIO = 9 / 16;
+
+function ComposerPreviewCanvas({
+  className,
+  style,
+  children,
+  maxHeight,
+  onFrameChange,
+}: {
+  className?: string;
+  style?: CSSProperties;
+  children: ReactNode;
+  maxHeight?: string;
+  onFrameChange?: (frame: { width: number; height: number }) => void;
+}) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [frame, setFrame] = useState<{ width: number; height: number } | null>(null);
+  const onFrameChangeRef = useRef(onFrameChange);
+  onFrameChangeRef.current = onFrameChange;
+
+  useLayoutEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const measure = () => {
+      const { width, height } = container.getBoundingClientRect();
+      if (!width || !height) return;
+      const fitted = fitCanvasFrame(width, height, CANVAS_ASPECT_RATIO);
+      setFrame((current) =>
+        current?.width === fitted.width && current?.height === fitted.height ? current : fitted,
+      );
+      onFrameChangeRef.current?.(fitted);
+    };
+
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div
+      ref={containerRef}
+      className={`flex min-h-0 min-w-0 items-stretch justify-start ${className ?? ""}`}
+      style={{ ...style, maxHeight }}
+    >
+      <div
+        className="relative shrink-0"
+        style={
+          frame
+            ? { width: frame.width, height: frame.height }
+            : { aspectRatio: "9 / 16", height: "100%", width: "auto", maxWidth: "100%" }
+        }
+      >
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function fitCanvasFrame(containerWidth: number, containerHeight: number, ratio: number) {
+  const heightAtFullWidth = containerWidth / ratio;
+  if (heightAtFullWidth <= containerHeight) {
+    return { width: containerWidth, height: heightAtFullWidth };
+  }
+  return { width: containerHeight * ratio, height: containerHeight };
 }
 
 function getComposerSlidingBackground(gradients: readonly string[], shiftPage: number) {

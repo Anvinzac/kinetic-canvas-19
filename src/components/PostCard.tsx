@@ -39,15 +39,25 @@ import {
 import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { CanvasStickerLayer } from "@/components/CanvasStickerLayer";
+import { KenBurnsPhoto } from "@/components/KenBurnsPhoto";
+import {
+  getPostPhotoUrl,
+  hasPostPhotoBackdrop,
+  isAnimatedPhotoUrl,
+  isPhotoMediaUrl,
+} from "@/lib/post-media";
 import {
   COMMENT_CHIPS,
+  DEFAULT_CANVAS,
   SAFE_CANVAS_BACKGROUND,
   getCanvasEmphasisColor,
   getCanvasEmphasisWordColor,
   getCanvasTextColor,
+  getPhotoBackdropTextShadow,
   isTooDarkCanvasBackground,
   isUsableCanvasBackground,
   parseCanvas,
+  resolveTextColorOnPhotoBackdrop,
   resolveCanvasBackground,
   type CanvasLinkPreview,
   type CanvasSpec,
@@ -61,6 +71,7 @@ import {
   getTextPageWordLimit,
   getVietnameseWordLines,
   isLikelyVietnameseText,
+  expandEmphasisToBoundPhrases,
 } from "@/lib/text-language";
 
 type Profile = { id: string; username: string; display_name: string; avatar_url: string | null };
@@ -358,6 +369,10 @@ export function PostCard({
   const currentText = textPages[textPage] ?? textPages[0] ?? "";
   const sceneTheme = getCanvasSceneTheme(spec.backgroundScene);
   const patternTheme = getCanvasPatternTheme(spec.backgroundPattern);
+  const photoUrl = post.post_type === "slideshow" ? null : getPostPhotoUrl(post);
+  const hasPhotoBackdrop =
+    hasPostPhotoBackdrop(post) ||
+    (post.post_type === "video" && Boolean(media[0]) && !photoUrl);
   const resolvedPostBackground = getResolvedPostBackground(post);
   // Scene/pattern posts ignore the gradient backdrop entirely; each theme's
   // solid base is what sits under the artwork and what the contrast picker reads.
@@ -1001,10 +1016,15 @@ export function PostCard({
             transition={{ duration: 1.15, ease: [0.22, 1, 0.36, 1] }}
           />
         )}
-        {post.post_type === "image" && media[0] && (
-          <img src={media[0]} alt="" className="absolute inset-0 size-full object-cover" />
+        {photoUrl && (
+          <KenBurnsPhoto
+            src={photoUrl}
+            seed={post.id}
+            paused={isPaused || isAnimatedPhotoUrl(photoUrl)}
+            fallbackBackground={staticCanvasBackground}
+          />
         )}
-        {post.post_type === "video" && media[0] && (
+        {post.post_type === "video" && media[0] && !photoUrl && (
           <video
             ref={videoRef}
             src={media[0]}
@@ -1015,23 +1035,37 @@ export function PostCard({
             className="absolute inset-0 size-full object-cover"
           />
         )}
-        {post.post_type === "slideshow" && media[slide] && (
+        {post.post_type === "slideshow" && media[slide] && isPhotoMediaUrl(media[slide]) && (
           <AnimatePresence mode="wait">
-            <motion.img
+            <motion.div
               key={slide}
-              src={media[slide]}
-              alt=""
-              initial={{ opacity: 0, scale: 1.05 }}
-              animate={{ opacity: 1, scale: 1 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.6 }}
-              className="absolute inset-0 size-full object-cover"
-            />
+              className="absolute inset-0"
+            >
+              <KenBurnsPhoto
+                src={media[slide]}
+                seed={`${post.id}-${slide}`}
+                paused={isPaused || isAnimatedPhotoUrl(media[slide])}
+                fallbackBackground={staticCanvasBackground}
+              />
+            </motion.div>
           </AnimatePresence>
         )}
 
-        {post.post_type !== "text" && (
-          <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/60" />
+        {post.post_type !== "text" && hasPhotoBackdrop && (
+          <>
+            <div
+              aria-hidden
+              className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_32%,rgba(0,0,0,0.38)_100%)]"
+            />
+            <div
+              aria-hidden
+              className="absolute inset-0 bg-gradient-to-b from-black/38 via-black/22 to-black/68"
+            />
+          </>
         )}
 
         <AnimatePresence mode="wait">
@@ -1052,6 +1086,7 @@ export function PostCard({
                 canvasWidth={canvasWidth}
                 disableFit={useSharedSize}
                 background={staticCanvasBackground}
+                photoBackdrop={hasPhotoBackdrop}
                 entranceSeed={spec.text}
               />
             )}
@@ -1084,6 +1119,7 @@ export function PostCard({
                   canvasWidth={canvasWidth}
                   onFitScale={(scale) => reportPageFit(pageIndex, scale)}
                   background={staticCanvasBackground}
+                  photoBackdrop={hasPhotoBackdrop}
                 />
               ),
             )}
@@ -2161,21 +2197,69 @@ function chunkSentenceByWords(sentence: string, wordLimit: number): RawTextPage[
   let currentWords: string[] = [];
   let currentWeight = 0;
 
+  const flush = () => {
+    if (currentWords.length === 0) return;
+    chunks.push(currentWords.join(" "));
+    currentWords = [];
+    currentWeight = 0;
+  };
+
+  const retreatToLastNaturalBreak = () => {
+    const breakIndex = findLastNaturalBreakIndex(currentWords);
+    if (breakIndex < 0 || breakIndex >= currentWords.length - 1) return false;
+    const head = currentWords.slice(0, breakIndex + 1);
+    const tail = currentWords.slice(breakIndex + 1);
+    chunks.push(head.join(" "));
+    currentWords = tail;
+    currentWeight = tail.length;
+    return true;
+  };
+
   for (const unit of units) {
-    if (currentWords.length > 0 && currentWeight + unit.weight > targetWordsPerPage) {
-      chunks.push(currentWords.join(" "));
-      currentWords = [];
-      currentWeight = 0;
+    const wouldOverflow =
+      currentWords.length > 0 && currentWeight + unit.weight > targetWordsPerPage;
+
+    if (wouldOverflow) {
+      // Back up to the last comma / full stop instead of splitting mid-phrase
+      // (e.g. keep "tốc độ" together on the next page).
+      if (!retreatToLastNaturalBreak()) {
+        flush();
+      }
     }
 
     currentWords.push(...unit.words);
     currentWeight += unit.weight;
+
+    // After a full stop or completed hyphen phrase, close the page.
+    if (shouldEndTextPageAfterUnit(unit)) {
+      flush();
+    }
   }
 
-  if (currentWords.length > 0) chunks.push(currentWords.join(" "));
+  flush();
+
+  if (chunks.length <= 1) {
+    return [{ text: sentence, mergeable: false }];
+  }
+
   // The first chunk heads the sentence (deliberate); later chunks are overflow
   // continuations that may merge back if they end up too short.
   return chunks.map((text, index) => ({ text, mergeable: index > 0 }));
+}
+
+function findLastNaturalBreakIndex(words: string[]) {
+  for (let index = words.length - 1; index >= 0; index--) {
+    const word = words[index] ?? "";
+    if (/[.!?]["')\]]*$/.test(word)) return index;
+    if (/[,;:]["')\]]*$/.test(word)) return index;
+  }
+  return -1;
+}
+
+function shouldEndTextPageAfterUnit(unit: TextPageUnit) {
+  const lastWord = unit.words[unit.words.length - 1] ?? "";
+  if (/[.!?]["')\]]*$/.test(lastWord)) return true;
+  return unit.words.some((word) => isStandaloneHyphen(word));
 }
 
 type TextPageUnit = {
@@ -2533,6 +2617,7 @@ function WordSequenceText({
   onFitScale,
   disableFit = false,
   background,
+  photoBackdrop = false,
   entranceSeed,
 }: {
   spec: CanvasSpec;
@@ -2546,6 +2631,7 @@ function WordSequenceText({
   // disableFit: spec.size is already the shared, pre-fitted size — skip per-page shrink.
   disableFit?: boolean;
   background?: string | null;
+  photoBackdrop?: boolean;
   // Stable seed (the full post text) so every page of one post shares the same
   // auto-picked entrance personality. Falls back to the page text when absent.
   entranceSeed?: string;
@@ -2592,8 +2678,11 @@ function WordSequenceText({
   const [safeCenterY, setSafeCenterY] = useState(spec.y);
   const staticRender = revealed || measure;
   const fontSize = spec.size * (disableFit ? 1 : fitScale);
-  const textColor = getCanvasTextColor(spec, background);
+  const textColor = photoBackdrop
+    ? resolveTextColorOnPhotoBackdrop(spec)
+    : getCanvasTextColor(spec, background);
   const emphasisColor = getCanvasEmphasisColor({ ...spec, color: textColor }, background);
+  const photoTextShadow = photoBackdrop ? getPhotoBackdropTextShadow(textColor) : undefined;
   const textSafeMaxWidth = hasVisibleStickerAccent(spec.stickers, spec.text)
     ? "min(90%, calc(100% - 2.5rem))"
     : TEXT_SAFE_MAX_WIDTH;
@@ -2879,7 +2968,7 @@ function WordSequenceText({
           letterSpacing: `${spec.letterSpacing}em`,
           lineHeight: isVietnamese ? 1.04 : 0.9,
           textAlign: leftAnchoredText ? "left" : "center",
-          textShadow: "0 4px 40px rgba(0,0,0,0.45)",
+          textShadow: photoTextShadow ?? "0 4px 40px rgba(0,0,0,0.45)",
           transform: `rotate(${spec.rotation}deg)`,
           animation: loopAnimation
             ? `${loopAnimation} ${paused ? "paused" : "running"}`
@@ -3077,7 +3166,7 @@ function getEmphasizedWordIndexes(words: string[]) {
   const desiredCount = Math.min(2, Math.max(1, Math.ceil(words.length / 4)));
   const selected = candidates.slice(0, desiredCount).map((item) => item.index);
   if (selected.length === 0 && words.length > 0) selected.push(words.length - 1);
-  return new Set(selected);
+  return expandEmphasisToBoundPhrases(words, selected);
 }
 
 type EmphasisVariant = (typeof EMPHASIS_VARIANTS)[number];

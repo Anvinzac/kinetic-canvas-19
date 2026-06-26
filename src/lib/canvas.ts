@@ -216,6 +216,23 @@ const DARK_TEXT_LUMINANCE = 0.18;
 const DARK_BACKGROUND_LUMINANCE = 0.24;
 const SUBTLE_LIGHT_TEXT = "#FFF7ED";
 
+export function resolveTextColorOnPhotoBackdrop(spec: Pick<CanvasSpec, "color">) {
+  const requestedColor = spec.color.trim() || "#ffffff";
+  const requestedRgb = parseCssColor(requestedColor);
+  if (!requestedRgb) return SUBTLE_LIGHT_TEXT;
+  if (getRelativeLuminance(requestedRgb) < DARK_TEXT_LUMINANCE) return SUBTLE_LIGHT_TEXT;
+  return requestedColor;
+}
+
+export function getPhotoBackdropTextShadow(textColor: string) {
+  const rgb = parseCssColor(textColor);
+  const light = rgb ? getRelativeLuminance(rgb) > 0.55 : true;
+  if (light) {
+    return "0 2px 18px rgba(0,0,0,0.62), 0 1px 3px rgba(0,0,0,0.48), 0 4px 40px rgba(0,0,0,0.38)";
+  }
+  return "0 2px 16px rgba(0,0,0,0.55), 0 4px 40px rgba(0,0,0,0.45)";
+}
+
 export function getCanvasTextColor(
   spec: Pick<CanvasSpec, "color" | "backgroundStyle" | "gradientPath">,
   background?: CanvasBackgroundInput,

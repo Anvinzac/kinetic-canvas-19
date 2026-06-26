@@ -1,10 +1,12 @@
 import {
+  COMMENT_CHIPS,
   parseCanvas,
   serializeCanvas,
   TRANSITION_GRADIENT_PATHS,
   type CanvasSpec,
 } from "@/lib/canvas";
 import { DEMO_AUTH_USER_ID } from "@/lib/demo-session";
+import { DEMO_STATUS_PHOTOS } from "@/lib/post-media";
 
 export const MOCK_ME_ID = "11111111-1111-4111-8111-111111111111";
 export const MOCK_ME_USERNAME = "demo_creator";
@@ -300,6 +302,44 @@ const PATTERN_SHOWCASE_POSTS: MockPost[] = [
     bg_gradient: null,
     created_at: "2026-06-22T11:01:00.000Z",
   },
+  {
+    id: "9a000007-0007-4007-8007-000000000007",
+    author_id: NOVA_RAE_ID,
+    post_type: "text",
+    canvas_html: canvas({
+      text: ["The day", "lets go", "in color."].join("\n"),
+      backgroundScene: "alpenglow",
+      font: "Playfair Display",
+      size: 82,
+      color: "#fdf3e0",
+      entrance: "blur",
+      loop: "float",
+      tempo: "slow",
+      rhythm: "poetic",
+    }),
+    media_urls: [],
+    bg_gradient: null,
+    created_at: "2026-06-22T11:08:00.000Z",
+  },
+  {
+    id: "9a000008-0008-4008-8008-000000000008",
+    author_id: NOVA_RAE_ID,
+    post_type: "text",
+    canvas_html: canvas({
+      text: ["Build it tall,", "make it", "golden."].join("\n"),
+      backgroundScene: "deco",
+      font: "Bebas Neue",
+      size: 96,
+      color: "#f6e6c2",
+      entrance: "slide",
+      loop: "none",
+      tempo: "steady",
+      rhythm: "stagger",
+    }),
+    media_urls: [],
+    bg_gradient: null,
+    created_at: "2026-06-22T11:07:00.000Z",
+  },
 ];
 
 const MOCK_POSTS: MockPost[] = [
@@ -435,7 +475,7 @@ const MOCK_POSTS: MockPost[] = [
   {
     id: "dadadada-dada-4ada-8ada-dadadadada05",
     author_id: MOCK_ME_ID,
-    post_type: "text",
+    post_type: "image",
     canvas_html: canvas({
       text: "Tiếng Việt cần khoảng thở dài hơn một chút. Mỗi trang nên giữ trọn một ý rõ. Dấu sắc dấu huyền cũng tạo nhịp riêng. Khi chữ hiện chậm, cảm xúc dễ bám hơn. Người đọc có thể nhớ câu cuối lâu hơn. Đây là bài thử cho nhịp hấp thụ.",
       font: "Inter",
@@ -445,31 +485,31 @@ const MOCK_POSTS: MockPost[] = [
       loop: "float",
       tempo: "slow",
     }),
-    media_urls: [],
+    media_urls: [DEMO_STATUS_PHOTOS.vietnameseRhythm],
     bg_gradient: "linear-gradient(135deg,#00B4D8,#FF006E)",
     created_at: "2026-06-16T07:19:00.000Z",
   },
   {
     id: "bebebebe-bebe-4ebe-8ebe-bebebebebe06",
     author_id: "33333333-3333-4333-8333-333333333333",
-    post_type: "text",
+    post_type: "image",
     canvas_html: canvas({
       text: "Nếu thông tin dày, mở bằng hình ảnh quen. Sau đó đặt luận điểm ở giữa màn hình. Đừng ép người xem hiểu quá nhanh. Cho họ một nhịp để tự đồng ý. Khi trang đổi, ý mới mới bắt đầu. Nội dung tốt cần thở cùng người đọc.",
       font: "Inter",
       size: 70,
-      color: "#17140f",
+      color: "#ffffff",
       entrance: "blur",
       loop: "pulse",
       tempo: "steady",
     }),
-    media_urls: [],
+    media_urls: [DEMO_STATUS_PHOTOS.denseInfo],
     bg_gradient: "linear-gradient(135deg,#FFBE0B,#06FFA5)",
     created_at: "2026-06-16T07:18:00.000Z",
   },
   {
     id: "fafafafa-fafa-4afa-8afa-fafafafafa07",
     author_id: "44444444-4444-4444-8444-444444444444",
-    post_type: "text",
+    post_type: "image",
     canvas_html: canvas({
       text: "Buổi sáng ở Hà Nội có màu rất mềm. Một câu ngắn có thể giữ lại hơi sương. Tôi muốn chữ đi qua như tiếng xe xa. Không cần quá nhanh, chỉ cần đủ gần. Đọc xong vẫn còn một chút lặng. Hãy để mắt tự chọn nơi dừng.",
       font: "Inter",
@@ -480,14 +520,14 @@ const MOCK_POSTS: MockPost[] = [
       tempo: "steady",
       rotation: -1,
     }),
-    media_urls: [],
+    media_urls: [DEMO_STATUS_PHOTOS.hanoiMorning],
     bg_gradient: "linear-gradient(135deg,#3A86FF,#7209B7)",
     created_at: "2026-06-16T07:16:00.000Z",
   },
   {
     id: "91919191-9191-4919-8919-919191919108",
     author_id: "66666666-6666-4666-8666-666666666666",
-    post_type: "text",
+    post_type: "image",
     canvas_html: canvas({
       text: "Trong một cuộc trò chuyện, tốc độ không phải tất cả. Có lúc câu trả lời hay nhất là im lặng. Chữ chuyển động nên giống hơi thở. Vào đúng lúc, ra đúng lúc. Người xem sẽ tự theo nếu nhịp thật.",
       font: "Inter",
@@ -497,14 +537,14 @@ const MOCK_POSTS: MockPost[] = [
       loop: "none",
       tempo: "snappy",
     }),
-    media_urls: [],
+    media_urls: [DEMO_STATUS_PHOTOS.conversation],
     bg_gradient: "linear-gradient(135deg,#F72585,#118AB2)",
     created_at: "2026-06-16T07:14:00.000Z",
   },
   {
     id: "abababab-abab-4aba-8aba-ababababab01",
     author_id: "22222222-2222-4222-8222-222222222222",
-    post_type: "text",
+    post_type: "image",
     canvas_html: canvas({
       text: "Một ý tưởng nhỏ cũng cần nhịp. Hãy để câu đầu thở. Rồi ánh sáng tự tìm người.",
       font: "Inter",
@@ -514,7 +554,7 @@ const MOCK_POSTS: MockPost[] = [
       loop: "float",
       tempo: "steady",
     }),
-    media_urls: [],
+    media_urls: [DEMO_STATUS_PHOTOS.smallIdea],
     bg_gradient: "linear-gradient(135deg,#118AB2,#06D6A0)",
     created_at: "2026-06-16T07:17:00.000Z",
   },
@@ -558,7 +598,7 @@ const MOCK_POSTS: MockPost[] = [
   {
     id: "acacacac-acac-4aca-8aca-acacacacac04",
     author_id: "66666666-6666-4666-8666-666666666666",
-    post_type: "text",
+    post_type: "image",
     canvas_html: canvas({
       text: "Bữa cơm tối cần nhiều tiếng cười. Tin nhắn dài để dành sau. Trước hết hãy ngồi thật gần.",
       font: "Inter",
@@ -567,9 +607,8 @@ const MOCK_POSTS: MockPost[] = [
       entrance: "scale",
       loop: "none",
       tempo: "snappy",
-      backgroundPattern: "terrazzo",
     }),
-    media_urls: [],
+    media_urls: [DEMO_STATUS_PHOTOS.dinnerTable],
     bg_gradient: null,
     created_at: "2026-06-16T07:03:00.000Z",
   },
@@ -849,7 +888,49 @@ const MOCK_LIKES: MockLike[] = [
   ),
 ];
 
+// Dense flying-chip bursts on the first feed posts (demo overflow stress-test).
+const CHIP_BURST_POST_IDS = [
+  "9a000001-0001-4001-8001-000000000001",
+  "9a000002-0002-4002-8002-000000000002",
+  "9a000007-0007-4007-8007-000000000007",
+  "dadadada-dada-4ada-8ada-dadadadada05",
+  "91919191-9191-4919-8919-919191919108",
+] as const;
+
+const CHIP_BURST_USER_IDS = [
+  MOCK_ME_ID,
+  NOVA_RAE_ID,
+  "33333333-3333-4333-8333-333333333333",
+  "44444444-4444-4444-8444-444444444444",
+  "55555555-5555-4555-8555-555555555555",
+  "66666666-6666-4666-8666-666666666666",
+] as const;
+
+function buildChipBurstComments(): MockComment[] {
+  const burst: MockComment[] = [];
+  let sequence = 1;
+
+  for (const postId of CHIP_BURST_POST_IDS) {
+    for (let index = 0; index < 26; index += 1) {
+      const chip = COMMENT_CHIPS[index % COMMENT_CHIPS.length];
+      burst.push(
+        comment(
+          `b${String(sequence).padStart(7, "0")}-4000-8000-${String(sequence).padStart(12, "0")}`,
+          postId,
+          CHIP_BURST_USER_IDS[index % CHIP_BURST_USER_IDS.length],
+          chip.id,
+          `2026-06-22T11:${String(index % 60).padStart(2, "0")}:${String((index * 5) % 60).padStart(2, "0")}.000Z`,
+        ),
+      );
+      sequence += 1;
+    }
+  }
+
+  return burst;
+}
+
 const MOCK_COMMENTS: MockComment[] = [
+  ...buildChipBurstComments(),
   comment(
     "10000000-0000-4000-8000-000000000001",
     "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa1",

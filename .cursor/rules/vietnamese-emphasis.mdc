@@ -1,0 +1,17 @@
+---
+description: Vietnamese emphasis must cover whole bound phrases
+globs: src/lib/text-language.ts,src/components/PostCard.tsx,src/components/KineticText.tsx
+alwaysApply: false
+---
+
+# Vietnamese bound-phrase emphasis
+
+Vietnamese compound words are often two syllables (`im lặng`, `hình ảnh`). They are listed in `VIETNAMESE_BOUND_PHRASES` in `text-language.ts`.
+
+**Never emphasize only part of a bound phrase.** If scoring picks one syllable, call `expandEmphasisToBoundPhrases` so every syllable in that phrase is emphasized together.
+
+When adding new two-syllable Vietnamese words, add both accented and unaccented forms to `VIETNAMESE_BOUND_PHRASES`.
+
+Bad: only `lặng` glows in `… im lặng.`
+
+Good: both `im` and `lặng` glow together.

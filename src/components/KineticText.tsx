@@ -12,10 +12,11 @@ import {
   getSpecialPoeticWordIndexes,
   getVietnameseWordLines,
   isLikelyVietnameseText,
+  expandEmphasisToBoundPhrases,
 } from "@/lib/text-language";
 
 const FULL_CANVAS_MAX_HEIGHT = 764;
-const CANVAS_RATIO = 16 / 9;
+const FULL_CANVAS_REFERENCE_WIDTH = FULL_CANVAS_MAX_HEIGHT * (9 / 16);
 // Same canvas-safe inset as PostCard: clear the edge without shrinking the status energy.
 const TEXT_SAFE_MAX_WIDTH = "min(92%, calc(100% - 2rem))";
 const MIN_TEXT_FIT_SCALE = 0.46;
@@ -118,9 +119,11 @@ export function KineticText({
     if (!canvas) return;
 
     function measure() {
-      const previewHeight = canvas?.getBoundingClientRect().height ?? 0;
-      if (!previewHeight) return;
-      setCanvasScale(clamp(previewHeight / getFullCanvasHeight(), 0.2, 1));
+      const rect = canvas?.getBoundingClientRect();
+      if (!rect?.width || !rect?.height) return;
+      const heightScale = rect.height / FULL_CANVAS_MAX_HEIGHT;
+      const widthScale = rect.width / FULL_CANVAS_REFERENCE_WIDTH;
+      setCanvasScale(clamp(Math.min(heightScale, widthScale), 0.2, 1));
     }
 
     measure();
@@ -446,11 +449,6 @@ function getWordAnchorKey(word: string) {
     .replace(/[^a-z0-9'-]/g, "");
 }
 
-function getFullCanvasHeight() {
-  if (typeof window === "undefined") return FULL_CANVAS_MAX_HEIGHT;
-  return Math.min(window.innerHeight, FULL_CANVAS_MAX_HEIGHT, window.innerWidth * CANVAS_RATIO);
-}
-
 function getMeasuredTextWidth(text: HTMLElement, wrapper: HTMLElement, leftAnchored: boolean) {
   if (!leftAnchored) return text.scrollWidth;
 
@@ -489,8 +487,13 @@ function getPreviewEmphasizedWordIndexes(words: string[]) {
     .sort((a, b) => b.score - a.score || a.index - b.index);
 
   const selected = candidates.slice(0, Math.min(2, Math.max(1, Math.ceil(words.length / 4))));
-  if (selected.length === 0 && words.length > 0) return new Set([words.length - 1]);
-  return new Set(selected.map((item) => item.index));
+  if (selected.length === 0 && words.length > 0) {
+    return expandEmphasisToBoundPhrases(words, [words.length - 1]);
+  }
+  return expandEmphasisToBoundPhrases(
+    words,
+    selected.map((item) => item.index),
+  );
 }
 
 type PreviewEmphasisVariant = (typeof PREVIEW_EMPHASIS_VARIANTS)[number];
