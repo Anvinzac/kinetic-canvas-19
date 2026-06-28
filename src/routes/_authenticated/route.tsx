@@ -44,7 +44,9 @@ function AuthedLayout() {
     !pathname.startsWith("/feed") &&
     !pathname.startsWith("/create") &&
     !pathname.startsWith("/p/") &&
-    !pathname.startsWith("/u/");
+    !pathname.startsWith("/u/") &&
+    !pathname.startsWith("/settings") &&
+    !pathname.startsWith("/edit-profile");
 
   useEffect(() => {
     setMenuOpen(false);

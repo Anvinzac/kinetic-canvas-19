@@ -145,9 +145,6 @@ const PLACEMENTS = [
   { label: "low", x: 50, y: 68 },
 ];
 
-const TEMPLATE_SIDEBAR_WIDTH_PERCENT = 35;
-const TEMPLATE_SIDEBAR_MIN_WIDTH_PX = 132;
-
 const ANIMATION_TEMPLATES: AnimationTemplate[] = [
   {
     id: "paper-headline",
@@ -557,7 +554,6 @@ function CreatePage() {
   const colorSummary = spec.color;
   const layoutSummary = PLACEMENTS.find((placement) => placement.y === spec.y)?.label ?? "custom";
   const motionSummary = `${spec.entrance} · ${spec.tempo} · ${spec.rhythm}`;
-  const templateSidebarWidth = `max(${TEMPLATE_SIDEBAR_MIN_WIDTH_PX}px, min(${TEMPLATE_SIDEBAR_WIDTH_PERCENT}vw, ${TEMPLATE_SIDEBAR_WIDTH_PERCENT}%))`;
   const previewPaneHeight = "min(70dvh, 576px)";
   const previewRowHeight = composerCanvasHeight
     ? `${composerCanvasHeight}px`
@@ -853,9 +849,9 @@ function CreatePage() {
       </header>
 
       <main className="mx-auto max-w-md px-4 py-4">
-        <section className="sticky top-[72px] z-20 -mx-4 bg-background/95 px-3 pb-4 backdrop-blur">
+        <section className="sticky top-[calc(env(safe-area-inset-top,0px)+4.75rem)] z-20 -mx-4 bg-background/95 px-4 pb-4 backdrop-blur">
           <div
-            className="flex min-w-0 items-stretch gap-2"
+            className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-stretch sm:gap-2"
             style={{ height: previewRowHeight, maxHeight: previewPaneHeight }}
           >
             <ComposerPreviewCanvas
@@ -985,13 +981,7 @@ function CreatePage() {
               )}
               </button>
             </ComposerPreviewCanvas>
-            <div
-              className="flex shrink-0 flex-col"
-              style={{
-                width: templateSidebarWidth,
-                height: "100%",
-              }}
-            >
+            <div className="flex w-full max-h-40 shrink-0 flex-col sm:h-full sm:max-h-none sm:min-w-[132px] sm:w-[35%]">
               <div className="mb-1.5 flex items-center justify-between px-0.5 font-mono text-[8px] uppercase tracking-[0.14em] text-white/55">
                 <span className="flex items-center gap-1">
                   <Sparkles className="size-2.5" />

@@ -1149,16 +1149,16 @@ export function PostCard({
           <Link
             to="/u/$username"
             params={{ username: author.username }}
-            className="absolute left-4 top-4 z-20 flex h-10 items-center gap-2"
+            className="absolute left-[max(1rem,env(safe-area-inset-left))] top-[max(1rem,env(safe-area-inset-top))] z-20 flex h-10 min-w-0 max-w-[calc(100%-5.5rem)] items-center gap-2"
             onClick={(e) => e.stopPropagation()}
           >
             <img
               src={author.avatar_url ?? ""}
               alt=""
-              className="size-10 rounded-full border-2 border-white/80"
+              className="size-10 shrink-0 rounded-full border-2 border-white/80"
             />
-            <div className="leading-tight">
-              <p className="text-sm font-bold text-white drop-shadow">@{author.username}</p>
+            <div className="min-w-0 leading-tight">
+              <p className="truncate text-sm font-bold text-white drop-shadow">@{author.username}</p>
               <p className="text-[10px] uppercase tracking-widest text-white/70 drop-shadow">
                 {post.post_type}
               </p>
@@ -1175,7 +1175,7 @@ export function PostCard({
               e.stopPropagation();
               setActionMenuOpen((open) => !open);
             }}
-            className="absolute right-3 top-4 z-30 grid size-10 place-items-center rounded-full bg-black/40 text-white shadow-[0_12px_30px_rgba(0,0,0,0.3)] ring-1 ring-white/15 backdrop-blur"
+            className="absolute right-[max(0.75rem,env(safe-area-inset-right))] top-[max(1rem,env(safe-area-inset-top))] z-30 grid size-10 place-items-center rounded-full bg-black/40 text-white shadow-[0_12px_30px_rgba(0,0,0,0.3)] ring-1 ring-white/15 backdrop-blur"
             aria-label="More choices"
             aria-expanded={actionMenuOpen}
           >
@@ -1195,7 +1195,7 @@ export function PostCard({
             initial={{ opacity: 0, scale: 0.85, x: 18, y: 18 }}
             animate={{ opacity: 1, scale: 1, x: 0, y: 0 }}
             transition={{ duration: 0.26, ease: [0.22, 1, 0.36, 1] }}
-            className="absolute bottom-0 right-0 z-30 size-[148px]"
+            className="absolute bottom-[env(safe-area-inset-bottom,0px)] right-[env(safe-area-inset-right,0px)] z-30 size-[148px]"
           >
             {/* Single cropped corner disc with three divided action zones. */}
             <div
@@ -1446,7 +1446,7 @@ export function PostCard({
 
         {!isExporting && (
           <div
-            className={`absolute bottom-4 left-4 z-20 max-w-[min(70%,260px)] text-white transition-opacity duration-300 ${
+            className={`absolute bottom-[max(1rem,env(safe-area-inset-bottom))] left-[max(1rem,env(safe-area-inset-left))] z-20 max-w-[min(70%,260px)] text-white transition-opacity duration-300 ${
               commentOverlapsInfo ? "opacity-20" : "opacity-100"
             }`}
           >
@@ -1695,7 +1695,7 @@ function PostMenuRail({ onExport, isExporting }: { onExport: () => void; isExpor
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: -8, scale: 0.98 }}
       transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
-      className="absolute right-3 top-[62px] z-30 flex origin-top-right flex-col items-end gap-2"
+      className="absolute right-[max(0.75rem,env(safe-area-inset-right))] top-[calc(env(safe-area-inset-top,0px)+3.5rem)] z-30 flex origin-top-right flex-col items-end gap-2"
       onClick={(event) => event.stopPropagation()}
     >
       <RailMenuLink to="/create" label="create" icon={<Plus className="size-5" />} emphasized />

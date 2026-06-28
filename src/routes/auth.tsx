@@ -61,7 +61,7 @@ function AuthPage() {
   const words = ["MOVE.", "TYPE.", "FLY.", "LOUD.", "PULSE."];
 
   return (
-    <div className="relative flex min-h-screen flex-col items-center justify-between overflow-hidden bg-background px-6 py-16">
+    <div className="relative flex min-h-[100dvh] flex-col items-center justify-between overflow-hidden bg-background px-6 pb-[max(4rem,env(safe-area-inset-bottom))] pt-[max(4rem,env(safe-area-inset-top))]">
       {/* aurora bg */}
       <div className="pointer-events-none absolute inset-0 opacity-70">
         <div className="absolute -left-32 top-10 size-[420px] rounded-full bg-[var(--color-magenta)] blur-[120px]" />
@@ -76,7 +76,7 @@ function AuthPage() {
         <h1 className="font-display mt-2 text-[44px] font-black leading-[0.95] tracking-tight">
           words that
         </h1>
-        <div className="relative h-[60px] overflow-hidden font-impact text-[58px] leading-none text-primary">
+        <div className="relative h-[60px] overflow-hidden font-impact text-[clamp(2.25rem,14vw,3.625rem)] leading-none text-primary">
           {words.map((w, i) => (
             <motion.span
               key={w}

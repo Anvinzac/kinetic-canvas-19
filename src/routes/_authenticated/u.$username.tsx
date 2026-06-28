@@ -144,7 +144,7 @@ function ProfilePage() {
       {/* Page 1: Profile info */}
       <div
         data-status-snap-item="true"
-        className="flex h-[100dvh] snap-start snap-always flex-col px-5 pb-4 pt-2"
+        className="flex h-[100dvh] min-h-0 snap-start snap-always flex-col overflow-y-auto px-5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-[max(env(safe-area-inset-top),12px)]"
       >
         {/* Avatar + info with back button inline */}
         <div className="flex items-center gap-3">
@@ -245,13 +245,9 @@ function ProfilePage() {
                     )}
                     {/* Two short cards stacked — each half height, 9:16 */}
                     {(shortPostA || shortPostB) && (
-                      <div className="flex h-full flex-col gap-1.5 shrink-0">
-                        {shortPostA && (
-                          <MasonryCard post={shortPostA} className="aspect-[9/16] h-1/2" />
-                        )}
-                        {shortPostB && (
-                          <MasonryCard post={shortPostB} className="aspect-[9/16] h-1/2" />
-                        )}
+                      <div className="grid h-full shrink-0 grid-rows-2 gap-1.5 aspect-[9/16]">
+                        {shortPostA && <MasonryCard post={shortPostA} className="min-h-0" />}
+                        {shortPostB && <MasonryCard post={shortPostB} className="min-h-0" />}
                       </div>
                     )}
                   </Fragment>
