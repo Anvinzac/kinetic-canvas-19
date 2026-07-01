@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import {
   getCanvasEmphasisColor,
   getCanvasEmphasisWordColor,
@@ -10,9 +10,11 @@ import {
 } from "@/lib/canvas";
 import {
   getSpecialPoeticWordIndexes,
-  getVietnameseWordLines,
+  getVietnameseLayoutMetrics,
   isLikelyVietnameseText,
   expandEmphasisToBoundPhrases,
+  getBoundPhraseEmphasisSeed,
+  getBoundPhraseStartIndex,
 } from "@/lib/text-language";
 
 const FULL_CANVAS_MAX_HEIGHT = 764;
@@ -90,20 +92,35 @@ export function KineticText({
   const wordVariants = entranceVariants(spec.entrance, spec.rhythm);
   const words = getWords(spec.text);
   const isVietnamese = isLikelyVietnameseText(spec.text);
-  const vietnameseLines = isVietnamese ? getVietnameseWordLines(words) : [];
   const emphasized = getPreviewEmphasizedWordIndexes(words);
+  const visualScaleGuard = isVietnamese ? VIETNAMESE_SCALE_FIT_GUARD : 1;
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const textRef = useRef<HTMLDivElement>(null);
+  const [canvasScale, setCanvasScale] = useState(scaleToCanvas ? 0.4 : 1);
+  const [canvasWidth, setCanvasWidth] = useState(FULL_CANVAS_REFERENCE_WIDTH);
+  const vietnameseLayout = useMemo(
+    () =>
+      isVietnamese
+        ? getVietnameseLayoutMetrics(
+            words,
+            canvasWidth,
+            spec.size * canvasScale,
+            visualScaleGuard,
+          )
+        : { lines: [], suggestedFitScale: 1 },
+    [isVietnamese, words, canvasWidth, spec.size, canvasScale, visualScaleGuard],
+  );
+  const vietnameseLines = isVietnamese ? vietnameseLayout.lines : [];
   const layoutMode = getKineticTextLayoutMode(spec.text, isVietnamese, words.length, emphasized);
   const leftAnchoredText = layoutMode !== "center";
   const spotlightEmphasis = layoutMode === "left-spotlight";
   const tempo = tempoConfig[spec.tempo];
-  const wrapperRef = useRef<HTMLDivElement>(null);
-  const textRef = useRef<HTMLDivElement>(null);
-  const [canvasScale, setCanvasScale] = useState(scaleToCanvas ? 0.4 : 1);
-  const [fitScale, setFitScale] = useState(1);
+  const [fitScale, setFitScale] = useState(
+    isVietnamese ? vietnameseLayout.suggestedFitScale : 1,
+  );
   const previewSize = Math.max(10, spec.size * canvasScale * fitScale);
   const textColor = getCanvasTextColor(spec, background);
   const emphasisColor = getCanvasEmphasisColor({ ...spec, color: textColor }, background);
-  const visualScaleGuard = isVietnamese ? VIETNAMESE_SCALE_FIT_GUARD : 1;
   const textSafeMaxWidth = hasVisibleStickerAccent(spec.stickers, spec.text)
     ? "min(90%, calc(100% - 2.5rem))"
     : TEXT_SAFE_MAX_WIDTH;
@@ -121,6 +138,7 @@ export function KineticText({
     function measure() {
       const rect = canvas?.getBoundingClientRect();
       if (!rect?.width || !rect?.height) return;
+      setCanvasWidth(rect.width);
       const heightScale = rect.height / FULL_CANVAS_MAX_HEIGHT;
       const widthScale = rect.width / FULL_CANVAS_REFERENCE_WIDTH;
       setCanvasScale(clamp(Math.min(heightScale, widthScale), 0.2, 1));
@@ -138,9 +156,12 @@ export function KineticText({
   }, [scaleToCanvas]);
 
   useIsomorphicLayoutEffect(() => {
-    setFitScale(1);
+    setFitScale(isVietnamese ? vietnameseLayout.suggestedFitScale : 1);
   }, [
     canvasScale,
+    canvasWidth,
+    isVietnamese,
+    vietnameseLayout.suggestedFitScale,
     spec.text,
     spec.size,
     spec.font,
@@ -239,7 +260,7 @@ export function KineticText({
                   alignSelf: "stretch",
                   boxSizing: "border-box",
                   display: "flex",
-                  flexWrap: "wrap",
+                  flexWrap: "nowrap",
                   justifyContent: "flex-start",
                   columnGap: "0.24em",
                   rowGap: "0.1em",
@@ -283,6 +304,7 @@ export function KineticText({
                           textColor,
                           emphasisColor,
                           staticLayout,
+                          words,
                         ),
                       )}
                     </span>
@@ -305,6 +327,7 @@ export function KineticText({
                 textColor,
                 emphasisColor,
                 staticLayout,
+                words,
               ),
             )}
       </motion.div>
@@ -326,14 +349,25 @@ function renderAnimatedWord(
   textColor: string,
   emphasisColor: string,
   staticLayout: boolean,
+  words: string[],
 ) {
+  const emphasisAnchorIndex = important ? getBoundPhraseStartIndex(words, index) : index;
   const emphasisVariant = important
-    ? getPreviewEmphasisVariant(spec.text, word, index, !isDimPreviewColor(emphasisColor))
+    ? getPreviewEmphasisVariant(
+        spec.text,
+        getBoundPhraseEmphasisSeed(words, index),
+        emphasisAnchorIndex,
+        !isDimPreviewColor(emphasisColor),
+      )
     : null;
   const wordColor = important
     ? getCanvasEmphasisWordColor(emphasisVariant, textColor, emphasisColor)
     : textColor;
-  const entranceDelay = getRhythmDelay(index, spec.tempo, spec.rhythm);
+  const entranceDelay = getRhythmDelay(
+    important ? emphasisAnchorIndex : index,
+    spec.tempo,
+    spec.rhythm,
+  );
   const rhythmDurationMultiplier = spec.rhythm === "poetic" ? 1.28 : 1;
   const entranceDuration = Math.max(0.28, tempo.duration * 0.62 * rhythmDurationMultiplier);
   const emphasisStyle = important
@@ -500,14 +534,14 @@ type PreviewEmphasisVariant = (typeof PREVIEW_EMPHASIS_VARIANTS)[number];
 
 function getPreviewEmphasisVariant(
   text: string,
-  word: string,
-  index: number,
+  emphasisSeed: string,
+  anchorIndex: number,
   allowLuminous: boolean,
 ): PreviewEmphasisVariant {
   const pool: readonly PreviewEmphasisVariant[] = allowLuminous
     ? PREVIEW_EMPHASIS_VARIANTS
     : PREVIEW_NON_LUMINOUS_VARIANTS;
-  return pool[getStableNumber(`${text}|${word}|${index}`) % pool.length];
+  return pool[getStableNumber(`${text}|${emphasisSeed}|${anchorIndex}`) % pool.length];
 }
 
 // Dim colors make a glow/halo look muddy — keep those for bright colors only.

@@ -14,4 +14,4 @@ When adding new two-syllable Vietnamese words, add both accented and unaccented 
 
 Bad: only `lặng` glows in `… im lặng.`
 
-Good: both `im` and `lặng` glow together.
+Good: both `im` and `lặng` glow together with the **same** emphasis variant (halo, sweep, etc.) — use `getBoundPhraseEmphasisSeed` / `getBoundPhraseStartIndex`, not per-syllable variant keys.

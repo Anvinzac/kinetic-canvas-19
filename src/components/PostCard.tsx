@@ -69,9 +69,11 @@ import { getCanvasSceneTheme, getSceneBackgroundStyle } from "@/lib/canvas-scene
 import {
   getSpecialPoeticWordIndexes,
   getTextPageWordLimit,
-  getVietnameseWordLines,
+  getVietnameseLayoutMetrics,
   isLikelyVietnameseText,
   expandEmphasisToBoundPhrases,
+  getBoundPhraseEmphasisSeed,
+  getBoundPhraseStartIndex,
 } from "@/lib/text-language";
 
 type Profile = { id: string; username: string; display_name: string; avatar_url: string | null };
@@ -2641,19 +2643,26 @@ function WordSequenceText({
   // getMeasuredTextWidth below), and has no neighbor to protect from overlap —
   // so it must skip the emphasis fit guard further down, which exists only to
   // stop a multi-word line's emphasized word from crowding its neighbors.
-  const isSolo = words.length <= 1;
-  const entranceStyle = getEntranceStyle(entranceSeed ?? spec.text, spec.rhythm);
   const isVietnamese = isLikelyVietnameseText(spec.text);
-  const vietnameseLines = isVietnamese ? getVietnameseWordLines(words) : [];
   const emphasized = getEmphasizedWordIndexes(words);
-  const layoutMode = getKineticTextLayoutMode(spec.text, isVietnamese, words.length, emphasized);
-  const leftAnchoredText = layoutMode !== "center";
-  const spotlightEmphasis = layoutMode === "left-spotlight";
-  const tempo = tempoConfig[spec.tempo];
+  const isSolo = words.length <= 1;
   const visualScaleGuard = Math.max(
     emphasized.size > 0 && !isSolo ? EMPHASIS_SCALE_FIT_GUARD : 1,
     isVietnamese ? VIETNAMESE_SCALE_FIT_GUARD : 1,
   );
+  const vietnameseLayout = useMemo(
+    () =>
+      isVietnamese
+        ? getVietnameseLayoutMetrics(words, canvasWidth, spec.size, visualScaleGuard)
+        : { lines: [], suggestedFitScale: 1 },
+    [isVietnamese, words, canvasWidth, spec.size, visualScaleGuard],
+  );
+  const vietnameseLines = isVietnamese ? vietnameseLayout.lines : [];
+  const entranceStyle = getEntranceStyle(entranceSeed ?? spec.text, spec.rhythm);
+  const layoutMode = getKineticTextLayoutMode(spec.text, isVietnamese, words.length, emphasized);
+  const leftAnchoredText = layoutMode !== "center";
+  const spotlightEmphasis = layoutMode === "left-spotlight";
+  const tempo = tempoConfig[spec.tempo];
   // A solo reveal word fits itself (it never joins the shared sizing), so size
   // it the moment it renders instead of waiting for the layout effect: this
   // predicted fit guarantees the first painted frame — including server-rendered
@@ -2671,9 +2680,12 @@ function WordSequenceText({
           emphasized.size > 0 ? EMPHASIS_FONT_SCALE : 1,
         )
       : 1;
+  const vietnameseInitialFit =
+    isVietnamese && !isSolo && !disableFit ? vietnameseLayout.suggestedFitScale : 1;
+  const initialFit = isSolo ? soloInitialFit : vietnameseInitialFit;
   const wrapperRef = useRef<HTMLDivElement>(null);
   const textRef = useRef<HTMLDivElement>(null);
-  const [fitScale, setFitScale] = useState(soloInitialFit);
+  const [fitScale, setFitScale] = useState(initialFit);
   const [soloInlineScale, setSoloInlineScale] = useState(1);
   const [safeCenterY, setSafeCenterY] = useState(spec.y);
   const staticRender = revealed || measure;
@@ -2688,11 +2700,11 @@ function WordSequenceText({
     : TEXT_SAFE_MAX_WIDTH;
 
   useIsomorphicLayoutEffect(() => {
-    setFitScale(soloInitialFit);
+    setFitScale(initialFit);
     setSoloInlineScale(1);
     setSafeCenterY(spec.y);
   }, [
-    soloInitialFit,
+    initialFit,
     canvasWidth,
     background,
     spec.color,
@@ -2816,13 +2828,21 @@ function WordSequenceText({
   const renderWord = (word: string, index: number, suppressSpotlight = false) => {
     const important = emphasized.has(index);
     const spotlightWord = spotlightEmphasis && important && !suppressSpotlight;
+    const emphasisAnchorIndex = important ? getBoundPhraseStartIndex(words, index) : index;
     const emphasisVariant = important
-      ? getEmphasisVariant(spec.text, word, index, !isDimEmphasisColor(emphasisColor))
+      ? getEmphasisVariant(
+          spec.text,
+          getBoundPhraseEmphasisSeed(words, index),
+          emphasisAnchorIndex,
+          !isDimEmphasisColor(emphasisColor),
+        )
       : null;
     const wordColor = important
       ? getCanvasEmphasisWordColor(emphasisVariant, textColor, emphasisColor)
       : textColor;
-    const entranceDelay = staticRender ? 0 : getWordDelay(index, spec.tempo, spec.rhythm);
+    const entranceDelay = staticRender
+      ? 0
+      : getWordDelay(important ? emphasisAnchorIndex : index, spec.tempo, spec.rhythm);
     const rhythmDurationMultiplier = spec.rhythm === "poetic" ? 1.28 : 1;
     const entranceDuration = staticRender
       ? 0.01
@@ -2979,7 +2999,7 @@ function WordSequenceText({
           ? vietnameseLines.map((line, lineIndex) => (
               <div
                 key={`${lineIndex}-${line.indentEm}`}
-                className="flex flex-wrap items-baseline justify-start"
+                className="flex flex-nowrap items-baseline justify-start"
                 style={{
                   alignSelf: "stretch",
                   boxSizing: "border-box",
@@ -3173,14 +3193,14 @@ type EmphasisVariant = (typeof EMPHASIS_VARIANTS)[number];
 
 function getEmphasisVariant(
   text: string,
-  word: string,
-  index: number,
+  emphasisSeed: string,
+  anchorIndex: number,
   allowLuminous: boolean,
 ): EmphasisVariant {
   const pool: readonly EmphasisVariant[] = allowLuminous
     ? EMPHASIS_VARIANTS
     : NON_LUMINOUS_EMPHASIS_VARIANTS;
-  return pool[getStableNumber(`${text}|${word}|${index}`) % pool.length];
+  return pool[getStableNumber(`${text}|${emphasisSeed}|${anchorIndex}`) % pool.length];
 }
 
 // Every post is auto-assigned one of these word-entrance "personalities", picked

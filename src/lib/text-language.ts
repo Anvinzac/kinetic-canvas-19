@@ -20,6 +20,9 @@ export type WordSegment = {
 // never collapses narrow pages.
 const VIETNAMESE_LINE_INDENT_EM = [0, 0.22, 0.38, 0.5] as const;
 const VIETNAMESE_MAX_LINE_CHARS = 9;
+const VIETNAMESE_AVG_CHAR_WIDTH_EM = 0.58;
+const VIETNAMESE_LINE_SIDE_PAD_EM = 0.12;
+const VIETNAMESE_MIN_FIT_SCALE = 0.52;
 // A thin column of single-word lines reads as unbalanced. Vietnamese meaningful
 // words are usually two syllables, so a line should prefer to carry a pair. We
 // never allow more than this many single-segment lines in a row.
@@ -148,7 +151,69 @@ export function isLikelyVietnameseText(text: string) {
   );
 }
 
-export function getVietnameseWordLines(words: string[]): WordLine[] {
+export function getVietnameseCanvasInnerWidth(canvasWidthPx: number) {
+  return Math.max(200, canvasWidthPx * 0.92 - 32);
+}
+
+/** Visible-character budget for one Vietnamese line at a given canvas width. */
+export function getVietnameseCharBudgetForLine(
+  lineIndex: number,
+  canvasInnerWidthPx: number,
+  fontSizePx: number,
+) {
+  const indentEm = getVietnameseLineIndentEm(lineIndex);
+  const availablePx =
+    canvasInnerWidthPx -
+    indentEm * fontSizePx -
+    fontSizePx * VIETNAMESE_LINE_SIDE_PAD_EM;
+  const charWidthPx = Math.max(fontSizePx * VIETNAMESE_AVG_CHAR_WIDTH_EM, 1);
+  return Math.max(4, Math.floor(availablePx / charWidthPx));
+}
+
+export type VietnameseLineLayoutOptions = {
+  getLineCapacity?: (lineIndex: number) => number;
+};
+
+export type VietnameseLayoutMetrics = {
+  lines: WordLine[];
+  suggestedFitScale: number;
+};
+
+/** Pack lines using canvas width, then pre-shrink if any line still overflows. */
+export function getVietnameseLayoutMetrics(
+  words: string[],
+  canvasWidthPx: number,
+  fontSizePx: number,
+  visualScaleGuard = 1,
+): VietnameseLayoutMetrics {
+  const innerWidth = getVietnameseCanvasInnerWidth(canvasWidthPx);
+  const getLineCapacity = (lineIndex: number) =>
+    getVietnameseCharBudgetForLine(lineIndex, innerWidth, fontSizePx);
+  const lines = getVietnameseWordLines(words, { getLineCapacity });
+  let suggestedFitScale = 1;
+
+  for (let lineIndex = 0; lineIndex < lines.length; lineIndex += 1) {
+    const line = lines[lineIndex];
+    const visibleChars =
+      line.segments.reduce((total, segment) => total + getSegmentVisibleLength(segment), 0) +
+      Math.max(0, line.segments.length - 1);
+    const capacity = getLineCapacity(lineIndex);
+    const neededChars = visibleChars * Math.max(visualScaleGuard, 1);
+    if (neededChars > capacity) {
+      suggestedFitScale = Math.min(suggestedFitScale, (capacity / neededChars) * 0.96);
+    }
+  }
+
+  return {
+    lines,
+    suggestedFitScale: Math.max(VIETNAMESE_MIN_FIT_SCALE, suggestedFitScale),
+  };
+}
+
+export function getVietnameseWordLines(
+  words: string[],
+  options?: VietnameseLineLayoutOptions,
+): WordLine[] {
   if (words.length === 0) return [];
 
   const segments = getVietnameseWordSegments(words);
@@ -157,7 +222,8 @@ export function getVietnameseWordLines(words: string[]): WordLine[] {
   let consecutiveSolo = 0;
 
   while (index < segments.length) {
-    const capacity = getVietnameseLineCapacity(lines.length);
+    const capacity =
+      options?.getLineCapacity?.(lines.length) ?? getVietnameseLineCapacity(lines.length);
     // Once we've stacked the max run of single-word lines, the next line must
     // carry a pair so the column can't grow any thinner.
     const forcePair = consecutiveSolo >= VIETNAMESE_MAX_CONSECUTIVE_SOLO_LINES;
@@ -258,6 +324,27 @@ export function expandEmphasisToBoundPhrases(words: string[], selected: Iterable
   return expanded;
 }
 
+/** Start index of the bound phrase containing `index`, or `index` for a solo token. */
+export function getBoundPhraseStartIndex(words: string[], index: number) {
+  for (let start = 0; start <= index; start += 1) {
+    const length = getBoundPhraseLength(words, start);
+    if (length > 1 && start <= index && index < start + length) {
+      return start;
+    }
+  }
+  return index;
+}
+
+/** Stable label for emphasis styling — whole phrase for bound pairs, else the token. */
+export function getBoundPhraseEmphasisSeed(words: string[], index: number) {
+  const start = getBoundPhraseStartIndex(words, index);
+  const length = getBoundPhraseLength(words, start);
+  if (length > 1) {
+    return words.slice(start, start + length).join(" ");
+  }
+  return words[index] ?? "";
+}
+
 function getVietnameseWordSegments(words: string[]): WordSegment[] {
   const segments: WordSegment[] = [];
 
@@ -309,7 +396,9 @@ function getVietnameseLineIndentEm(lineIndex: number) {
 
 function getVietnameseLineCapacity(lineIndex: number) {
   const step = Math.min(lineIndex, VIETNAMESE_LINE_INDENT_EM.length - 1);
-  return Math.max(6, VIETNAMESE_MAX_LINE_CHARS - step);
+  const indentEm = getVietnameseLineIndentEm(lineIndex);
+  const indentCharCost = Math.round(indentEm * 4.8);
+  return Math.max(4, VIETNAMESE_MAX_LINE_CHARS - step - indentCharCost);
 }
 
 function getVisibleWordLength(word: string) {
