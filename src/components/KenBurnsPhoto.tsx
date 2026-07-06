@@ -1,6 +1,8 @@
 import { useState, type CSSProperties } from "react";
 import { motion, useReducedMotion, type Transition } from "framer-motion";
 import { SAFE_CANVAS_BACKGROUND } from "@/lib/canvas";
+import { isAnimatedPhotoUrl } from "@/lib/post-media";
+import { GifCanvas } from "@/components/GifCanvas";
 
 type KenBurnsKeyframePreset = {
   scale: number[];
@@ -111,6 +113,14 @@ export function KenBurnsPhoto({
   const backdropStyle = getBackdropStyle(fallbackBackground);
 
   if (failed) return null;
+
+  if (isAnimatedPhotoUrl(src)) {
+    return (
+      <div className="absolute inset-0 overflow-hidden" style={backdropStyle} aria-hidden>
+        <GifCanvas src={src} className={className} paused={staticMotion} />
+      </div>
+    );
+  }
 
   if (staticMotion) {
     return (
