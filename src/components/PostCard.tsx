@@ -106,7 +106,7 @@ type CommentStory = {
 const TEXT_SAFE_MAX_WIDTH = "min(92%, calc(100% - 2rem))";
 const TEXT_SAFE_TOP_PX = 72;
 const TEXT_SAFE_BOTTOM_PX = 132;
-const MIN_TEXT_FIT_SCALE = 0.58;
+const MIN_TEXT_FIT_SCALE = 0.46;
 const MIN_ENGLISH_TEXT_FIT_SCALE = 0.72;
 // A single-word page (e.g. a one-word reveal) cannot wrap, so it is allowed to
 // shrink this far to fit a long word fully on screen.
@@ -150,7 +150,7 @@ const NON_LUMINOUS_EMPHASIS_VARIANTS = [
   "pulse",
   "frame",
 ] as const;
-const VIETNAMESE_SCALE_FIT_GUARD = 1.06;
+const VIETNAMESE_SCALE_FIT_GUARD = 1.24;
 const DEFAULT_CANVAS_BACKGROUND = SAFE_CANVAS_BACKGROUND;
 const ARC_BUTTON_TAP = { scale: 0.94, y: 2 };
 const ARC_BUTTON_TAP_TRANSITION = { type: "spring" as const, stiffness: 400, damping: 24 };
