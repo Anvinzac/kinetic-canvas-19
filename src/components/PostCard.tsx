@@ -717,7 +717,7 @@ export function PostCard({
 
     let stream: MediaStream | null = null;
     let recorder: MediaRecorder | null = null;
-    const chunks: BlobPart[] = [];
+    const chunks: Blob[] = [];
 
     try {
       setActionMenuOpen(false);
