@@ -717,7 +717,7 @@ export function PostCard({
 
     let stream: MediaStream | null = null;
     let recorder: MediaRecorder | null = null;
-    const chunks: BlobPart[] = [];
+    const chunks: Blob[] = [];
 
     try {
       setActionMenuOpen(false);
@@ -767,7 +767,7 @@ export function PostCard({
           if (event.data.size > 0) chunks.push(event.data);
         };
         recorder.onstop = () => resolve();
-        recorder.onerror = () => reject(recorder?.error ?? new Error("Recording failed"));
+        recorder.onerror = (event) => reject((event as unknown as { error?: Error }).error ?? new Error("Recording failed"));
       });
 
       recorder.start(250);
