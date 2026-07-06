@@ -1,0 +1,44 @@
+name: content-hub-run
+
+on:
+  schedule:
+    # Daily top-up of the agent content queue. UTC cron — runs before the app's
+    # 01:10 UTC publish_web_agent_posts() drain so fresh items are ready.
+    - cron: "15 22 * * *"
+  workflow_dispatch: {}
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: content-hub
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Produce and deliver content items
+        run: npx tsx src/cli.ts run
+        env:
+          SINK: ${{ secrets.SINK }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          INGEST_URL: ${{ secrets.INGEST_URL }}
+          AGENT_INGEST_API_KEY: ${{ secrets.AGENT_INGEST_API_KEY }}
+          VOCAB_GENERATOR: ${{ secrets.VOCAB_GENERATOR }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          CLAUDE_MODEL: ${{ secrets.CLAUDE_MODEL }}
+          WEB_AGENTS_ENABLED: ${{ secrets.WEB_AGENTS_ENABLED }}
+          WEB_AGENT_CRON: ${{ secrets.WEB_AGENT_CRON }}
+          WEB_AGENT_BATCH: ${{ secrets.WEB_AGENT_BATCH }}
+          LLM_PROVIDER: ${{ secrets.LLM_PROVIDER }}
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+          OPENAI_MODEL: ${{ secrets.OPENAI_MODEL }}
+          ANTHROPIC_MODEL: ${{ secrets.ANTHROPIC_MODEL }}
+          WEB_AGENT_TOPICS_JSON: ${{ secrets.WEB_AGENT_TOPICS_JSON }}
