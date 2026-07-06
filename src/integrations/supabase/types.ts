@@ -388,10 +388,6 @@ export type Database = {
         }
         Returns: string
       }
-      publish_daily_bot_posts: {
-        Args: { p_run_date?: string }
-        Returns: number
-      }
       publish_vocabulary_bot_post: {
         Args: { p_run_at?: string }
         Returns: number
