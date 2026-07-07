@@ -447,6 +447,7 @@ export type Database = {
       }
     }
     Functions: {
+      current_profile_id: { Args: never; Returns: string }
       enqueue_agent_content_item: {
         Args: {
           p_available_at?: string
