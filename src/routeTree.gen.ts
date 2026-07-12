@@ -20,6 +20,7 @@ import { Route as AuthenticatedEditProfileRouteImport } from './routes/_authenti
 import { Route as AuthenticatedDiscoverRouteImport } from './routes/_authenticated/discover'
 import { Route as AuthenticatedCreateRouteImport } from './routes/_authenticated/create'
 import { Route as AuthenticatedAboutRouteImport } from './routes/_authenticated/about'
+import { Route as ApiPublicBootstrapSystemRouteImport } from './routes/api/public/bootstrap-system'
 import { Route as AuthenticatedUUsernameRouteImport } from './routes/_authenticated/u.$username'
 import { Route as AuthenticatedPPostIdRouteImport } from './routes/_authenticated/p.$postId'
 
@@ -79,6 +80,12 @@ const AuthenticatedAboutRoute = AuthenticatedAboutRouteImport.update({
   path: '/about',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ApiPublicBootstrapSystemRoute =
+  ApiPublicBootstrapSystemRouteImport.update({
+    id: '/api/public/bootstrap-system',
+    path: '/api/public/bootstrap-system',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AuthenticatedUUsernameRoute = AuthenticatedUUsernameRouteImport.update({
   id: '/u/$username',
   path: '/u/$username',
@@ -103,6 +110,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof AuthenticatedSettingsRoute
   '/p/$postId': typeof AuthenticatedPPostIdRoute
   '/u/$username': typeof AuthenticatedUUsernameRoute
+  '/api/public/bootstrap-system': typeof ApiPublicBootstrapSystemRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -117,6 +125,7 @@ export interface FileRoutesByTo {
   '/settings': typeof AuthenticatedSettingsRoute
   '/p/$postId': typeof AuthenticatedPPostIdRoute
   '/u/$username': typeof AuthenticatedUUsernameRoute
+  '/api/public/bootstrap-system': typeof ApiPublicBootstrapSystemRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -133,6 +142,7 @@ export interface FileRoutesById {
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/p/$postId': typeof AuthenticatedPPostIdRoute
   '/_authenticated/u/$username': typeof AuthenticatedUUsernameRoute
+  '/api/public/bootstrap-system': typeof ApiPublicBootstrapSystemRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -149,6 +159,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/p/$postId'
     | '/u/$username'
+    | '/api/public/bootstrap-system'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -163,6 +174,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/p/$postId'
     | '/u/$username'
+    | '/api/public/bootstrap-system'
   id:
     | '__root__'
     | '/'
@@ -178,12 +190,14 @@ export interface FileRouteTypes {
     | '/_authenticated/settings'
     | '/_authenticated/p/$postId'
     | '/_authenticated/u/$username'
+    | '/api/public/bootstrap-system'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  ApiPublicBootstrapSystemRoute: typeof ApiPublicBootstrapSystemRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -265,6 +279,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAboutRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/bootstrap-system': {
+      id: '/api/public/bootstrap-system'
+      path: '/api/public/bootstrap-system'
+      fullPath: '/api/public/bootstrap-system'
+      preLoaderRoute: typeof ApiPublicBootstrapSystemRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/u/$username': {
       id: '/_authenticated/u/$username'
       path: '/u/$username'
@@ -315,6 +336,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  ApiPublicBootstrapSystemRoute: ApiPublicBootstrapSystemRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
