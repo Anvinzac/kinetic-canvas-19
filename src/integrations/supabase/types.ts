@@ -394,6 +394,7 @@ export type Database = {
           created_at: string
           display_name: string
           id: string
+          is_system: boolean
           username: string
         }
         Insert: {
@@ -403,6 +404,7 @@ export type Database = {
           created_at?: string
           display_name: string
           id?: string
+          is_system?: boolean
           username: string
         }
         Update: {
@@ -412,6 +414,7 @@ export type Database = {
           created_at?: string
           display_name?: string
           id?: string
+          is_system?: boolean
           username?: string
         }
         Relationships: []
@@ -456,6 +459,7 @@ export type Database = {
         }
         Returns: string
       }
+      is_system_account: { Args: { _uid: string }; Returns: boolean }
       publish_vocabulary_bot_post: {
         Args: { p_run_at?: string }
         Returns: number
