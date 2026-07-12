@@ -9,17 +9,54 @@ import type { DeliverResult, Sink } from "./types.ts";
 export class SupabaseRpcSink implements Sink {
   readonly name = "supabase-rpc";
   private readonly endpoint: string;
+  private accessToken: string | null = null;
+  private readonly authUrl: string;
 
   constructor(
-    supabaseUrl: string,
-    private readonly serviceRoleKey: string,
+    private readonly supabaseUrl: string,
+    private readonly anonKey: string,
+    private readonly email: string,
+    private readonly password: string,
   ) {
     this.endpoint = `${supabaseUrl.replace(/\/$/, "")}/rest/v1/rpc/enqueue_agent_content_item`;
+    this.authUrl = `${supabaseUrl.replace(/\/$/, "")}/auth/v1/token?grant_type=password`;
+  }
+
+  private async getAccessToken(log: Logger): Promise<string | null> {
+    if (this.accessToken) return this.accessToken;
+    
+    try {
+      const res = await fetch(this.authUrl, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          apikey: this.anonKey,
+        },
+        body: JSON.stringify({ email: this.email, password: this.password }),
+      });
+      if (!res.ok) {
+        log.error("auth failed", { status: res.status, body: await safeBody(res) });
+        return null;
+      }
+      const data = await res.json();
+      this.accessToken = data.access_token;
+      return this.accessToken;
+    } catch (err) {
+      log.error("auth error", { error: String(err) });
+      return null;
+    }
   }
 
   async deliver(items: ContentItem[], log: Logger): Promise<DeliverResult> {
     let delivered = 0;
     let failed = 0;
+
+    if (items.length === 0) return { delivered, failed };
+
+    const token = await this.getAccessToken(log);
+    if (!token) {
+      return { delivered: 0, failed: items.length };
+    }
 
     for (const item of items) {
       try {
@@ -27,8 +64,8 @@ export class SupabaseRpcSink implements Sink {
           method: "POST",
           headers: {
             "content-type": "application/json",
-            apikey: this.serviceRoleKey,
-            authorization: `Bearer ${this.serviceRoleKey}`,
+            apikey: this.anonKey,
+            authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
             p_source_key: item.sourceKey,

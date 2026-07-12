@@ -28,7 +28,9 @@ jobs:
         env:
           SINK: ${{ secrets.SINK }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          SYSTEM_BOT_EMAIL: ${{ secrets.SYSTEM_BOT_EMAIL }}
+          SYSTEM_BOT_PASSWORD: ${{ secrets.SYSTEM_BOT_PASSWORD }}
           INGEST_URL: ${{ secrets.INGEST_URL }}
           AGENT_INGEST_API_KEY: ${{ secrets.AGENT_INGEST_API_KEY }}
           VOCAB_GENERATOR: ${{ secrets.VOCAB_GENERATOR }}

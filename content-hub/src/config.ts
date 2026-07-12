@@ -45,7 +45,12 @@ function buildSink(log: Logger): Sink {
     log.info("sink configured", { sink: sink.name });
     return sink;
   }
-  const sink = new SupabaseRpcSink(requireEnv("SUPABASE_URL"), requireEnv("SUPABASE_SERVICE_ROLE_KEY"));
+  const sink = new SupabaseRpcSink(
+    requireEnv("SUPABASE_URL"),
+    requireEnv("SUPABASE_ANON_KEY"),
+    requireEnv("SYSTEM_BOT_EMAIL"),
+    requireEnv("SYSTEM_BOT_PASSWORD")
+  );
   log.info("sink configured", { sink: sink.name });
   return sink;
 }
