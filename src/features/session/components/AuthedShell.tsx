@@ -7,7 +7,7 @@
 
 import { useQueryClient } from "@tanstack/react-query";
 import { Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode, ReactElement} from "react";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Bell,
@@ -26,7 +26,7 @@ import { endDemoSession, isDemoSession } from "../demo-session";
  * @responsibility Wrap authenticated routes with Outlet and a contextual shell menu.
  * @returns Shell layout around child route content
  */
-export function AuthedShell() {
+export function AuthedShell(): ReactElement {
   const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
   const qc = useQueryClient();

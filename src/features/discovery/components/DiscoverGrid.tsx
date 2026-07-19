@@ -5,6 +5,7 @@
  * Depends on: lib/canvas, mock-data types, lucide-react
  */
 
+import type { ReactElement } from "react";
 import { Newspaper } from "lucide-react";
 import { getCanvasTextColor, parseCanvas, resolveCanvasBackground } from "@/lib/canvas";
 import type { MockPost } from "@/lib/mock-data";
@@ -15,7 +16,7 @@ import type { MockPost } from "@/lib/mock-data";
  * @param className Optional grid wrapper class
  * @returns Grid of aspect-[3/4] canvas previews
  */
-export function PostGrid({ posts, className }: { posts: MockPost[]; className?: string }) {
+export function PostGrid({ posts, className }: { posts: MockPost[]; className?: string }): ReactElement {
   return (
     <div className={`grid grid-cols-3 gap-1 ${className ?? ""}`}>
       {posts.map((p) => {
@@ -68,7 +69,7 @@ function ArticleMiniClip({ title }: { title: string }) {
  * @responsibility Centered aurora pulse used while discover/search data loads.
  * @returns Loading placeholder
  */
-export function DiscoverLoader() {
+export function DiscoverLoader(): ReactElement {
   return (
     <div className="flex h-64 items-center justify-center">
       <div className="grad-aurora size-10 animate-pulse rounded-full" />

@@ -120,7 +120,7 @@ export function useStudioComposerState(): StudioComposerState {
   const activePhoto =
     backgroundMode === "upload" ? uploadedPhoto : backgroundMode === "photo" ? selectedPhoto : null;
   const activeVideo = backgroundMode === "video" ? selectedVideo : null;
-  const normalizedArticleUrl = articleOpen ? normalizeArticleUrl(articleUrl) : "";
+  const normalizedArticleUrl = articleOpen ? normalizeArticleUrl(articleUrl): "";
   const publishTextPlaceholder = getComposerPages(spec.text)
     .map((page) => page.trim())
     .filter(Boolean)
@@ -136,8 +136,7 @@ export function useStudioComposerState(): StudioComposerState {
   const safeBg = resolveCanvasBackground(bg, "composer");
   const selectedTransitionGradients =
     selectedGradientPath.gradients.filter(isUsableCanvasBackground).length > 0
-      ? selectedGradientPath.gradients.filter(isUsableCanvasBackground)
-      : [safeBg];
+      ? selectedGradientPath.gradients.filter(isUsableCanvasBackground): [safeBg];
   const backgroundSpec =
     backgroundMode === "transition"
       ? ({
@@ -148,8 +147,7 @@ export function useStudioComposerState(): StudioComposerState {
         } satisfies Pick<
           CanvasSpec,
           "backgroundStyle" | "gradientPath" | "backgroundScene" | "backgroundPattern"
-        >)
-      : ({
+        >): ({
           backgroundStyle: "static",
           gradientPath: [],
           backgroundScene: backgroundMode === "scene" ? selectedSceneId : undefined,
@@ -161,12 +159,9 @@ export function useStudioComposerState(): StudioComposerState {
 
   const publishBackground =
     backgroundMode === "transition"
-      ? resolveCanvasBackground(selectedTransitionGradients[0], "publish")
-      : backgroundMode === "scene"
-        ? (getCanvasSceneTheme(selectedSceneId)?.base ?? safeBg)
-        : backgroundMode === "pattern"
-          ? (getCanvasPatternTheme(selectedPatternId)?.base ?? safeBg)
-          : safeBg;
+      ? resolveCanvasBackground(selectedTransitionGradients[0], "publish"): backgroundMode === "scene"
+        ? (getCanvasSceneTheme(selectedSceneId)?.base ?? safeBg): backgroundMode === "pattern"
+          ? (getCanvasPatternTheme(selectedPatternId)?.base ?? safeBg): safeBg;
   const postType = articlePreview ? "link" : activeVideo ? "video" : activePhoto ? "image" : "text";
   const mediaUrls = articlePreview
     ? [articlePreview.url]
@@ -182,10 +177,8 @@ export function useStudioComposerState(): StudioComposerState {
       : backgroundMode === "transition"
         ? selectedGradientPath.label
         : backgroundMode === "scene"
-          ? (getCanvasSceneTheme(selectedSceneId)?.label ?? "scene")
-          : backgroundMode === "pattern"
-            ? (getCanvasPatternTheme(selectedPatternId)?.label ?? "pattern")
-            : backgroundMode === "photo"
+          ? (getCanvasSceneTheme(selectedSceneId)?.label ?? "scene"): backgroundMode === "pattern"
+            ? (getCanvasPatternTheme(selectedPatternId)?.label ?? "pattern"): backgroundMode === "photo"
               ? "preloaded photo"
               : backgroundMode === "video"
                 ? "video"
@@ -203,15 +196,13 @@ export function useStudioComposerState(): StudioComposerState {
       ? resolveCanvasBackground(
           selectedTransitionGradients[playKey % selectedTransitionGradients.length],
           "preview",
-        )
-      : safeBg;
+        ): safeBg;
   const previewSlidingBackground =
     backgroundMode === "transition"
-      ? getComposerSlidingBackground(selectedTransitionGradients, playKey)
-      : null;
-  const previewScene = backgroundMode === "scene" ? getCanvasSceneTheme(selectedSceneId) : null;
+      ? getComposerSlidingBackground(selectedTransitionGradients, playKey): null;
+  const previewScene = backgroundMode === "scene" ? getCanvasSceneTheme(selectedSceneId): null;
   const previewPattern =
-    backgroundMode === "pattern" ? getCanvasPatternTheme(selectedPatternId) : null;
+    backgroundMode === "pattern" ? getCanvasPatternTheme(selectedPatternId): null;
 
   function previewSpec(currentTextPage: string): CanvasSpec {
     return { ...spec, text: currentTextPage, ...backgroundSpec };

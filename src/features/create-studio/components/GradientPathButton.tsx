@@ -1,6 +1,19 @@
+/**
+ * UI component: GradientPathButton.
+ *
+ * Exports: GradientPathButton
+ * Depends on: lucide-react, @/features/canvas
+ */
+
+import type { ReactElement } from "react";
 import { Check } from "lucide-react";
 import type { GradientTransitionPath } from "@/features/canvas";
 
+/**
+ * Render the GradientPathButton UI.
+ * @param props - Component props
+ * @returns Rendered UI
+ */
 export function GradientPathButton({
   path,
   active,
@@ -9,7 +22,7 @@ export function GradientPathButton({
   path: GradientTransitionPath;
   active: boolean;
   onClick: () => void;
-}) {
+}): ReactElement {
   return (
     <button
       type="button"

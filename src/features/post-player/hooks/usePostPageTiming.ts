@@ -50,7 +50,9 @@ export type UsePostPageTimingArgs = {
 };
 
 /**
- * @responsibility Effects 3–8: reset, locals, story range, observers, page timer.
+ * Effects 3–8: reset, locals, story range, observers, page timer.
+ * @param args - Playback clocks, canvas observers, and story/comment setters
+ * @returns void (registers effects only)
  */
 export function usePostPageTiming({
   post,

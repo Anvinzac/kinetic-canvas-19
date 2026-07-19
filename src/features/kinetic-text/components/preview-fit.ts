@@ -16,7 +16,12 @@ export const MIN_TEXT_FIT_SCALE = 0.46;
 export const VIETNAMESE_SCALE_FIT_GUARD = 1.24;
 export const useIsomorphicLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
 
-export function getPreviewFitFloor(text: string) {
+/**
+ * Compute previewfitfloor.
+ * @param text - text argument
+ * @returns Computed value
+ */
+export function getPreviewFitFloor(text: string): number {
   const words = getWords(text).length;
   if (words <= 8) return 0.74;
   if (words <= 14) return 0.62;
@@ -24,6 +29,13 @@ export function getPreviewFitFloor(text: string) {
   return MIN_TEXT_FIT_SCALE;
 }
 
-export function clamp(value: number, min: number, max: number) {
+/**
+ * clamp helper
+ * @param value - value argument
+ * @param min - min argument
+ * @param max - max argument
+ * @returns Computed value
+ */
+export function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
 }

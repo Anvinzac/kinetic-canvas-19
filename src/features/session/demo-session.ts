@@ -1,3 +1,10 @@
+/**
+ * Module providing DEMO_AUTH_USER_ID, DEMO_SESSION_KEY, startDemoSession, endDemoSession.
+ *
+ * Exports: DEMO_AUTH_USER_ID, DEMO_SESSION_KEY, startDemoSession, endDemoSession, getDemoSession, isDemoSession, getDemoRouteUser
+ * Depends on: none (leaf module)
+ */
+
 export const DEMO_AUTH_USER_ID = "00000000-0000-4000-8000-000000000000";
 export const DEMO_SESSION_KEY = "kinetic.demo.session";
 
@@ -17,11 +24,10 @@ function getStorage() {
 }
 
 /**
- * @responsibility Start a local demo session so the app can run without Supabase auth.
- * @outputs Persisted demo session payload
- * @sideEffects Writes `DEMO_SESSION_KEY` to localStorage
+ * Start a local demo session so the app can run without Supabase auth.
+ * @returns Persisted demo session payload
  */
-export function startDemoSession() {
+export function startDemoSession(): DemoSession {
   const session: DemoSession = {
     userId: DEMO_AUTH_USER_ID,
     startedAt: new Date().toISOString(),
@@ -31,19 +37,18 @@ export function startDemoSession() {
 }
 
 /**
- * @responsibility Clear the local demo session (e.g. on sign-out).
- * @sideEffects Removes `DEMO_SESSION_KEY` from localStorage
+ * Clear the local demo session (e.g. on sign-out).
+ * @returns Function result
  */
-export function endDemoSession() {
+export function endDemoSession(): void {
   getStorage()?.removeItem(DEMO_SESSION_KEY);
 }
 
 /**
- * @responsibility Read and validate the persisted demo session, if any.
- * @outputs Demo session or null when missing/invalid
- * @sideEffects Clears corrupt session entries
+ * Read and validate the persisted demo session, if any.
+ * @returns Demo session or null when missing/invalid
  */
-export function getDemoSession() {
+export function getDemoSession(): DemoSession | null {
   const raw = getStorage()?.getItem(DEMO_SESSION_KEY);
   if (!raw) return null;
 
@@ -61,20 +66,25 @@ export function getDemoSession() {
 }
 
 /**
- * @responsibility Report whether the current browser session is demo mode.
- * @outputs true when a valid demo session exists
- * @pure false — reads localStorage
+ * Report whether the current browser session is demo mode.
+ * @returns true when a valid demo session exists
  */
-export function isDemoSession() {
+export function isDemoSession(): boolean {
   return getDemoSession() !== null;
 }
 
 /**
- * @responsibility Provide a synthetic auth user object for route `beforeLoad` in demo mode.
- * @outputs Minimal user-shaped object matching Supabase auth user fields used by routes
- * @pure true
+ * Provide a synthetic auth user object for route `beforeLoad` in demo mode.
+ * @returns Minimal user-shaped object matching Supabase auth user fields used by routes
  */
-export function getDemoRouteUser() {
+export function getDemoRouteUser(): {
+  id: string;
+  aud: string;
+  role: string;
+  email: string;
+  app_metadata: Record<string, unknown>;
+  user_metadata: Record<string, unknown>;
+} {
   return {
     id: DEMO_AUTH_USER_ID,
     aud: "authenticated",

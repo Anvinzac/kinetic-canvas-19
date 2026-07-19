@@ -9,6 +9,10 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 
+/**
+ * Server function: getPost.
+ * @returns TanStack server function handle
+ */
 export const getPost = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: { post_id: string }) => z.object({ post_id: z.string().uuid() }).parse(d))
@@ -39,8 +43,7 @@ export const getPost = createServerFn({ method: "GET" })
       ? await supabaseAdmin
           .from("profiles")
           .select("id, username, display_name, avatar_url")
-          .in("id", profileIds)
-      : { data: [] };
+          .in("id", profileIds): { data: [] };
 
     return {
       post,

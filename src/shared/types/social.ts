@@ -1,8 +1,9 @@
 /**
- * Cross-feature social DTOs shared by live serverFns, demo mock store, and UI.
- * Shape mirrors Supabase rows used by the feed/post surfaces.
+ * Cross-feature social DTOs shared by live serverFns, demo mock store, and UI
+ *
+ * Exports: PostType, SocialPost, SocialProfile, SocialProfileWithBio, SocialLike, SocialComment, SocialFeedData, SocialPostData, SocialProfileData, SocialMeData, SocialDiscoverData, SocialSearchData, SocialNotificationKind, SocialNotificationItem, ...
+ * Depends on: none (leaf module)
  */
-
 export type PostType = "text" | "image" | "video" | "slideshow" | "link";
 
 /**

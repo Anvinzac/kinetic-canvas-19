@@ -29,7 +29,9 @@ export type UseTextFitScaleResult = {
 };
 
 /**
- * @responsibility Measure each multi-word page and apply the smallest fit to all.
+ * Measure each multi-word page and apply the smallest fit to all.
+ * @param args - UseTextFitScaleArgs fields
+ * @returns Hook API for callers
  */
 export function useTextFitScale({
   textPages,
@@ -58,8 +60,7 @@ export function useTextFitScale({
   const allPagesMeasured =
     needsSharedFit && sharedFitIndexes.every((i) => pageFitScales[i] !== undefined);
   const sharedFitScale = allPagesMeasured
-    ? Math.min(...sharedFitIndexes.map((i) => pageFitScales[i]))
-    : 1;
+    ? Math.min(...sharedFitIndexes.map((i) => pageFitScales[i])): 1;
   const currentIsSolo = isSoloTextPage(currentText);
   const useSharedSize = allPagesMeasured && !currentIsSolo;
   const displaySize = Math.max(

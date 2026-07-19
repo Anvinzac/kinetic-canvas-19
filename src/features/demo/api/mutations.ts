@@ -22,9 +22,11 @@ import {
 } from "../store";
 
 /**
- * @responsibility Toggle whether the demo viewer likes a post (persisted overlay).
+ * Toggle whether the demo viewer likes a post (persisted overlay).
+ * @param postId - postId argument
+ * @returns Function result
  */
-export async function toggleMockLike(postId: string) {
+export async function toggleMockLike(postId: string): Promise<{ liked: boolean }> {
   const liked = new Set(readLikedPostIds());
   if (liked.has(postId)) {
     liked.delete(postId);
@@ -38,9 +40,12 @@ export async function toggleMockLike(postId: string) {
 }
 
 /**
- * @responsibility Append a chip comment from the demo viewer onto a post (persisted overlay).
+ * Append a chip comment from the demo viewer onto a post (persisted overlay).
+ * @param postId - postId argument
+ * @param chipId - chipId argument
+ * @returns Function result
  */
-export async function addMockComment(postId: string, chipId: string) {
+export async function addMockComment(postId: string, chipId: string): Promise<{ ok: true }> {
   const comments = readJsonArray<MockComment>(LOCAL_COMMENTS_KEY);
   const next: MockComment = {
     id: makeUuid(),
@@ -54,9 +59,11 @@ export async function addMockComment(postId: string, chipId: string) {
 }
 
 /**
- * @responsibility Toggle whether the demo viewer follows a target profile (persisted overlay).
+ * Toggle whether the demo viewer follows a target profile (persisted overlay).
+ * @param targetId - targetId argument
+ * @returns Function result
  */
-export async function toggleMockFollow(targetId: string) {
+export async function toggleMockFollow(targetId: string): Promise<{ following: boolean }> {
   if (targetId === MOCK_ME_ID) throw new Error("Cannot follow self");
   const following = new Set(readFollowingIds());
   if (following.has(targetId)) {
@@ -71,27 +78,31 @@ export async function toggleMockFollow(targetId: string) {
 }
 
 /**
- * @responsibility Persist a partial profile update for the demo viewer.
+ * Persist a partial profile update for the demo viewer.
+ * @param updates - updates argument
+ * @returns Function result
  */
 export async function updateMockProfile(
   updates: Pick<MockProfile, "display_name"> & {
     bio?: string | null;
     avatar_url?: string | null;
   },
-) {
+): Promise<{ ok: true }> {
   writeJson(PROFILE_PATCH_KEY, updates);
   return { ok: true as const };
 }
 
 /**
- * @responsibility Create a local demo post authored by the viewer and prepend it to the overlay.
+ * Create a local demo post authored by the viewer and prepend it to the overlay.
+ * @param input - input argument
+ * @returns Function result
  */
 export function addMockPost(input: {
   post_type: PostType;
   canvas_html: string;
   media_urls?: string[];
   bg_gradient: string;
-}) {
+}): MockPost {
   const posts = readJsonArray<MockPost>(LOCAL_POSTS_KEY);
   const post: MockPost = {
     id: makeUuid(),

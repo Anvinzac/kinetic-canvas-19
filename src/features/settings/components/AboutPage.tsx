@@ -5,6 +5,7 @@
  * Depends on: tanstack router, lucide-react
  */
 
+import type { ReactElement } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import {
   ChevronLeft,
@@ -20,7 +21,7 @@ import {
  * @responsibility Render the About Kinetic product story and principle grid.
  * @returns About page with header, hero, principles, and CTAs
  */
-export function AboutPage() {
+export function AboutPage(): ReactElement {
   const navigate = useNavigate();
 
   return (

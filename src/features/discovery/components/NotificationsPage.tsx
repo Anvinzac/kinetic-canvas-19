@@ -5,6 +5,7 @@
  * Depends on: features/discovery API, session data mode, lib/canvas, lucide-react
  */
 
+import type { ReactElement } from "react";
 import { Link, useNavigate, useRouter } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -32,7 +33,7 @@ function timeAgo(iso: string) {
  * @responsibility Render the activity feed of likes, comments, and follows.
  * @returns Activity page with header and notification rows
  */
-export function NotificationsPage() {
+export function NotificationsPage(): ReactElement {
   const fn = useServerFn(getNotifications);
   const navigate = useNavigate();
   const router = useRouter();
@@ -64,14 +65,14 @@ export function NotificationsPage() {
         <div className="flex h-64 items-center justify-center">
           <div className="grad-aurora size-10 animate-pulse rounded-full" />
         </div>
-      ) : data.items.length === 0 ? (
+      ): data.items.length === 0 ? (
         <p className="py-16 text-center font-mono text-xs text-muted-foreground">
           no echoes yet — post some kinetics ✨
         </p>
-      ) : (
+      ): (
         <ul className="divide-y divide-white/5">
           {data.items.map((n, i) => {
-            const spec = n.post_preview ? parseCanvas(n.post_preview) : null;
+            const spec = n.post_preview ? parseCanvas(n.post_preview): null;
             return (
               <li key={i} className="flex items-center gap-3 px-4 py-3">
                 <div className="relative shrink-0">
@@ -100,7 +101,7 @@ export function NotificationsPage() {
                       >
                         @{n.actor.username}
                       </Link>
-                    ) : (
+                    ): (
                       <span className="font-bold">someone</span>
                     )}{" "}
                     <span className="text-muted-foreground">

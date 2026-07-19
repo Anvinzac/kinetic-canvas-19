@@ -12,7 +12,12 @@ import {
 
 // Preview emphasis scoring — narrower word list / no digit-or-ALLCAPS bonuses.
 // PostCard getEmphasizedWordIndexes + getWordImportance diverge; do not unify.
-export function getPreviewEmphasizedWordIndexes(words: string[]) {
+/**
+ * Compute previewemphasizedwordindexes.
+ * @param words - words argument
+ * @returns Computed value
+ */
+export function getPreviewEmphasizedWordIndexes(words: string[]): Set<number>{
   const poeticIndexes = getSpecialPoeticWordIndexes(words);
   if (poeticIndexes.size > 0) return poeticIndexes;
 

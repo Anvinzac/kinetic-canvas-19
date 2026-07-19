@@ -1,11 +1,17 @@
+/**
+ * Module providing parseCanvas, serializeCanvas.
+ *
+ * Exports: parseCanvas, serializeCanvas
+ * Depends on: ./catalog, ./types
+ */
+
 import { DEFAULT_CANVAS } from "./catalog";
 import type { CanvasSpec } from "./types";
 
 /**
- * @responsibility Parse stored canvas JSON (or plain text fallback) into a CanvasSpec.
- * @inputs raw string from `posts.canvas_html` (JSON, plain text, null/undefined)
- * @outputs CanvasSpec merged with defaults; invalid JSON uses raw as `text`
- * @pure true
+ * Parse stored canvas JSON (or plain text fallback) into a CanvasSpec.
+ * @param raw - raw argument
+ * @returns CanvasSpec merged with defaults; invalid JSON uses raw as `text`
  */
 export function parseCanvas(raw: string | null | undefined): CanvasSpec {
   if (!raw) return DEFAULT_CANVAS;
@@ -18,10 +24,9 @@ export function parseCanvas(raw: string | null | undefined): CanvasSpec {
 }
 
 /**
- * @responsibility Serialize a CanvasSpec to the JSON string stored in `posts.canvas_html`.
- * @inputs CanvasSpec
- * @outputs JSON string (identical to historical `JSON.stringify(spec)`)
- * @pure true
+ * Serialize a CanvasSpec to the JSON string stored in `posts.canvas_html`.
+ * @param spec - spec argument
+ * @returns JSON string (identical to historical `JSON.stringify(spec)`)
  */
 export function serializeCanvas(spec: CanvasSpec): string {
   return JSON.stringify(spec);

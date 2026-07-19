@@ -27,7 +27,9 @@ export type PostChromeProps = {
 };
 
 /**
- * @responsibility Top chrome, overflow menu, and paused controls.
+ * Top chrome, overflow menu, and paused controls.
+ * @param props - PostChromeProps fields
+ * @returns Rendered UI
  */
 export function PostChrome({
   author,

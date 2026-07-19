@@ -46,7 +46,9 @@ export type UsePostAutoAdvanceArgs = {
 };
 
 /**
- * @responsibility Effects 9–13: float cycle, story/draft page resets and advances.
+ * Effects 9–13: float cycle, story/draft page resets and advances.
+ * @param args - Pause/visibility gates plus comment-story/draft page state
+ * @returns void (registers effects only)
  */
 export function usePostAutoAdvance({
   isExporting,

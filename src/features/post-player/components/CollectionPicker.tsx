@@ -44,7 +44,9 @@ export type CollectionPickerProps = {
 };
 
 /**
- * @responsibility Overlay to pick folders/tags when long-pressing like.
+ * Overlay to pick folders/tags when long-pressing like.
+ * @param props - CollectionPickerProps fields
+ * @returns Rendered UI
  */
 export function CollectionPicker({
   selectedFolders,

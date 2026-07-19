@@ -18,10 +18,20 @@ export const COMMENT_STORY_WORDS_PER_PAGE = 8;
 
 const DEFAULT_CANVAS_BACKGROUND = SAFE_CANVAS_BACKGROUND;
 
+/**
+ * normalizeComment helper
+ * @param value - value argument
+ * @returns Computed value
+ */
 export function normalizeComment(value: string): string {
   return value.replace(/\s+/g, " ").trim();
 }
 
+/**
+ * limitCommentText helper
+ * @param value - value argument
+ * @returns Computed value
+ */
 export function limitCommentText(value: string): string {
   const clipped = value.slice(0, MAX_COMMENT_CHARS);
   const words = getWords(clipped);
@@ -29,11 +39,20 @@ export function limitCommentText(value: string): string {
   return words.slice(0, MAX_COMMENT_WORDS).join(" ");
 }
 
-
+/**
+ * Compute commentflightduration.
+ * @param label - label argument
+ * @returns Computed value
+ */
 export function getCommentFlightDuration(label: string): number {
   return Math.max(5600, Math.min(8400, 4300 + label.length * 55));
 }
 
+/**
+ * Compute floatingcommentlabel.
+ * @param label - label argument
+ * @returns Computed value
+ */
 export function getFloatingCommentLabel(label: string): string {
   const words = getWords(label);
   if (words.length <= 10 && label.length <= 84) return label;
@@ -41,15 +60,30 @@ export function getFloatingCommentLabel(label: string): string {
   return `${preview}...`;
 }
 
-
+/**
+ * shouldFloatComment helper
+ * @param label - label argument
+ * @returns Function result
+ */
 export function shouldFloatComment(label: string): boolean {
   return getCommentWordCount(label) <= FLOATING_COMMENT_MAX_WORDS;
 }
 
+/**
+ * Compute commentwordcount.
+ * @param label - label argument
+ * @returns Computed value
+ */
 export function getCommentWordCount(label: string): number {
   return label.match(/[\p{L}\p{N}][\p{L}\p{N}'-]*/gu)?.length ?? 0;
 }
 
+/**
+ * Compute commentstorypages.
+ * @param text - text argument
+ * @param fastMode - fastMode argument
+ * @returns Computed value
+ */
 export function getCommentStoryPages(text: string, fastMode: boolean): string[] {
   const normalized = normalizeComment(text);
   if (!normalized) return [""];
@@ -65,19 +99,31 @@ export function getCommentStoryPages(text: string, fastMode: boolean): string[] 
   return pages;
 }
 
-
+/**
+ * Compute storypageduration.
+ * @param text - text argument
+ * @returns Computed value
+ */
 export function getStoryPageDuration(text: string): number {
   const wordCount = getWords(text).length;
   return Math.max(2600, Math.min(5200, 1500 + wordCount * 360));
 }
 
-
+/**
+ * Compute faststoryduration.
+ * @param text - text argument
+ * @returns Computed value
+ */
 export function getFastStoryDuration(text: string): number {
   const wordCount = getWords(text).length;
   return Math.max(3200, Math.min(7600, 1700 + wordCount * 150));
 }
 
-
+/**
+ * Compute commentstorygradient.
+ * @param index - index argument
+ * @returns Computed value
+ */
 export function getCommentStoryGradient(index: number): string {
   const gradients = [
     "linear-gradient(135deg,#FF006E,#8338EC)",
@@ -89,7 +135,11 @@ export function getCommentStoryGradient(index: number): string {
   return gradients[index % gradients.length];
 }
 
-
+/**
+ * Compute commentlabel.
+ * @param chipId - chipId argument
+ * @returns Computed value
+ */
 export function getCommentLabel(chipId: string): string {
   const chip = COMMENT_CHIPS.find((item) => item.id === chipId);
   if (chip) return `${chip.emoji} ${chip.label}`;

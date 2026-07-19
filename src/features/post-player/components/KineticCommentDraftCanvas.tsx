@@ -19,7 +19,9 @@ export type KineticCommentDraftCanvasProps = {
 };
 
 /**
- * @responsibility Preview the in-progress custom comment as a mini kinetic canvas.
+ * Preview the in-progress custom comment as a mini kinetic canvas.
+ * @param props - KineticCommentDraftCanvasProps fields
+ * @returns Rendered UI
  */
 export function KineticCommentDraftCanvas({
   text,

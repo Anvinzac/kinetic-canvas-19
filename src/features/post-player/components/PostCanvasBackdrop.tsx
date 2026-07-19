@@ -22,7 +22,9 @@ export type PostCanvasBackdropProps = {
 };
 
 /**
- * @responsibility Paint the post canvas background layer (scene/pattern/gradient).
+ * Paint the post canvas background layer (scene/pattern/gradient).
+ * @param props - PostCanvasBackdropProps fields
+ * @returns Rendered UI
  */
 export function PostCanvasBackdrop({
   postId,
@@ -41,7 +43,7 @@ export function PostCanvasBackdrop({
           className="absolute inset-0"
           style={getSceneBackgroundStyle(sceneTheme, backgroundShiftPage)}
         />
-      ) : patternTheme ? (
+      ): patternTheme ? (
         <div
           aria-hidden
           className="absolute inset-0"
@@ -54,7 +56,7 @@ export function PostCanvasBackdrop({
             transition: "background-position 1.25s cubic-bezier(0.22,1,0.36,1)",
           }}
         />
-      ) : slidingCanvasBackground ? (
+      ): slidingCanvasBackground ? (
         <motion.div
           aria-hidden
           className="absolute inset-y-0 left-0"
@@ -67,7 +69,7 @@ export function PostCanvasBackdrop({
           animate={{ x: slidingCanvasBackground.x }}
           transition={{ duration: 1.25, ease: [0.22, 1, 0.36, 1] }}
         />
-      ) : (
+      ): (
         <div
           aria-hidden
           className="absolute inset-0"

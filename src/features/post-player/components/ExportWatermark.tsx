@@ -9,7 +9,9 @@ import type { ReactElement } from "react";
 import type { Profile } from "../types";
 
 /**
- * @responsibility Brand watermark burned into exported clips.
+ * Brand watermark burned into exported clips.
+ * @param props - Component props
+ * @returns Rendered UI
  */
 export function ExportWatermark({ author }: { author?: Profile }): ReactElement {
   return (

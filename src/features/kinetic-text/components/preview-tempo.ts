@@ -21,7 +21,16 @@ export const tempoConfig: Record<
 
 // Preview-only entrance variants keyed by CanvasSpec.entrance.
 // PostCard uses a separate ENTRANCE_STYLES personality system — do not unify.
-export function entranceVariants(entrance: CanvasSpec["entrance"], rhythm?: Rhythm) {
+/**
+ * entranceVariants helper
+ * @param entrance - entrance argument
+ * @param rhythm? - rhythm? argument
+ * @returns Function result
+ */
+export function entranceVariants(entrance: CanvasSpec["entrance"], rhythm?: Rhythm): {
+  initial: Record<string, number | string>;
+  animate: Record<string, number | string>;
+} {
   if (rhythm === "poetic") {
     return {
       initial: { opacity: 0, y: 12, scale: 1.05, filter: "blur(18px)" },
@@ -47,7 +56,14 @@ export function entranceVariants(entrance: CanvasSpec["entrance"], rhythm?: Rhyt
 }
 
 // Preview rhythm delays — multipliers differ from PostCard getWordDelay (smooth/burst).
-export function getRhythmDelay(index: number, tempo: Tempo, rhythm: Rhythm) {
+/**
+ * Compute rhythmdelay.
+ * @param index - index argument
+ * @param tempo - tempo argument
+ * @param rhythm - rhythm argument
+ * @returns Computed value
+ */
+export function getRhythmDelay(index: number, tempo: Tempo, rhythm: Rhythm): number {
   const base = tempoConfig[tempo].wordDelay;
   if (rhythm === "poetic") return index * base * 1.45;
   if (rhythm === "smooth") return index * base * 0.8;

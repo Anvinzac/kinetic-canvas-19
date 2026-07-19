@@ -44,7 +44,9 @@ export type PostCommentChipsProps = {
 };
 
 /**
- * @responsibility Bottom comment tray with story preview and chip picker.
+ * Bottom comment tray with story preview and chip picker.
+ * @param props - PostCommentChipsProps fields
+ * @returns Rendered UI
  */
 export function PostCommentChips({
   isExporting,

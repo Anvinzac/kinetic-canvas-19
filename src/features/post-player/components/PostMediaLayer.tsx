@@ -23,7 +23,9 @@ export type PostMediaLayerProps = {
 };
 
 /**
- * @responsibility Render photo/video/slideshow media under the kinetic text.
+ * Render photo/video/slideshow media under the kinetic text.
+ * @param props - PostMediaLayerProps fields
+ * @returns Rendered UI
  */
 export function PostMediaLayer({
   postId,

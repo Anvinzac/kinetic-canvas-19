@@ -16,27 +16,26 @@ import {
 type CanvasBackgroundSeed = string | number | null | undefined;
 
 /**
- * @responsibility Resolve a usable CSS background-image, falling back when empty/invalid/too dark.
- * @inputs Raw background string + optional seed for stable fallback selection
- * @outputs Usable gradient/url background string
- * @pure true — may consult `CSS.supports` when available
+ * Resolve a usable CSS background-image, falling back when empty/invalid/too dark.
+ * @param background - background argument
+ * @param seed - seed argument
+ * @returns Usable gradient/url background string
  */
 export function resolveCanvasBackground(
   background: string | null | undefined,
   seed: CanvasBackgroundSeed = "kinetic",
-) {
+): string {
   const value = background?.trim();
   if (isUsableCanvasBackground(value)) return value;
   return getFallbackCanvasBackground(seed);
 }
 
 /**
- * @responsibility Pick a deterministic fallback gradient from a small catalog.
- * @inputs Seed string/number (defaults to `"kinetic"`)
- * @outputs One of the fallback linear-gradient strings
- * @pure true
+ * Pick a deterministic fallback gradient from a small catalog.
+ * @param seed - seed argument
+ * @returns One of the fallback linear-gradient strings
  */
-export function getFallbackCanvasBackground(seed: CanvasBackgroundSeed = "kinetic") {
+export function getFallbackCanvasBackground(seed: CanvasBackgroundSeed = "kinetic"): string {
   const gradients = [
     "linear-gradient(135deg,#FF006E,#8338EC)",
     "linear-gradient(135deg,#3A86FF,#06FFA5)",
@@ -48,10 +47,9 @@ export function getFallbackCanvasBackground(seed: CanvasBackgroundSeed = "kineti
 }
 
 /**
- * @responsibility Decide whether a background string is safe to paint as `background-image`.
- * @inputs Candidate background CSS value
- * @outputs true when non-empty, renderable, and not too dark / not a rejected solid
- * @pure true — may consult `CSS.supports` when available
+ * Decide whether a background string is safe to paint as `background-image`.
+ * @param background - background argument
+ * @returns true when non-empty, renderable, and not too dark / not a rejected solid
  */
 export function isUsableCanvasBackground(
   background: string | null | undefined,
@@ -76,12 +74,11 @@ export function isUsableCanvasBackground(
 }
 
 /**
- * @responsibility Detect backgrounds too dark for white/light kinetic captions.
- * @inputs CSS background value containing color tokens
- * @outputs true when luminance heuristics say the backdrop is too dark
- * @pure true
+ * Detect backgrounds too dark for white/light kinetic captions.
+ * @param background - background argument
+ * @returns true when luminance heuristics say the backdrop is too dark
  */
-export function isTooDarkCanvasBackground(background: string) {
+export function isTooDarkCanvasBackground(background: string): boolean {
   const tokens = extractCssColors(background);
   const colors = tokens.map(parseCssColor).filter(Boolean) as RgbColor[];
   if (colors.length === 0) return tokens.length === 0;

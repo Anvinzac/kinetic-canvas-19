@@ -6,7 +6,7 @@
  */
 
 import { useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import {type ReactElement, useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
@@ -19,7 +19,7 @@ import { endDemoSession, isDemoSession, startDemoSession } from "../demo-session
  * @responsibility Offer Google OAuth or demo session entry, redirecting when already signed in.
  * @returns Auth splash with aurora branding and CTA buttons
  */
-export function AuthPage() {
+export function AuthPage(): ReactElement {
   const navigate = useNavigate();
   const [loading, setLoading] = useState<string | null>(null);
   const ensureFn = useServerFn(ensureProfile);

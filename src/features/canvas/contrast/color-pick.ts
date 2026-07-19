@@ -20,30 +20,43 @@ import {
 
 type CanvasBackgroundInput = string | null | undefined | readonly (string | null | undefined)[];
 
+/**
+ * Compute canvasbackgroundcolors.
+ * @param spec - spec argument
+ * @param background? - background? argument
+ * @returns Computed value
+ */
 export function getCanvasBackgroundColors(
   spec: Pick<CanvasSpec, "backgroundStyle" | "gradientPath">,
   background?: CanvasBackgroundInput,
-) {
+): RgbColor[] {
   const sources = [
     ...normalizeBackgroundInput(background),
-    ...(spec.backgroundStyle === "transition" ? (spec.gradientPath ?? []) : []),
+    ...(spec.backgroundStyle === "transition" ? (spec.gradientPath ?? []): []),
   ];
   const colors = sources.flatMap(extractCssColors).map(parseCssColor).filter(Boolean);
-  return colors.length > 0 ? (colors as RgbColor[]) : [];
+  return colors.length > 0 ? (colors as RgbColor[]): [];
 }
 
 function normalizeBackgroundInput(background: CanvasBackgroundInput) {
   if (!background) return [];
-  return Array.isArray(background) ? background.filter(Boolean) : [background];
+  return Array.isArray(background) ? background.filter(Boolean): [background];
 }
 
+/**
+ * pickBestColor helper
+ * @param candidates - candidates argument
+ * @param backgroundColors - backgroundColors argument
+ * @param options - options argument
+ * @returns Computed value
+ */
 export function pickBestColor(
   candidates: readonly string[],
   backgroundColors: RgbColor[],
   options: { avoidYellowOnGreen?: boolean; avoidColor?: string } = {},
-) {
+): string {
   const greenishBackground = isGreenishBackground(backgroundColors);
-  const avoidRgb = options.avoidColor ? parseCssColor(options.avoidColor) : null;
+  const avoidRgb = options.avoidColor ? parseCssColor(options.avoidColor): null;
 
   const ranked = candidates
     .map((color) => {

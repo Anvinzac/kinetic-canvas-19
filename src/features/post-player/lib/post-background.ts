@@ -16,6 +16,11 @@ import type { Post } from "../types";
 
 export const DEFAULT_CANVAS_BACKGROUND = SAFE_CANVAS_BACKGROUND;
 
+/**
+ * Compute gradienttransitionpath.
+ * @param spec - spec argument
+ * @returns Computed value
+ */
 export function getGradientTransitionPath(spec: CanvasSpec): string[] {
   if (spec.backgroundStyle !== "transition") return [];
   return (spec.gradientPath ?? [])
@@ -23,11 +28,22 @@ export function getGradientTransitionPath(spec: CanvasSpec): string[] {
     .filter((gradient) => isUsableCanvasBackground(gradient));
 }
 
-
+/**
+ * Compute resolvedpostbackground.
+ * @param post - post argument
+ * @returns Computed value
+ */
 export function getResolvedPostBackground(post: Post): string | null {
   return resolveCanvasBackground(post.bg_gradient, post.id);
 }
 
+/**
+ * Compute slidingcanvasbackground.
+ * @param spec - spec argument
+ * @param fallback - fallback argument
+ * @param shiftPage - shiftPage argument
+ * @returns Computed value
+ */
 export function getSlidingCanvasBackground(
   spec: CanvasSpec,
   fallback: string | null,
@@ -52,7 +68,12 @@ export function getSlidingCanvasBackground(
   };
 }
 
-
+/**
+ * Compute transitioncolorcycle.
+ * @param spec - spec argument
+ * @param fallback - fallback argument
+ * @returns Computed value
+ */
 export function getTransitionColorCycle(spec: CanvasSpec, fallback: string | null): string[] {
   const gradients = getGradientTransitionPath(spec);
   const colors = gradients.reduce<string[]>((items, gradient, index) => {
@@ -66,16 +87,19 @@ export function getTransitionColorCycle(spec: CanvasSpec, fallback: string | nul
   }, []);
 
   const fallbackStops = fallback
-    ? extractGradientColors(fallback).filter((color) => !isTooDarkCanvasBackground(color))
-    : [];
+    ? extractGradientColors(fallback).filter((color) => !isTooDarkCanvasBackground(color)): [];
   const defaultStops = extractGradientColors(DEFAULT_CANVAS_BACKGROUND);
   const cycle =
     colors.length >= 2 ? colors : fallbackStops.length >= 2 ? fallbackStops : defaultStops;
   if (cycle.length < 2) return [];
-  return cycle[0] === cycle[cycle.length - 1] ? cycle.slice(0, -1) : cycle;
+  return cycle[0] === cycle[cycle.length - 1] ? cycle.slice(0, -1): cycle;
 }
 
-
+/**
+ * extractGradientColors helper
+ * @param value - value argument
+ * @returns Computed value
+ */
 export function extractGradientColors(value: string): string[] {
   return (
     value.match(

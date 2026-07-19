@@ -24,7 +24,9 @@ import { usePostRingProgress } from "./usePostRingProgress";
 import { useTextFitScale } from "./useTextFitScale";
 
 /**
- * @responsibility Compose PostCard runtime hooks and preserve original effect order.
+ * Compose PostCard runtime hooks and preserve original effect order.
+ * @param props - PostCard props (post, author, engagement, handlers)
+ * @returns Flat playback API for PostCard layers
  */
 export function usePostPlayback(props: PostCardProps) {
   const { post, author, likes, comments, liked, profilesById, currentUserId, onLike, onComment } =

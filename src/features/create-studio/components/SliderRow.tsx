@@ -1,3 +1,16 @@
+/**
+ * UI component: SliderRow.
+ *
+ * Exports: SliderRow
+ * Depends on: none (leaf module)
+ */
+
+import type { ReactElement } from "react";
+/**
+ * Render the SliderRow UI.
+ * @param props - Component props
+ * @returns Rendered UI
+ */
 export function SliderRow({
   label,
   value,
@@ -12,7 +25,7 @@ export function SliderRow({
   max: number;
   step?: number;
   onChange: (v: number) => void;
-}) {
+}): ReactElement {
   return (
     <div>
       <div className="mb-1 flex justify-between font-mono text-[10px] uppercase tracking-widest text-white/55">

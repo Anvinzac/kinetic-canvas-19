@@ -1,7 +1,15 @@
 /**
- * @responsibility Read a File as a data URL via FileReader.
+ * Pure helpers for read file.
+ *
+ * Exports: readFileAsDataUrl
+ * Depends on: none (leaf module)
  */
-export function readFileAsDataUrl(file: File) {
+/**
+ * readFileAsDataUrl helper
+ * @param file - file argument
+ * @returns Computed value
+ */
+export function readFileAsDataUrl(file: File): Promise<string> {
   return new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(String(reader.result));

@@ -43,7 +43,7 @@ export function pickDataMode<T>(
   branches: { demo: () => T; live: () => T },
   mode: DataMode = resolveDataMode(),
 ): T {
-  return mode === "demo" ? branches.demo() : branches.live();
+  return mode === "demo" ? branches.demo(): branches.live();
 }
 
 /**

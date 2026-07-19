@@ -12,8 +12,6 @@ import type { MockComment } from "./types";
 
 import { comment } from "./comment-helpers";
 
-
-
 // Dense flying-chip bursts on the first feed posts (demo overflow stress-test).
 const CHIP_BURST_POST_IDS = [
   "9a000001-0001-4001-8001-000000000001",
@@ -32,6 +30,10 @@ const CHIP_BURST_USER_IDS = [
   "66666666-6666-4666-8666-666666666666",
 ] as const;
 
+/**
+ * buildChipBurstComments helper
+ * @returns Computed value
+ */
 export function buildChipBurstComments(): MockComment[] {
   const burst: MockComment[] = [];
   let sequence = 1;

@@ -48,7 +48,9 @@ export type WordSequenceWordProps = {
 };
 
 /**
- * @responsibility Render one kinetic word with feed entrance + emphasis styling.
+ * Render one kinetic word with feed entrance + emphasis styling.
+ * @param props - WordSequenceWordProps fields
+ * @returns Rendered UI
  */
 export function WordSequenceWord({
   word,
@@ -69,18 +71,16 @@ export function WordSequenceWord({
 }: WordSequenceWordProps): ReactElement {
   const important = emphasized.has(index);
   const spotlightWord = spotlightEmphasis && important && !suppressSpotlight;
-  const emphasisAnchorIndex = important ? getBoundPhraseStartIndex(words, index) : index;
+  const emphasisAnchorIndex = important ? getBoundPhraseStartIndex(words, index): index;
   const emphasisVariant = important
     ? getEmphasisVariant(
         spec.text,
         getBoundPhraseEmphasisSeed(words, index),
         emphasisAnchorIndex,
         !isDimEmphasisColor(emphasisColor),
-      )
-    : null;
+      ): null;
   const wordColor = important
-    ? getCanvasEmphasisWordColor(emphasisVariant, textColor, emphasisColor)
-    : textColor;
+    ? getCanvasEmphasisWordColor(emphasisVariant, textColor, emphasisColor): textColor;
   const entranceDelay = staticRender
     ? 0
     : getWordDelay(important ? emphasisAnchorIndex : index, spec.tempo, spec.rhythm);
@@ -95,13 +95,11 @@ export function WordSequenceWord({
         ...(emphasisVariant === "halo" || emphasisVariant === "glow"
           ? { "--kinetic-aura-color": getAuraColor(textColor) }
           : {}),
-      } as CSSProperties)
-    : undefined;
+      } as CSSProperties): undefined;
   const innerAnimation = important
     ? staticRender
       ? undefined
-      : getEmphasisInnerAnimation(emphasisVariant)
-    : undefined;
+      : getEmphasisInnerAnimation(emphasisVariant): undefined;
   const isSoloRevealWord = isSolo;
   return (
       <motion.span
@@ -132,8 +130,7 @@ export function WordSequenceWord({
           whiteSpace: "nowrap",
           wordBreak: "normal",
           textShadow: important
-            ? getEmphasisTextShadow(emphasisVariant)
-            : "0 4px 40px rgba(0,0,0,0.45)",
+            ? getEmphasisTextShadow(emphasisVariant): "0 4px 40px rgba(0,0,0,0.45)",
           animationPlayState: paused ? "paused" : "running",
           transformOrigin: leftAnchoredText && !spotlightWord ? "left center" : "center",
           // Small breathing room on top of the reserved fontSize width so the

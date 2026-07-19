@@ -30,7 +30,9 @@ export type CommentStoryPlayerProps = {
 };
 
 /**
- * @responsibility Modal story player for longer kinetic comments.
+ * Modal story player for longer kinetic comments.
+ * @param props - CommentStoryPlayerProps fields
+ * @returns Rendered UI
  */
 export function CommentStoryPlayer({
   story,
@@ -103,7 +105,7 @@ export function CommentStoryPlayer({
                   </p>
                 </div>
               </Link>
-            ) : (
+            ): (
               <div className="flex h-10 items-center gap-2">
                 <span className="size-10 rounded-full border-2 border-white/40 bg-white/15" />
                 <div className="leading-tight">

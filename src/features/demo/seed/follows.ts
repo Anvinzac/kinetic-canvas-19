@@ -30,7 +30,13 @@ export const MOCK_FOLLOWS: MockFollow[] = [
   ),
 ];
 
-/** @responsibility Build a seed follow edge between two profile ids. */
+/**
+ * Build a seed follow edge between two profile ids.
+ * @param follower_id - follower_id argument
+ * @param following_id - following_id argument
+ * @param created_at - created_at argument
+ * @returns Function result
+ */
 export function follow(follower_id: string, following_id: string, created_at: string): MockFollow {
   return { follower_id, following_id, created_at };
 }

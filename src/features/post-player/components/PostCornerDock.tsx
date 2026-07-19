@@ -36,7 +36,9 @@ export type PostCornerDockProps = {
 };
 
 /**
- * @responsibility Corner action disc for comment / create / like / share.
+ * Corner action disc for comment / create / like / share.
+ * @param props - PostCornerDockProps fields
+ * @returns Rendered UI
  */
 export function PostCornerDock({
   isExporting,

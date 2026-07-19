@@ -18,7 +18,12 @@ export const DEMO_TRANSITION_GRADIENTS = [
 export const VOCAB_BOT_ID = "77777777-7777-4777-8777-777777777777";
 export const NOVA_RAE_ID = "22222222-2222-4222-8222-222222222222";
 
-export function canvas(overrides: Partial<CanvasSpec>) {
+/**
+ * canvas helper
+ * @param overrides - overrides argument
+ * @returns Boolean result
+ */
+export function canvas(overrides: Partial<CanvasSpec>): string {
   return serializeCanvas({
     text: "TYPE.",
     font: "Space Grotesk",

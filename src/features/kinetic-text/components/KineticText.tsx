@@ -5,6 +5,7 @@
  * Depends on: framer-motion, canvas colors, kinetic layout/loop/text-language, WordRenderer
  */
 
+import type { ReactElement } from "react";
 import { motion } from "framer-motion";
 import {
   getCanvasEmphasisColor,
@@ -26,10 +27,9 @@ import { entranceVariants, tempoConfig } from "./preview-tempo";
 import { useKineticTextFit } from "./useKineticTextFit";
 
 /**
- * @responsibility Animated kinetic typography overlay for create/preview canvases.
- * @inputs CanvasSpec plus playback/layout flags (playKey, paused, scaleToCanvas, staticLayout, background)
- * @outputs Absolutely positioned word sequence with entrance + idle loop
- * @pure false
+ * Animated kinetic typography overlay for create/preview canvases.
+ * @param props - Component props
+ * @returns Absolutely positioned word sequence with entrance + idle loop
  */
 export function KineticText({
   spec,
@@ -45,7 +45,7 @@ export function KineticText({
   scaleToCanvas?: boolean;
   staticLayout?: boolean;
   background?: string | readonly string[] | null;
-}) {
+}): ReactElement {
   const wordVariants = entranceVariants(spec.entrance, spec.rhythm);
   const words = getWords(spec.text);
   const isVietnamese = isLikelyVietnameseText(spec.text);
@@ -128,7 +128,7 @@ export function KineticText({
             words={words}
             spotlightEmphasis={spotlightEmphasis}
           />
-        ) : (
+        ): (
           words.map((word, i) => (
             <AnimatedWord
               key={`${playKey}-${word}-${i}`}

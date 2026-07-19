@@ -1,6 +1,18 @@
-import type { ReactNode } from "react";
+/**
+ * UI component: StudioLink.
+ *
+ * Exports: StudioLink
+ * Depends on: react, lucide-react
+ */
+
+import type { ReactNode, ReactElement} from "react";
 import { ChevronRight } from "lucide-react";
 
+/**
+ * Render the StudioLink UI.
+ * @param props - Component props
+ * @returns Rendered UI
+ */
 export function StudioLink({
   icon,
   label,
@@ -11,7 +23,7 @@ export function StudioLink({
   label: string;
   value: string;
   onClick: () => void;
-}) {
+}): ReactElement {
   return (
     <button
       type="button"

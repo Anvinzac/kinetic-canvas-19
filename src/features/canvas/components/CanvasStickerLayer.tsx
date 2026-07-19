@@ -5,7 +5,7 @@
  * Depends on: framer-motion, canvas sticker-placement, kinetic-text getWordAnchorKey
  */
 
-import { useEffect, useRef, useState } from "react";
+import {type ReactElement, useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import type { CanvasSpec, CanvasSticker } from "../types";
 import { getWordAnchorKey } from "@/features/kinetic-text";
@@ -15,6 +15,11 @@ import {
   type Rect,
 } from "./sticker-placement";
 
+/**
+ * Render the CanvasStickerLayer UI.
+ * @param props - Component props
+ * @returns Rendered UI
+ */
 export function CanvasStickerLayer({
   stickers,
   text,
@@ -27,7 +32,7 @@ export function CanvasStickerLayer({
   layout?: Pick<CanvasSpec, "x" | "y" | "size">;
   playKey?: string | number;
   compact?: boolean;
-}) {
+}): ReactElement | null {
   const layerRef = useRef<HTMLDivElement>(null);
   const [wordAnchors, setWordAnchors] = useState<Record<string, Rect>>({});
   const visibleStickers = (stickers ?? []).filter((sticker) =>
@@ -84,8 +89,7 @@ export function CanvasStickerLayer({
       {visibleStickers.map((sticker, index) => {
         const anchor = wordAnchors[getWordAnchorKey(sticker.word)];
         const placement = anchor
-          ? getWordAnchoredPlacement(sticker, anchor, compact)
-          : getEmptySpacePlacement(sticker, index, text, layout, compact);
+          ? getWordAnchoredPlacement(sticker, anchor, compact): getEmptySpacePlacement(sticker, index, text, layout, compact);
         return (
           <div
             key={`${sticker.id}-${playKey}`}
@@ -132,7 +136,7 @@ export function CanvasStickerLayer({
                 >
                   {sticker.emoji}
                 </span>
-              ) : sticker.url ? (
+              ): sticker.url ? (
                 <img
                   src={sticker.url}
                   alt=""
@@ -140,7 +144,7 @@ export function CanvasStickerLayer({
                   loading="lazy"
                   draggable={false}
                 />
-              ) : null}
+              ): null}
             </motion.div>
           </div>
         );

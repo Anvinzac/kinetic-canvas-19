@@ -1,8 +1,16 @@
 /**
- * @responsibility Build a wide sliding gradient strip for multi-stop transition previews.
- * @pure true
+ * Pure helpers for sliding background.
+ *
+ * Exports: getComposerSlidingBackground, getComposerTransitionColors, extractGradientColors
+ * Depends on: none (leaf module)
  */
-export function getComposerSlidingBackground(gradients: readonly string[], shiftPage: number) {
+/**
+ * Compute composerslidingbackground.
+ * @param gradients - gradients argument
+ * @param shiftPage - shiftPage argument
+ * @returns Computed value
+ */
+export function getComposerSlidingBackground(gradients: readonly string[], shiftPage: number): { background: string; width: string; x: string } | null {
   const colors = getComposerTransitionColors(gradients);
   if (colors.length < 2) return null;
 
@@ -23,10 +31,11 @@ export function getComposerSlidingBackground(gradients: readonly string[], shift
 }
 
 /**
- * @responsibility Collapse gradient CSS strings into ordered stop colors for the slide strip.
- * @pure true
+ * Collapse gradient CSS strings into ordered stop colors for the slide strip.
+ * @param gradients - gradients argument
+ * @returns Computed value
  */
-export function getComposerTransitionColors(gradients: readonly string[]) {
+export function getComposerTransitionColors(gradients: readonly string[]): string[] {
   const colors = gradients.reduce<string[]>((items, gradient, index) => {
     const stops = extractGradientColors(gradient);
     if (stops.length < 2) return items;
@@ -38,14 +47,15 @@ export function getComposerTransitionColors(gradients: readonly string[]) {
   }, []);
 
   if (colors.length < 2) return [];
-  return colors[0] === colors[colors.length - 1] ? colors.slice(0, -1) : colors;
+  return colors[0] === colors[colors.length - 1] ? colors.slice(0, -1): colors;
 }
 
 /**
- * @responsibility Pull color tokens out of a CSS gradient string.
- * @pure true
+ * Pull color tokens out of a CSS gradient string.
+ * @param value - value argument
+ * @returns Computed value
  */
-export function extractGradientColors(value: string) {
+export function extractGradientColors(value: string): string[] {
   return (
     value.match(
       /#[0-9a-fA-F]{3,8}\b|rgba?\([^)]*\)|hsla?\([^)]*\)|oklch\([^)]*\)|color\([^)]*\)/g,

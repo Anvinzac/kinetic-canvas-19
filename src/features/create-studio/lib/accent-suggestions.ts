@@ -1,3 +1,10 @@
+/**
+ * Pure helpers for accent suggestions.
+ *
+ * Exports: AccentRecommendation, getAccentKeyword, getAccentRecommendation, createEmojiSticker
+ * Depends on: @/features/canvas
+ */
+
 import type { CanvasSticker } from "@/features/canvas";
 
 /**
@@ -65,10 +72,12 @@ const EMOJI_HINTS: { pattern: RegExp; emoji: string }[] = [
 const FALLBACK_EMOJIS = ["✨", "🔥", "💫", "🌙", "💡", "🎯", "🌊", "🌸"];
 
 /**
- * @responsibility Pick the best keyword in text for an accent suggestion.
- * @pure true
+ * Pick the best keyword in text for an accent suggestion.
+ * @param text - text argument
+ * @param dismissedKeyword? - dismissedKeyword? argument
+ * @returns Computed value
  */
-export function getAccentKeyword(text: string, dismissedKeyword?: string | null) {
+export function getAccentKeyword(text: string, dismissedKeyword?: string | null): string | null {
   const words = text.match(/[\p{L}\p{N}][\p{L}\p{N}'-]*/gu) ?? [];
   const candidates = words
     .map((word) => normalizeKeyword(word))
@@ -85,7 +94,9 @@ export function getAccentKeyword(text: string, dismissedKeyword?: string | null)
 }
 
 /**
- * @responsibility Resolve a keyword to a local emoji recommendation.
+ * Resolve a keyword to a local emoji recommendation.
+ * @param keyword - keyword argument
+ * @returns Computed value
  */
 export async function getAccentRecommendation(
   keyword: string,
@@ -100,8 +111,11 @@ export async function getAccentRecommendation(
 }
 
 /**
- * @responsibility Build a canvas emoji sticker for an accepted accent.
- * @pure true
+ * Build a canvas emoji sticker for an accepted accent.
+ * @param keyword - keyword argument
+ * @param emoji - emoji argument
+ * @param index - index argument
+ * @returns Computed value
  */
 export function createEmojiSticker(keyword: string, emoji: string, index: number): CanvasSticker {
   return {

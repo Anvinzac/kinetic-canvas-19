@@ -10,7 +10,6 @@ import { comment } from "./comment-helpers";
 import { MOCK_ME_ID } from "./profiles";
 import type { MockComment } from "./types";
 
-
 /** @responsibility Canonical demo comments including chip-burst stress fixtures. */
 export const MOCK_COMMENTS: MockComment[] = [
   ...buildChipBurstComments(),

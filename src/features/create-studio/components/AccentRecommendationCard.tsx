@@ -1,7 +1,20 @@
+/**
+ * UI component: AccentRecommendationCard.
+ *
+ * Exports: AccentRecommendationCard
+ * Depends on: lucide-react, @/features/canvas
+ */
+
+import type { ReactElement } from "react";
 import { Smile, Sparkles, X } from "lucide-react";
 import type { CanvasSticker } from "@/features/canvas";
 import type { AccentRecommendation } from "../lib/accent-suggestions";
 
+/**
+ * Render the AccentRecommendationCard UI.
+ * @param props - Component props
+ * @returns Rendered UI
+ */
 export function AccentRecommendationCard({
   recommendation,
   loading,
@@ -16,7 +29,7 @@ export function AccentRecommendationCard({
   onAcceptEmoji: () => void;
   onReject: () => void;
   onRemove: (id: string) => void;
-}) {
+}): ReactElement | null {
   if (!recommendation && !loading && stickers.length === 0) return null;
 
   return (

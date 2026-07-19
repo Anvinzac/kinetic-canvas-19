@@ -1,3 +1,10 @@
+/**
+ * Public barrel re-exports for this feature module.
+ *
+ * Exports: BackgroundStyle, CanvasLinkPreview, CanvasSpec, CanvasSticker, Entrance, GradientTransitionPath, Loop, Rhythm, Tempo, COMMENT_CHIPS, DEFAULT_CANVAS, ENTRANCES, FONTS, GRADIENTS, ...
+ * Depends on: ./types, ./catalog, ./serialize
+ */
+
 export type {
   BackgroundStyle,
   CanvasLinkPreview,

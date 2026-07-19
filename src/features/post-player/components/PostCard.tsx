@@ -23,9 +23,9 @@ import { PostMediaLayer } from "./PostMediaLayer";
 export type { PostCardProps } from "../types";
 
 /**
- * @responsibility Full-screen kinetic status player for a single post.
- * @inputs Post row, author/profile maps, like/comment state and handlers
- * @outputs Interactive feed/profile card with paginated kinetic text
+ * Full-screen kinetic status player for a single post.
+ * @param props - props argument
+ * @returns Interactive feed/profile card with paginated kinetic text
  */
 export function PostCard(props: PostCardProps): ReactElement {
   const p = usePostPlayback(props);

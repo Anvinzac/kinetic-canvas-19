@@ -1,3 +1,10 @@
+/**
+ * Public barrel re-exports for this feature module.
+ *
+ * Exports: addMockComment, addMockPost, getMockDiscover, getMockFeed, getMockMe, getMockNotifications, getMockPost, getMockProfile, searchMock, toggleMockFollow, toggleMockLike, updateMockProfile, MOCK_ME_ID, MOCK_ME_USERNAME, ...
+ * Depends on: ./api, ./seed, ./store
+ */
+
 export {
   addMockComment,
   addMockPost,

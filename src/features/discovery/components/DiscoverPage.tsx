@@ -8,7 +8,7 @@
 import { Link, useNavigate, useRouter } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useState, useEffect } from "react";
+import {type ReactElement, useState, useEffect } from "react";
 import { resolveDataMode } from "@/features/session";
 import { type MockDiscoverData, type MockSearchData } from "@/lib/mock-data";
 import { ChevronLeft, Search as SearchIcon } from "lucide-react";
@@ -21,7 +21,7 @@ import { DiscoverLoader, PostGrid } from "./DiscoverGrid";
  * @responsibility Render discover search header and either search results or trending feed.
  * @returns Discover page shell
  */
-export function DiscoverPage() {
+export function DiscoverPage(): ReactElement {
   const fetchDiscover = useServerFn(getDiscover);
   const searchFn = useServerFn(search);
   const navigate = useNavigate();
@@ -82,7 +82,7 @@ export function DiscoverPage() {
 
       {showResults ? (
         <SearchResults data={results.data} loading={results.isLoading} />
-      ) : (
+      ): (
         <TrendingFeed data={discover.data} loading={discover.isLoading} />
       )}
     </div>

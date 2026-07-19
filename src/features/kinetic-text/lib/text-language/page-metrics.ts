@@ -20,8 +20,6 @@ export type {
   WordSegment,
 } from "./types";
 
-
-
 // Vietnamese kinetic text reads as a left-aligned staggered block. Each deeper
 // line steps in by a fraction of an em, so the stagger scales with the font and
 // never collapses narrow pages.
@@ -41,26 +39,26 @@ const VIETNAMESE_MAX_CONSECUTIVE_SOLO_LINES = 3;
 const VIETNAMESE_PAIR_RELAX_CHARS = 3;
 const VIETNAMESE_PAIR_FORCE_CHARS = 6;
 /**
- * @responsibility Inner content width for Vietnamese staggered layout.
- * @inputs Canvas width in CSS pixels
- * @outputs Usable inner width (≥ 200)
- * @pure true
+ * Inner content width for Vietnamese staggered layout.
+ * @param canvasWidthPx - canvasWidthPx argument
+ * @returns Usable inner width (≥ 200)
  */
-export function getVietnameseCanvasInnerWidth(canvasWidthPx: number) {
+export function getVietnameseCanvasInnerWidth(canvasWidthPx: number): number {
   return Math.max(200, canvasWidthPx * 0.92 - 32);
 }
 
 /**
- * @responsibility Visible-character budget for one Vietnamese line at a given canvas width.
- * @inputs Line index, inner width px, font size px
- * @outputs Soft character capacity for that line
- * @pure true
+ * Visible-character budget for one Vietnamese line at a given canvas width.
+ * @param lineIndex - lineIndex argument
+ * @param canvasInnerWidthPx - canvasInnerWidthPx argument
+ * @param fontSizePx - fontSizePx argument
+ * @returns Soft character capacity for that line
  */
 export function getVietnameseCharBudgetForLine(
   lineIndex: number,
   canvasInnerWidthPx: number,
   fontSizePx: number,
-) {
+): number {
   const indentEm = getVietnameseLineIndentEm(lineIndex);
   const availablePx =
     canvasInnerWidthPx -
@@ -70,13 +68,13 @@ export function getVietnameseCharBudgetForLine(
   return Math.max(4, Math.floor(availablePx / charWidthPx));
 }
 
-
-
 /**
- * @responsibility Pack lines using canvas width, then pre-shrink if any line still overflows.
- * @inputs Words, canvas width, font size, optional visual scale guard
- * @outputs Lines + suggestedFitScale (≥ VIETNAMESE_MIN_FIT_SCALE)
- * @pure true
+ * Pack lines using canvas width, then pre-shrink if any line still overflows.
+ * @param words - words argument
+ * @param canvasWidthPx - canvasWidthPx argument
+ * @param fontSizePx - fontSizePx argument
+ * @param visualScaleGuard - visualScaleGuard argument
+ * @returns Lines + suggestedFitScale (≥ VIETNAMESE_MIN_FIT_SCALE)
  */
 export function getVietnameseLayoutMetrics(
   words: string[],
@@ -109,10 +107,10 @@ export function getVietnameseLayoutMetrics(
 }
 
 /**
- * @responsibility Pack Vietnamese words into indented staggered lines.
- * @inputs Word tokens + optional per-line capacity
- * @outputs WordLine array (empty when no words)
- * @pure true
+ * Pack Vietnamese words into indented staggered lines.
+ * @param words - words argument
+ * @param options? - options? argument
+ * @returns WordLine array (empty when no words)
  */
 export function getVietnameseWordLines(
   words: string[],

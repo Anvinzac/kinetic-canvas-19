@@ -9,6 +9,10 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 
+/**
+ * Server function: getProfile.
+ * @returns TanStack server function handle
+ */
 export const getProfile = createServerFn({ method: "GET" })
   .inputValidator((d: { username: string }) => d)
   .handler(async ({ data }) => {
@@ -36,11 +40,9 @@ export const getProfile = createServerFn({ method: "GET" })
           .select("*", { count: "exact", head: true })
           .eq("follower_id", profile.id),
         postIds.length
-          ? supabaseAdmin.from("likes").select("post_id").in("post_id", postIds)
-          : Promise.resolve({ data: [] as { post_id: string }[] }),
+          ? supabaseAdmin.from("likes").select("post_id").in("post_id", postIds): Promise.resolve({ data: [] as { post_id: string }[] }),
         postIds.length
-          ? supabaseAdmin.from("comments").select("post_id").in("post_id", postIds)
-          : Promise.resolve({ data: [] as { post_id: string }[] }),
+          ? supabaseAdmin.from("comments").select("post_id").in("post_id", postIds): Promise.resolve({ data: [] as { post_id: string }[] }),
       ]);
 
     const engagementByPost: Record<string, { likes: number; comments: number }> = {};
@@ -61,6 +63,10 @@ export const getProfile = createServerFn({ method: "GET" })
 
 // ===== Authenticated actions =====
 
+/**
+ * Server function: ensureProfile.
+ * @returns TanStack server function handle
+ */
 export const ensureProfile = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {

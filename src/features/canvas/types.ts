@@ -1,6 +1,8 @@
 /**
- * @responsibility Kinetic typography entrance animation kind.
- * @pure true
+ * Feature-local TypeScript types and interfaces.
+ *
+ * Exports: Entrance, Loop, Tempo, Rhythm, BackgroundStyle, CanvasLinkPreview, CanvasSticker, CanvasSpec, GradientTransitionPath
+ * Depends on: none (leaf module)
  */
 export type Entrance = "fade" | "slide" | "scale" | "blur" | "split";
 

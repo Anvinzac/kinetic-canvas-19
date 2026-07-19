@@ -30,7 +30,9 @@ export type FlyingCommentChipProps = {
 };
 
 /**
- * @responsibility Animate a short comment across the bottom of the canvas.
+ * Animate a short comment across the bottom of the canvas.
+ * @param props - FlyingCommentChipProps fields
+ * @returns Rendered UI
  */
 export function FlyingCommentChip({
   isExporting,
@@ -83,7 +85,7 @@ export function FlyingCommentChip({
                 >
                   @{activeCommentAuthor.username}
                 </Link>
-              ) : (
+              ): (
                 <span className="drop-shadow">someone</span>
               )}
             </div>

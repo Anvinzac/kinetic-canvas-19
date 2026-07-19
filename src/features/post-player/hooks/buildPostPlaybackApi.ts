@@ -53,10 +53,17 @@ export type BuildPostPlaybackApiArgs = {
 };
 
 /**
- * @responsibility Package orchestrator state into the PostCard playback API.
- * @pure true
+ * Package orchestrator state into the PostCard playback API.
+ * @param a - Orchestrator state, derived visuals, and nested hook results
+ * @returns Flat playback API consumed by PostCard
  */
-export function buildPostPlaybackApi(a: BuildPostPlaybackApiArgs) {
+export function buildPostPlaybackApi(
+  a: BuildPostPlaybackApiArgs,
+): ReturnType<typeof assemblePostPlaybackApi> {
+  return assemblePostPlaybackApi(a);
+}
+
+function assemblePostPlaybackApi(a: BuildPostPlaybackApiArgs) {
   const { ring, entrance, derived, commentFlow, commentStory } = a;
   return {
     post: a.post,
@@ -145,3 +152,5 @@ export function buildPostPlaybackApi(a: BuildPostPlaybackApiArgs) {
       commentStory.closeCommentStories(a.setIsPaused, a.setPageRevealed),
   };
 }
+
+export type BuildPostPlaybackApiResult = ReturnType<typeof assemblePostPlaybackApi>;

@@ -1,3 +1,10 @@
+/**
+ * Route/loader prefetch helpers for this feature.
+ *
+ * Exports: prefetchDiscover, prefetchMe, prefetchProfile
+ * Depends on: @tanstack/react-query, @/features/session, @/features/demo, @/shared/types, @/features/social
+ */
+
 import type { QueryClient } from "@tanstack/react-query";
 import { resolveDataMode } from "@/features/session";
 import { getMockDiscover, getMockMe, getMockProfile } from "@/features/demo";
@@ -11,10 +18,13 @@ import { getDiscover, getMe } from "./discovery.functions";
 import { getProfile } from "@/features/social";
 
 /**
- * @responsibility Prefetch discover grid data for route loaders.
- * @sideEffects Populates React Query cache
+ * Prefetch discover grid data for route loaders.
+ * @param queryClient - queryClient argument
+ * @returns Promise that resolves when prefetch completes
  */
-export async function prefetchDiscover(queryClient: QueryClient) {
+export async function prefetchDiscover(
+  queryClient: QueryClient,
+): Promise<SocialDiscoverData> {
   const mode = resolveDataMode();
   return queryClient.ensureQueryData(
     discoverQueryOptions(mode, () =>
@@ -26,10 +36,11 @@ export async function prefetchDiscover(queryClient: QueryClient) {
 }
 
 /**
- * @responsibility Prefetch signed-in me payload for route loaders.
- * @sideEffects Populates React Query cache
+ * Prefetch signed-in me payload for route loaders.
+ * @param queryClient - queryClient argument
+ * @returns Promise that resolves when prefetch completes
  */
-export async function prefetchMe(queryClient: QueryClient) {
+export async function prefetchMe(queryClient: QueryClient): Promise<SocialMeData> {
   const mode = resolveDataMode();
   return queryClient.ensureQueryData(
     meQueryOptions(mode, () =>
@@ -39,10 +50,15 @@ export async function prefetchMe(queryClient: QueryClient) {
 }
 
 /**
- * @responsibility Prefetch a public profile (+ me) for the profile route loader.
- * @sideEffects Populates React Query cache for profile and me keys
+ * Prefetch a public profile (+ me) for the profile route loader.
+ * @param queryClient - queryClient argument
+ * @param username - username argument
+ * @returns Promise that resolves when prefetch completes
  */
-export async function prefetchProfile(queryClient: QueryClient, username: string) {
+export async function prefetchProfile(
+  queryClient: QueryClient,
+  username: string,
+): Promise<void> {
   const mode = resolveDataMode();
   await Promise.all([
     queryClient.ensureQueryData(

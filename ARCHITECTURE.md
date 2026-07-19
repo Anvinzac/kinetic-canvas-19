@@ -7,7 +7,13 @@ This app is a kinetic status composer + feed. Code is organized by **feature**, 
 | I want to change… | Edit here |
 |-------------------|-----------|
 | Feed list / like / comment | `src/features/social/` + `src/features/post-player/` |
-| Create / templates / publish | `src/features/create-studio/` |
+| PostCard player UI / layers | `src/features/post-player/components/` |
+| PostCard playback / export hooks | `src/features/post-player/hooks/` |
+| PostCard pure timing / meta / geometry | `src/features/post-player/lib/` |
+| Create studio page shell | `src/features/create-studio/CreateStudioPage.tsx` |
+| Create panels / preview UI | `src/features/create-studio/components/` |
+| Create composer / publish hooks | `src/features/create-studio/hooks/` |
+| Create templates / pages / accents | `src/features/create-studio/lib/` |
 | Discover / search / follow / me | `src/features/discovery/` |
 | Profile grid / edit profile | `src/features/profile/` |
 | Settings preferences UI | `src/features/settings/` |

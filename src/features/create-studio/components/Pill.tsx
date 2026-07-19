@@ -1,5 +1,17 @@
-import type { ReactNode } from "react";
+/**
+ * UI component: Pill.
+ *
+ * Exports: Pill
+ * Depends on: react
+ */
 
+import type { ReactNode, ReactElement} from "react";
+
+/**
+ * Render the Pill UI.
+ * @param props - Component props
+ * @returns Rendered UI
+ */
 export function Pill({
   active,
   onClick,
@@ -8,7 +20,7 @@ export function Pill({
   active: boolean;
   onClick: () => void;
   children: ReactNode;
-}) {
+}): ReactElement {
   return (
     <button
       type="button"

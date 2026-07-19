@@ -6,7 +6,7 @@
  */
 
 import { motion } from "framer-motion";
-import type { CSSProperties } from "react";
+import type { CSSProperties, ReactElement} from "react";
 import {
   getCanvasEmphasisWordColor,
   type CanvasSpec,
@@ -25,6 +25,11 @@ import {
 import { getWordAnchorKey } from "../lib/words";
 import { entranceVariants, getRhythmDelay } from "./preview-tempo";
 
+/**
+ * Render the AnimatedWord UI.
+ * @param props - Component props
+ * @returns Rendered UI
+ */
 export function AnimatedWord({
   word,
   index,
@@ -55,19 +60,17 @@ export function AnimatedWord({
   emphasisColor: string;
   staticLayout: boolean;
   words: string[];
-}) {
-  const emphasisAnchorIndex = important ? getBoundPhraseStartIndex(words, index) : index;
+}): ReactElement {
+  const emphasisAnchorIndex = important ? getBoundPhraseStartIndex(words, index): index;
   const emphasisVariant = important
     ? getEmphasisVariant(
         spec.text,
         getBoundPhraseEmphasisSeed(words, index),
         emphasisAnchorIndex,
         !isDimEmphasisColor(emphasisColor),
-      )
-    : null;
+      ): null;
   const wordColor = important
-    ? getCanvasEmphasisWordColor(emphasisVariant, textColor, emphasisColor)
-    : textColor;
+    ? getCanvasEmphasisWordColor(emphasisVariant, textColor, emphasisColor): textColor;
   const entranceDelay = getRhythmDelay(
     important ? emphasisAnchorIndex : index,
     spec.tempo,
@@ -81,10 +84,9 @@ export function AnimatedWord({
         ...(emphasisVariant === "halo" || emphasisVariant === "glow"
           ? { "--kinetic-aura-color": getAuraColor(textColor) }
           : {}),
-      } as CSSProperties)
-    : undefined;
+      } as CSSProperties): undefined;
   const innerAnimation =
-    important && !staticLayout ? getEmphasisInnerAnimation(emphasisVariant) : undefined;
+    important && !staticLayout ? getEmphasisInnerAnimation(emphasisVariant): undefined;
   return (
     <motion.span
       key={`${playKey}-${word}-${index}`}
@@ -116,7 +118,7 @@ export function AnimatedWord({
         overflowWrap: "normal",
         whiteSpace: "nowrap",
         wordBreak: "normal",
-        textShadow: important ? getEmphasisTextShadow(emphasisVariant) : undefined,
+        textShadow: important ? getEmphasisTextShadow(emphasisVariant): undefined,
         transformOrigin: anchorFromStart && !spotlightWord ? "left center" : "center",
       }}
     >

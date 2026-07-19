@@ -81,7 +81,7 @@ export function StudioPreviewCanvas(props: StudioPreviewCanvasProps): ReactEleme
           className="absolute inset-0"
           style={getSceneBackgroundStyle(previewScene, playKey)}
         />
-      ) : previewPattern ? (
+      ): previewPattern ? (
         <span
           aria-hidden
           className="absolute inset-0"
@@ -94,7 +94,7 @@ export function StudioPreviewCanvas(props: StudioPreviewCanvasProps): ReactEleme
             transition: "background-position 0.95s cubic-bezier(0.22,1,0.36,1)",
           }}
         />
-      ) : previewSlidingBackground ? (
+      ): previewSlidingBackground ? (
         <motion.span
           aria-hidden
           className="absolute inset-y-0 left-0"
@@ -106,7 +106,7 @@ export function StudioPreviewCanvas(props: StudioPreviewCanvasProps): ReactEleme
           animate={{ x: previewSlidingBackground.x }}
           transition={{ duration: 0.95, ease: [0.22, 1, 0.36, 1] }}
         />
-      ) : (
+      ): (
         <span aria-hidden className="absolute inset-0" style={{ background: previewBackground }} />
       )}
       {(backgroundMode === "transition" || previewPattern || previewScene) && (
@@ -164,7 +164,7 @@ export function StudioPreviewCanvas(props: StudioPreviewCanvasProps): ReactEleme
             compact
           />
         </>
-      ) : (
+      ): (
         <div className="absolute inset-0 grid place-items-center px-8 text-center">
           <div>
             <Type className="mx-auto size-7 text-white/65" />

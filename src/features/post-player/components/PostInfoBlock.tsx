@@ -20,7 +20,9 @@ export type PostInfoBlockProps = {
 };
 
 /**
- * @responsibility Show post metadata in the bottom-left safe corner.
+ * Show post metadata in the bottom-left safe corner.
+ * @param props - PostInfoBlockProps fields
+ * @returns Rendered UI
  */
 export function PostInfoBlock({
   isExporting,

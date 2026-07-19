@@ -16,8 +16,17 @@ export const ANIMATION_TEMPLATES: AnimationTemplate[] = [
 ];
 
 /**
- * @responsibility Decide whether a template matches the current composer motion + backdrop.
- * @pure true
+ * Decide whether a template matches the current composer motion + backdrop.
+ * @param template - template argument
+ * @param spec - spec argument
+ * @param bg - bg argument
+ * @param backgroundMode - backgroundMode argument
+ * @param selectedGradientPath - selectedGradientPath argument
+ * @param selectedSceneId - selectedSceneId argument
+ * @param selectedPatternId - selectedPatternId argument
+ * @param selectedPhoto - selectedPhoto argument
+ * @param selectedVideo - selectedVideo argument
+ * @returns Boolean result
  */
 export function isTemplateActive(
   template: AnimationTemplate,
@@ -29,7 +38,7 @@ export function isTemplateActive(
   selectedPatternId: string,
   selectedPhoto: string,
   selectedVideo: string,
-) {
+): boolean {
   const motionMatches =
     spec.font === template.spec.font &&
     spec.entrance === template.spec.entrance &&

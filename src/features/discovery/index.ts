@@ -1,3 +1,10 @@
+/**
+ * Public barrel re-exports for this feature module.
+ *
+ * Exports: discoveryKeys, discoverQueryOptions, meQueryOptions, notificationsQueryOptions, profileQueryOptions, searchQueryOptions, prefetchDiscover, prefetchMe, prefetchProfile, getDiscover, getMe, getNotifications, search, toggleFollow, ...
+ * Depends on: ./api/keys, ./api/queries, ./api/prefetch
+ */
+
 export { discoveryKeys } from "./api/keys";
 export {
   discoverQueryOptions,

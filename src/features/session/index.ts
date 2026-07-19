@@ -1,3 +1,10 @@
+/**
+ * Public barrel re-exports for this feature module.
+ *
+ * Exports: DEMO_AUTH_USER_ID, DEMO_SESSION_KEY, endDemoSession, getDemoRouteUser, getDemoSession, isDemoSession, startDemoSession, dataModeKey, resolveDataMode, DataMode, AuthPage, AuthedShell
+ * Depends on: ./demo-session, ./data-mode, ./components/AuthPage
+ */
+
 export {
   DEMO_AUTH_USER_ID,
   DEMO_SESSION_KEY,

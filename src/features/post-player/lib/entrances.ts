@@ -31,6 +31,12 @@ export const ENTRANCE_REST: TargetAndTransition = {
   filter: "blur(0px)",
 };
 
+/**
+ * Compute entrancestyle.
+ * @param seed - seed argument
+ * @param rhythm? - rhythm? argument
+ * @returns Computed value
+ */
 export function getEntranceStyle(seed: string, rhythm?: Rhythm): ResolvedEntranceStyle {
   if (rhythm === "poetic") {
     return POETIC_ENTRANCE_STYLES[
@@ -40,7 +46,13 @@ export function getEntranceStyle(seed: string, rhythm?: Rhythm): ResolvedEntranc
   return ENTRANCE_STYLES[getStableNumber(`entrance|${seed}`) % ENTRANCE_STYLES.length];
 }
 
-
+/**
+ * Compute entrancehidden.
+ * @param style - style argument
+ * @param important - important argument
+ * @param index - index argument
+ * @returns Computed value
+ */
 export function getEntranceHidden(
   style: ResolvedEntranceStyle,
   important: boolean,
@@ -103,7 +115,13 @@ export function getEntranceHidden(
   }
 }
 
-
+/**
+ * Compute entrancetransition.
+ * @param style - style argument
+ * @param delay - delay argument
+ * @param duration - duration argument
+ * @returns Computed value
+ */
 export function getEntranceTransition(
   style: ResolvedEntranceStyle,
   delay: number,

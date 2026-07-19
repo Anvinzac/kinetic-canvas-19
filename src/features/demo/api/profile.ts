@@ -16,7 +16,9 @@ import {
 } from "../store";
 
 /**
- * @responsibility Load a demo public profile page graph by username, or throw when missing.
+ * Load a demo public profile page graph by username, or throw when missing.
+ * @param username - username argument
+ * @returns Computed value
  */
 export function getMockProfile(username: string): MockProfileData {
   const profile = getAllMockProfiles().find(
@@ -43,7 +45,8 @@ export function getMockProfile(username: string): MockProfileData {
 }
 
 /**
- * @responsibility Load the signed-in demo viewer's profile, following ids, and stats.
+ * Load the signed-in demo viewer's profile, following ids, and stats.
+ * @returns Computed value
  */
 export function getMockMe(): MockMeData {
   const profile = getAllMockProfiles().find((item) => item.id === MOCK_ME_ID) ?? MOCK_PROFILES[0];
@@ -65,7 +68,8 @@ export function getMockMe(): MockMeData {
 }
 
 /**
- * @responsibility Build the demo activity feed from likes, comments, and follows on the viewer's posts.
+ * Build the demo activity feed from likes, comments, and follows on the viewer's posts.
+ * @returns Computed value
  */
 export function getMockNotifications(): MockNotificationsData {
   const myPosts = getAllMockPosts().filter((post) => post.author_id === MOCK_ME_ID);
@@ -113,7 +117,6 @@ export function getMockNotifications(): MockNotificationsData {
     items: items.sort((a, b) => b.created_at.localeCompare(a.created_at)).slice(0, 60),
   };
 }
-
 
 function toActor(profile: MockProfile | undefined): MockNotificationItem["actor"] {
   if (!profile) return null;

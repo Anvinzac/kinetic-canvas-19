@@ -1,8 +1,19 @@
+/**
+ * API layer helpers for discovery functions.
+ *
+ * Exports: search, getDiscover, toggleFollow, getMe, updateProfile, getNotifications
+ * Depends on: @tanstack/react-start, @/integrations/supabase/auth-middleware
+ */
+
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 
 // ===== Search users + posts =====
+/**
+ * Server function: search.
+ * @returns TanStack server function handle
+ */
 export const search = createServerFn({ method: "GET" })
   .inputValidator((d: { q: string }) => z.object({ q: z.string().max(64) }).parse(d))
   .handler(async ({ data }) => {
@@ -27,6 +38,10 @@ export const search = createServerFn({ method: "GET" })
   });
 
 // ===== Discover (trending) =====
+/**
+ * Server function: getDiscover.
+ * @returns TanStack server function handle
+ */
 export const getDiscover = createServerFn({ method: "GET" }).handler(async () => {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const [{ data: posts }, { data: profiles }] = await Promise.all([
@@ -45,6 +60,10 @@ export const getDiscover = createServerFn({ method: "GET" }).handler(async () =>
 });
 
 // ===== Follow / unfollow =====
+/**
+ * Server function: toggleFollow.
+ * @returns TanStack server function handle
+ */
 export const toggleFollow = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: { target_id: string }) => z.object({ target_id: z.string().uuid() }).parse(d))
@@ -76,6 +95,10 @@ export const toggleFollow = createServerFn({ method: "POST" })
   });
 
 // ===== Get my full identity (profile + follow set) =====
+/**
+ * Server function: getMe.
+ * @returns TanStack server function handle
+ */
 export const getMe = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
@@ -120,6 +143,10 @@ export const getMe = createServerFn({ method: "GET" })
   });
 
 // ===== Update profile =====
+/**
+ * Server function: updateProfile.
+ * @returns TanStack server function handle
+ */
 export const updateProfile = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: { display_name?: string; bio?: string; avatar_url?: string }) =>
@@ -139,6 +166,10 @@ export const updateProfile = createServerFn({ method: "POST" })
   });
 
 // ===== Notifications (computed: likes + comments + follows on my content) =====
+/**
+ * Server function: getNotifications.
+ * @returns TanStack server function handle
+ */
 export const getNotifications = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
@@ -165,8 +196,7 @@ export const getNotifications = createServerFn({ method: "GET" })
             .in("post_id", postIds)
             .neq("user_id", me.id)
             .order("created_at", { ascending: false })
-            .limit(40)
-        : Promise.resolve({
+            .limit(40): Promise.resolve({
             data: [] as { user_id: string; post_id: string; created_at: string }[],
           }),
       postIds.length
@@ -176,8 +206,7 @@ export const getNotifications = createServerFn({ method: "GET" })
             .in("post_id", postIds)
             .neq("user_id", me.id)
             .order("created_at", { ascending: false })
-            .limit(40)
-        : Promise.resolve({
+            .limit(40): Promise.resolve({
             data: [] as { user_id: string; post_id: string; chip_id: string; created_at: string }[],
           }),
       supabaseAdmin

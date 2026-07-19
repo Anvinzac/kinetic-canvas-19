@@ -1,4 +1,17 @@
-export function DoneButton({ onClick }: { onClick: () => void }) {
+/**
+ * UI component: DoneButton.
+ *
+ * Exports: DoneButton
+ * Depends on: none (leaf module)
+ */
+
+import type { ReactElement } from "react";
+/**
+ * Render the DoneButton UI.
+ * @param props - Component props
+ * @returns Rendered UI
+ */
+export function DoneButton({ onClick }: { onClick: () => void }): ReactElement {
   return (
     <button
       type="button"

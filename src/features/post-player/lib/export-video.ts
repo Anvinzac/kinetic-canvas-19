@@ -7,6 +7,10 @@
 
 import type { Post } from "../types";
 
+/**
+ * Compute supportedexportmimetype.
+ * @returns Computed value
+ */
 export function getSupportedExportMimeType(): string | null {
   if (typeof MediaRecorder === "undefined") return null;
   return (
@@ -21,15 +25,31 @@ export function getSupportedExportMimeType(): string | null {
   );
 }
 
-
+/**
+ * Compute exportextension.
+ * @param mimeType - mimeType argument
+ * @returns Computed value
+ */
 export function getExportExtension(mimeType: string): string {
   return mimeType.includes("mp4") ? "mp4" : "webm";
 }
 
+/**
+ * Compute postexportfilename.
+ * @param post - post argument
+ * @param mimeType - mimeType argument
+ * @returns Computed value
+ */
 export function getPostExportFilename(post: Post, mimeType: string): string {
   return `kinetic-${post.id.slice(0, 8)}.${getExportExtension(mimeType)}`;
 }
 
+/**
+ * downloadBlob helper
+ * @param blob - blob argument
+ * @param filename - filename argument
+ * @returns Function result
+ */
 export function downloadBlob(blob: Blob, filename: string): void {
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
@@ -41,7 +61,11 @@ export function downloadBlob(blob: Blob, filename: string): void {
   window.setTimeout(() => URL.revokeObjectURL(url), 1500);
 }
 
-
+/**
+ * wait helper
+ * @param ms - ms argument
+ * @returns Function result
+ */
 export function wait(ms: number): Promise<void> {
   return new Promise<void>((resolve) => window.setTimeout(resolve, ms));
 }

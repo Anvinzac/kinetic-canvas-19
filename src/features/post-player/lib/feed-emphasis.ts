@@ -37,7 +37,6 @@ const STOP_WORDS = new Set([
   "your",
 ]);
 
-
 const EMPHASIS_WORDS = new Set([
   "archive",
   "breathe",
@@ -68,9 +67,13 @@ const EMPHASIS_WORDS = new Set([
   "work",
 ]);
 
-
 // Feed emphasis selection — selection fallback and getWordImportance scoring diverge
 // from KineticText getPreviewEmphasizedWordIndexes / getPreviewWordImportance.
+/**
+ * Compute emphasizedwordindexes.
+ * @param words - words argument
+ * @returns Computed value
+ */
 export function getEmphasizedWordIndexes(words: string[]): Set<number> {
   const poeticIndexes = getSpecialPoeticWordIndexes(words);
   if (poeticIndexes.size > 0) return poeticIndexes;
@@ -89,9 +92,15 @@ export function getEmphasizedWordIndexes(words: string[]): Set<number> {
   return expandEmphasisToBoundPhrases(words, selected);
 }
 
-
 // Feed scoring — includes digit punchline + ALLCAPS bonuses and a wider EMPHASIS_WORDS
 // set than KineticText getPreviewWordImportance. Do not unify.
+/**
+ * Compute wordimportance.
+ * @param word - word argument
+ * @param index - index argument
+ * @param total - total argument
+ * @returns Computed value
+ */
 export function getWordImportance(word: string, index: number, total: number): number {
   const cleaned = word.toLowerCase().replace(/^[^a-z0-9]+|[^a-z0-9]+$/g, "");
   if (!cleaned || STOP_WORDS.has(cleaned)) return 0;

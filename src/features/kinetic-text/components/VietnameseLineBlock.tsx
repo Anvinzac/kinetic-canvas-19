@@ -5,6 +5,7 @@
  * Depends on: KineticText AnimatedWord, text-language WordLine
  */
 
+import type { ReactElement } from "react";
 import type { CanvasSpec } from "@/features/canvas";
 import type { WordLine } from "../lib/text-language";
 import { AnimatedWord } from "./WordRenderer";
@@ -12,6 +13,11 @@ import { entranceVariants } from "./preview-tempo";
 
 type WordVariants = ReturnType<typeof entranceVariants>;
 
+/**
+ * Render the VietnameseLineBlock UI.
+ * @param props - Component props
+ * @returns Rendered UI
+ */
 export function VietnameseLineBlock({
   lines,
   playKey,
@@ -38,7 +44,7 @@ export function VietnameseLineBlock({
   staticLayout: boolean;
   words: string[];
   spotlightEmphasis: boolean;
-}) {
+}): ReactElement {
   return (
     <>
       {lines.map((line, lineIndex) => (

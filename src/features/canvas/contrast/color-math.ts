@@ -13,10 +13,20 @@ const GREEN_BACKGROUND_MAX_HUE = 190;
 const YELLOW_MIN_HUE = 35;
 const YELLOW_MAX_HUE = 68;
 
-export function extractCssColors(value: string) {
+/**
+ * extractCssColors helper
+ * @param value - value argument
+ * @returns Computed value
+ */
+export function extractCssColors(value: string): string[] {
   return value.match(/#[0-9a-fA-F]{3,8}\b|rgba?\([^)]*\)|hsla?\([^)]*\)/g) ?? [value];
 }
 
+/**
+ * parseCssColor helper
+ * @param value - value argument
+ * @returns Computed value
+ */
 export function parseCssColor(value: string): RgbColor | null {
   const normalized = value.trim().toLowerCase();
   if (normalized === "white") return { r: 255, g: 255, b: 255 };
@@ -27,6 +37,11 @@ export function parseCssColor(value: string): RgbColor | null {
   return null;
 }
 
+/**
+ * parseHexColor helper
+ * @param value - value argument
+ * @returns Computed value
+ */
 export function parseHexColor(value: string): RgbColor | null {
   const hex = value.slice(1);
   if (![3, 4, 6, 8].includes(hex.length)) return null;
@@ -36,13 +51,17 @@ export function parseHexColor(value: string): RgbColor | null {
           .slice(0, 3)
           .split("")
           .map((char) => char + char)
-          .join("")
-      : hex.slice(0, 6);
+          .join(""): hex.slice(0, 6);
   const int = Number.parseInt(normalized, 16);
   if (Number.isNaN(int)) return null;
   return { r: (int >> 16) & 255, g: (int >> 8) & 255, b: int & 255 };
 }
 
+/**
+ * parseRgbColor helper
+ * @param value - value argument
+ * @returns Computed value
+ */
 export function parseRgbColor(value: string): RgbColor | null {
   const parts = value.match(/[\d.]+%?/g);
   if (!parts || parts.length < 3) return null;
@@ -54,11 +73,21 @@ export function parseRgbColor(value: string): RgbColor | null {
   };
 }
 
-export function parseRgbChannel(value: string) {
+/**
+ * parseRgbChannel helper
+ * @param value - value argument
+ * @returns Computed value
+ */
+export function parseRgbChannel(value: string): number {
   if (value.endsWith("%")) return clamp(Math.round((Number.parseFloat(value) / 100) * 255), 0, 255);
   return clamp(Math.round(Number.parseFloat(value)), 0, 255);
 }
 
+/**
+ * parseHslColor helper
+ * @param value - value argument
+ * @returns Computed value
+ */
 export function parseHslColor(value: string): RgbColor | null {
   const parts = value.match(/[-\d.]+%?/g);
   if (!parts || parts.length < 3) return null;
@@ -69,13 +98,18 @@ export function parseHslColor(value: string): RgbColor | null {
   return hslToRgb({ h: hue, s: saturation, l: lightness });
 }
 
+/**
+ * hslToRgb helper
+ * @param props - HslColor fields
+ * @returns Function result
+ */
 export function hslToRgb({ h, s, l }: HslColor): RgbColor {
   const hue = (((h % 360) + 360) % 360) / 360;
   if (s === 0) {
     const value = Math.round(l * 255);
     return { r: value, g: value, b: value };
   }
-  const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+  const q = l < 0.5 ? l * (1 + s): l + s - l * s;
   const p = 2 * l - q;
   return {
     r: Math.round(hueToRgb(p, q, hue + 1 / 3) * 255),
@@ -84,7 +118,14 @@ export function hslToRgb({ h, s, l }: HslColor): RgbColor {
   };
 }
 
-export function hueToRgb(p: number, q: number, t: number) {
+/**
+ * hueToRgb helper
+ * @param p - p argument
+ * @param q - q argument
+ * @param t - t argument
+ * @returns Function result
+ */
+export function hueToRgb(p: number, q: number, t: number): number {
   let hue = t;
   if (hue < 0) hue += 1;
   if (hue > 1) hue -= 1;
@@ -94,6 +135,11 @@ export function hueToRgb(p: number, q: number, t: number) {
   return p;
 }
 
+/**
+ * rgbToHsl helper
+ * @param props - RgbColor fields
+ * @returns Function result
+ */
 export function rgbToHsl({ r, g, b }: RgbColor): HslColor {
   const red = r / 255;
   const green = g / 255;
@@ -104,7 +150,7 @@ export function rgbToHsl({ r, g, b }: RgbColor): HslColor {
   if (max === min) return { h: 0, s: 0, l: lightness };
 
   const delta = max - min;
-  const saturation = lightness > 0.5 ? delta / (2 - max - min) : delta / (max + min);
+  const saturation = lightness > 0.5 ? delta / (2 - max - min): delta / (max + min);
   let hue = 0;
   if (max === red) hue = (green - blue) / delta + (green < blue ? 6 : 0);
   else if (max === green) hue = (blue - red) / delta + 2;
@@ -112,19 +158,35 @@ export function rgbToHsl({ r, g, b }: RgbColor): HslColor {
   return { h: hue * 60, s: saturation, l: lightness };
 }
 
-export function isGreenishBackground(colors: RgbColor[]) {
+/**
+ * Check isGreenishBackground.
+ * @param colors - colors argument
+ * @returns Boolean result
+ */
+export function isGreenishBackground(colors: RgbColor[]): boolean {
   return colors.some((color) => {
     const hsl = rgbToHsl(color);
     return hsl.s > 0.28 && hsl.h >= GREEN_BACKGROUND_MIN_HUE && hsl.h <= GREEN_BACKGROUND_MAX_HUE;
   });
 }
 
-export function isYellowishColor(color: RgbColor) {
+/**
+ * Check isYellowishColor.
+ * @param color - color argument
+ * @returns Boolean result
+ */
+export function isYellowishColor(color: RgbColor): boolean {
   const hsl = rgbToHsl(color);
   return hsl.s > 0.35 && hsl.h >= YELLOW_MIN_HUE && hsl.h <= YELLOW_MAX_HUE;
 }
 
-export function getAverageHueDistance(color: RgbColor, backgroundColors: RgbColor[]) {
+/**
+ * Compute averagehuedistance.
+ * @param color - color argument
+ * @param backgroundColors - backgroundColors argument
+ * @returns Computed value
+ */
+export function getAverageHueDistance(color: RgbColor, backgroundColors: RgbColor[]): number {
   const hue = rgbToHsl(color).h;
   const distances = backgroundColors.map((background) =>
     getHueDistance(hue, rgbToHsl(background).h),
@@ -132,30 +194,64 @@ export function getAverageHueDistance(color: RgbColor, backgroundColors: RgbColo
   return distances.reduce((sum, value) => sum + value, 0) / Math.max(distances.length, 1);
 }
 
-export function getHueDistance(a: number, b: number) {
+/**
+ * Compute huedistance.
+ * @param a - a argument
+ * @param b - b argument
+ * @returns Computed value
+ */
+export function getHueDistance(a: number, b: number): number {
   const distance = Math.abs(a - b) % 360;
   return Math.min(distance, 360 - distance);
 }
 
-export function getColorDistance(a: RgbColor, b: RgbColor) {
+/**
+ * Compute colordistance.
+ * @param a - a argument
+ * @param b - b argument
+ * @returns Computed value
+ */
+export function getColorDistance(a: RgbColor, b: RgbColor): number {
   return Math.hypot(a.r - b.r, a.g - b.g, a.b - b.b);
 }
 
-export function getMinimumContrast(color: RgbColor, backgrounds: RgbColor[]) {
+/**
+ * Compute minimumcontrast.
+ * @param color - color argument
+ * @param backgrounds - backgrounds argument
+ * @returns Computed value
+ */
+export function getMinimumContrast(color: RgbColor, backgrounds: RgbColor[]): number {
   return Math.min(...backgrounds.map((background) => getContrastRatio(color, background)));
 }
 
-export function getMaximumLuminance(colors: RgbColor[]) {
+/**
+ * Compute maximumluminance.
+ * @param colors - colors argument
+ * @returns Computed value
+ */
+export function getMaximumLuminance(colors: RgbColor[]): number {
   return Math.max(...colors.map(getRelativeLuminance));
 }
 
-export function getContrastRatio(a: RgbColor, b: RgbColor) {
+/**
+ * Compute contrastratio.
+ * @param a - a argument
+ * @param b - b argument
+ * @returns Computed value
+ */
+export function getContrastRatio(a: RgbColor, b: RgbColor): number {
   const lighter = Math.max(getRelativeLuminance(a), getRelativeLuminance(b));
   const darker = Math.min(getRelativeLuminance(a), getRelativeLuminance(b));
   return (lighter + 0.05) / (darker + 0.05);
 }
 
-export function getRelativeLuminance({ r, g, b }: RgbColor) {
+/**
+ * Compute relativeluminance.
+ * @param props - RgbColor fields
+ * @returns Computed value
+ */
+export function getRelativeLuminance({ r, g, b }: RgbColor): number {
   const [red, green, blue] = [r, g, b].map((channel) => {
     const value = channel / 255;
     return value <= 0.03928 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
@@ -163,6 +259,13 @@ export function getRelativeLuminance({ r, g, b }: RgbColor) {
   return 0.2126 * red + 0.7152 * green + 0.0722 * blue;
 }
 
-export function clamp(value: number, min: number, max: number) {
+/**
+ * clamp helper
+ * @param value - value argument
+ * @param min - min argument
+ * @param max - max argument
+ * @returns Computed value
+ */
+export function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max);
 }

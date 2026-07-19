@@ -7,7 +7,7 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useEffect, useState } from "react";
+import {type ReactElement, useEffect, useState } from "react";
 import { PostCard } from "@/components/PostCard";
 import { supabase } from "@/integrations/supabase/client";
 import { resolveDataMode } from "@/features/session";
@@ -27,7 +27,7 @@ import { addComment, getFeed, toggleLike } from "../api/social.functions";
  * @responsibility Render the snap-scrolling home feed with like/comment mutations.
  * @returns Full-viewport feed of PostCards, or a loading pulse
  */
-export function FeedPage() {
+export function FeedPage(): ReactElement {
   const qc = useQueryClient();
   const fetchFeed = useServerFn(getFeed);
   const likeFn = useServerFn(toggleLike);
@@ -63,7 +63,7 @@ export function FeedPage() {
 
   const likeMut = useMutation({
     mutationFn: (post_id: string) =>
-      demoMode ? toggleMockLike(post_id) : likeFn({ data: { post_id } }),
+      demoMode ? toggleMockLike(post_id): likeFn({ data: { post_id } }),
     onSuccess: () => {
       if (demoMode) {
         qc.setQueryData(feedKey, getMockFeed());
@@ -75,7 +75,7 @@ export function FeedPage() {
   });
   const commentMut = useMutation({
     mutationFn: ({ post_id, chip_id }: { post_id: string; chip_id: string }) =>
-      demoMode ? addMockComment(post_id, chip_id) : commentFn({ data: { post_id, chip_id } }),
+      demoMode ? addMockComment(post_id, chip_id): commentFn({ data: { post_id, chip_id } }),
     onSuccess: () => {
       if (demoMode) {
         qc.setQueryData(feedKey, getMockFeed());
@@ -124,8 +124,7 @@ export function FeedPage() {
             comments={commentsByPost.get(p.id) ?? []}
             liked={
               myProfileId
-                ? (likesByPost.get(p.id) ?? []).some((l) => l.user_id === myProfileId)
-                : false
+                ? (likesByPost.get(p.id) ?? []).some((l) => l.user_id === myProfileId): false
             }
             onLike={() => likeMut.mutate(p.id)}
             onComment={(chip) => commentMut.mutate({ post_id: p.id, chip_id: chip })}

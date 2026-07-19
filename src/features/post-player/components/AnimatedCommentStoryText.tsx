@@ -19,7 +19,9 @@ export type AnimatedCommentStoryTextProps = {
 };
 
 /**
- * @responsibility Render comment story page text (kinetic or fast dump).
+ * Render comment story page text (kinetic or fast dump).
+ * @param props - AnimatedCommentStoryTextProps fields
+ * @returns Rendered UI
  */
 export function AnimatedCommentStoryText({
   text,

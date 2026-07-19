@@ -8,7 +8,7 @@
 import { Link, useParams } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useEffect, useState } from "react";
+import {type ReactElement, useEffect, useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import { PostCard } from "@/components/PostCard";
 import { resolveDataMode } from "@/features/session";
@@ -28,7 +28,7 @@ import { addComment, getPost, toggleLike } from "../api/social.functions";
  * @responsibility Render one post full-bleed with like/comment, or an unavailable state.
  * @returns Permalink PostCard, loading pulse, or back-to-feed empty state
  */
-export function PostPermalinkPage() {
+export function PostPermalinkPage(): ReactElement {
   const { postId } = useParams({ from: "/_authenticated/p/$postId" });
   const qc = useQueryClient();
   const dataMode = resolveDataMode();
@@ -66,7 +66,7 @@ export function PostPermalinkPage() {
 
   const likeMut = useMutation({
     mutationFn: (post_id: string) =>
-      demoMode ? toggleMockLike(post_id) : likeFn({ data: { post_id } }),
+      demoMode ? toggleMockLike(post_id): likeFn({ data: { post_id } }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: postKey });
       qc.invalidateQueries({ queryKey: socialKeys.feedRoot });
@@ -76,7 +76,7 @@ export function PostPermalinkPage() {
 
   const commentMut = useMutation({
     mutationFn: ({ post_id, chip_id }: { post_id: string; chip_id: string }) =>
-      demoMode ? addMockComment(post_id, chip_id) : commentFn({ data: { post_id, chip_id } }),
+      demoMode ? addMockComment(post_id, chip_id): commentFn({ data: { post_id, chip_id } }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: postKey });
       qc.invalidateQueries({ queryKey: socialKeys.feedRoot });
@@ -114,8 +114,7 @@ export function PostPermalinkPage() {
 
   const profilesById = new Map(data.profiles.map((profile) => [profile.id, profile]));
   const liked = myProfileId
-    ? data.likes.some((likeItem) => likeItem.user_id === myProfileId)
-    : false;
+    ? data.likes.some((likeItem) => likeItem.user_id === myProfileId): false;
 
   return (
     <main className="h-[100dvh] overflow-hidden">

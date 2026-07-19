@@ -34,6 +34,10 @@ type FeedComment = {
   created_at: string;
 };
 
+/**
+ * Server function: getFeed.
+ * @returns TanStack server function handle
+ */
 export const getFeed = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
@@ -47,8 +51,7 @@ export const getFeed = createServerFn({ method: "GET" })
       .maybeSingle();
 
     const { data: following } = viewer
-      ? await supabaseAdmin.from("follows").select("following_id").eq("follower_id", viewer.id)
-      : { data: [] as { following_id: string }[] };
+      ? await supabaseAdmin.from("follows").select("following_id").eq("follower_id", viewer.id): { data: [] as { following_id: string }[] };
     const followingIds = (following ?? []).map((follow) => follow.following_id);
     const { data: activeBots } = await supabaseAdmin
       .from("bot_agents")
@@ -100,8 +103,7 @@ export const getFeed = createServerFn({ method: "GET" })
       ? await supabaseAdmin
           .from("profiles")
           .select("id, username, display_name, avatar_url")
-          .in("id", profileIds)
-      : { data: [] };
+          .in("id", profileIds): { data: [] };
 
     return {
       posts: rankedPosts,

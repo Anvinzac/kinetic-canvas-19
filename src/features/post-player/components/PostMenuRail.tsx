@@ -25,7 +25,9 @@ export type PostMenuRailProps = {
 };
 
 /**
- * @responsibility Dropdown rail of navigation and export actions.
+ * Dropdown rail of navigation and export actions.
+ * @param props - PostMenuRailProps fields
+ * @returns Rendered UI
  */
 export function PostMenuRail({ onExport, isExporting }: PostMenuRailProps): ReactElement {
   return (

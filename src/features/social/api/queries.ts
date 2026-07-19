@@ -1,7 +1,7 @@
 /**
  * Social TanStack Query option factories (feed + post).
  *
- * Exports: feedQueryOptions, postQueryOptions
+ * Exports: feedQueryOptions, postQueryOptions, FeedQueryOptions, PostQueryOptions
  * Depends on: shared/api-client, features/demo mocks, socialKeys
  */
 
@@ -21,6 +21,13 @@ import { socialKeys } from "./keys";
 export function feedQueryOptions(
   mode: DataMode,
   fetchLive: () => Promise<SocialFeedData>,
+): ReturnType<typeof buildFeedQueryOptions> {
+  return buildFeedQueryOptions(mode, fetchLive);
+}
+
+function buildFeedQueryOptions(
+  mode: DataMode,
+  fetchLive: () => Promise<SocialFeedData>,
 ) {
   return queryOptions({
     queryKey: socialKeys.feed(mode),
@@ -29,6 +36,9 @@ export function feedQueryOptions(
     staleTime: 30_000,
   });
 }
+
+/** Inferred TanStack options shape for the feed query. */
+export type FeedQueryOptions = ReturnType<typeof buildFeedQueryOptions>;
 
 /**
  * Build TanStack Query options for a single post permalink.
@@ -41,6 +51,14 @@ export function postQueryOptions(
   mode: DataMode,
   postId: string,
   fetchLive: () => Promise<SocialPostData>,
+): ReturnType<typeof buildPostQueryOptions> {
+  return buildPostQueryOptions(mode, postId, fetchLive);
+}
+
+function buildPostQueryOptions(
+  mode: DataMode,
+  postId: string,
+  fetchLive: () => Promise<SocialPostData>,
 ) {
   return queryOptions({
     queryKey: socialKeys.post(mode, postId),
@@ -50,3 +68,6 @@ export function postQueryOptions(
     retry: false,
   });
 }
+
+/** Inferred TanStack options shape for the post query. */
+export type PostQueryOptions = ReturnType<typeof buildPostQueryOptions>;

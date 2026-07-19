@@ -1,3 +1,10 @@
+/**
+ * Route/loader prefetch helpers for this feature.
+ *
+ * Exports: prefetchFeed, prefetchPost
+ * Depends on: @tanstack/react-query, @/features/session, @/features/demo, @/shared/types
+ */
+
 import type { QueryClient } from "@tanstack/react-query";
 import { resolveDataMode } from "@/features/session";
 import { getMockFeed, getMockPost } from "@/features/demo";
@@ -6,12 +13,11 @@ import { feedQueryOptions, postQueryOptions } from "./queries";
 import { getFeed, getPost } from "./social.functions";
 
 /**
- * @responsibility Prefetch the feed into the QueryClient for route loaders.
- * @inputs queryClient
- * @outputs Resolved feed data (cached under socialKeys.feed)
- * @sideEffects Populates React Query cache; may call live serverFn or demo store
+ * Prefetch the feed into the QueryClient for route loaders.
+ * @param queryClient - queryClient argument
+ * @returns Resolved feed data (cached under socialKeys.feed)
  */
-export async function prefetchFeed(queryClient: QueryClient) {
+export async function prefetchFeed(queryClient: QueryClient): Promise<SocialFeedData> {
   const mode = resolveDataMode();
   return queryClient.ensureQueryData(
     feedQueryOptions(mode, () =>
@@ -23,12 +29,15 @@ export async function prefetchFeed(queryClient: QueryClient) {
 }
 
 /**
- * @responsibility Prefetch a single post into the QueryClient for route loaders.
- * @inputs queryClient, postId
- * @outputs Resolved post graph
- * @sideEffects Populates React Query cache
+ * Prefetch a single post into the QueryClient for route loaders.
+ * @param queryClient - queryClient argument
+ * @param postId - postId argument
+ * @returns Resolved post graph
  */
-export async function prefetchPost(queryClient: QueryClient, postId: string) {
+export async function prefetchPost(
+  queryClient: QueryClient,
+  postId: string,
+): Promise<SocialPostData> {
   const mode = resolveDataMode();
   return queryClient.ensureQueryData(
     postQueryOptions(mode, postId, () =>

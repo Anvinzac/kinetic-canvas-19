@@ -99,7 +99,12 @@ const LONGEST_VIETNAMESE_BOUND_PHRASE = Math.max(
   ...VIETNAMESE_BOUND_PHRASE_KEYS.map((phrase) => phrase.length),
 );
 
-export function getSpecialPoeticWordIndexes(words: string[]) {
+/**
+ * Compute specialpoeticwordindexes.
+ * @param words - words argument
+ * @returns Computed value
+ */
+export function getSpecialPoeticWordIndexes(words: string[]): Set<number>{
   const selected = new Set<number>();
   const normalizedWords = words.map(normalizeVietnameseToken);
 
@@ -124,7 +129,13 @@ export function getSpecialPoeticWordIndexes(words: string[]) {
  * @pure true
  */
 // Never emphasize one syllable of a bound Vietnamese phrase — expand to the whole word.
-export function expandEmphasisToBoundPhrases(words: string[], selected: Iterable<number>) {
+/**
+ * expandEmphasisToBoundPhrases helper
+ * @param words - words argument
+ * @param selected - selected argument
+ * @returns Computed value
+ */
+export function expandEmphasisToBoundPhrases(words: string[], selected: Iterable<number>): Set<number> {
   const expanded = new Set<number>();
 
   for (const index of selected) {
@@ -146,12 +157,12 @@ export function expandEmphasisToBoundPhrases(words: string[], selected: Iterable
 }
 
 /**
- * @responsibility Start index of the bound phrase containing `index`, or `index` for a solo token.
- * @inputs Words + word index
- * @outputs Anchor index for shared emphasis styling
- * @pure true
+ * Start index of the bound phrase containing `index`, or `index` for a solo token.
+ * @param words - words argument
+ * @param index - index argument
+ * @returns Anchor index for shared emphasis styling
  */
-export function getBoundPhraseStartIndex(words: string[], index: number) {
+export function getBoundPhraseStartIndex(words: string[], index: number): number {
   for (let start = 0; start <= index; start += 1) {
     const length = getBoundPhraseLength(words, start);
     if (length > 1 && start <= index && index < start + length) {
@@ -162,12 +173,12 @@ export function getBoundPhraseStartIndex(words: string[], index: number) {
 }
 
 /**
- * @responsibility Stable label for emphasis styling — whole phrase for bound pairs, else the token.
- * @inputs Words + word index
- * @outputs Phrase string or single word used as emphasis seed
- * @pure true
+ * Stable label for emphasis styling — whole phrase for bound pairs, else the token.
+ * @param words - words argument
+ * @param index - index argument
+ * @returns Phrase string or single word used as emphasis seed
  */
-export function getBoundPhraseEmphasisSeed(words: string[], index: number) {
+export function getBoundPhraseEmphasisSeed(words: string[], index: number): string {
   const start = getBoundPhraseStartIndex(words, index);
   const length = getBoundPhraseLength(words, start);
   if (length > 1) {
@@ -176,8 +187,13 @@ export function getBoundPhraseEmphasisSeed(words: string[], index: number) {
   return words[index] ?? "";
 }
 
-
-export function getBoundPhraseLength(words: string[], startIndex: number) {
+/**
+ * Compute boundphraselength.
+ * @param words - words argument
+ * @param startIndex - startIndex argument
+ * @returns Computed value
+ */
+export function getBoundPhraseLength(words: string[], startIndex: number): number {
   const remaining = words.length - startIndex;
   const maxLength = Math.min(LONGEST_VIETNAMESE_BOUND_PHRASE, remaining);
 
@@ -197,7 +213,12 @@ export function getBoundPhraseLength(words: string[], startIndex: number) {
   return 1;
 }
 
-export function normalizeVietnameseToken(token: string) {
+/**
+ * normalizeVietnameseToken helper
+ * @param token - token argument
+ * @returns Computed value
+ */
+export function normalizeVietnameseToken(token: string): string {
   return token
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")

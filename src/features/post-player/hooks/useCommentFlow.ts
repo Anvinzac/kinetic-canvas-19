@@ -45,7 +45,9 @@ export type UseCommentFlowArgs = {
 };
 
 /**
- * @responsibility Manage comment tray input, floating chips, and local optimistic rows.
+ * Manage comment tray input, floating chips, and local optimistic rows.
+ * @param args - Server comments, post id, viewer id, and story index bridge
+ * @returns Comment tray state, floating chips, and submit helpers
  */
 export function useCommentFlow({
   comments,

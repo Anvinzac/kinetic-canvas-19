@@ -42,7 +42,9 @@ export type UseWordSequenceFitResult = {
 };
 
 /**
- * @responsibility Measure and converge per-page text fit inside the canvas safe area.
+ * Measure and converge per-page text fit inside the canvas safe area.
+ * @param args - Canvas geometry, typography, and fit-scale setters
+ * @returns Fit scale, solo inline scale, and safe vertical center
  */
 export function useWordSequenceFit({
   initialFit,

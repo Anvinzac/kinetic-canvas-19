@@ -1,20 +1,24 @@
 /**
- * @responsibility Split text into whitespace-delimited tokens (kinetic word units).
- * @inputs Free-form status / canvas text
- * @outputs Non-empty token array; empty string → []
- * @pure true
+ * Pure helpers for words.
+ *
+ * Exports: getWords, getWordAnchorKey
+ * Depends on: none (leaf module)
  */
-export function getWords(text: string) {
+/**
+ * Compute words.
+ * @param text - text argument
+ * @returns Computed value
+ */
+export function getWords(text: string): string[] {
   return text.match(/\S+/g) ?? [];
 }
 
 /**
- * @responsibility Normalize a word into a DOM/data-attribute anchor key for stickers.
- * @inputs Single word token
- * @outputs Lowercased alphanumeric key (accents stripped)
- * @pure true
+ * Normalize a word into a DOM/data-attribute anchor key for stickers.
+ * @param word - word argument
+ * @returns Lowercased alphanumeric key (accents stripped)
  */
-export function getWordAnchorKey(word: string) {
+export function getWordAnchorKey(word: string): string {
   return word
     .toLowerCase()
     .normalize("NFD")

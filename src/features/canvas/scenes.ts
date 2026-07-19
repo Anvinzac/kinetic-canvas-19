@@ -1,6 +1,8 @@
 /**
- * @responsibility Describe a generated layered scene backdrop for canvas posts.
- * @pure true
+ * Module providing CanvasSceneTheme, CANVAS_SCENE_THEMES, getCanvasSceneTheme, getSceneBackgroundStyle.
+ *
+ * Exports: CanvasSceneTheme, CANVAS_SCENE_THEMES, getCanvasSceneTheme, getSceneBackgroundStyle
+ * Depends on: none (leaf module)
  */
 export type CanvasSceneTheme = {
   id: string;
@@ -176,23 +178,22 @@ export const CANVAS_SCENE_THEMES: readonly CanvasSceneTheme[] = [
 const THEMES_BY_ID = new Map(CANVAS_SCENE_THEMES.map((theme) => [theme.id, theme]));
 
 /**
- * @responsibility Look up a scene theme by id from the catalog.
- * @inputs Scene theme id (or null/undefined)
- * @outputs Matching CanvasSceneTheme, or null when missing
- * @pure true
+ * Look up a scene theme by id from the catalog.
+ * @param id - id argument
+ * @returns Matching CanvasSceneTheme, or null when missing
  */
-export function getCanvasSceneTheme(id: string | null | undefined) {
+export function getCanvasSceneTheme(id: string | null | undefined): CanvasSceneTheme | null {
   if (!id) return null;
   return THEMES_BY_ID.get(id) ?? null;
 }
 
 /**
- * @responsibility Build inline CSS background style for a scene at a page index.
- * @inputs Scene theme + page shift index
- * @outputs Style object with color, image, size, position, and transition
- * @pure true
+ * Build inline CSS background style for a scene at a page index.
+ * @param theme - theme argument
+ * @param shiftPage - shiftPage argument
+ * @returns Style object with color, image, size, position, and transition
  */
-export function getSceneBackgroundStyle(theme: CanvasSceneTheme, shiftPage: number) {
+export function getSceneBackgroundStyle(theme: CanvasSceneTheme, shiftPage: number): React.CSSProperties | Record<string, string> {
   const x = theme.step.x * shiftPage;
   const y = theme.step.y * shiftPage;
   return {

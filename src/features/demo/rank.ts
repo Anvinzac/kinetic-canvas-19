@@ -1,10 +1,18 @@
+/**
+ * Module providing rankMockFeedPosts, buildEngagementByPost.
+ *
+ * Exports: rankMockFeedPosts, buildEngagementByPost
+ * Depends on: ./seed
+ */
+
 import { MOCK_ME_ID, type MockComment, type MockLike, type MockPost } from "./seed";
 
 const COLD_START_FOLLOWING_THRESHOLD = 3;
 
 /**
- * @responsibility Rank demo feed posts by relationship, engagement, and recency.
- * @note Live ranking in `social.functions` differs — this copy has no bot recency boost. Do not unify.
+ * Rank demo feed posts by relationship, engagement, and recency.
+ * @param props - Component props
+ * @returns Computed value
  */
 export function rankMockFeedPosts({
   posts,
@@ -16,7 +24,7 @@ export function rankMockFeedPosts({
   likes: MockLike[];
   comments: MockComment[];
   followingIds: string[];
-}) {
+}): MockPost[] {
   const following = new Set(followingIds);
   const engagement = buildEngagementByPost(posts, likes, comments);
   const isColdStart = followingIds.length < COLD_START_FOLLOWING_THRESHOLD;
@@ -53,9 +61,13 @@ function getMockFeedRankScore(
 }
 
 /**
- * @responsibility Tally likes and comments per post id for ranking and profile stats.
+ * Tally likes and comments per post id for ranking and profile stats.
+ * @param posts - posts argument
+ * @param likes - likes argument
+ * @param comments - comments argument
+ * @returns Computed value
  */
-export function buildEngagementByPost(posts: MockPost[], likes: MockLike[], comments: MockComment[]) {
+export function buildEngagementByPost(posts: MockPost[], likes: MockLike[], comments: MockComment[]): Record<string, { likes: number; comments: number }> {
   const engagementByPost: Record<string, { likes: number; comments: number }> = {};
   for (const post of posts) engagementByPost[post.id] = { likes: 0, comments: 0 };
   for (const likeItem of likes) {

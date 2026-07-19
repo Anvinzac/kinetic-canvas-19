@@ -19,6 +19,11 @@ import {
   useIsomorphicLayoutEffect,
 } from "./preview-fit";
 
+/**
+ * Provide useKineticTextFit state and actions.
+ * @param props - Component props
+ * @returns Hook API for callers
+ */
 export function useKineticTextFit({
   scaleToCanvas,
   isVietnamese,
@@ -62,8 +67,7 @@ export function useKineticTextFit({
             canvasWidth,
             spec.size * canvasScale,
             visualScaleGuard,
-          )
-        : { lines: [], suggestedFitScale: 1 },
+          ): { lines: [], suggestedFitScale: 1 },
     [isVietnamese, words, canvasWidth, spec.size, canvasScale, visualScaleGuard],
   );
   const [fitScale, setFitScale] = useState(

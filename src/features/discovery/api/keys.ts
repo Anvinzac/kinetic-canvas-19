@@ -1,3 +1,10 @@
+/**
+ * TanStack Query key factories for this feature.
+ *
+ * Exports: discoveryKeys
+ * Depends on: @/features/session
+ */
+
 import type { DataMode } from "@/features/session";
 
 /**

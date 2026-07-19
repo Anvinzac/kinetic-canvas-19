@@ -44,7 +44,9 @@ export type UseCommentStoryResult = {
 };
 
 /**
- * @responsibility Track which kinetic comment story is playing and its page.
+ * Track which kinetic comment story is playing and its page.
+ * @param args - UseCommentStoryArgs fields
+ * @returns Hook API for callers
  */
 export function useCommentStory({
   chronologicalComments,
@@ -73,7 +75,7 @@ export function useCommentStory({
 
   const activeStory = commentStories[storyIndex] ?? null;
   const storyPages = useMemo(
-    () => (activeStory ? getCommentStoryPages(activeStory.text, storyFastMode) : []),
+    () => (activeStory ? getCommentStoryPages(activeStory.text, storyFastMode): []),
     [activeStory, storyFastMode],
   );
   const storyPageText = storyPages[storyPage] ?? storyPages[0] ?? "";

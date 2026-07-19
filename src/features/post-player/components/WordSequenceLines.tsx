@@ -31,7 +31,9 @@ export type WordSequenceLinesProps = {
 };
 
 /**
- * @responsibility Map words/lines to WordSequenceWord spans.
+ * Map words/lines to WordSequenceWord spans.
+ * @param props - WordSequenceLinesProps fields
+ * @returns Rendered UI
  */
 export function WordSequenceLines({
   isVietnamese,

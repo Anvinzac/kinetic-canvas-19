@@ -37,7 +37,9 @@ export type UsePostPlaybackDerivedArgs = {
 };
 
 /**
- * @responsibility Compute pure derived fields for PostCard from playback state.
+ * Compute pure derived fields for PostCard from playback state.
+ * @param args - Post, canvas spec, page/shift, and display size inputs
+ * @returns Visuals, comment geometry, meta, and displaySpec
  */
 export function usePostPlaybackDerived(args: UsePostPlaybackDerivedArgs) {
   const {

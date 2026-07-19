@@ -101,7 +101,7 @@ export function ProfileHeader({
               <Settings className="size-4" />
             </button>
           </>
-        ) : (
+        ): (
           <>
             <button
               onClick={onFollow}

@@ -45,7 +45,9 @@ export type UsePostExportResult = {
 };
 
 /**
- * @responsibility Capture the on-screen status as a short video download.
+ * Capture the on-screen status as a short video download.
+ * @param args - args argument
+ * @returns Hook API for callers
  */
 export function usePostExport(args: UsePostExportArgs): UsePostExportResult {
   const {

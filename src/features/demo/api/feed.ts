@@ -24,7 +24,8 @@ import {
 const MOCK_FEED_LIMIT = 60;
 
 /**
- * @responsibility Build the ranked demo home feed graph (posts, profiles, likes, comments).
+ * Build the ranked demo home feed graph (posts, profiles, likes, comments).
+ * @returns Computed value
  */
 export function getMockFeed(): MockFeedData {
   const likes = getMockLikes();
@@ -46,7 +47,9 @@ export function getMockFeed(): MockFeedData {
 }
 
 /**
- * @responsibility Load one demo post permalink graph, or throw when missing.
+ * Load one demo post permalink graph, or throw when missing.
+ * @param postId - postId argument
+ * @returns Computed value
  */
 export function getMockPost(postId: string): MockPostData {
   const post = getAllMockPosts().find((item) => item.id === postId);
@@ -69,7 +72,8 @@ export function getMockPost(postId: string): MockPostData {
 }
 
 /**
- * @responsibility Build the demo discover grid (recent posts + newest profiles).
+ * Build the demo discover grid (recent posts + newest profiles).
+ * @returns Computed value
  */
 export function getMockDiscover(): MockDiscoverData {
   return {
@@ -81,7 +85,9 @@ export function getMockDiscover(): MockDiscoverData {
 }
 
 /**
- * @responsibility Search demo users and posts by username, display name, bio, or canvas text.
+ * Search demo users and posts by username, display name, bio, or canvas text.
+ * @param q - q argument
+ * @returns Function result
  */
 export function searchMock(q: string): MockSearchData {
   const needle = q.trim().toLowerCase();

@@ -1,3 +1,10 @@
+/**
+ * Module providing CanvasPatternTheme, CANVAS_PATTERN_THEMES, getCanvasPatternTheme, getPatternBackgroundPosition.
+ *
+ * Exports: CanvasPatternTheme, CANVAS_PATTERN_THEMES, getCanvasPatternTheme, getPatternBackgroundPosition
+ * Depends on: none (leaf module)
+ */
+
 // Seamless *pannable* canvas backgrounds that are NOT colorful gradients.
 //
 // They share the gradient transition's signature move — the backdrop glides a
@@ -239,12 +246,11 @@ export const CANVAS_PATTERN_THEMES: readonly CanvasPatternTheme[] = [
 const THEMES_BY_ID = new Map(CANVAS_PATTERN_THEMES.map((theme) => [theme.id, theme]));
 
 /**
- * @responsibility Look up a pattern theme by id from the catalog.
- * @inputs Pattern theme id (or null/undefined)
- * @outputs Matching CanvasPatternTheme, or null when missing
- * @pure true
+ * Look up a pattern theme by id from the catalog.
+ * @param id - id argument
+ * @returns Matching CanvasPatternTheme, or null when missing
  */
-export function getCanvasPatternTheme(id: string | null | undefined) {
+export function getCanvasPatternTheme(id: string | null | undefined): CanvasPatternTheme | null {
   if (!id) return null;
   return THEMES_BY_ID.get(id) ?? null;
 }
@@ -262,7 +268,13 @@ const PATTERN_PAN_DISTANCE = 3;
  */
 // The `background-position` for a given page: the pan delta (step × page), added
 // onto each layer's base offset when the theme pins per-layer positions.
-export function getPatternBackgroundPosition(theme: CanvasPatternTheme, shiftPage: number) {
+/**
+ * Compute patternbackgroundposition.
+ * @param theme - theme argument
+ * @param shiftPage - shiftPage argument
+ * @returns Computed value
+ */
+export function getPatternBackgroundPosition(theme: CanvasPatternTheme, shiftPage: number): string {
   const dx = shiftPage * theme.step.x * PATTERN_PAN_DISTANCE;
   const dy = shiftPage * theme.step.y * PATTERN_PAN_DISTANCE;
   if (!theme.positions) return `${dx}px ${dy}px`;

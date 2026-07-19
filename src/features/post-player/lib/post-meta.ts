@@ -14,6 +14,13 @@ const STOP_WORDS = new Set([
   "is", "it", "its", "of", "on", "or", "so", "the", "to", "you", "your",
 ]);
 
+/**
+ * Compute posthashtags.
+ * @param text - text argument
+ * @param postType - postType argument
+ * @param pages? - pages? argument
+ * @returns Computed value
+ */
 export function getPostHashtags(text: string, postType: string, pages?: string[]): string[] {
   const explicitTags = Array.from(text.matchAll(/#([a-z0-9][a-z0-9_-]{1,24})/gi)).map((match) =>
     normalizeHashtag(match[1]),
@@ -21,7 +28,7 @@ export function getPostHashtags(text: string, postType: string, pages?: string[]
   // Never derive a tag from the final page of a multi-page post — it is the
   // reveal/punchline (e.g. a guessing game's answer), and tagging it would spoil
   // the mystery right under the post.
-  const tagSource = pages && pages.length > 1 ? pages.slice(0, -1).join(" ") : text;
+  const tagSource = pages && pages.length > 1 ? pages.slice(0, -1).join(" "): text;
   const textTags = getWords(tagSource)
     .map(normalizeHashtag)
     .filter((tag) => tag.length >= 4 && !STOP_WORDS.has(tag));
@@ -30,7 +37,11 @@ export function getPostHashtags(text: string, postType: string, pages?: string[]
   return Array.from(new Set(tags.filter(Boolean))).slice(0, 3);
 }
 
-
+/**
+ * normalizeHashtag helper
+ * @param value - value argument
+ * @returns Computed value
+ */
 export function normalizeHashtag(value: string): string {
   return value
     .toLowerCase()
@@ -39,7 +50,13 @@ export function normalizeHashtag(value: string): string {
     .slice(0, 18);
 }
 
-
+/**
+ * Compute postviewcount.
+ * @param post - post argument
+ * @param likes - likes argument
+ * @param comments - comments argument
+ * @returns Computed value
+ */
 export function getPostViewCount(post: Post, likes: number, comments: number): number {
   const timestamp = new Date(post.created_at).getTime();
   const ageHours = Number.isNaN(timestamp) ? 24 : Math.max(1, (Date.now() - timestamp) / 3_600_000);
@@ -49,7 +66,11 @@ export function getPostViewCount(post: Post, likes: number, comments: number): n
   return Math.max(24, base + recencyLift + likes * 73 + comments * 41);
 }
 
-
+/**
+ * formatCompactCount helper
+ * @param count - count argument
+ * @returns Computed value
+ */
 export function formatCompactCount(count: number): string {
   return new Intl.NumberFormat("en", {
     notation: "compact",
@@ -57,13 +78,21 @@ export function formatCompactCount(count: number): string {
   }).format(count);
 }
 
-
+/**
+ * Compute postshareurl.
+ * @param postId - postId argument
+ * @returns Computed value
+ */
 export function getPostShareUrl(postId: string): string {
   if (typeof window === "undefined") return `/p/${postId}`;
   return `${window.location.origin}/p/${postId}`;
 }
 
-
+/**
+ * formatShortDateTime helper
+ * @param iso - iso argument
+ * @returns Computed value
+ */
 export function formatShortDateTime(iso: string): string {
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return "now";
@@ -75,7 +104,11 @@ export function formatShortDateTime(iso: string): string {
   }).format(date);
 }
 
-
+/**
+ * formatPostDate helper
+ * @param iso - iso argument
+ * @returns Computed value
+ */
 export function formatPostDate(iso: string): string {
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return "posted";
@@ -86,7 +119,6 @@ export function formatPostDate(iso: string): string {
     minute: "2-digit",
   }).format(date);
 }
-
 
 const COMMON_SECOND_LEVEL_SUFFIXES = new Set([
   "ac.uk",
@@ -104,7 +136,12 @@ const COMMON_SECOND_LEVEL_SUFFIXES = new Set([
   "org.uk",
 ]);
 
-
+/**
+ * Compute articlepreview.
+ * @param spec - spec argument
+ * @param media - media argument
+ * @returns Computed value
+ */
 export function getArticlePreview(spec: CanvasSpec, media: string[]): CanvasLinkPreview | null {
   if (spec.link?.url) {
     return {
@@ -128,7 +165,6 @@ export function getArticlePreview(spec: CanvasSpec, media: string[]): CanvasLink
   }
 }
 
-
 function getMainDomainFromUrl(url: string, fallbackHost = ""): string {
   try {
     return getMainDomain(new URL(url).hostname);
@@ -136,7 +172,6 @@ function getMainDomainFromUrl(url: string, fallbackHost = ""): string {
     return getMainDomain(fallbackHost);
   }
 }
-
 
 function getMainDomain(hostname: string): string {
   const host = hostname

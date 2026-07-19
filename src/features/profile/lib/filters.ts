@@ -1,3 +1,11 @@
+/**
+ * Profile feed filtering, sorting, and Vietnam-timezone prioritization helpers.
+ *
+ * Exports: PostKind, PostFilter, PostSort, Engagement, POST_KINDS, getSortedPosts,
+ *   prioritizeVietnamYesterdayPosts, getVietnamDateKey, seededHash, getTypeCounts
+ * Depends on: @/lib/mock-data MockPost
+ */
+
 import type { MockPost } from "@/lib/mock-data";
 
 export type PostKind = "text" | "image" | "video" | "slideshow" | "link";
@@ -10,7 +18,11 @@ export const POST_KINDS: PostKind[] = ["text", "image", "video", "slideshow", "l
 
 /**
  * Sort (or leave) posts for the profile feed lane.
- * @pure true
+ * @param posts - Posts in the profile lane
+ * @param sort - recent | popular | shuffle
+ * @param engagementByPost - Like/comment tallies keyed by post id
+ * @param shuffleSeed - Seed for deterministic shuffle ordering
+ * @returns Posts ordered for the active sort mode
  */
 export function getSortedPosts(
   posts: MockPost[],
@@ -39,9 +51,10 @@ export function getSortedPosts(
 /**
  * For the demo bot profile, surface yesterday's Vietnam-timezone posts first
  * when there are at least three of them.
- * @pure true
+ * @param posts - Profile posts to reorder
+ * @returns Reordered posts, or the input list when the threshold is not met
  */
-export function prioritizeVietnamYesterdayPosts(posts: MockPost[]) {
+export function prioritizeVietnamYesterdayPosts(posts: MockPost[]): MockPost[] {
   const yesterdayKey = getVietnamDateKey(Date.now() - 24 * 60 * 60 * 1000);
   const yesterdayPosts = posts.filter(
     (post) => getVietnamDateKey(post.created_at) === yesterdayKey,
@@ -57,9 +70,10 @@ export function prioritizeVietnamYesterdayPosts(posts: MockPost[]) {
 
 /**
  * Calendar date key (YYYY-MM-DD) in Asia/Ho_Chi_Minh.
- * @pure true
+ * @param value - ISO date string or epoch millis
+ * @returns YYYY-MM-DD in Vietnam timezone
  */
-export function getVietnamDateKey(value: string | number) {
+export function getVietnamDateKey(value: string | number): string {
   const date = typeof value === "string" ? new Date(value) : value;
   return new Intl.DateTimeFormat("en-CA", {
     timeZone: "Asia/Ho_Chi_Minh",
@@ -71,7 +85,9 @@ export function getVietnamDateKey(value: string | number) {
 
 /**
  * Deterministic hash for seeded shuffle ordering.
- * @pure true
+ * @param value - String to hash (usually post id)
+ * @param seed - Shuffle seed
+ * @returns Unsigned 32-bit hash
  */
 export function seededHash(value: string, seed: number): number {
   let h = seed * 2654435761;
@@ -84,9 +100,10 @@ export function seededHash(value: string, seed: number): number {
 
 /**
  * Count posts by kind for filter chip badges.
- * @pure true
+ * @param posts - Posts to tally
+ * @returns Counts keyed by PostKind
  */
-export function getTypeCounts(posts: MockPost[]) {
+export function getTypeCounts(posts: MockPost[]): Record<PostKind, number> {
   const counts: Record<PostKind, number> = { text: 0, image: 0, video: 0, slideshow: 0, link: 0 };
   for (const post of posts) {
     if (POST_KINDS.includes(post.post_type as PostKind)) counts[post.post_type as PostKind] += 1;

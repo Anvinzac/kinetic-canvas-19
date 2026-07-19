@@ -37,7 +37,9 @@ export type PostKineticLayerProps = {
 };
 
 /**
- * @responsibility Render kinetic text, stickers, fit probes, and page indicators.
+ * Render kinetic text, stickers, fit probes, and page indicators.
+ * @param props - PostKineticLayerProps fields
+ * @returns Rendered UI
  */
 export function PostKineticLayer({
   author,

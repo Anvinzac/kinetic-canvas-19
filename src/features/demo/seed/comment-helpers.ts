@@ -7,6 +7,15 @@
 
 import type { MockComment } from "./types";
 
+/**
+ * comment helper
+ * @param id - id argument
+ * @param post_id - post_id argument
+ * @param user_id - user_id argument
+ * @param chip_id - chip_id argument
+ * @param created_at - created_at argument
+ * @returns Function result
+ */
 export function comment(
   id: string,
   post_id: string,

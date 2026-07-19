@@ -1,13 +1,22 @@
+/**
+ * Pure helpers for layout.
+ *
+ * Exports: KineticTextLayoutMode, getKineticTextLayoutMode, getMeasuredTextWidth, hasVisibleStickerAccent
+ * Depends on: @/features/canvas
+ */
+
 import type { CanvasSpec } from "@/features/canvas";
 import { getStableNumber } from "./stable-hash";
 
 export type KineticTextLayoutMode = "left-spotlight" | "left" | "center";
 
 /**
- * @responsibility Choose left / center / spotlight layout from text + emphasis.
- * @inputs Full text, Vietnamese flag, word count, emphasized indexes
- * @outputs Layout mode used by KineticText preview and PostCard WordSequenceText
- * @pure true
+ * Choose left / center / spotlight layout from text + emphasis.
+ * @param text - text argument
+ * @param isVietnamese - isVietnamese argument
+ * @param wordCount - wordCount argument
+ * @param emphasized - emphasized argument
+ * @returns Layout mode used by KineticText preview and PostCard WordSequenceText
  */
 export function getKineticTextLayoutMode(
   text: string,
@@ -24,16 +33,17 @@ export function getKineticTextLayoutMode(
 }
 
 /**
- * @responsibility Measure rendered text width, using right-edge for left-anchored runs.
- * @inputs Text element, wrapper element, whether text is left-anchored
- * @outputs Width in CSS pixels
- * @pure false
+ * Measure rendered text width, using right-edge for left-anchored runs.
+ * @param text - text argument
+ * @param wrapper - wrapper argument
+ * @param leftAnchored - leftAnchored argument
+ * @returns Width in CSS pixels
  */
 export function getMeasuredTextWidth(
   text: HTMLElement,
   wrapper: HTMLElement,
   leftAnchored: boolean,
-) {
+): number {
   if (!leftAnchored) return text.scrollWidth;
 
   const wrapperLeft = wrapper.getBoundingClientRect().left;
@@ -45,12 +55,12 @@ export function getMeasuredTextWidth(
 }
 
 /**
- * @responsibility Detect whether any sticker word appears in the canvas text.
- * @inputs Sticker list + canvas text
- * @outputs true when a sticker word is a substring of the text (case-insensitive)
- * @pure true
+ * Detect whether any sticker word appears in the canvas text.
+ * @param stickers - stickers argument
+ * @param text - text argument
+ * @returns true when a sticker word is a substring of the text (case-insensitive)
  */
-export function hasVisibleStickerAccent(stickers: CanvasSpec["stickers"], text: string) {
+export function hasVisibleStickerAccent(stickers: CanvasSpec["stickers"], text: string): boolean {
   const normalizedText = text.toLowerCase();
   return (stickers ?? []).some((sticker) => normalizedText.includes(sticker.word.toLowerCase()));
 }

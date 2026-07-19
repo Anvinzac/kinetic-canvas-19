@@ -1,5 +1,17 @@
-import type { ReactNode } from "react";
+/**
+ * UI component: Panel.
+ *
+ * Exports: Panel
+ * Depends on: react
+ */
 
+import type { ReactNode, ReactElement} from "react";
+
+/**
+ * Render the Panel UI.
+ * @param props - Component props
+ * @returns Rendered UI
+ */
 export function Panel({
   icon,
   title,
@@ -8,7 +20,7 @@ export function Panel({
   icon: ReactNode;
   title: string;
   children: ReactNode;
-}) {
+}): ReactElement {
   return (
     <section>
       <div className="mb-2 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">

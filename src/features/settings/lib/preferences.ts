@@ -1,3 +1,10 @@
+/**
+ * Pure helpers for preferences.
+ *
+ * Exports: Preferences, PREF_KEY, DEFAULT_PREFS, readPreferences, writePreferences
+ * Depends on: none (leaf module)
+ */
+
 export type Preferences = {
   pushOn: boolean;
   privateAccount: boolean;
@@ -30,7 +37,7 @@ export const DEFAULT_PREFS: Preferences = {
 
 /**
  * Read settings preferences from localStorage, merged over defaults.
- * Returns defaults during SSR or on parse failure.
+ * @returns Computed value
  */
 export function readPreferences(): Preferences {
   if (typeof window === "undefined") return DEFAULT_PREFS;
@@ -45,6 +52,8 @@ export function readPreferences(): Preferences {
 
 /**
  * Persist settings preferences to localStorage.
+ * @param prefs - prefs argument
+ * @returns Computed value
  */
 export function writePreferences(prefs: Preferences): void {
   if (typeof window === "undefined") return;

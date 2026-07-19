@@ -48,12 +48,11 @@ const DARK_BACKGROUND_LUMINANCE = 0.24;
 const SUBTLE_LIGHT_TEXT = "#FFF7ED";
 
 /**
- * @responsibility Pick a readable text color when the canvas sits on a photo backdrop.
- * @inputs CanvasSpec color (requested text color)
- * @outputs Requested color when light enough; otherwise a subtle light fallback
- * @pure true
+ * Pick a readable text color when the canvas sits on a photo backdrop.
+ * @param spec - spec argument
+ * @returns Requested color when light enough; otherwise a subtle light fallback
  */
-export function resolveTextColorOnPhotoBackdrop(spec: Pick<CanvasSpec, "color">) {
+export function resolveTextColorOnPhotoBackdrop(spec: Pick<CanvasSpec, "color">): string {
   const requestedColor = spec.color.trim() || "#ffffff";
   const requestedRgb = parseCssColor(requestedColor);
   if (!requestedRgb) return SUBTLE_LIGHT_TEXT;
@@ -62,12 +61,11 @@ export function resolveTextColorOnPhotoBackdrop(spec: Pick<CanvasSpec, "color">)
 }
 
 /**
- * @responsibility Build a text-shadow string tuned for photo backdrops.
- * @inputs Resolved text color
- * @outputs CSS text-shadow value (stronger dark halo for light text)
- * @pure true
+ * Build a text-shadow string tuned for photo backdrops.
+ * @param textColor - textColor argument
+ * @returns CSS text-shadow value (stronger dark halo for light text)
  */
-export function getPhotoBackdropTextShadow(textColor: string) {
+export function getPhotoBackdropTextShadow(textColor: string): string {
   const rgb = parseCssColor(textColor);
   const light = rgb ? getRelativeLuminance(rgb) > 0.55 : true;
   if (light) {
@@ -77,15 +75,15 @@ export function getPhotoBackdropTextShadow(textColor: string) {
 }
 
 /**
- * @responsibility Resolve a caption text color that stays readable on the canvas backdrop.
- * @inputs CanvasSpec color/background fields + optional CSS background input
- * @outputs Hex/CSS color string safe for the given backdrop
- * @pure true
+ * Resolve a caption text color that stays readable on the canvas backdrop.
+ * @param spec - spec argument
+ * @param background? - background? argument
+ * @returns Hex/CSS color string safe for the given backdrop
  */
 export function getCanvasTextColor(
   spec: Pick<CanvasSpec, "color" | "backgroundStyle" | "gradientPath">,
   background?: CanvasBackgroundInput,
-) {
+): string {
   const requestedColor = spec.color.trim() || "#ffffff";
   const requestedRgb = parseCssColor(requestedColor);
   const backgroundColors = getCanvasBackgroundColors(spec, background);
@@ -119,15 +117,15 @@ export function getCanvasTextColor(
 }
 
 /**
- * @responsibility Pick an emphasis accent that contrasts with both backdrop and body text.
- * @inputs CanvasSpec color/background fields + optional CSS background input
- * @outputs Accent color from the bright or general emphasis palette
- * @pure true
+ * Pick an emphasis accent that contrasts with both backdrop and body text.
+ * @param spec - spec argument
+ * @param background? - background? argument
+ * @returns Accent color from the bright or general emphasis palette
  */
 export function getCanvasEmphasisColor(
   spec: Pick<CanvasSpec, "color" | "backgroundStyle" | "gradientPath">,
   background?: CanvasBackgroundInput,
-) {
+): string {
   const backgroundColors = getCanvasBackgroundColors(spec, background);
   const safeTextColor = getCanvasTextColor(spec, background);
   if (backgroundColors.length === 0) return getFallbackEmphasisColor(safeTextColor);
@@ -145,16 +143,17 @@ export function getCanvasEmphasisColor(
 }
 
 /**
- * @responsibility Choose the color used for an emphasized word given its visual variant.
- * @inputs Emphasis variant id, body text color, resolved emphasis accent
- * @outputs Color for the emphasized word (halo/glow keep body color)
- * @pure true
+ * Choose the color used for an emphasized word given its visual variant.
+ * @param variant - variant argument
+ * @param textColor - textColor argument
+ * @param emphasisColor - emphasisColor argument
+ * @returns Color for the emphasized word (halo/glow keep body color)
  */
 export function getCanvasEmphasisWordColor(
   variant: string | null | undefined,
   textColor: string,
   emphasisColor: string,
-) {
+): string {
   if (variant === "halo" || variant === "glow") return textColor;
   return getDistinctEmphasisColor(textColor, emphasisColor);
 }

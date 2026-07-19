@@ -20,7 +20,9 @@ export const RING_BUTTON_ANGLES = [4, 45, 86];
 export const RING_DIVIDER_ANGLES = [23.5, 66.5];
 
 /**
- * @responsibility Compute absolute right/bottom offsets for a ring action button.
+ * Compute absolute right/bottom offsets for a ring action button.
+ * @param angleDeg - angleDeg argument
+ * @returns Function result
  */
 export function ringButtonOffset(angleDeg: number): { right: number; bottom: number } {
   const a = (angleDeg * Math.PI) / 180;

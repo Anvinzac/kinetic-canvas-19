@@ -12,6 +12,10 @@ import { z } from "zod";
 
 const POST_TYPES = ["text", "image", "video", "slideshow", "link"] as const;
 
+/**
+ * Server function: createPost.
+ * @returns TanStack server function handle
+ */
 export const createPost = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator(
@@ -51,6 +55,10 @@ export const createPost = createServerFn({ method: "POST" })
     return post;
   });
 
+/**
+ * Server function: toggleLike.
+ * @returns TanStack server function handle
+ */
 export const toggleLike = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: { post_id: string }) => z.object({ post_id: z.string().uuid() }).parse(d))
@@ -76,6 +84,10 @@ export const toggleLike = createServerFn({ method: "POST" })
     return { liked: true };
   });
 
+/**
+ * Server function: addComment.
+ * @returns TanStack server function handle
+ */
 export const addComment = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: { post_id: string; chip_id: string }) =>

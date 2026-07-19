@@ -62,7 +62,7 @@ export function ProfilePage(): ReactElement {
 
   const followMut = useMutation({
     mutationFn: (target_id: string) =>
-      demoMode ? toggleMockFollow(target_id) : followFn({ data: { target_id } }),
+      demoMode ? toggleMockFollow(target_id): followFn({ data: { target_id } }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: discoveryKeys.meRoot });
       qc.invalidateQueries({ queryKey: [...discoveryKeys.profileRoot, username] });
@@ -82,7 +82,7 @@ export function ProfilePage(): ReactElement {
   const isFollowing = me?.followingIds?.includes(data.profile.id) ?? false;
   const rawPosts = data.posts as MockPost[];
   const posts =
-    data.profile.username === "do_chu_bot" ? prioritizeVietnamYesterdayPosts(rawPosts) : rawPosts;
+    data.profile.username === "do_chu_bot" ? prioritizeVietnamYesterdayPosts(rawPosts): rawPosts;
   const engagementByPost = data.engagementByPost as Record<string, Engagement>;
   const counts = getTypeCounts(posts);
   const profilesById = new Map([[data.profile.id, data.profile]]);

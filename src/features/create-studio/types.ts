@@ -1,3 +1,10 @@
+/**
+ * Feature-local TypeScript types and interfaces.
+ *
+ * Exports: BackgroundMode, StudioPage, TemplateBackdrop, AnimationTemplate
+ * Depends on: @/features/canvas
+ */
+
 import type { CanvasSpec, GradientTransitionPath } from "@/features/canvas";
 
 /**

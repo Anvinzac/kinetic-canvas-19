@@ -37,24 +37,22 @@ export {
 } from "./vietnamese-phrases";
 
 /**
- * @responsibility Choose page word budget based on detected language.
- * @inputs Canvas / status text
- * @outputs VIETNAMESE_TEXT_PAGE_WORD_LIMIT or DEFAULT_TEXT_PAGE_WORD_LIMIT
- * @pure true
+ * Choose page word budget based on detected language.
+ * @param text - text argument
+ * @returns VIETNAMESE_TEXT_PAGE_WORD_LIMIT or DEFAULT_TEXT_PAGE_WORD_LIMIT
  */
-export function getTextPageWordLimit(text: string) {
+export function getTextPageWordLimit(text: string): number {
   return isLikelyVietnameseText(text)
     ? VIETNAMESE_TEXT_PAGE_WORD_LIMIT
     : DEFAULT_TEXT_PAGE_WORD_LIMIT;
 }
 
 /**
- * @responsibility Heuristic: Vietnamese diacritics or known bound phrases.
- * @inputs Free-form text
- * @outputs true when text looks Vietnamese
- * @pure true
+ * Heuristic: Vietnamese diacritics or known bound phrases.
+ * @param text - text argument
+ * @returns true when text looks Vietnamese
  */
-export function isLikelyVietnameseText(text: string) {
+export function isLikelyVietnameseText(text: string): boolean {
   if (
     /[ăâđêôơưĂÂĐÊÔƠƯ]/.test(text) ||
     /[\u0300\u0301\u0303\u0309\u0323]/.test(text.normalize("NFD"))

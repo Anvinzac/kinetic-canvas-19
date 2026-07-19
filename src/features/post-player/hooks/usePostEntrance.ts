@@ -33,7 +33,9 @@ export type UsePostEntranceResult = {
 };
 
 /**
- * @responsibility Effect 1 (dim clear) plus tap-to-reveal / replay entrance UX.
+ * Effect 1 (dim clear) plus tap-to-reveal / replay entrance UX.
+ * @param args - Flying-comment gate, pause/reveal setters, and page navigation
+ * @returns Canvas tap / reset / replay handlers
  */
 export function usePostEntrance({
   showingFlyingComment,

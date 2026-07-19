@@ -1,3 +1,10 @@
+/**
+ * Pure helpers for paginate.
+ *
+ * Exports: paginateText
+ * Depends on: @/features/kinetic-text
+ */
+
 import { getTextPageWordLimit, getWords } from "@/features/kinetic-text";
 
 type RawTextPage = { text: string; mergeable: boolean };
@@ -10,12 +17,11 @@ type TextPageUnit = {
 const MIN_STANDALONE_PAGE_WORDS = 3;
 
 /**
- * @responsibility Split status / canvas text into kinetic page strings.
- * @inputs Free-form post text (newlines, sentences, bonded phrases)
- * @outputs Ordered page strings; empty input → `[""]`
- * @pure true
+ * Split status / canvas text into kinetic page strings.
+ * @param text - text argument
+ * @returns Ordered page strings; empty input → `[""]`
  */
-export function paginateText(text: string) {
+export function paginateText(text: string): string[] {
   const blocks = text
     .replace(/\r\n?/g, "\n")
     .split("\n")

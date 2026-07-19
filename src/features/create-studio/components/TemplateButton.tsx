@@ -1,4 +1,11 @@
-import type { CSSProperties } from "react";
+/**
+ * UI component: TemplateButton.
+ *
+ * Exports: TemplateButton
+ * Depends on: react, lucide-react, @/features/canvas
+ */
+
+import type { CSSProperties, ReactElement} from "react";
 import { Check, Video } from "lucide-react";
 import {
   SAFE_CANVAS_BACKGROUND,
@@ -8,6 +15,11 @@ import {
 } from "@/features/canvas";
 import type { AnimationTemplate } from "../types";
 
+/**
+ * Render the TemplateButton UI.
+ * @param props - Component props
+ * @returns Rendered UI
+ */
 export function TemplateButton({
   template,
   active,
@@ -16,7 +28,7 @@ export function TemplateButton({
   template: AnimationTemplate;
   active: boolean;
   onClick: () => void;
-}) {
+}): ReactElement {
   return (
     <button
       type="button"
@@ -50,11 +62,10 @@ export function TemplateButton({
 
 function TemplateBackdropThumbnail({ template }: { template: AnimationTemplate }) {
   const scene =
-    template.backdrop.mode === "scene" ? getCanvasSceneTheme(template.backdrop.sceneId) : null;
+    template.backdrop.mode === "scene" ? getCanvasSceneTheme(template.backdrop.sceneId): null;
   const pattern =
     template.backdrop.mode === "pattern"
-      ? getCanvasPatternTheme(template.backdrop.patternId)
-      : null;
+      ? getCanvasPatternTheme(template.backdrop.patternId): null;
 
   return (
     <span

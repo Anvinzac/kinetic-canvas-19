@@ -49,7 +49,9 @@ export type WordSequenceTextProps = {
 };
 
 /**
- * @responsibility Render fitted kinetic words for one post text page.
+ * Render fitted kinetic words for one post text page.
+ * @param props - WordSequenceTextProps fields
+ * @returns Rendered UI
  */
 export function WordSequenceText({
   spec,
@@ -75,8 +77,7 @@ export function WordSequenceText({
   const vietnameseLayout = useMemo(
     () =>
       isVietnamese
-        ? getVietnameseLayoutMetrics(words, canvasWidth, spec.size, visualScaleGuard)
-        : { lines: [], suggestedFitScale: 1 },
+        ? getVietnameseLayoutMetrics(words, canvasWidth, spec.size, visualScaleGuard): { lines: [], suggestedFitScale: 1 },
     [isVietnamese, words, canvasWidth, spec.size, visualScaleGuard],
   );
   const entranceStyle = getEntranceStyle(entranceSeed ?? spec.text, spec.rhythm);
@@ -93,8 +94,7 @@ export function WordSequenceText({
           spec.font,
           spec.weight,
           emphasized.size > 0 ? EMPHASIS_FONT_SCALE : 1,
-        )
-      : 1;
+        ): 1;
   const initialFit =
     isSolo
       ? soloInitialFit
@@ -119,10 +119,9 @@ export function WordSequenceText({
     textRef,
   });
   const textColor = photoBackdrop
-    ? resolveTextColorOnPhotoBackdrop(spec)
-    : getCanvasTextColor(spec, background);
+    ? resolveTextColorOnPhotoBackdrop(spec): getCanvasTextColor(spec, background);
   const emphasisColor = getCanvasEmphasisColor({ ...spec, color: textColor }, background);
-  const photoTextShadow = photoBackdrop ? getPhotoBackdropTextShadow(textColor) : undefined;
+  const photoTextShadow = photoBackdrop ? getPhotoBackdropTextShadow(textColor): undefined;
   const textSafeMaxWidth = hasVisibleStickerAccent(spec.stickers, spec.text)
     ? "min(90%, calc(100% - 2.5rem))"
     : TEXT_SAFE_MAX_WIDTH;

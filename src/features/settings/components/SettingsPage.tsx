@@ -71,8 +71,7 @@ export function SettingsPage(): ReactElement {
         bio: profile.bio ?? null,
         avatar: profile.avatar_url,
         posts: data.stats.posts,
-      })
-    : 0;
+      }): 0;
 
   return (
     <div className="min-h-[100dvh] pb-8">

@@ -1,9 +1,22 @@
+/**
+ * UI component: MasonryCard.
+ *
+ * Exports: MasonryCard
+ * Depends on: @/components/KineticText, @/lib/canvas, @/lib/mock-data, @/features/post-player
+ */
+
+import type { ReactElement } from "react";
 import { KineticText } from "@/components/KineticText";
 import { parseCanvas, resolveCanvasBackground } from "@/lib/canvas";
 import type { MockPost } from "@/lib/mock-data";
 import { paginateText } from "@/features/post-player";
 
-export function MasonryCard({ post, className }: { post: MockPost; className?: string }) {
+/**
+ * Render the MasonryCard UI.
+ * @param props - Component props
+ * @returns Rendered UI
+ */
+export function MasonryCard({ post, className }: { post: MockPost; className?: string }): ReactElement {
   const spec = parseCanvas(post.canvas_html);
   // Show only the first page — a single full sentence laid out exactly as it
   // looks after one run on the canvas — instead of cramming the whole poem into

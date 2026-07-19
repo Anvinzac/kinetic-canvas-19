@@ -30,7 +30,9 @@ export type PostCornerRingActionsProps = {
 };
 
 /**
- * @responsibility Position create/like/share on the corner dock outer ring.
+ * Position create/like/share on the corner dock outer ring.
+ * @param props - PostCornerRingActionsProps fields
+ * @returns Rendered UI
  */
 export function PostCornerRingActions({
   liked,
