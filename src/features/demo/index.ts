@@ -1,10 +1,4 @@
-/**
- * Compatibility shim — prefer `@/features/demo`.
- * @responsibility Re-export the demo mock store public API for existing import paths.
- */
 export {
-  MOCK_ME_ID,
-  MOCK_ME_USERNAME,
   addMockComment,
   addMockPost,
   getMockDiscover,
@@ -13,11 +7,14 @@ export {
   getMockNotifications,
   getMockPost,
   getMockProfile,
-  resetMockRuntimeData,
   searchMock,
   toggleMockFollow,
   toggleMockLike,
   updateMockProfile,
+} from "./api";
+export {
+  MOCK_ME_ID,
+  MOCK_ME_USERNAME,
   type MockComment,
   type MockDiscoverData,
   type MockFeedData,
@@ -30,4 +27,5 @@ export {
   type MockProfile,
   type MockProfileData,
   type MockSearchData,
-} from "@/features/demo";
+} from "./seed";
+export { resetMockRuntimeData } from "./store";
