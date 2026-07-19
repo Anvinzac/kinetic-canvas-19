@@ -6,6 +6,7 @@ export {
   profileQueryOptions,
   searchQueryOptions,
 } from "./api/queries";
+export { prefetchDiscover, prefetchMe, prefetchProfile } from "./api/prefetch";
 export {
   getDiscover,
   getMe,

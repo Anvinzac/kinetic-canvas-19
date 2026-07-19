@@ -6,6 +6,7 @@ import {
   addComment,
   feedQueryOptions,
   getFeed,
+  prefetchFeed,
   socialKeys,
   toggleLike,
 } from "@/features/social";
@@ -22,6 +23,7 @@ import {
 import type { SocialFeedData } from "@/shared/types";
 
 export const Route = createFileRoute("/_authenticated/feed")({
+  loader: ({ context: { queryClient } }) => prefetchFeed(queryClient),
   component: FeedPage,
 });
 

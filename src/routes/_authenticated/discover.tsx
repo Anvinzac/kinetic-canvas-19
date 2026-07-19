@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import {
   discoverQueryOptions,
   getDiscover,
+  prefetchDiscover,
   search,
   searchQueryOptions,
 } from "@/features/discovery";
@@ -15,6 +16,7 @@ import { ChevronLeft, Newspaper, Search as SearchIcon } from "lucide-react";
 import type { SocialDiscoverData, SocialSearchData } from "@/shared/types";
 
 export const Route = createFileRoute("/_authenticated/discover")({
+  loader: ({ context: { queryClient } }) => prefetchDiscover(queryClient),
   component: DiscoverPage,
 });
 

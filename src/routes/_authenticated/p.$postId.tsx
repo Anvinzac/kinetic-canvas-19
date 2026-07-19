@@ -9,6 +9,7 @@ import {
   addComment,
   getPost,
   postQueryOptions,
+  prefetchPost,
   socialKeys,
   toggleLike,
 } from "@/features/social";
@@ -22,6 +23,8 @@ import { supabase } from "@/integrations/supabase/client";
 import type { SocialPostData } from "@/shared/types";
 
 export const Route = createFileRoute("/_authenticated/p/$postId")({
+  loader: ({ context: { queryClient }, params: { postId } }) =>
+    prefetchPost(queryClient, postId),
   component: PostPermalinkPage,
 });
 
