@@ -6,7 +6,7 @@ alwaysApply: false
 
 # Vietnamese bound-phrase emphasis
 
-Vietnamese compound words are often two syllables (`im lặng`, `hình ảnh`). They are listed in `VIETNAMESE_BOUND_PHRASES` in `text-language.ts`.
+Vietnamese compound words are often two syllables (`im lặng`, `hình ảnh`). They are listed in `VIETNAMESE_BOUND_PHRASES` in `features/kinetic-text/lib/text-language.ts`.
 
 **Never emphasize only part of a bound phrase.** If scoring picks one syllable, call `expandEmphasisToBoundPhrases` so every syllable in that phrase is emphasized together.
 

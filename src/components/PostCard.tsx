@@ -67,14 +67,26 @@ import {
 import { getCanvasPatternTheme, getPatternBackgroundPosition } from "@/lib/canvas-patterns";
 import { getCanvasSceneTheme, getSceneBackgroundStyle } from "@/lib/canvas-scenes";
 import {
+  getAuraColor,
+  getEmphasisInnerAnimation,
+  getEmphasisTextShadow,
+  getEmphasisVariant,
+  getKineticTextLayoutMode,
+  getLoopAnimation,
+  getMeasuredTextWidth,
   getSpecialPoeticWordIndexes,
+  getStableNumber,
   getTextPageWordLimit,
   getVietnameseLayoutMetrics,
+  getWordAnchorKey,
+  getWords,
+  hasVisibleStickerAccent,
+  isDimEmphasisColor,
   isLikelyVietnameseText,
   expandEmphasisToBoundPhrases,
   getBoundPhraseEmphasisSeed,
   getBoundPhraseStartIndex,
-} from "@/lib/text-language";
+} from "@/features/kinetic-text";
 
 type Profile = { id: string; username: string; display_name: string; avatar_url: string | null };
 type Post = {
@@ -128,28 +140,6 @@ const EMPHASIS_SCALE_FIT_GUARD = 1.14;
 // Emphasized words render this many times larger than the base font. Applied via
 // fontSize (not transform: scale) so the extra width occupies real layout space.
 const EMPHASIS_FONT_SCALE = 1.12;
-const EMPHASIS_VARIANTS = [
-  "color",
-  "sweep",
-  "glow",
-  "underline",
-  "jiggle",
-  "pulse",
-  "halo",
-  "frame",
-] as const;
-// glow and halo are luminous auras — they only read well on bright colors. On a
-// dim/dark emphasis color they turn into an ugly muddy blob, so those colors get
-// the non-luminous set only. sweep is a recolor + gliding shine, so it reads on
-// any color.
-const NON_LUMINOUS_EMPHASIS_VARIANTS = [
-  "color",
-  "sweep",
-  "underline",
-  "jiggle",
-  "pulse",
-  "frame",
-] as const;
 const VIETNAMESE_SCALE_FIT_GUARD = 1.24;
 const DEFAULT_CANVAS_BACKGROUND = SAFE_CANVAS_BACKGROUND;
 const ARC_BUTTON_TAP = { scale: 0.94, y: 2 };
@@ -183,6 +173,9 @@ const MAX_COMMENT_WORDS = 36;
 const MAX_COMMENT_CHARS = 240;
 const COMMENT_STORY_WORDS_PER_PAGE = 8;
 
+// Feed player tempo — shape and wordDelay/wordDuration diverge from KineticText's
+// preview tempoConfig ({ duration, wordDelay, loopSeconds }). loopSeconds stay
+// aligned with shared TEMPO_LOOP_SECONDS / getLoopAnimation; do not unify the rest.
 const tempoConfig: Record<
   Tempo,
   { pageMultiplier: number; wordDelay: number; wordDuration: number; loopSeconds: number }
@@ -2435,11 +2428,7 @@ function getCommentFlightDuration(label: string) {
   return Math.max(5600, Math.min(8400, 4300 + label.length * 55));
 }
 
-function getLoopAnimation(loop: CanvasSpec["loop"], tempo: Tempo) {
-  if (loop === "none") return undefined;
-  return `kinetic-${loop} ${tempoConfig[tempo].loopSeconds}s ease-in-out infinite`;
-}
-
+// Feed rhythm delays — smooth/burst multipliers differ from KineticText getRhythmDelay.
 function getWordDelay(index: number, tempo: Tempo, rhythm: Rhythm) {
   const base = tempoConfig[tempo].wordDelay;
   if (rhythm === "poetic") return index * base * 1.45;
@@ -2591,15 +2580,6 @@ function getPostViewCount(post: Post, likes: number, comments: number) {
   const base = 280 + (seed % 6800);
   const recencyLift = Math.round(1800 / Math.sqrt(ageHours));
   return Math.max(24, base + recencyLift + likes * 73 + comments * 41);
-}
-
-function getStableNumber(value: string) {
-  let hash = 2166136261;
-  for (let i = 0; i < value.length; i += 1) {
-    hash ^= value.charCodeAt(i);
-    hash = Math.imul(hash, 16777619);
-  }
-  return hash >>> 0;
 }
 
 function formatCompactCount(count: number) {
@@ -2858,7 +2838,9 @@ function WordSequenceText({
     // Bake the play-state into the animation shorthand so we never mix the
     // `animation` shorthand with the `animationPlayState` longhand (React warns).
     const innerAnimation = important
-      ? getEmphasisInnerAnimation(emphasisVariant, staticRender)
+      ? staticRender
+        ? undefined
+        : getEmphasisInnerAnimation(emphasisVariant)
       : undefined;
     const isSoloRevealWord = isSolo;
     return (
@@ -3039,38 +3021,6 @@ function WordSequenceText({
   );
 }
 
-function getKineticTextLayoutMode(
-  text: string,
-  isVietnamese: boolean,
-  wordCount: number,
-  emphasized: Set<number>,
-) {
-  const hasEmphasis = emphasized.size > 0;
-  const seed = getStableNumber(text);
-  if (isVietnamese) return hasEmphasis && seed % 4 === 0 ? "left-spotlight" : "left";
-  if (wordCount <= 3) return "center";
-  if (hasEmphasis && seed % 5 === 0) return "left-spotlight";
-  return seed % 2 === 0 || wordCount >= 6 ? "left" : "center";
-}
-
-function getWords(text: string) {
-  return text.match(/\S+/g) ?? [];
-}
-
-function hasVisibleStickerAccent(stickers: CanvasSpec["stickers"], text: string) {
-  const normalizedText = text.toLowerCase();
-  return (stickers ?? []).some((sticker) => normalizedText.includes(sticker.word.toLowerCase()));
-}
-
-function getWordAnchorKey(word: string) {
-  return word
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/^[^a-z0-9]+|[^a-z0-9]+$/g, "")
-    .replace(/[^a-z0-9'-]/g, "");
-}
-
 function getPostShareUrl(postId: string) {
   if (typeof window === "undefined") return `/p/${postId}`;
   return `${window.location.origin}/p/${postId}`;
@@ -3149,17 +3099,6 @@ function getMeasuredSoloWordWidth(text: HTMLElement, soloInlineScale: number) {
   return raw / Math.max(soloInlineScale, 0.01);
 }
 
-function getMeasuredTextWidth(text: HTMLElement, wrapper: HTMLElement, leftAnchored: boolean) {
-  if (!leftAnchored) return text.scrollWidth;
-
-  const wrapperLeft = wrapper.getBoundingClientRect().left;
-  const rightEdge = Array.from(text.querySelectorAll("span")).reduce((maxRight, element) => {
-    return Math.max(maxRight, element.getBoundingClientRect().right - wrapperLeft);
-  }, 0);
-
-  return rightEdge || text.scrollWidth;
-}
-
 function normalizeComment(value: string) {
   return value.replace(/\s+/g, " ").trim();
 }
@@ -3171,6 +3110,8 @@ function limitCommentText(value: string) {
   return words.slice(0, MAX_COMMENT_WORDS).join(" ");
 }
 
+// Feed emphasis selection — selection fallback and getWordImportance scoring diverge
+// from KineticText getPreviewEmphasizedWordIndexes / getPreviewWordImportance.
 function getEmphasizedWordIndexes(words: string[]) {
   const poeticIndexes = getSpecialPoeticWordIndexes(words);
   if (poeticIndexes.size > 0) return poeticIndexes;
@@ -3187,20 +3128,6 @@ function getEmphasizedWordIndexes(words: string[]) {
   const selected = candidates.slice(0, desiredCount).map((item) => item.index);
   if (selected.length === 0 && words.length > 0) selected.push(words.length - 1);
   return expandEmphasisToBoundPhrases(words, selected);
-}
-
-type EmphasisVariant = (typeof EMPHASIS_VARIANTS)[number];
-
-function getEmphasisVariant(
-  text: string,
-  emphasisSeed: string,
-  anchorIndex: number,
-  allowLuminous: boolean,
-): EmphasisVariant {
-  const pool: readonly EmphasisVariant[] = allowLuminous
-    ? EMPHASIS_VARIANTS
-    : NON_LUMINOUS_EMPHASIS_VARIANTS;
-  return pool[getStableNumber(`${text}|${emphasisSeed}|${anchorIndex}`) % pool.length];
 }
 
 // Every post is auto-assigned one of these word-entrance "personalities", picked
@@ -3318,56 +3245,8 @@ function getEntranceTransition(
   return { delay, duration: duration * stretch, ease: [0.22, 1, 0.36, 1] };
 }
 
-// True for dim/dark colors where a glow or halo would look muddy. Uses HSV value
-// (the brightest channel) so vibrant pink/blue/purple still count as bright.
-function isDimEmphasisColor(color: string) {
-  const hex = color.trim().replace(/^#/, "");
-  const full = hex.length === 3 ? hex.replace(/(.)/g, "$1$1") : hex;
-  if (full.length !== 6) return false;
-  const r = parseInt(full.slice(0, 2), 16);
-  const g = parseInt(full.slice(2, 4), 16);
-  const b = parseInt(full.slice(4, 6), 16);
-  return Math.max(r, g, b) / 255 < 0.42;
-}
-
-function getEmphasisTextShadow(variant: EmphasisVariant | null) {
-  if (variant === "color") {
-    return "0 4px 40px rgba(0,0,0,0.45)";
-  }
-  if (variant === "sweep") {
-    return "0 0 22px rgba(255,255,255,0.3), 0 5px 36px rgba(0,0,0,0.55)";
-  }
-  if (variant === "halo") {
-    return "0 4px 40px rgba(0,0,0,0.45)";
-  }
-  if (variant === "glow") {
-    return "0 0 0.14em var(--kinetic-aura-color, #FFBE0B), 0 0 0.4em var(--kinetic-aura-color, #FFBE0B), 0 5px 30px rgba(0,0,0,0.5)";
-  }
-  if (variant === "frame") {
-    return "0 2px 16px rgba(0,0,0,0.5)";
-  }
-  return "0 0 22px rgba(255,255,255,0.35), 0 5px 36px rgba(0,0,0,0.55)";
-}
-
-// halo and frame are driven entirely by their CSS classes (kinetic-emph-halo /
-// kinetic-emph-frame); only the transform/filter variants animate inline.
-function getEmphasisInnerAnimation(variant: EmphasisVariant | null, staticRender: boolean) {
-  if (staticRender || !variant) return undefined;
-  if (variant === "jiggle") return "kinetic-emphasis-jiggle 0.58s ease-in-out 0.08s 2";
-  if (variant === "pulse") return "kinetic-emphasis-pulse 1.35s ease-in-out infinite";
-  if (variant === "glow") return "kinetic-emphasis-glow 1.6s ease-in-out infinite";
-  return undefined;
-}
-
-function getAuraColor(textColor: string) {
-  return isWhiteLikeColor(textColor) ? "#FFBE0B" : "currentColor";
-}
-
-function isWhiteLikeColor(color: string) {
-  const normalized = color.trim().toLowerCase();
-  return normalized === "white" || normalized === "#fff" || normalized === "#ffffff";
-}
-
+// Feed scoring — includes digit punchline + ALLCAPS bonuses and a wider EMPHASIS_WORDS
+// set than KineticText getPreviewWordImportance. Do not unify.
 function getWordImportance(word: string, index: number, total: number) {
   const cleaned = word.toLowerCase().replace(/^[^a-z0-9]+|[^a-z0-9]+$/g, "");
   if (!cleaned || STOP_WORDS.has(cleaned)) return 0;
