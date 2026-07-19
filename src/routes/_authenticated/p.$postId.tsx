@@ -4,16 +4,22 @@ import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import { PostCard } from "@/components/PostCard";
-import { dataModeKey, isDemoSession, resolveDataMode } from "@/features/session";
+import { resolveDataMode } from "@/features/session";
+import {
+  addComment,
+  getPost,
+  postQueryOptions,
+  socialKeys,
+  toggleLike,
+} from "@/features/social";
 import {
   addMockComment,
   getMockPost,
   MOCK_ME_ID,
   toggleMockLike,
-  type MockPostData,
 } from "@/lib/mock-data";
-import { addComment, getPost, toggleLike } from "@/lib/social.functions";
 import { supabase } from "@/integrations/supabase/client";
+import type { SocialPostData } from "@/shared/types";
 
 export const Route = createFileRoute("/_authenticated/p/$postId")({
   component: PostPermalinkPage,
@@ -27,17 +33,13 @@ function PostPermalinkPage() {
   const fetchPost = useServerFn(getPost);
   const likeFn = useServerFn(toggleLike);
   const commentFn = useServerFn(addComment);
-  const postKey = ["post", dataModeKey(dataMode), postId];
+  const postKey = socialKeys.post(dataMode, postId);
 
-  const { data, isLoading, error } = useQuery<MockPostData>({
-    queryKey: postKey,
-    queryFn: () =>
-      demoMode
-        ? getMockPost(postId)
-        : (fetchPost({ data: { post_id: postId } }) as Promise<MockPostData>),
-    staleTime: 30_000,
-    retry: false,
-  });
+  const { data, isLoading, error } = useQuery(
+    postQueryOptions(dataMode, postId, () =>
+      fetchPost({ data: { post_id: postId } }) as Promise<SocialPostData>,
+    ),
+  );
 
   const [myProfileId, setMyProfileId] = useState<string | null>(null);
 
@@ -64,7 +66,7 @@ function PostPermalinkPage() {
       demoMode ? toggleMockLike(post_id) : likeFn({ data: { post_id } }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: postKey });
-      qc.invalidateQueries({ queryKey: ["feed"] });
+      qc.invalidateQueries({ queryKey: socialKeys.feedRoot });
       if (demoMode) qc.setQueryData(postKey, getMockPost(postId));
     },
   });
@@ -74,8 +76,8 @@ function PostPermalinkPage() {
       demoMode ? addMockComment(post_id, chip_id) : commentFn({ data: { post_id, chip_id } }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: postKey });
-      qc.invalidateQueries({ queryKey: ["feed"] });
-      qc.invalidateQueries({ queryKey: ["notifications"] });
+      qc.invalidateQueries({ queryKey: socialKeys.feedRoot });
+      qc.invalidateQueries({ queryKey: socialKeys.notificationsRoot });
       if (demoMode) qc.setQueryData(postKey, getMockPost(postId));
     },
   });

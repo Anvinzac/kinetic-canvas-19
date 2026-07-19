@@ -2,18 +2,24 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
-import { getFeed, toggleLike, addComment } from "@/lib/social.functions";
+import {
+  addComment,
+  feedQueryOptions,
+  getFeed,
+  socialKeys,
+  toggleLike,
+} from "@/features/social";
 import { PostCard } from "@/components/PostCard";
 import { supabase } from "@/integrations/supabase/client";
-import { dataModeKey, isDemoSession, resolveDataMode } from "@/features/session";
+import { resolveDataMode } from "@/features/session";
 import { useStatusScrollSnap } from "@/lib/use-status-scroll-snap";
 import {
   addMockComment,
   getMockFeed,
   MOCK_ME_ID,
   toggleMockLike,
-  type MockFeedData,
 } from "@/lib/mock-data";
+import type { SocialFeedData } from "@/shared/types";
 
 export const Route = createFileRoute("/_authenticated/feed")({
   component: FeedPage,
@@ -26,13 +32,11 @@ function FeedPage() {
   const commentFn = useServerFn(addComment);
   const dataMode = resolveDataMode();
   const demoMode = dataMode === "demo";
-  const feedKey = ["feed", dataModeKey(dataMode)];
+  const feedKey = socialKeys.feed(dataMode);
 
-  const { data, isLoading } = useQuery<MockFeedData>({
-    queryKey: feedKey,
-    queryFn: () => (demoMode ? getMockFeed() : (fetchFeed() as Promise<MockFeedData>)),
-    staleTime: 30_000,
-  });
+  const { data, isLoading } = useQuery(
+    feedQueryOptions(dataMode, () => fetchFeed() as Promise<SocialFeedData>),
+  );
   const scrollRef = useStatusScrollSnap(data?.posts.length ?? 0);
 
   const [myProfileId, setMyProfileId] = useState<string | null>(null);
@@ -61,10 +65,10 @@ function FeedPage() {
     onSuccess: () => {
       if (demoMode) {
         qc.setQueryData(feedKey, getMockFeed());
-        qc.invalidateQueries({ queryKey: ["profile"] });
+        qc.invalidateQueries({ queryKey: socialKeys.profileRoot });
         return;
       }
-      qc.invalidateQueries({ queryKey: ["feed"] });
+      qc.invalidateQueries({ queryKey: socialKeys.feedRoot });
     },
   });
   const commentMut = useMutation({
@@ -73,11 +77,11 @@ function FeedPage() {
     onSuccess: () => {
       if (demoMode) {
         qc.setQueryData(feedKey, getMockFeed());
-        qc.invalidateQueries({ queryKey: ["notifications"] });
-        qc.invalidateQueries({ queryKey: ["profile"] });
+        qc.invalidateQueries({ queryKey: socialKeys.notificationsRoot });
+        qc.invalidateQueries({ queryKey: socialKeys.profileRoot });
         return;
       }
-      qc.invalidateQueries({ queryKey: ["feed"] });
+      qc.invalidateQueries({ queryKey: socialKeys.feedRoot });
     },
   });
 
