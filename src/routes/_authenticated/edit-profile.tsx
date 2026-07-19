@@ -4,9 +4,10 @@ import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState, type ReactNode } from "react";
 import { Camera, Check, ChevronLeft, Link2, RefreshCw, Sparkles, Wand2 } from "lucide-react";
 import { toast } from "sonner";
-import { getMe, updateProfile } from "@/lib/discovery.functions";
-import { isDemoSession } from "@/lib/demo-session";
-import { getMockMe, updateMockProfile, type MockMeData } from "@/lib/mock-data";
+import { discoveryKeys, getMe, meQueryOptions, updateProfile } from "@/features/discovery";
+import { resolveDataMode } from "@/features/session";
+import { updateMockProfile } from "@/lib/mock-data";
+import type { SocialMeData } from "@/shared/types";
 
 export const Route = createFileRoute("/_authenticated/edit-profile")({
   component: EditProfile,
@@ -24,11 +25,9 @@ function EditProfile() {
   const qc = useQueryClient();
   const fetchMe = useServerFn(getMe);
   const updateFn = useServerFn(updateProfile);
-  const demoMode = isDemoSession();
-  const { data } = useQuery<MockMeData>({
-    queryKey: ["me", demoMode ? "demo" : "live"],
-    queryFn: () => (demoMode ? getMockMe() : (fetchMe() as Promise<MockMeData>)),
-  });
+  const dataMode = resolveDataMode();
+  const demoMode = dataMode === "demo";
+  const { data } = useQuery(meQueryOptions(dataMode, () => fetchMe() as Promise<SocialMeData>));
 
   const [displayName, setDisplayName] = useState("");
   const [bio, setBio] = useState("");
@@ -77,8 +76,8 @@ function EditProfile() {
     },
     onSuccess: () => {
       toast.success("profile updated ✨");
-      qc.invalidateQueries({ queryKey: ["me"] });
-      qc.invalidateQueries({ queryKey: ["profile"] });
+      qc.invalidateQueries({ queryKey: discoveryKeys.meRoot });
+      qc.invalidateQueries({ queryKey: discoveryKeys.profileRoot });
       navigate({ to: "/settings" });
     },
     onError: (e: Error) => toast.error(e.message),

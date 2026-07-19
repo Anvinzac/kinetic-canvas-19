@@ -1,11 +1,11 @@
 import { createFileRoute, Link, useNavigate, useRouter } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { getNotifications } from "@/lib/discovery.functions";
+import { getNotifications, notificationsQueryOptions } from "@/features/discovery";
 import { parseCanvas } from "@/lib/canvas";
-import { isDemoSession } from "@/lib/demo-session";
-import { getMockNotifications, type MockNotificationsData } from "@/lib/mock-data";
+import { resolveDataMode } from "@/features/session";
 import { ChevronLeft, Heart, MessageCircle, UserPlus } from "lucide-react";
+import type { SocialNotificationsData } from "@/shared/types";
 
 export const Route = createFileRoute("/_authenticated/notifications")({
   component: NotificationsPage,
@@ -23,18 +23,16 @@ function NotificationsPage() {
   const fn = useServerFn(getNotifications);
   const navigate = useNavigate();
   const router = useRouter();
-  const demoMode = isDemoSession();
+  const dataMode = resolveDataMode();
 
   function handleBack() {
     if (router.history.length > 1) router.history.back();
     else navigate({ to: "/feed" });
   }
 
-  const { data, isLoading } = useQuery<MockNotificationsData>({
-    queryKey: ["notifications", demoMode ? "demo" : "live"],
-    queryFn: () => (demoMode ? getMockNotifications() : (fn() as Promise<MockNotificationsData>)),
-    staleTime: 15_000,
-  });
+  const { data, isLoading } = useQuery(
+    notificationsQueryOptions(dataMode, () => fn() as Promise<SocialNotificationsData>),
+  );
 
   return (
     <div className="min-h-[100dvh] pb-8">

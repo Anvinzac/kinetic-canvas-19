@@ -1,10 +1,10 @@
 import { createFileRoute, Link, useNavigate, useRouter } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { getMe } from "@/lib/discovery.functions";
+import { getMe, meQueryOptions } from "@/features/discovery";
 import { supabase } from "@/integrations/supabase/client";
-import { endDemoSession, isDemoSession } from "@/lib/demo-session";
-import { getMockMe, type MockMeData } from "@/lib/mock-data";
+import { endDemoSession, resolveDataMode } from "@/features/session";
+import type { SocialMeData } from "@/shared/types";
 import { Switch } from "@/components/ui/switch";
 import {
   AtSign,
@@ -77,11 +77,9 @@ function SettingsPage() {
   }
 
   const fetchMe = useServerFn(getMe);
-  const demoMode = isDemoSession();
-  const { data } = useQuery<MockMeData>({
-    queryKey: ["me", demoMode ? "demo" : "live"],
-    queryFn: () => (demoMode ? getMockMe() : (fetchMe() as Promise<MockMeData>)),
-  });
+  const dataMode = resolveDataMode();
+  const demoMode = dataMode === "demo";
+  const { data } = useQuery(meQueryOptions(dataMode, () => fetchMe() as Promise<SocialMeData>));
   const [prefs, setPrefs] = useState<Preferences>(DEFAULT_PREFS);
   const [hydrated, setHydrated] = useState(false);
 

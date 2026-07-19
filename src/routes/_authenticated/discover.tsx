@@ -2,17 +2,17 @@ import { createFileRoute, Link, useNavigate, useRouter } from "@tanstack/react-r
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState, useEffect } from "react";
-import { search, getDiscover } from "@/lib/discovery.functions";
-import { getCanvasTextColor, parseCanvas, resolveCanvasBackground } from "@/lib/canvas";
-import { isDemoSession } from "@/lib/demo-session";
 import {
-  getMockDiscover,
-  searchMock,
-  type MockDiscoverData,
-  type MockPost,
-  type MockSearchData,
-} from "@/lib/mock-data";
+  discoverQueryOptions,
+  getDiscover,
+  search,
+  searchQueryOptions,
+} from "@/features/discovery";
+import { getCanvasTextColor, parseCanvas, resolveCanvasBackground } from "@/lib/canvas";
+import { resolveDataMode } from "@/features/session";
+import { type MockDiscoverData, type MockPost, type MockSearchData } from "@/lib/mock-data";
 import { ChevronLeft, Newspaper, Search as SearchIcon } from "lucide-react";
+import type { SocialDiscoverData, SocialSearchData } from "@/shared/types";
 
 export const Route = createFileRoute("/_authenticated/discover")({
   component: DiscoverPage,
@@ -31,21 +31,16 @@ function DiscoverPage() {
   }
 
   const debounced = useDebounced(q, 250);
-  const demoMode = isDemoSession();
+  const dataMode = resolveDataMode();
 
-  const discover = useQuery<MockDiscoverData>({
-    queryKey: ["discover", demoMode ? "demo" : "live"],
-    queryFn: () => (demoMode ? getMockDiscover() : (fetchDiscover() as Promise<MockDiscoverData>)),
-    staleTime: 30_000,
-  });
-  const results = useQuery<MockSearchData>({
-    queryKey: ["search", demoMode ? "demo" : "live", debounced],
-    queryFn: () =>
-      demoMode
-        ? searchMock(debounced)
-        : (searchFn({ data: { q: debounced } }) as Promise<MockSearchData>),
-    enabled: debounced.length > 0,
-  });
+  const discover = useQuery(
+    discoverQueryOptions(dataMode, () => fetchDiscover() as Promise<SocialDiscoverData>),
+  );
+  const results = useQuery(
+    searchQueryOptions(dataMode, debounced, () =>
+      searchFn({ data: { q: debounced } }) as Promise<SocialSearchData>,
+    ),
+  );
 
   const showResults = debounced.length > 0;
 

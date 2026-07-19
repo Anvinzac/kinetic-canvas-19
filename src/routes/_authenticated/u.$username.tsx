@@ -2,21 +2,21 @@ import { createFileRoute, Link, useNavigate, useRouter } from "@tanstack/react-r
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Fragment, useState, type ReactNode } from "react";
-import { getProfile } from "@/lib/social.functions";
-import { getMe, toggleFollow } from "@/lib/discovery.functions";
+import { getProfile } from "@/features/social";
+import {
+  discoveryKeys,
+  getMe,
+  meQueryOptions,
+  profileQueryOptions,
+  toggleFollow,
+} from "@/features/discovery";
 import { PostCard, paginateText } from "@/components/PostCard";
 import { KineticText } from "@/components/KineticText";
 import { parseCanvas, resolveCanvasBackground } from "@/lib/canvas";
-import { isDemoSession } from "@/lib/demo-session";
+import { resolveDataMode } from "@/features/session";
 import { useStatusScrollSnap } from "@/lib/use-status-scroll-snap";
-import {
-  getMockMe,
-  getMockProfile,
-  toggleMockFollow,
-  type MockMeData,
-  type MockPost,
-  type MockProfileData,
-} from "@/lib/mock-data";
+import { toggleMockFollow, type MockPost } from "@/lib/mock-data";
+import type { SocialMeData, SocialProfileData } from "@/shared/types";
 import {
   ArrowLeft,
   Clapperboard,
@@ -66,26 +66,22 @@ function ProfilePage() {
   const [filter, setFilter] = useState<PostFilter>("all");
   const [sort, setSort] = useState<PostSort>("recent");
   const [shuffleSeed, setShuffleSeed] = useState(0);
-  const demoMode = isDemoSession();
+  const dataMode = resolveDataMode();
+  const demoMode = dataMode === "demo";
 
-  const { data, isLoading } = useQuery<MockProfileData>({
-    queryKey: ["profile", username, demoMode ? "demo" : "live"],
-    queryFn: () =>
-      demoMode
-        ? getMockProfile(username)
-        : (fetchProfile({ data: { username } }) as Promise<MockProfileData>),
-  });
-  const { data: me } = useQuery<MockMeData>({
-    queryKey: ["me", demoMode ? "demo" : "live"],
-    queryFn: () => (demoMode ? getMockMe() : (fetchMe() as Promise<MockMeData>)),
-  });
+  const { data, isLoading } = useQuery(
+    profileQueryOptions(username, dataMode, () =>
+      fetchProfile({ data: { username } }) as Promise<SocialProfileData>,
+    ),
+  );
+  const { data: me } = useQuery(meQueryOptions(dataMode, () => fetchMe() as Promise<SocialMeData>));
 
   const followMut = useMutation({
     mutationFn: (target_id: string) =>
       demoMode ? toggleMockFollow(target_id) : followFn({ data: { target_id } }),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["me"] });
-      qc.invalidateQueries({ queryKey: ["profile", username] });
+      qc.invalidateQueries({ queryKey: discoveryKeys.meRoot });
+      qc.invalidateQueries({ queryKey: [...discoveryKeys.profileRoot, username] });
     },
   });
   const scrollRef = useStatusScrollSnap<HTMLDivElement>(data?.posts.length ?? 0);
