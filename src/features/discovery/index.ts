@@ -15,3 +15,6 @@ export {
   toggleFollow,
   updateProfile,
 } from "./api/discovery.functions";
+export { DiscoverPage } from "./components/DiscoverPage";
+export { DiscoverLoader, PostGrid } from "./components/DiscoverGrid";
+export { NotificationsPage } from "./components/NotificationsPage";

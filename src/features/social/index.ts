@@ -10,3 +10,5 @@ export {
   getProfile,
   toggleLike,
 } from "./api/social.functions";
+export { FeedPage } from "./components/FeedPage";
+export { PostPermalinkPage } from "./components/PostPermalinkPage";
