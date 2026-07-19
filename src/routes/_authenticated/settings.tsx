@@ -122,7 +122,7 @@ function SettingsPage() {
   const completion = profile
     ? getProfileCompletion({
         displayName: profile.display_name,
-        bio: profile.bio,
+        bio: profile.bio ?? null,
         avatar: profile.avatar_url,
         posts: data.stats.posts,
       })

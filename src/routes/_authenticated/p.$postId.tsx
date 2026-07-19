@@ -4,7 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import { PostCard } from "@/components/PostCard";
-import { isDemoSession } from "@/lib/demo-session";
+import { dataModeKey, isDemoSession, resolveDataMode } from "@/features/session";
 import {
   addMockComment,
   getMockPost,
@@ -22,11 +22,12 @@ export const Route = createFileRoute("/_authenticated/p/$postId")({
 function PostPermalinkPage() {
   const { postId } = Route.useParams();
   const qc = useQueryClient();
-  const demoMode = isDemoSession();
+  const dataMode = resolveDataMode();
+  const demoMode = dataMode === "demo";
   const fetchPost = useServerFn(getPost);
   const likeFn = useServerFn(toggleLike);
   const commentFn = useServerFn(addComment);
-  const postKey = ["post", demoMode ? "demo" : "live", postId];
+  const postKey = ["post", dataModeKey(dataMode), postId];
 
   const { data, isLoading, error } = useQuery<MockPostData>({
     queryKey: postKey,

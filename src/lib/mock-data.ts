@@ -5,8 +5,23 @@ import {
   TRANSITION_GRADIENT_PATHS,
   type CanvasSpec,
 } from "@/lib/canvas";
-import { DEMO_AUTH_USER_ID } from "@/lib/demo-session";
+import { DEMO_AUTH_USER_ID } from "@/features/session";
 import { DEMO_STATUS_PHOTOS } from "@/lib/post-media";
+import type {
+  PostType,
+  SocialComment,
+  SocialDiscoverData,
+  SocialFeedData,
+  SocialLike,
+  SocialMeData,
+  SocialNotificationItem,
+  SocialNotificationsData,
+  SocialPost,
+  SocialPostData,
+  SocialProfile,
+  SocialProfileData,
+  SocialSearchData,
+} from "@/shared/types";
 
 export const MOCK_ME_ID = "11111111-1111-4111-8111-111111111111";
 export const MOCK_ME_USERNAME = "demo_creator";
@@ -26,41 +41,21 @@ const DEMO_TRANSITION_GRADIENTS = [
   ]),
 ];
 
-type PostType = "text" | "image" | "video" | "slideshow" | "link";
-
-export type MockProfile = {
-  id: string;
+/** @deprecated Prefer SocialProfile from `@/shared/types` */
+export type MockProfile = SocialProfile & {
   auth_user_id: string | null;
-  username: string;
-  display_name: string;
-  avatar_url: string | null;
   bio: string | null;
   created_at: string;
 };
 
-export type MockPost = {
-  id: string;
-  author_id: string;
-  post_type: PostType;
-  canvas_html: string;
-  media_urls: string[] | null;
-  bg_gradient: string | null;
-  created_at: string;
-};
+/** @deprecated Prefer SocialPost from `@/shared/types` */
+export type MockPost = SocialPost;
 
-export type MockLike = {
-  post_id: string;
-  user_id: string;
-  created_at: string;
-};
+/** @deprecated Prefer SocialLike from `@/shared/types` */
+export type MockLike = SocialLike & { created_at: string };
 
-export type MockComment = {
-  id: string;
-  post_id: string;
-  user_id: string;
-  chip_id: string;
-  created_at: string;
-};
+/** @deprecated Prefer SocialComment from `@/shared/types` */
+export type MockComment = SocialComment;
 
 type MockFollow = {
   follower_id: string;
@@ -68,58 +63,29 @@ type MockFollow = {
   created_at: string;
 };
 
-export type MockFeedData = {
-  posts: MockPost[];
-  profiles: MockProfile[];
-  likes: MockLike[];
-  comments: MockComment[];
-};
+/** @deprecated Prefer SocialFeedData from `@/shared/types` */
+export type MockFeedData = SocialFeedData;
 
-export type MockPostData = {
-  post: MockPost;
-  profiles: MockProfile[];
-  likes: MockLike[];
-  comments: MockComment[];
-};
+/** @deprecated Prefer SocialPostData from `@/shared/types` */
+export type MockPostData = SocialPostData;
 
-export type MockProfileData = {
-  profile: MockProfile;
-  posts: MockPost[];
-  followers: number;
-  following: number;
-  totalLikes: number;
-  totalComments: number;
-  engagementByPost: Record<string, { likes: number; comments: number }>;
-};
+/** @deprecated Prefer SocialProfileData from `@/shared/types` */
+export type MockProfileData = SocialProfileData;
 
-export type MockMeData = {
-  profile: MockProfile;
-  followingIds: string[];
-  stats: { posts: number; followers: number; following: number };
-};
+/** @deprecated Prefer SocialMeData from `@/shared/types` */
+export type MockMeData = SocialMeData;
 
-export type MockDiscoverData = {
-  posts: MockPost[];
-  profiles: MockProfile[];
-};
+/** @deprecated Prefer SocialDiscoverData from `@/shared/types` */
+export type MockDiscoverData = SocialDiscoverData;
 
-export type MockSearchData = {
-  users: MockProfile[];
-  posts: MockPost[];
-};
+/** @deprecated Prefer SocialSearchData from `@/shared/types` */
+export type MockSearchData = SocialSearchData;
 
-export type MockNotificationItem = {
-  kind: "like" | "comment" | "follow";
-  actor: Pick<MockProfile, "id" | "username" | "display_name" | "avatar_url"> | null;
-  post_id?: string;
-  post_preview?: string;
-  chip_id?: string;
-  created_at: string;
-};
+/** @deprecated Prefer SocialNotificationItem from `@/shared/types` */
+export type MockNotificationItem = SocialNotificationItem;
 
-export type MockNotificationsData = {
-  items: MockNotificationItem[];
-};
+/** @deprecated Prefer SocialNotificationsData from `@/shared/types` */
+export type MockNotificationsData = SocialNotificationsData;
 
 const MOCK_PROFILES: MockProfile[] = [
   {

@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { getFeed, toggleLike, addComment } from "@/lib/social.functions";
 import { PostCard } from "@/components/PostCard";
 import { supabase } from "@/integrations/supabase/client";
-import { isDemoSession } from "@/lib/demo-session";
+import { dataModeKey, isDemoSession, resolveDataMode } from "@/features/session";
 import { useStatusScrollSnap } from "@/lib/use-status-scroll-snap";
 import {
   addMockComment,
@@ -24,8 +24,9 @@ function FeedPage() {
   const fetchFeed = useServerFn(getFeed);
   const likeFn = useServerFn(toggleLike);
   const commentFn = useServerFn(addComment);
-  const demoMode = isDemoSession();
-  const feedKey = ["feed", demoMode ? "demo" : "live"];
+  const dataMode = resolveDataMode();
+  const demoMode = dataMode === "demo";
+  const feedKey = ["feed", dataModeKey(dataMode)];
 
   const { data, isLoading } = useQuery<MockFeedData>({
     queryKey: feedKey,
