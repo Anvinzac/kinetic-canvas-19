@@ -2,7 +2,7 @@
  * Comment tray, floating chips, and local optimistic comment state.
  *
  * Exports: useCommentFlow
- * Depends on: comment-text helpers, kinetic-text getWords, PostCard types
+ * Depends on: comment-flow-helpers, comment-text, kinetic-text getStableNumber
  */
 
 import {
@@ -13,15 +13,19 @@ import {
   type MutableRefObject,
   type SetStateAction,
 } from "react";
-import { getStableNumber, getWords } from "@/features/kinetic-text";
+import { getStableNumber } from "@/features/kinetic-text";
 import {
-  MAX_COMMENT_CHARS,
-  MAX_COMMENT_WORDS,
-  getCommentFlightDuration,
+  buildCommentFlowKey,
+  buildLocalComment,
+  buildManualFlyComment,
+  filterFloatingComments,
+  isValidCommentSubmission,
+  mergeChronologicalComments,
+} from "../lib/comment-flow-helpers";
+import {
   getCommentLabel,
   getCommentStoryGradient,
   getCommentStoryPages,
-  getFloatingCommentLabel,
   limitCommentText,
   normalizeComment,
   shouldFloatComment,
@@ -40,41 +44,6 @@ export type UseCommentFlowArgs = {
   } | null>;
 };
 
-export type UseCommentFlowResult = {
-  localComments: Comment[];
-  setLocalComments: Dispatch<SetStateAction<Comment[]>>;
-  chronologicalComments: Comment[];
-  floatingComments: Comment[];
-  commentFlowKey: string;
-  showChips: boolean;
-  setShowChips: Dispatch<SetStateAction<boolean>>;
-  showQuickCommentChips: boolean;
-  setShowQuickCommentChips: Dispatch<SetStateAction<boolean>>;
-  customComment: string;
-  setCustomComment: Dispatch<SetStateAction<string>>;
-  draftCommentPage: number;
-  setDraftCommentPage: Dispatch<SetStateAction<number>>;
-  draftCommentPlayKey: number;
-  setDraftCommentPlayKey: Dispatch<SetStateAction<number>>;
-  activeComment: FlowComment | null;
-  setActiveComment: Dispatch<SetStateAction<FlowComment | null>>;
-  commentOverlapsInfo: boolean;
-  setCommentOverlapsInfo: Dispatch<SetStateAction<boolean>>;
-  flyId: MutableRefObject<number>;
-  localCommentId: MutableRefObject<number>;
-  manualCommentHoldUntil: MutableRefObject<number>;
-  normalizedCustomComment: string;
-  customCommentHasText: boolean;
-  customCommentIsKinetic: boolean;
-  draftCommentPages: string[];
-  draftCommentPageText: string;
-  draftCommentBackground: string;
-  activeCommentLabel: string;
-  previewSubmittedComment: (chipId: string) => void;
-  submitComment: (value: string) => void;
-  updateCustomComment: (value: string) => void;
-};
-
 /**
  * @responsibility Manage comment tray input, floating chips, and local optimistic rows.
  */
@@ -84,25 +53,17 @@ export function useCommentFlow({
   currentUserId,
   onComment,
   storyIndexApiRef,
-}: UseCommentFlowArgs): UseCommentFlowResult {
+}: UseCommentFlowArgs) {
   const [localComments, setLocalComments] = useState<Comment[]>([]);
   const chronologicalComments = useMemo(
-    () =>
-      [...comments, ...localComments].sort(
-        (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
-      ),
+    () => mergeChronologicalComments(comments, localComments),
     [comments, localComments],
   );
   const floatingComments = useMemo(
-    () =>
-      chronologicalComments.filter((comment) =>
-        shouldFloatComment(getCommentLabel(comment.chip_id)),
-      ),
+    () => filterFloatingComments(chronologicalComments),
     [chronologicalComments],
   );
-  const commentFlowKey = floatingComments
-    .map((comment) => `${comment.id}:${comment.created_at}:${comment.chip_id}`)
-    .join("|");
+  const commentFlowKey = buildCommentFlowKey(floatingComments);
 
   const [showChips, setShowChips] = useState(false);
   const [showQuickCommentChips, setShowQuickCommentChips] = useState(false);
@@ -138,37 +99,24 @@ export function useCommentFlow({
       if (api) api.setStoryIndex(api.commentStoriesLength);
       setLocalComments((items) => [
         ...items,
-        {
-          id: `local-comment-${localCommentId.current}`,
-          post_id: postId,
-          user_id: currentUserId ?? "local",
-          chip_id: chipId,
-          created_at: new Date().toISOString(),
-        },
+        buildLocalComment(postId, currentUserId ?? "local", chipId, localCommentId.current),
       ]);
       return;
     }
 
     flyId.current += 1;
-    manualCommentHoldUntil.current =
-      Date.now() + getCommentFlightDuration(getFloatingCommentLabel(getCommentLabel(chipId))) + 700;
-    setActiveComment({
-      key: `local-${flyId.current}`,
-      chip: chipId,
-      created_at: new Date().toISOString(),
-      user_id: currentUserId ?? "local",
-    });
+    const { comment, holdMs } = buildManualFlyComment(
+      chipId,
+      currentUserId ?? "local",
+      flyId.current,
+    );
+    manualCommentHoldUntil.current = Date.now() + holdMs;
+    setActiveComment(comment);
   }
 
   function submitComment(value: string): void {
-    const normalized = normalizeComment(value);
-    if (
-      !normalized ||
-      normalized.length > MAX_COMMENT_CHARS ||
-      getWords(normalized).length > MAX_COMMENT_WORDS
-    ) {
-      return;
-    }
+    const normalized = isValidCommentSubmission(value);
+    if (!normalized) return;
     previewSubmittedComment(normalized);
     onComment(normalized);
     setCustomComment("");
@@ -222,3 +170,5 @@ export function useCommentFlow({
     updateCustomComment,
   };
 }
+
+export type UseCommentFlowResult = ReturnType<typeof useCommentFlow>;
