@@ -1,7 +1,7 @@
 /**
  * Feed-player tempo, page duration, and text sizing helpers (not KineticText preview tempo).
  *
- * Exports: tempoConfig, TEXT_SAFE_*, fit constants, getPageDuration, getWordDelay, getUniformPageTextSize, isSoloTextPage, solo fit helpers
+ * Exports: tempoConfig, TEXT_SAFE_*, fit constants, getPageDuration, getWordDelay, getUniformPageTextSize, isSoloTextPage
  * Depends on: features/canvas Tempo/Rhythm, features/kinetic-text getWords/isLikelyVietnameseText
  */
 
@@ -14,22 +14,6 @@ export const TEXT_SAFE_TOP_PX = 72;
 export const TEXT_SAFE_BOTTOM_PX = 132;
 export const MIN_TEXT_FIT_SCALE = 0.46;
 export const MIN_ENGLISH_TEXT_FIT_SCALE = 0.72;
-// A single-word page (e.g. a one-word reveal) cannot wrap, so it is allowed to
-// shrink this far to fit a long word fully on screen.
-export const SOLO_TEXT_MIN_FIT = 0.3;
-export const SOLO_REVEAL_MIN_FIT = 0.62;
-// The reveal word is the punchline of a guessing post — it should dominate the
-// canvas. Solved-for directly as a share of the real canvas width, so a short
-// word ("Dawn") grows well past its nominal size and a long one ("Persistence")
-// shrinks just enough to land on the same target, never leaving empty margins.
-// Held a touch under the safe edge (a hard 85%) so the word keeps its hero size
-// while still leaving margin for the emphasis pulse/entrance overshoot — i.e. it
-// never spills off either side even mid-animation.
-export const SOLO_REVEAL_TARGET_WIDTH_FRACTION = 0.85;
-// Horizontal-only correction (transform: scaleX) closing any gap between the
-// chosen font scale and the target width, without touching letter height.
-export const SOLO_REVEAL_MIN_INLINE_SCALE = 0.45;
-export const SOLO_REVEAL_MAX_STRETCH = 1.7;
 export const EMPHASIS_SCALE_FIT_GUARD = 1.14;
 // Emphasized words render this many times larger than the base font. Applied via
 // fontSize (not transform: scale) so the extra width occupies real layout space.
@@ -177,88 +161,3 @@ export function getTextSafeInsets(canvasHeight: number): { top: number; bottom: 
     bottom: Math.max(TEXT_SAFE_BOTTOM_PX, canvasHeight * 0.17),
   };
 }
-
-/**
- * clampNumber helper
- * @param value - value argument
- * @param min - min argument
- * @param max - max argument
- * @returns Computed value
- */
-export function clampNumber(value: number, min: number, max: number): number {
-  return Math.min(Math.max(value, min), max);
-}
-
-// Average glyph advance as a fraction of the font size for the heavy sans we
-// render reveal words in. Deliberately on the wide side so the predicted width
-// is never an under-estimate — the word starts a touch small and the precise
-// layout effect grows it to the exact target, rather than ever flashing wider
-// than the canvas before the effect runs.
-const AVG_GLYPH_WIDTH_EM = 0.62;
-
-let soloMeasureCtx: CanvasRenderingContext2D | null | undefined;
-
-/**
- * estimateWordWidth helper
- * @param word - word argument
- * @param size - size argument
- * @param font - font argument
- * @param weight - weight argument
- * @returns Function result
- */
-export function estimateWordWidth(word: string, size: number, font: string, weight: number): number {
-  const trimmed = word.trim();
-  if (!trimmed) return 0;
-  if (typeof document !== "undefined") {
-    if (soloMeasureCtx === undefined) {
-      soloMeasureCtx = document.createElement("canvas").getContext("2d");
-    }
-    if (soloMeasureCtx) {
-      soloMeasureCtx.font = `${weight} ${size}px ${font}, system-ui, sans-serif`;
-      const measured = soloMeasureCtx.measureText(trimmed).width;
-      if (measured > 0) return measured;
-    }
-  }
-  return trimmed.length * size * AVG_GLYPH_WIDTH_EM;
-}
-
-/**
- * estimateSoloRevealFit helper
- * @param text - text argument
- * @param size - size argument
- * @param canvasWidth - canvasWidth argument
- * @param visualScaleGuard - visualScaleGuard argument
- * @param font - font argument
- * @param weight - weight argument
- * @param emphasisFactor - emphasisFactor argument
- * @returns Function result
- */
-export function estimateSoloRevealFit(
-  text: string,
-  size: number,
-  canvasWidth: number,
-  visualScaleGuard: number,
-  font: string,
-  weight: number,
-  emphasisFactor: number,
-): number {
-  const estWidth =
-    estimateWordWidth(text, size, font, weight) * Math.max(visualScaleGuard, 1) * emphasisFactor;
-  if (estWidth <= 0 || canvasWidth <= 0) return 1;
-  const target = (canvasWidth * SOLO_REVEAL_TARGET_WIDTH_FRACTION) / estWidth;
-  return clampNumber(target, SOLO_REVEAL_MIN_FIT, SOLO_REVEAL_MAX_STRETCH);
-}
-
-/**
- * Compute measuredsolowordwidth.
- * @param text - text argument
- * @param soloInlineScale - soloInlineScale argument
- * @returns Computed value
- */
-export function getMeasuredSoloWordWidth(text: HTMLElement, soloInlineScale: number): number {
-  const spans = Array.from(text.querySelectorAll("span"));
-  const glyphSpan = spans.find((span) => span.querySelector("span") === null);
-  const raw = glyphSpan ? glyphSpan.getBoundingClientRect().width : text.scrollWidth;
-  return raw / Math.max(soloInlineScale, 0.01);
-}
-

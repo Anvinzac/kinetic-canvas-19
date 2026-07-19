@@ -2,7 +2,7 @@
  * Pure layout-fit math for WordSequenceText (scale, solo stretch, safe Y).
  *
  * Exports: computeWordSequenceFit
- * Depends on: kinetic-text getMeasuredTextWidth, playback-timing fit helpers
+ * Depends on: kinetic-text getMeasuredTextWidth, playback-timing + solo-text-fit helpers
  */
 
 import { getMeasuredTextWidth } from "@/features/kinetic-text";
@@ -10,6 +10,9 @@ import {
   MIN_ENGLISH_TEXT_FIT_SCALE,
   MIN_FONT_SIZE,
   MIN_TEXT_FIT_SCALE,
+  getTextSafeInsets,
+} from "./playback-timing";
+import {
   SOLO_REVEAL_MIN_FIT,
   SOLO_REVEAL_MIN_INLINE_SCALE,
   SOLO_REVEAL_MAX_STRETCH,
@@ -17,8 +20,7 @@ import {
   SOLO_TEXT_MIN_FIT,
   clampNumber,
   getMeasuredSoloWordWidth,
-  getTextSafeInsets,
-} from "./playback-timing";
+} from "./solo-text-fit";
 
 export type WordSequenceFitInput = {
   wrapper: HTMLDivElement;

@@ -29,8 +29,8 @@ import {
   EMPHASIS_SCALE_FIT_GUARD,
   TEXT_SAFE_MAX_WIDTH,
   VIETNAMESE_SCALE_FIT_GUARD,
-  estimateSoloRevealFit,
 } from "../lib/playback-timing";
+import { estimateSoloRevealFit } from "../lib/solo-text-fit";
 import { useWordSequenceFit } from "../hooks/useWordSequenceFit";
 import { WordSequenceLines } from "./WordSequenceLines";
 

@@ -103,7 +103,6 @@ export function usePostPlayback(props: PostCardProps) {
     setPlayKey((k) => k + 1);
   }
 
-  // Effects 1 → 2 → 3–8 → 9–13 → 14 (same relative order as before).
   const entrance = usePostEntrance({
     showingFlyingComment,
     setCommentOverlapsInfo: commentFlow.setCommentOverlapsInfo,
@@ -166,7 +165,6 @@ export function usePostPlayback(props: PostCardProps) {
     storyPageText: commentStory.storyPageText,
   });
 
-  // Effect 14: sync video element with pause/visibility.
   useEffect(() => {
     if (post.post_type !== "video") return;
     const video = videoRef.current;
