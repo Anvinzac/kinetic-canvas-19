@@ -1,0 +1,161 @@
+/**
+ * Pattern/scene showcase demo posts for seamless backdrop drift.
+ *
+ * Exports: PATTERN_SHOWCASE_POSTS
+ * Depends on: seed/posts/helpers canvas helper
+ */
+
+import type { MockPost } from "../types";
+import { canvas, NOVA_RAE_ID } from "./helpers";
+
+// Showcase posts for the seamless *pattern* backdrops (canvas-patterns.ts) —
+// non-gradient textures that pan a step per page. Each is multi-page so the
+// drift is visible as you tap through. Tap to watch the texture slide.
+export const PATTERN_SHOWCASE_POSTS: MockPost[] = [
+  {
+    id: "9a000001-0001-4001-8001-000000000001",
+    author_id: NOVA_RAE_ID,
+    post_type: "text",
+    canvas_html: canvas({
+      text: ["Some nights", "the scroll", "feels infinite."].join("\n"),
+      backgroundPattern: "starfield",
+      font: "Space Grotesk",
+      size: 80,
+      entrance: "fade",
+      loop: "float",
+      tempo: "slow",
+      rhythm: "smooth",
+    }),
+    media_urls: [],
+    bg_gradient: null,
+    created_at: "2026-06-22T11:06:00.000Z",
+  },
+  {
+    id: "9a000002-0002-4002-8002-000000000002",
+    author_id: NOVA_RAE_ID,
+    post_type: "text",
+    canvas_html: canvas({
+      text: ["Every idea", "starts as", "a rough draft."].join("\n"),
+      backgroundPattern: "blueprint",
+      font: "JetBrains Mono",
+      size: 74,
+      entrance: "slide",
+      loop: "none",
+      tempo: "steady",
+      rhythm: "stagger",
+    }),
+    media_urls: [],
+    bg_gradient: null,
+    created_at: "2026-06-22T11:05:00.000Z",
+  },
+  {
+    id: "9a000003-0003-4003-8003-000000000003",
+    author_id: NOVA_RAE_ID,
+    post_type: "text",
+    canvas_html: canvas({
+      text: ["Print is dead.", "Long live", "the dot."].join("\n"),
+      backgroundPattern: "halftone",
+      font: "Bebas Neue",
+      size: 96,
+      entrance: "scale",
+      loop: "pulse",
+      tempo: "snappy",
+      rhythm: "burst",
+    }),
+    media_urls: [],
+    bg_gradient: null,
+    created_at: "2026-06-22T11:04:00.000Z",
+  },
+  {
+    id: "9a000004-0004-4004-8004-000000000004",
+    author_id: NOVA_RAE_ID,
+    post_type: "text",
+    canvas_html: canvas({
+      text: ["Slow down.", "Then don't.", "Go."].join("\n"),
+      backgroundPattern: "hazard",
+      font: "Space Grotesk",
+      size: 88,
+      entrance: "split",
+      loop: "shake",
+      tempo: "snappy",
+      rhythm: "burst",
+    }),
+    media_urls: [],
+    bg_gradient: null,
+    created_at: "2026-06-22T11:03:00.000Z",
+  },
+  {
+    id: "9a000005-0005-4005-8005-000000000005",
+    author_id: NOVA_RAE_ID,
+    post_type: "text",
+    canvas_html: canvas({
+      text: ["Pattern", "recognition", "is a love language."].join("\n"),
+      backgroundPattern: "argyle",
+      font: "Playfair Display",
+      size: 78,
+      entrance: "blur",
+      loop: "float",
+      tempo: "slow",
+      rhythm: "smooth",
+    }),
+    media_urls: [],
+    bg_gradient: null,
+    created_at: "2026-06-22T11:02:00.000Z",
+  },
+  {
+    id: "9a000006-0006-4006-8006-000000000006",
+    author_id: NOVA_RAE_ID,
+    post_type: "text",
+    canvas_html: canvas({
+      text: ["Beauty", "hides in", "the imperfect."].join("\n"),
+      backgroundPattern: "terrazzo",
+      font: "Playfair Display",
+      size: 82,
+      entrance: "fade",
+      loop: "pulse",
+      tempo: "steady",
+      rhythm: "stagger",
+    }),
+    media_urls: [],
+    bg_gradient: null,
+    created_at: "2026-06-22T11:01:00.000Z",
+  },
+  {
+    id: "9a000007-0007-4007-8007-000000000007",
+    author_id: NOVA_RAE_ID,
+    post_type: "text",
+    canvas_html: canvas({
+      text: ["The day", "lets go", "in color."].join("\n"),
+      backgroundScene: "alpenglow",
+      font: "Playfair Display",
+      size: 82,
+      color: "#fdf3e0",
+      entrance: "blur",
+      loop: "float",
+      tempo: "slow",
+      rhythm: "poetic",
+    }),
+    media_urls: [],
+    bg_gradient: null,
+    created_at: "2026-06-22T11:08:00.000Z",
+  },
+  {
+    id: "9a000008-0008-4008-8008-000000000008",
+    author_id: NOVA_RAE_ID,
+    post_type: "text",
+    canvas_html: canvas({
+      text: ["Build it tall,", "make it", "golden."].join("\n"),
+      backgroundScene: "deco",
+      font: "Bebas Neue",
+      size: 96,
+      color: "#f6e6c2",
+      entrance: "slide",
+      loop: "none",
+      tempo: "steady",
+      rhythm: "stagger",
+    }),
+    media_urls: [],
+    bg_gradient: null,
+    created_at: "2026-06-22T11:07:00.000Z",
+  },
+];

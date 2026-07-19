@@ -51,3 +51,5 @@ export {
   getCanvasSceneTheme,
   getSceneBackgroundStyle,
 } from "./scenes";
+
+export { CanvasStickerLayer } from "./components/CanvasStickerLayer";
