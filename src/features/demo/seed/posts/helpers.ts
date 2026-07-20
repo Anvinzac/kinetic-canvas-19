@@ -5,7 +5,7 @@
  * Depends on: lib/canvas serializeCanvas
  */
 
-import { serializeCanvas, TRANSITION_GRADIENT_PATHS, type CanvasSpec } from "@/lib/canvas";
+import { serializeCanvas, TRANSITION_GRADIENT_PATHS, type CanvasSpec } from "@/features/canvas";
 
 export const DEMO_TRANSITION_GRADIENTS = [
   ...(TRANSITION_GRADIENT_PATHS[0]?.gradients ?? [

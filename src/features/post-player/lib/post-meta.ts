@@ -5,7 +5,7 @@
  * Depends on: lib/canvas CanvasSpec/CanvasLinkPreview, kinetic-text getStableNumber/getWords, Post type
  */
 
-import type { CanvasLinkPreview, CanvasSpec } from "@/lib/canvas";
+import type { CanvasLinkPreview, CanvasSpec } from "@/features/canvas";
 import { getStableNumber, getWords } from "@/features/kinetic-text";
 import type { Post } from "../types";
 

@@ -13,7 +13,7 @@ import { useEffect, useState, type ReactElement } from "react";
 import { toast } from "sonner";
 import { discoveryKeys, getMe, meQueryOptions, updateProfile } from "@/features/discovery";
 import { resolveDataMode } from "@/features/session";
-import { updateMockProfile } from "@/lib/mock-data";
+import { updateMockProfile } from "@/features/demo";
 import type { SocialMeData } from "@/shared/types";
 import { getProfileCompletion } from "../lib/stats";
 import { EditProfileAvatarField } from "./EditProfileAvatarField";

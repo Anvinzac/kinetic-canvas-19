@@ -7,7 +7,7 @@
 
 import { useCallback, type Dispatch, type SetStateAction } from "react";
 import { toast } from "sonner";
-import type { Tempo, Rhythm } from "@/lib/canvas";
+import type { Tempo, Rhythm } from "@/features/canvas";
 import { getPostExportDuration } from "../lib/playback-timing";
 import {
   downloadBlob,

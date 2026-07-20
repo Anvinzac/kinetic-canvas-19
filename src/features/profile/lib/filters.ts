@@ -6,7 +6,7 @@
  * Depends on: @/lib/mock-data MockPost
  */
 
-import type { MockPost } from "@/lib/mock-data";
+import type { MockPost } from "@/features/demo";
 
 export type PostKind = "text" | "image" | "video" | "slideshow" | "link";
 export type PostFilter = "all" | PostKind;

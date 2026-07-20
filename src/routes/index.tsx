@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { isDemoSession } from "@/lib/demo-session";
+import { isDemoSession } from "@/features/session";
 
 export const Route = createFileRoute("/")({
   component: IndexRedirect,

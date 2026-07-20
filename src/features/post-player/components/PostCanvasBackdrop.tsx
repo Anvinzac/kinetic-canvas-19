@@ -7,8 +7,8 @@
 
 import { motion } from "framer-motion";
 import type { ReactElement } from "react";
-import { getPatternBackgroundPosition, type CanvasPatternTheme } from "@/lib/canvas-patterns";
-import { getSceneBackgroundStyle, type CanvasSceneTheme } from "@/lib/canvas-scenes";
+import { getPatternBackgroundPosition, type CanvasPatternTheme } from "@/features/canvas";
+import { getSceneBackgroundStyle, type CanvasSceneTheme } from "@/features/canvas";
 import { DEFAULT_CANVAS_BACKGROUND } from "../lib/post-background";
 
 export type PostCanvasBackdropProps = {

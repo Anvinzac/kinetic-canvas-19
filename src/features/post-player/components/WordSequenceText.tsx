@@ -13,7 +13,7 @@ import {
   getPhotoBackdropTextShadow,
   resolveTextColorOnPhotoBackdrop,
   type CanvasSpec,
-} from "@/lib/canvas";
+} from "@/features/canvas";
 import {
   getKineticTextLayoutMode,
   getLoopAnimation,

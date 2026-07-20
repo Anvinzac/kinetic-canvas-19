@@ -5,7 +5,7 @@
  * Depends on: lib/canvas COMMENT_CHIPS, features/kinetic-text getWords, SAFE_CANVAS_BACKGROUND
  */
 
-import { COMMENT_CHIPS, SAFE_CANVAS_BACKGROUND } from "@/lib/canvas";
+import { COMMENT_CHIPS, SAFE_CANVAS_BACKGROUND } from "@/features/canvas";
 import { getWords } from "@/features/kinetic-text";
 
 export const FLOATING_COMMENT_MAX_WORDS = 3;

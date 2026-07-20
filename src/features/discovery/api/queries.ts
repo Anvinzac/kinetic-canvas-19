@@ -14,7 +14,7 @@ import {
   getMockNotifications,
   getMockProfile,
   searchMock,
-} from "@/lib/mock-data";
+} from "@/features/demo";
 import type {
   SocialDiscoverData,
   SocialMeData,

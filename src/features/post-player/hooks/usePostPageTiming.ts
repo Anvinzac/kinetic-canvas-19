@@ -11,7 +11,7 @@ import {
   type RefObject,
   type SetStateAction,
 } from "react";
-import type { CanvasSpec } from "@/lib/canvas";
+import type { CanvasSpec } from "@/features/canvas";
 import { normalizeComment } from "../lib/comment-text";
 import { getPageDuration } from "../lib/playback-timing";
 import type { Comment, Post } from "../types";

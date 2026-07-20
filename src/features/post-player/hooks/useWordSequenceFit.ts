@@ -13,7 +13,7 @@ import {
   type RefObject,
   type SetStateAction,
 } from "react";
-import type { CanvasSpec } from "@/lib/canvas";
+import type { CanvasSpec } from "@/features/canvas";
 import { computeWordSequenceFit } from "../lib/word-sequence-fit";
 
 const useIsomorphicLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;

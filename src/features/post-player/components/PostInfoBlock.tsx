@@ -7,7 +7,7 @@
 
 import { ArrowUpRight, Link2 } from "lucide-react";
 import type { ReactElement } from "react";
-import type { CanvasLinkPreview } from "@/lib/canvas";
+import type { CanvasLinkPreview } from "@/features/canvas";
 import { formatCompactCount, formatPostDate } from "../lib/post-meta";
 
 export type PostInfoBlockProps = {

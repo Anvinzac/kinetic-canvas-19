@@ -2,7 +2,7 @@
  * Content section: created/updated series by entity_type + table.
  *
  * Exports: ContentPage
- * Depends on: events/rollups queries, recharts
+ * Depends on: events/rollups queries, recharts, AdminDataTable
  */
 
 import { useMemo, useState } from "react";
@@ -12,6 +12,8 @@ import { Bar, BarChart, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } fro
 import { adminEventsQueryOptions, adminRollupsQueryOptions } from "../../api/queries";
 import { useAdminMode, useAdminSearchRange } from "../../hooks/useAdminMode";
 import type { AdminRangePreset } from "../../lib/date-range";
+import { AdminDataTable } from "../AdminDataTable";
+import { contentColumns, toContentRow } from "../columns";
 
 /**
  * New data created by users.
@@ -19,7 +21,8 @@ import type { AdminRangePreset } from "../../lib/date-range";
  */
 export function ContentPage(): React.ReactElement {
   const search = useRouterState({
-    select: (s) => (s.location.search ?? {}) as { range?: AdminRangePreset; from?: string; to?: string },
+    select: (s) =>
+      (s.location.search ?? {}) as { range?: AdminRangePreset; from?: string; to?: string },
   });
   const mode = useAdminMode();
   const { from, to } = useAdminSearchRange(search);
@@ -27,15 +30,16 @@ export function ContentPage(): React.ReactElement {
   const events = useQuery(adminEventsQueryOptions(from, to, mode));
   const [entityFilter, setEntityFilter] = useState<string>("all");
 
-  const contentEvents = useMemo(() => {
+  const rows = useMemo(() => {
     const items = (events.data?.items ?? []).filter(
       (e) =>
         e.event_type === "content.created" ||
         e.event_type === "content.updated" ||
         e.event_type === "content.deleted",
     );
-    if (entityFilter === "all") return items;
-    return items.filter((e) => e.entity_type === entityFilter);
+    const filtered =
+      entityFilter === "all" ? items : items.filter((e) => e.entity_type === entityFilter);
+    return filtered.map(toContentRow);
   }, [events.data, entityFilter]);
 
   const entityTypes = useMemo(() => {
@@ -87,44 +91,7 @@ export function ContentPage(): React.ReactElement {
         )}
       </div>
 
-      <div className="overflow-x-auto rounded-lg border border-border">
-        <table className="w-full text-left text-sm">
-          <thead className="border-b border-border bg-muted/40 text-xs text-muted-foreground">
-            <tr>
-              <th className="px-3 py-2">entity_type</th>
-              <th className="px-3 py-2">entity_id</th>
-              <th className="px-3 py-2">created_by</th>
-              <th className="px-3 py-2">created_at</th>
-            </tr>
-          </thead>
-          <tbody>
-            {contentEvents.length === 0 ? (
-              <tr>
-                <td colSpan={4} className="px-3 py-4 text-muted-foreground">
-                  No data in this range
-                </td>
-              </tr>
-            ) : (
-              contentEvents.map((e) => (
-                <tr key={e.id} className="border-b border-border/60">
-                  <td className="px-3 py-2">{e.entity_type ?? "—"}</td>
-                  <td className="px-3 py-2">
-                    {e.entity_type === "post" && e.entity_id ? (
-                      <a className="text-sky-700 underline" href={`/p/${e.entity_id}`}>
-                        {e.entity_id.slice(0, 8)}…
-                      </a>
-                    ) : (
-                      <span className="font-mono text-xs">{e.entity_id ?? "—"}</span>
-                    )}
-                  </td>
-                  <td className="px-3 py-2 font-mono text-xs">{e.actor_user_id ?? "—"}</td>
-                  <td className="px-3 py-2">{new Date(e.occurred_at).toLocaleString()}</td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+      <AdminDataTable data={rows} columns={contentColumns} />
     </div>
   );
 }

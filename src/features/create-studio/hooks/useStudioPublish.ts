@@ -13,7 +13,7 @@ import type { Dispatch, SetStateAction } from "react";
 import { serializeCanvas, type CanvasSpec } from "@/features/canvas";
 import { discoveryKeys } from "@/features/discovery";
 import { createPost, socialKeys } from "@/features/social";
-import { addMockPost, getMockFeed } from "@/lib/mock-data";
+import { addMockPost, getMockFeed } from "@/features/demo";
 import { runDataMode } from "@/shared/api-client";
 
 export type StudioPublishApi = {

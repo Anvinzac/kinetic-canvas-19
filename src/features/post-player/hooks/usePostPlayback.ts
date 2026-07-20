@@ -6,7 +6,7 @@
  */
 
 import { useEffect, useMemo, useRef, useState, type Dispatch, type SetStateAction } from "react";
-import { parseCanvas } from "@/lib/canvas";
+import { parseCanvas } from "@/features/canvas";
 import { shouldFloatComment } from "../lib/comment-text";
 import { getUniformPageTextSize } from "../lib/playback-timing";
 import { paginateText } from "../lib/paginate";

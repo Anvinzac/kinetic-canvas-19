@@ -57,7 +57,7 @@ export function adminEventsQueryOptions(from: string, to: string, mode: AdminMod
           mode,
           from: `${from}T00:00:00.000Z`,
           to: `${to}T23:59:59.999Z`,
-          limit: 50,
+          limit: 200,
         });
       }
       return getAdminEvents({
@@ -65,7 +65,7 @@ export function adminEventsQueryOptions(from: string, to: string, mode: AdminMod
           mode,
           from: `${from}T00:00:00.000Z`,
           to: `${to}T23:59:59.999Z`,
-          limit: 50,
+          limit: 200,
         },
       });
     },

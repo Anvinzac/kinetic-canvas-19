@@ -11,7 +11,7 @@ import {
   isUsableCanvasBackground,
   resolveCanvasBackground,
   type CanvasSpec,
-} from "@/lib/canvas";
+} from "@/features/canvas";
 import type { Post } from "../types";
 
 export const DEFAULT_CANVAS_BACKGROUND = SAFE_CANVAS_BACKGROUND;

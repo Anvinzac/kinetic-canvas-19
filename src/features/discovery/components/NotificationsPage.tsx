@@ -9,7 +9,7 @@ import type { ReactElement } from "react";
 import { Link, useNavigate, useRouter } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { parseCanvas } from "@/lib/canvas";
+import { parseCanvas } from "@/features/canvas";
 import { resolveDataMode } from "@/features/session";
 import { ChevronLeft, Heart, MessageCircle, UserPlus } from "lucide-react";
 import type { SocialNotificationsData } from "@/shared/types";

@@ -11,7 +11,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
-import { ensureProfile } from "@/lib/social.functions";
+import { ensureProfile } from "@/features/social";
 import { toast } from "sonner";
 import { endDemoSession, isDemoSession, startDemoSession } from "../demo-session";
 

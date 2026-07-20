@@ -7,7 +7,7 @@
 
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { resolveCanvasBackground } from "@/lib/canvas";
+import { resolveCanvasBackground } from "@/features/canvas";
 import { z } from "zod";
 
 const POST_TYPES = ["text", "image", "video", "slideshow", "link"] as const;

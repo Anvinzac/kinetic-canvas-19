@@ -6,7 +6,7 @@
  */
 
 import { Fragment, type ReactElement } from "react";
-import type { MockPost } from "@/lib/mock-data";
+import type { MockPost } from "@/features/demo";
 import { MasonryCard } from "./MasonryCard";
 
 type ProfileMasonryGridProps = {

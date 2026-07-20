@@ -8,7 +8,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import type { ReactElement } from "react";
 import { CanvasStickerLayer } from "@/components/CanvasStickerLayer";
-import type { CanvasSpec } from "@/lib/canvas";
+import type { CanvasSpec } from "@/features/canvas";
 import { isSoloTextPage } from "../lib/playback-timing";
 import type { Profile } from "../types";
 import { ExportWatermark } from "./ExportWatermark";

@@ -17,7 +17,7 @@ import {
   getMockFeed,
   MOCK_ME_ID,
   toggleMockLike,
-} from "@/lib/mock-data";
+} from "@/features/demo";
 import type { SocialFeedData } from "@/shared/types";
 import { socialKeys } from "../api/keys";
 import { feedQueryOptions } from "../api/queries";

@@ -10,7 +10,7 @@ import type { CSSProperties, ReactElement } from "react";
 import {
   getCanvasEmphasisWordColor,
   type CanvasSpec,
-} from "@/lib/canvas";
+} from "@/features/canvas";
 import {
   getAuraColor,
   getBoundPhraseEmphasisSeed,

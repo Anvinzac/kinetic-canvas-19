@@ -5,7 +5,7 @@
  * Depends on: lib/canvas COMMENT_CHIPS, seed MOCK_ME_ID, posts/helpers NOVA_RAE_ID
  */
 
-import { COMMENT_CHIPS } from "@/lib/canvas";
+import { COMMENT_CHIPS } from "@/features/canvas";
 import { NOVA_RAE_ID } from "./posts/helpers";
 import { MOCK_ME_ID } from "./profiles";
 import type { MockComment } from "./types";

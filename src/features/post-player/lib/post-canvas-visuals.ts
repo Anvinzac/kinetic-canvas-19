@@ -6,9 +6,9 @@
  */
 
 import { getPostPhotoUrl, hasPostPhotoBackdrop } from "@/lib/post-media";
-import type { CanvasSpec } from "@/lib/canvas";
-import { getCanvasPatternTheme } from "@/lib/canvas-patterns";
-import { getCanvasSceneTheme } from "@/lib/canvas-scenes";
+import type { CanvasSpec } from "@/features/canvas";
+import { getCanvasPatternTheme } from "@/features/canvas";
+import { getCanvasSceneTheme } from "@/features/canvas";
 import {
   getResolvedPostBackground,
   getSlidingCanvasBackground,

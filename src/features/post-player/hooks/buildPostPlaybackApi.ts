@@ -6,7 +6,7 @@
  */
 
 import type { Dispatch, RefObject, SetStateAction } from "react";
-import type { CanvasSpec } from "@/lib/canvas";
+import type { CanvasSpec } from "@/features/canvas";
 import type { Comment, Post, Profile } from "../types";
 import type { UseCommentFlowResult } from "./useCommentFlow";
 import type { UseCommentStoryResult } from "./useCommentStory";

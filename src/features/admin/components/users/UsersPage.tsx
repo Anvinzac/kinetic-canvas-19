@@ -2,9 +2,10 @@
  * Users section: registration series + table + cohort-lite.
  *
  * Exports: UsersPage
- * Depends on: rollups/events queries, recharts
+ * Depends on: queries, recharts, AdminDataTable
  */
 
+import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useRouterState } from "@tanstack/react-router";
 import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
@@ -12,6 +13,8 @@ import { adminEventsQueryOptions, adminRollupsQueryOptions } from "../../api/que
 import { useAdminMode, useAdminSearchRange } from "../../hooks/useAdminMode";
 import type { AdminRangePreset } from "../../lib/date-range";
 import { daysAgo } from "../../lib/date-range";
+import { AdminDataTable } from "../AdminDataTable";
+import { toUserRow, userColumns } from "../columns";
 
 /**
  * New user registration admin section.
@@ -45,7 +48,13 @@ export function UsersPage(): React.ReactElement {
         : 0
       : ((currentUsers - priorUsers) / priorUsers) * 100;
 
-  const userEvents = (events.data?.items ?? []).filter((e) => e.event_type === "user.registered");
+  const rows = useMemo(
+    () =>
+      (events.data?.items ?? [])
+        .filter((e) => e.event_type === "user.registered")
+        .map(toUserRow),
+    [events.data],
+  );
 
   return (
     <div className="space-y-6">
@@ -71,36 +80,7 @@ export function UsersPage(): React.ReactElement {
         )}
       </div>
 
-      <div className="overflow-x-auto rounded-lg border border-border">
-        <table className="w-full text-left text-sm">
-          <thead className="border-b border-border bg-muted/40 text-xs text-muted-foreground">
-            <tr>
-              <th className="px-3 py-2">user_id</th>
-              <th className="px-3 py-2">app</th>
-              <th className="px-3 py-2">registered_at</th>
-              <th className="px-3 py-2">source</th>
-            </tr>
-          </thead>
-          <tbody>
-            {userEvents.length === 0 ? (
-              <tr>
-                <td colSpan={4} className="px-3 py-4 text-muted-foreground">
-                  No data in this range
-                </td>
-              </tr>
-            ) : (
-              userEvents.map((e) => (
-                <tr key={e.id} className="border-b border-border/60">
-                  <td className="px-3 py-2 font-mono text-xs">{e.actor_user_id ?? "—"}</td>
-                  <td className="px-3 py-2">{e.app_id}</td>
-                  <td className="px-3 py-2">{new Date(e.occurred_at).toLocaleString()}</td>
-                  <td className="px-3 py-2">{String(e.metadata.username ?? "—")}</td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+      <AdminDataTable data={rows} columns={userColumns} />
     </div>
   );
 }

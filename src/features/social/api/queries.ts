@@ -7,7 +7,7 @@
 
 import { queryOptions } from "@tanstack/react-query";
 import type { DataMode } from "@/features/session";
-import { getMockFeed, getMockPost } from "@/lib/mock-data";
+import { getMockFeed, getMockPost } from "@/features/demo";
 import { runDataMode } from "@/shared/api-client";
 import type { SocialFeedData, SocialPostData } from "@/shared/types";
 import { socialKeys } from "./keys";

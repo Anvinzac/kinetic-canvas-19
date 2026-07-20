@@ -10,7 +10,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import {type ReactElement, useState, useEffect } from "react";
 import { resolveDataMode } from "@/features/session";
-import { type MockDiscoverData, type MockSearchData } from "@/lib/mock-data";
+import { type MockDiscoverData, type MockSearchData } from "@/features/demo";
 import { ChevronLeft, Search as SearchIcon } from "lucide-react";
 import type { SocialDiscoverData, SocialSearchData } from "@/shared/types";
 import { getDiscover, search } from "../api/discovery.functions";

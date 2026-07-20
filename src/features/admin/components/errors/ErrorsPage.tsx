@@ -2,7 +2,7 @@
  * Error reports section with acknowledge/resolve actions and anomaly markers.
  *
  * Exports: ErrorsPage
- * Depends on: admin errors queries, demo/live status updates
+ * Depends on: admin errors queries, AdminDataTable, demo/live status updates
  */
 
 import { useMemo, useState } from "react";
@@ -17,6 +17,8 @@ import { updateErrorStatus } from "../../api/telemetry.core";
 import { useAdminMode, useAdminSearchRange } from "../../hooks/useAdminMode";
 import type { AdminRangePreset } from "../../lib/date-range";
 import type { ErrorReportStatus, TelemetrySeverity } from "../../types/telemetry";
+import { AdminDataTable } from "../AdminDataTable";
+import { createErrorColumns } from "../columns";
 
 /**
  * Error reports admin section.
@@ -24,7 +26,8 @@ import type { ErrorReportStatus, TelemetrySeverity } from "../../types/telemetry
  */
 export function ErrorsPage(): React.ReactElement {
   const search = useRouterState({
-    select: (s) => (s.location.search ?? {}) as { range?: AdminRangePreset; from?: string; to?: string },
+    select: (s) =>
+      (s.location.search ?? {}) as { range?: AdminRangePreset; from?: string; to?: string },
   });
   const mode = useAdminMode();
   const { from, to } = useAdminSearchRange(search);
@@ -71,11 +74,22 @@ export function ErrorsPage(): React.ReactElement {
     },
   });
 
+  const columns = useMemo(
+    () =>
+      createErrorColumns({
+        onStatus: (input) => mutation.mutate(input),
+        pending: mutation.isPending,
+      }),
+    [mutation],
+  );
+
   return (
     <div className="space-y-6">
       <div>
         <h2 className="text-xl font-semibold">Error reports</h2>
-        <p className="text-sm text-muted-foreground">Client/boundary errors with admin status writes</p>
+        <p className="text-sm text-muted-foreground">
+          Client/boundary errors with admin status writes
+        </p>
       </div>
 
       <div className="flex flex-wrap gap-2 text-xs">
@@ -104,10 +118,7 @@ export function ErrorsPage(): React.ReactElement {
               <Tooltip />
               <Bar dataKey="errors_total" name="errors">
                 {(rollups.data ?? []).map((r) => (
-                  <Cell
-                    key={r.date}
-                    fill={anomalyDays.has(r.date) ? "#dc2626" : "#78716c"}
-                  />
+                  <Cell key={r.date} fill={anomalyDays.has(r.date) ? "#dc2626" : "#78716c"} />
                 ))}
               </Bar>
             </BarChart>
@@ -115,59 +126,7 @@ export function ErrorsPage(): React.ReactElement {
         )}
       </div>
 
-      <div className="overflow-x-auto rounded-lg border border-border">
-        <table className="w-full text-left text-sm">
-          <thead className="border-b border-border bg-muted/40 text-xs text-muted-foreground">
-            <tr>
-              <th className="px-3 py-2">severity</th>
-              <th className="px-3 py-2">message</th>
-              <th className="px-3 py-2">status</th>
-              <th className="px-3 py-2">when</th>
-              <th className="px-3 py-2">actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {items.length === 0 ? (
-              <tr>
-                <td colSpan={5} className="px-3 py-4 text-muted-foreground">
-                  No data in this range
-                </td>
-              </tr>
-            ) : (
-              items.map((e) => (
-                <tr key={e.id} className="border-b border-border/60">
-                  <td className="px-3 py-2">{e.severity}</td>
-                  <td className="max-w-xs truncate px-3 py-2">{e.message}</td>
-                  <td className="px-3 py-2">{e.status}</td>
-                  <td className="px-3 py-2 text-xs">{new Date(e.created_at).toLocaleString()}</td>
-                  <td className="space-x-1 px-3 py-2">
-                    {e.status === "new" ? (
-                      <button
-                        type="button"
-                        className="rounded bg-muted px-2 py-1 text-xs"
-                        disabled={mutation.isPending}
-                        onClick={() => mutation.mutate({ id: e.id, status: "acknowledged" })}
-                      >
-                        Ack
-                      </button>
-                    ) : null}
-                    {e.status !== "resolved" ? (
-                      <button
-                        type="button"
-                        className="rounded bg-foreground px-2 py-1 text-xs text-background"
-                        disabled={mutation.isPending}
-                        onClick={() => mutation.mutate({ id: e.id, status: "resolved" })}
-                      >
-                        Resolve
-                      </button>
-                    ) : null}
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+      <AdminDataTable data={items} columns={columns} />
     </div>
   );
 }

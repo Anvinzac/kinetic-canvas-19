@@ -17,7 +17,7 @@ import {
   getMockPost,
   MOCK_ME_ID,
   toggleMockLike,
-} from "@/lib/mock-data";
+} from "@/features/demo";
 import { supabase } from "@/integrations/supabase/client";
 import type { SocialPostData } from "@/shared/types";
 import { socialKeys } from "../api/keys";

@@ -2,7 +2,7 @@
  * Links & interactions section (shareable posts).
  *
  * Exports: LinksPage
- * Depends on: events/rollups, recharts
+ * Depends on: events/rollups, recharts, AdminDataTable
  */
 
 import { useMemo } from "react";
@@ -12,6 +12,8 @@ import { Bar, BarChart, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } fro
 import { adminEventsQueryOptions, adminRollupsQueryOptions } from "../../api/queries";
 import { useAdminMode, useAdminSearchRange } from "../../hooks/useAdminMode";
 import type { AdminRangePreset } from "../../lib/date-range";
+import { AdminDataTable } from "../AdminDataTable";
+import { linkColumns, type LinkRow } from "../columns";
 
 /**
  * Links & interaction counts for shareable posts.
@@ -19,7 +21,8 @@ import type { AdminRangePreset } from "../../lib/date-range";
  */
 export function LinksPage(): React.ReactElement {
   const search = useRouterState({
-    select: (s) => (s.location.search ?? {}) as { range?: AdminRangePreset; from?: string; to?: string },
+    select: (s) =>
+      (s.location.search ?? {}) as { range?: AdminRangePreset; from?: string; to?: string },
   });
   const mode = useAdminMode();
   const { from, to } = useAdminSearchRange(search);
@@ -27,10 +30,7 @@ export function LinksPage(): React.ReactElement {
   const events = useQuery(adminEventsQueryOptions(from, to, mode));
 
   const linkRows = useMemo(() => {
-    const map = new Map<
-      string,
-      { link_id: string; created_at: string; created_by: string | null; interactions: number; last?: string }
-    >();
+    const map = new Map<string, LinkRow>();
     for (const e of events.data?.items ?? []) {
       if (e.event_type === "link.created" && e.entity_id) {
         map.set(e.entity_id, {
@@ -42,7 +42,7 @@ export function LinksPage(): React.ReactElement {
         });
       }
       if (e.event_type === "link.interacted" && e.entity_id) {
-      const prev = map.get(e.entity_id) ?? {
+        const prev = map.get(e.entity_id) ?? {
           link_id: e.entity_id,
           created_at: e.occurred_at,
           created_by: null as string | null,
@@ -101,44 +101,7 @@ export function LinksPage(): React.ReactElement {
         {(rollups.data ?? []).reduce((s, r) => s + r.link_interactions, 0)}
       </p>
 
-      <div className="overflow-x-auto rounded-lg border border-border">
-        <table className="w-full text-left text-sm">
-          <thead className="border-b border-border bg-muted/40 text-xs text-muted-foreground">
-            <tr>
-              <th className="px-3 py-2">link</th>
-              <th className="px-3 py-2">created_by</th>
-              <th className="px-3 py-2">created_at</th>
-              <th className="px-3 py-2">interactions</th>
-              <th className="px-3 py-2">last</th>
-            </tr>
-          </thead>
-          <tbody>
-            {linkRows.length === 0 ? (
-              <tr>
-                <td colSpan={5} className="px-3 py-4 text-muted-foreground">
-                  No data in this range
-                </td>
-              </tr>
-            ) : (
-              linkRows.slice(0, 50).map((row) => (
-                <tr key={row.link_id} className="border-b border-border/60">
-                  <td className="px-3 py-2">
-                    <a className="text-sky-700 underline" href={`/p/${row.link_id}`}>
-                      /p/{row.link_id.slice(0, 8)}…
-                    </a>
-                  </td>
-                  <td className="px-3 py-2 font-mono text-xs">{row.created_by ?? "—"}</td>
-                  <td className="px-3 py-2">{new Date(row.created_at).toLocaleString()}</td>
-                  <td className="px-3 py-2 tabular-nums">{row.interactions}</td>
-                  <td className="px-3 py-2">
-                    {row.last ? new Date(row.last).toLocaleString() : "—"}
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+      <AdminDataTable data={linkRows} columns={linkColumns} />
     </div>
   );
 }

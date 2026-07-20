@@ -7,7 +7,7 @@
 
 import { motion } from "framer-motion";
 import type { ReactElement } from "react";
-import { DEFAULT_CANVAS, getCanvasTextColor, type CanvasSpec } from "@/lib/canvas";
+import { DEFAULT_CANVAS, getCanvasTextColor, type CanvasSpec } from "@/features/canvas";
 import { WordSequenceText } from "./WordSequenceText";
 
 export type AnimatedCommentStoryTextProps = {

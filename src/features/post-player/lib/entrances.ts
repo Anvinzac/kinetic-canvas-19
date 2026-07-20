@@ -6,7 +6,7 @@
  */
 
 import type { TargetAndTransition, Transition } from "framer-motion";
-import type { Rhythm } from "@/lib/canvas";
+import type { Rhythm } from "@/features/canvas";
 import { getStableNumber } from "@/features/kinetic-text";
 
 // Every post is auto-assigned one of these word-entrance "personalities", picked

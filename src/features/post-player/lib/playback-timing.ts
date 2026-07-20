@@ -5,7 +5,7 @@
  * Depends on: features/canvas Tempo/Rhythm, features/kinetic-text getWords/isLikelyVietnameseText
  */
 
-import type { Rhythm, Tempo } from "@/lib/canvas";
+import type { Rhythm, Tempo } from "@/features/canvas";
 import { getWords, isLikelyVietnameseText } from "@/features/kinetic-text";
 
 /** Keep kinetic text clear of the canvas edge without stealing its scale. */

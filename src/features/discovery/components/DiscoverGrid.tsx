@@ -7,8 +7,8 @@
 
 import type { ReactElement } from "react";
 import { Newspaper } from "lucide-react";
-import { getCanvasTextColor, parseCanvas, resolveCanvasBackground } from "@/lib/canvas";
-import type { MockPost } from "@/lib/mock-data";
+import { getCanvasTextColor, parseCanvas, resolveCanvasBackground } from "@/features/canvas";
+import type { MockPost } from "@/features/demo";
 
 /**
  * @responsibility Render a 3-column mini canvas grid for discover/search posts.

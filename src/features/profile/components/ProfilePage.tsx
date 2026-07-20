@@ -21,7 +21,7 @@ import {
 import { getProfile } from "@/features/social";
 import { resolveDataMode } from "@/features/session";
 import { useStatusScrollSnap } from "@/lib/use-status-scroll-snap";
-import { toggleMockFollow, type MockPost } from "@/lib/mock-data";
+import { toggleMockFollow, type MockPost } from "@/features/demo";
 import type { SocialMeData, SocialProfileData } from "@/shared/types";
 import {
   getSortedPosts,

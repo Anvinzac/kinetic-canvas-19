@@ -1,7 +1,7 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
-import { isDemoSession } from "@/lib/demo-session";
-import { MOCK_ME_USERNAME } from "@/lib/mock-data";
+import { isDemoSession } from "@/features/session";
+import { MOCK_ME_USERNAME } from "@/features/demo";
 
 // /me — resolves the signed-in user's username and redirects to /u/$username
 export const Route = createFileRoute("/_authenticated/me")({

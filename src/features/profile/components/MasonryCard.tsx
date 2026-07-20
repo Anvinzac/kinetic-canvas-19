@@ -7,8 +7,8 @@
 
 import type { ReactElement } from "react";
 import { KineticText } from "@/components/KineticText";
-import { parseCanvas, resolveCanvasBackground } from "@/lib/canvas";
-import type { MockPost } from "@/lib/mock-data";
+import { parseCanvas, resolveCanvasBackground } from "@/features/canvas";
+import type { MockPost } from "@/features/demo";
 import { paginateText } from "@/features/post-player";
 
 /**

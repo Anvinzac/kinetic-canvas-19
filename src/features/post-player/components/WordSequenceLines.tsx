@@ -6,7 +6,7 @@
  */
 
 import type { ReactElement } from "react";
-import type { CanvasSpec } from "@/lib/canvas";
+import type { CanvasSpec } from "@/features/canvas";
 import type { getVietnameseLayoutMetrics } from "@/features/kinetic-text";
 import type { ResolvedEntranceStyle } from "../lib/entrances";
 import { WordSequenceWord } from "./WordSequenceWord";

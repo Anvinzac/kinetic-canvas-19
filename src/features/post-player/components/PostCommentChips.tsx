@@ -7,7 +7,7 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import type { ReactElement } from "react";
-import { COMMENT_CHIPS } from "@/lib/canvas";
+import { COMMENT_CHIPS } from "@/features/canvas";
 import { getWords } from "@/features/kinetic-text";
 import { MAX_COMMENT_WORDS } from "../lib/comment-text";
 import type { CommentStory, Profile } from "../types";

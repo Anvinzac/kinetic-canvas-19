@@ -6,7 +6,7 @@
  */
 
 import { useMemo } from "react";
-import type { CanvasSpec } from "@/lib/canvas";
+import type { CanvasSpec } from "@/features/canvas";
 import { shouldFloatComment } from "../lib/comment-text";
 import { getUniformPageTextSize } from "../lib/playback-timing";
 import { getCommentFlightGeometry } from "../lib/post-comment-layout";

@@ -5,7 +5,7 @@
  * Depends on: demo seed types, store, rank
  */
 
-import { parseCanvas } from "@/lib/canvas";
+import { parseCanvas } from "@/features/canvas";
 import { rankMockFeedPosts } from "../rank";
 import {
   type MockDiscoverData,

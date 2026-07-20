@@ -24,6 +24,9 @@ export type DemoTelemetryStore = {
   activeActorsByDay: Record<string, string[]>;
 };
 
+/** Process-local fallback when localStorage is unavailable (SSR / HTTP contract). */
+let memoryStore: DemoTelemetryStore | null = null;
+
 /**
  * Build an empty demo telemetry store.
  * @returns Empty store
@@ -54,17 +57,20 @@ function storage(): Storage | null {
 }
 
 /**
- * Read demo telemetry from localStorage (client) or empty on server.
+ * Read demo telemetry from localStorage (client) or process memory (server).
  * @returns Demo store
  */
 export function readDemoTelemetry(): DemoTelemetryStore {
   const raw = storage()?.getItem(STORAGE_KEY);
-  if (!raw) return emptyDemoStore();
-  try {
-    return { ...emptyDemoStore(), ...(JSON.parse(raw) as Partial<DemoTelemetryStore>) };
-  } catch {
-    return emptyDemoStore();
+  if (raw) {
+    try {
+      return { ...emptyDemoStore(), ...(JSON.parse(raw) as Partial<DemoTelemetryStore>) };
+    } catch {
+      return emptyDemoStore();
+    }
   }
+  if (memoryStore) return memoryStore;
+  return emptyDemoStore();
 }
 
 /**
@@ -73,6 +79,7 @@ export function readDemoTelemetry(): DemoTelemetryStore {
  * @returns void
  */
 export function writeDemoTelemetry(store: DemoTelemetryStore): void {
+  memoryStore = store;
   storage()?.setItem(STORAGE_KEY, JSON.stringify(store));
 }
 
