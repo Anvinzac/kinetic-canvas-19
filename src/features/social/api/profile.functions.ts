@@ -107,6 +107,17 @@ export const ensureProfile = createServerFn({ method: "POST" })
       .select("id, username, display_name, avatar_url")
       .single();
     if (error) throw new Error(error.message);
+
+    const { emitTelemetryEvent } = await import("@/features/admin/lib/emit");
+    void emitTelemetryEvent({
+      mode: "live",
+      event_type: "user.registered",
+      actor_user_id: created.id,
+      entity_type: "profile",
+      entity_id: created.id,
+      metadata: { username: created.username },
+    });
+
     return created;
   });
 

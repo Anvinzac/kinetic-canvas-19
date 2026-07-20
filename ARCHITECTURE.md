@@ -21,6 +21,7 @@ This app is a kinetic status composer + feed. Code is organized by **feature**, 
 | Gradients, serialize, contrast | `src/features/canvas/` |
 | Offline demo seed / mock APIs | `src/features/demo/` |
 | Demo vs live session flag | `src/features/session/` |
+| Embedded admin dashboard / telemetry | `src/features/admin/` (+ `/admin` routes, `MAPPING_NOTES.md`) |
 | Shared demo/live branching | `src/shared/api-client/` |
 | Shared DTOs (Post, Profile, …) | `src/shared/types/` |
 | Route URLs only (thin) | `src/routes/` |

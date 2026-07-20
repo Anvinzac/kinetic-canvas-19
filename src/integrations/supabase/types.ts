@@ -394,6 +394,7 @@ export type Database = {
           created_at: string
           display_name: string
           id: string
+          is_admin: boolean
           is_system: boolean
           username: string
         }
@@ -404,6 +405,7 @@ export type Database = {
           created_at?: string
           display_name: string
           id?: string
+          is_admin?: boolean
           is_system?: boolean
           username: string
         }
@@ -414,8 +416,209 @@ export type Database = {
           created_at?: string
           display_name?: string
           id?: string
+          is_admin?: boolean
           is_system?: boolean
           username?: string
+        }
+        Relationships: []
+      }
+      telemetry_events: {
+        Row: {
+          id: string
+          app_id: string
+          event_type: string
+          occurred_at: string
+          actor_user_id: string | null
+          entity_type: string | null
+          entity_id: string | null
+          metadata: Json
+          severity: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          app_id?: string
+          event_type: string
+          occurred_at?: string
+          actor_user_id?: string | null
+          entity_type?: string | null
+          entity_id?: string | null
+          metadata?: Json
+          severity?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          app_id?: string
+          event_type?: string
+          occurred_at?: string
+          actor_user_id?: string | null
+          entity_type?: string | null
+          entity_id?: string | null
+          metadata?: Json
+          severity?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      }
+      telemetry_daily_rollups: {
+        Row: {
+          app_id: string
+          date: string
+          new_users: number
+          active_users: number
+          content_created: number
+          content_updated: number
+          links_created: number
+          link_interactions: number
+          errors_total: number
+          errors_critical: number
+        }
+        Insert: {
+          app_id?: string
+          date: string
+          new_users?: number
+          active_users?: number
+          content_created?: number
+          content_updated?: number
+          links_created?: number
+          link_interactions?: number
+          errors_total?: number
+          errors_critical?: number
+        }
+        Update: {
+          app_id?: string
+          date?: string
+          new_users?: number
+          active_users?: number
+          content_created?: number
+          content_updated?: number
+          links_created?: number
+          link_interactions?: number
+          errors_total?: number
+          errors_critical?: number
+        }
+        Relationships: []
+      }
+      telemetry_health_snapshots: {
+        Row: {
+          id: string
+          app_id: string
+          captured_at: string
+          status: string
+          uptime_pct_24h: number
+          p50_latency_ms: number
+          p95_latency_ms: number
+          error_rate_pct: number
+          queue_depth: number | null
+          db_connections_used: number | null
+          db_connections_max: number | null
+        }
+        Insert: {
+          id?: string
+          app_id?: string
+          captured_at?: string
+          status: string
+          uptime_pct_24h?: number
+          p50_latency_ms?: number
+          p95_latency_ms?: number
+          error_rate_pct?: number
+          queue_depth?: number | null
+          db_connections_used?: number | null
+          db_connections_max?: number | null
+        }
+        Update: {
+          id?: string
+          app_id?: string
+          captured_at?: string
+          status?: string
+          uptime_pct_24h?: number
+          p50_latency_ms?: number
+          p95_latency_ms?: number
+          error_rate_pct?: number
+          queue_depth?: number | null
+          db_connections_used?: number | null
+          db_connections_max?: number | null
+        }
+        Relationships: []
+      }
+      admin_error_reports: {
+        Row: {
+          id: string
+          event_id: string | null
+          app_id: string
+          status: string
+          message: string
+          severity: string
+          actor_user_id: string | null
+          metadata: Json
+          created_at: string
+          updated_at: string
+          resolved_by: string | null
+          resolved_at: string | null
+        }
+        Insert: {
+          id?: string
+          event_id?: string | null
+          app_id?: string
+          status?: string
+          message?: string
+          severity?: string
+          actor_user_id?: string | null
+          metadata?: Json
+          created_at?: string
+          updated_at?: string
+          resolved_by?: string | null
+          resolved_at?: string | null
+        }
+        Update: {
+          id?: string
+          event_id?: string | null
+          app_id?: string
+          status?: string
+          message?: string
+          severity?: string
+          actor_user_id?: string | null
+          metadata?: Json
+          created_at?: string
+          updated_at?: string
+          resolved_by?: string | null
+          resolved_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_error_reports_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "telemetry_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      admin_access_log: {
+        Row: {
+          id: string
+          actor_user_id: string | null
+          path: string
+          method: string
+          occurred_at: string
+          metadata: Json
+        }
+        Insert: {
+          id?: string
+          actor_user_id?: string | null
+          path: string
+          method?: string
+          occurred_at?: string
+          metadata?: Json
+        }
+        Update: {
+          id?: string
+          actor_user_id?: string | null
+          path?: string
+          method?: string
+          occurred_at?: string
+          metadata?: Json
         }
         Relationships: []
       }
@@ -450,6 +653,21 @@ export type Database = {
       }
     }
     Functions: {
+      bump_telemetry_daily_rollup: {
+        Args: {
+          _app_id: string
+          _date: string
+          _new_users?: number
+          _active_users?: number
+          _content_created?: number
+          _content_updated?: number
+          _links_created?: number
+          _link_interactions?: number
+          _errors_total?: number
+          _errors_critical?: number
+        }
+        Returns: undefined
+      }
       enqueue_agent_content_item: {
         Args: {
           p_available_at?: string
@@ -459,6 +677,7 @@ export type Database = {
         }
         Returns: string
       }
+      is_admin_account: { Args: { _uid: string }; Returns: boolean }
       is_system_account: { Args: { _uid: string }; Returns: boolean }
       publish_vocabulary_bot_post: {
         Args: { p_run_at?: string }

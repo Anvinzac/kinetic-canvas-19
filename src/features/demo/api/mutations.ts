@@ -36,6 +36,16 @@ export async function toggleMockLike(postId: string): Promise<{ liked: boolean }
 
   liked.add(postId);
   writeJsonArray(LIKED_POSTS_KEY, [...liked]);
+  void import("@/features/admin/lib/emit").then(({ emitTelemetryEvent }) =>
+    emitTelemetryEvent({
+      mode: "demo",
+      event_type: "link.interacted",
+      actor_user_id: MOCK_ME_ID,
+      entity_type: "post",
+      entity_id: postId,
+      metadata: { interaction: "like" },
+    }),
+  );
   return { liked: true };
 }
 
@@ -55,6 +65,24 @@ export async function addMockComment(postId: string, chipId: string): Promise<{ 
     created_at: new Date().toISOString(),
   };
   writeJsonArray(LOCAL_COMMENTS_KEY, [...comments, next]);
+  void import("@/features/admin/lib/emit").then(({ emitTelemetryEvent }) => {
+    void emitTelemetryEvent({
+      mode: "demo",
+      event_type: "content.created",
+      actor_user_id: MOCK_ME_ID,
+      entity_type: "comment",
+      entity_id: next.id,
+      metadata: { post_id: postId, chip_id: chipId },
+    });
+    void emitTelemetryEvent({
+      mode: "demo",
+      event_type: "link.interacted",
+      actor_user_id: MOCK_ME_ID,
+      entity_type: "post",
+      entity_id: postId,
+      metadata: { interaction: "comment" },
+    });
+  });
   return { ok: true as const };
 }
 
@@ -114,6 +142,24 @@ export function addMockPost(input: {
     created_at: new Date().toISOString(),
   };
   writeJsonArray(LOCAL_POSTS_KEY, [post, ...posts]);
+  void import("@/features/admin/lib/emit").then(({ emitTelemetryEvent }) => {
+    void emitTelemetryEvent({
+      mode: "demo",
+      event_type: "content.created",
+      actor_user_id: MOCK_ME_ID,
+      entity_type: "post",
+      entity_id: post.id,
+      metadata: { post_type: input.post_type },
+    });
+    void emitTelemetryEvent({
+      mode: "demo",
+      event_type: "link.created",
+      actor_user_id: MOCK_ME_ID,
+      entity_type: "post",
+      entity_id: post.id,
+      metadata: { path: `/p/${post.id}` },
+    });
+  });
   return post;
 }
 

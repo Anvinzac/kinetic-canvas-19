@@ -52,6 +52,25 @@ export const createPost = createServerFn({ method: "POST" })
       .select("id")
       .single();
     if (error) throw new Error(error.message);
+
+    const { emitTelemetryEvent } = await import("@/features/admin/lib/emit");
+    void emitTelemetryEvent({
+      mode: "live",
+      event_type: "content.created",
+      actor_user_id: profile.id,
+      entity_type: "post",
+      entity_id: post.id,
+      metadata: { post_type: data.post_type },
+    });
+    void emitTelemetryEvent({
+      mode: "live",
+      event_type: "link.created",
+      actor_user_id: profile.id,
+      entity_type: "post",
+      entity_id: post.id,
+      metadata: { path: `/p/${post.id}` },
+    });
+
     return post;
   });
 
@@ -81,6 +100,15 @@ export const toggleLike = createServerFn({ method: "POST" })
       return { liked: false };
     }
     await supabase.from("likes").insert({ user_id: profile.id, post_id: data.post_id });
+    const { emitTelemetryEvent } = await import("@/features/admin/lib/emit");
+    void emitTelemetryEvent({
+      mode: "live",
+      event_type: "link.interacted",
+      actor_user_id: profile.id,
+      entity_type: "post",
+      entity_id: data.post_id,
+      metadata: { interaction: "like" },
+    });
     return { liked: true };
   });
 
@@ -117,6 +145,25 @@ export const addComment = createServerFn({ method: "POST" })
       .from("comments")
       .insert({ post_id: data.post_id, user_id: profile.id, chip_id: data.chip_id });
     if (error) throw new Error(error.message);
+
+    const { emitTelemetryEvent } = await import("@/features/admin/lib/emit");
+    void emitTelemetryEvent({
+      mode: "live",
+      event_type: "content.created",
+      actor_user_id: profile.id,
+      entity_type: "comment",
+      entity_id: data.post_id,
+      metadata: { chip_id: data.chip_id },
+    });
+    void emitTelemetryEvent({
+      mode: "live",
+      event_type: "link.interacted",
+      actor_user_id: profile.id,
+      entity_type: "post",
+      entity_id: data.post_id,
+      metadata: { interaction: "comment" },
+    });
+
     return { ok: true };
   });
 

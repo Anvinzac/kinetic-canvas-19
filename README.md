@@ -11,6 +11,14 @@ npm run dev
 
 Use **Continue as demo** on `/auth` to explore without Supabase.
 
+## Admin dashboard
+
+Embedded at `/admin` (telemetry contract under `/api/admin/telemetry/*`).
+
+- Demo: set `VITE_DEMO_ADMIN=1`, start a demo session, open `/admin`.
+- Live: set `profiles.is_admin = true` or `ADMIN_USER_IDS` (auth user UUIDs).
+- Mapping judgments: [`MAPPING_NOTES.md`](./MAPPING_NOTES.md)
+
 ## For developers (especially new contributors)
 
 Read **[ARCHITECTURE.md](./ARCHITECTURE.md)** first. It explains:
