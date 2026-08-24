@@ -28,6 +28,7 @@ import { Route as AuthenticatedEditProfileRouteImport } from './routes/_authenti
 import { Route as AuthenticatedDiscoverRouteImport } from './routes/_authenticated/discover'
 import { Route as AuthenticatedCreateRouteImport } from './routes/_authenticated/create'
 import { Route as AuthenticatedAboutRouteImport } from './routes/_authenticated/about'
+import { Route as ApiPublicVocabularyRefillRouteImport } from './routes/api/public/vocabulary-refill'
 import { Route as AuthenticatedUUsernameRouteImport } from './routes/_authenticated/u.$username'
 import { Route as AuthenticatedPPostIdRouteImport } from './routes/_authenticated/p.$postId'
 
@@ -127,6 +128,12 @@ const AuthenticatedAboutRoute = AuthenticatedAboutRouteImport.update({
   path: '/about',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ApiPublicVocabularyRefillRoute =
+  ApiPublicVocabularyRefillRouteImport.update({
+    id: '/api/public/vocabulary-refill',
+    path: '/api/public/vocabulary-refill',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AuthenticatedUUsernameRoute = AuthenticatedUUsernameRouteImport.update({
   id: '/u/$username',
   path: '/u/$username',
@@ -159,6 +166,7 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AdminIndexRoute
   '/p/$postId': typeof AuthenticatedPPostIdRoute
   '/u/$username': typeof AuthenticatedUUsernameRoute
+  '/api/public/vocabulary-refill': typeof ApiPublicVocabularyRefillRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -180,6 +188,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminIndexRoute
   '/p/$postId': typeof AuthenticatedPPostIdRoute
   '/u/$username': typeof AuthenticatedUUsernameRoute
+  '/api/public/vocabulary-refill': typeof ApiPublicVocabularyRefillRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -204,6 +213,7 @@ export interface FileRoutesById {
   '/admin/': typeof AdminIndexRoute
   '/_authenticated/p/$postId': typeof AuthenticatedPPostIdRoute
   '/_authenticated/u/$username': typeof AuthenticatedUUsernameRoute
+  '/api/public/vocabulary-refill': typeof ApiPublicVocabularyRefillRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -228,6 +238,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/p/$postId'
     | '/u/$username'
+    | '/api/public/vocabulary-refill'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -249,6 +260,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/p/$postId'
     | '/u/$username'
+    | '/api/public/vocabulary-refill'
   id:
     | '__root__'
     | '/'
@@ -272,6 +284,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/_authenticated/p/$postId'
     | '/_authenticated/u/$username'
+    | '/api/public/vocabulary-refill'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -280,6 +293,7 @@ export interface RootRouteChildren {
   AdminRouteRoute: typeof AdminRouteRouteWithChildren
   AdminAccessDeniedRoute: typeof AdminAccessDeniedRoute
   AuthRoute: typeof AuthRoute
+  ApiPublicVocabularyRefillRoute: typeof ApiPublicVocabularyRefillRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -417,6 +431,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAboutRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/vocabulary-refill': {
+      id: '/api/public/vocabulary-refill'
+      path: '/api/public/vocabulary-refill'
+      fullPath: '/api/public/vocabulary-refill'
+      preLoaderRoute: typeof ApiPublicVocabularyRefillRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/u/$username': {
       id: '/_authenticated/u/$username'
       path: '/u/$username'
@@ -491,6 +512,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRouteRoute: AdminRouteRouteWithChildren,
   AdminAccessDeniedRoute: AdminAccessDeniedRoute,
   AuthRoute: AuthRoute,
+  ApiPublicVocabularyRefillRoute: ApiPublicVocabularyRefillRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
