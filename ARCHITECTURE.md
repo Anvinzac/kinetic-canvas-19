@@ -22,6 +22,7 @@ This app is a kinetic status composer + feed. Code is organized by **feature**, 
 | Offline demo seed / mock APIs | `src/features/demo/` |
 | Demo vs live session flag | `src/features/session/` |
 | Embedded admin dashboard / telemetry | `src/features/admin/` (+ `/admin` routes, `MAPPING_NOTES.md`) |
+| Auto-posting / content-hub credentials | `docs/lovable-auto-posting-credentials.md` + `content-hub/` |
 | Shared demo/live branching | `src/shared/api-client/` |
 | Shared DTOs (Post, Profile, …) | `src/shared/types/` |
 | Route URLs only (thin) | `src/routes/` |

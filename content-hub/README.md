@@ -9,6 +9,9 @@ It depends on the app through exactly **one contract** (`src/contract.ts`) and o
 sink) no Supabase. You can host it anywhere and swap the backend without touching
 any adapter.
 
+**Credentials for Lovable / GitHub / local:** see
+[`docs/lovable-auto-posting-credentials.md`](../docs/lovable-auto-posting-credentials.md).
+
 ## Architecture
 
 ```
@@ -16,7 +19,7 @@ any adapter.
  ┌─────────────┐                     ┌──────────────────┐
  │ vocabulary  │─┐                   │ SupabaseRpcSink   │→ enqueue RPC ─┐
  │ news (todo) │─┤─ produce() ─ N ─→ │   or              │               │  app's
- │ recipes …   │─┘   ContentItem[]   │ HttpIngestSink    │→ /api/...  ───┤  queue
+ │ recipes …   │─┘   ContentItem[]   │ HttpIngestSink    │→ ingest fn ───┤  queue
  └─────────────┘                     └──────────────────┘               ▼
                                                           agent_content_items (ready)
                                                                   │ 3×/day
@@ -36,10 +39,12 @@ never needs perfect local memory.
 ## Run
 
 ```bash
-cp .env.example .env      # fill in SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY
+cp .env.example .env
+# Fill SUPABASE_URL, SUPABASE_ANON_KEY, SYSTEM_BOT_EMAIL, SYSTEM_BOT_PASSWORD
+# (system bot must have profiles.is_system = true — see docs/lovable-auto-posting-credentials.md)
 npm install
 
-# one-shot (use this from platform cron): produce + deliver once
+# one-shot (use this from platform cron / GitHub Actions): produce + deliver once
 npm run run               # all sources
 npm run run -- vocabulary.en_vi 5   # one source, 5 items
 
@@ -72,14 +77,23 @@ to "claim + insert".
 
 Built to be portable (Dockerfile included):
 
-- **Persistent host (recommended):** Railway, Fly.io, or Render — run `serve`.
-- **Serverless cron:** Cloudflare Workers Cron, GitHub Actions, or AWS Lambda +
-  EventBridge — trigger `run` on a schedule (no always-on process needed).
+- **GitHub Actions (current prod):** `.github/workflows/content-hub-run.yml` runs
+  `npm run run` daily. Secrets: `SUPABASE_URL`, `SUPABASE_ANON_KEY`,
+  `SYSTEM_BOT_EMAIL`, `SYSTEM_BOT_PASSWORD`.
+- **Persistent host:** Railway, Fly.io, or Render — run `serve`.
+- **Other serverless cron:** Cloudflare Workers Cron, AWS Lambda + EventBridge —
+  trigger `run` on a schedule.
 
-Secrets (`SUPABASE_SERVICE_ROLE_KEY`, `ANTHROPIC_API_KEY`, `AGENT_INGEST_API_KEY`)
-live only in the host's env — never in the app bundle.
+Secrets live only in the host / Actions env — never in the app browser bundle.
 
 ## Environment
 
-See `.env.example`. Key switches: `SINK` (supabase|http), `VOCAB_GENERATOR`
-(curated|claude), `VOCAB_CRON`, `VOCAB_BATCH`.
+See `.env.example`. Key switches:
+
+| Var | Default | Meaning |
+|-----|---------|---------|
+| `SINK` | `supabase` | `supabase` (system-bot session) or `http` |
+| `SUPABASE_ANON_KEY` | — | Required for supabase sink (= app publishable key) |
+| `SYSTEM_BOT_EMAIL` / `SYSTEM_BOT_PASSWORD` | — | Auth user with `is_system` |
+| `VOCAB_GENERATOR` | `curated` | `curated` or `claude` |
+| `VOCAB_CRON` / `VOCAB_BATCH` | nightly / 5 | Producer cadence when using `serve` |

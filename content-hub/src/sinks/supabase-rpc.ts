@@ -2,10 +2,11 @@ import type { ContentItem } from "../contract.ts";
 import type { Logger } from "../logger.ts";
 import type { DeliverResult, Sink } from "./types.ts";
 
-// Default sink: calls the existing `enqueue_agent_content_item` RPC over PostgREST
-// with the service-role key. The RPC upserts on (source_key, content_key), so
-// delivery is idempotent. This is the only file in the Hub that knows Supabase
-// exists — swap it for HttpIngestSink to remove that knowledge entirely.
+// Default sink: password-logs in as a system bot (profiles.is_system), then calls
+// `enqueue_agent_content_item` over PostgREST with the user JWT + anon apikey.
+// The RPC upserts on (source_key, content_key), so delivery is idempotent.
+// This is the only file in the Hub that knows Supabase exists — swap it for
+// HttpIngestSink to remove that knowledge entirely.
 export class SupabaseRpcSink implements Sink {
   readonly name = "supabase-rpc";
   private readonly endpoint: string;

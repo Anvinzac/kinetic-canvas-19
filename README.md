@@ -19,6 +19,14 @@ Embedded at `/admin` (telemetry contract under `/api/admin/telemetry/*`).
 - Live: set `profiles.is_admin = true` or `ADMIN_USER_IDS` (auth user UUIDs).
 - Mapping judgments: [`MAPPING_NOTES.md`](./MAPPING_NOTES.md)
 
+## Auto-posting (vocabulary bot)
+
+Scheduled content: **content-hub** fills the queue → Supabase cron publishes as `do_chu_bot`.
+
+**Lovable / credentials map:** [`docs/lovable-auto-posting-credentials.md`](./docs/lovable-auto-posting-credentials.md)  
+Feed contract: [`docs/agent-content-service.md`](./docs/agent-content-service.md)  
+Hub package: [`content-hub/`](./content-hub/)
+
 ## For developers (especially new contributors)
 
 Read **[ARCHITECTURE.md](./ARCHITECTURE.md)** first. It explains:

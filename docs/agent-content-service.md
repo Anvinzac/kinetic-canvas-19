@@ -3,6 +3,9 @@
 The agent content feed is the API boundary between external data feeders and
 scheduled bot publishers.
 
+**Credential setup (Lovable / GitHub / Hub):**  
+[`docs/lovable-auto-posting-credentials.md`](./lovable-auto-posting-credentials.md)
+
 ## Shape
 
 - External feeder services write content into Supabase.
@@ -37,15 +40,29 @@ Use `content_key = lower(word)`. The database enforces one item per
 `source_key + content_key`, so the same English word cannot be queued twice for
 the same source.
 
-## POST Content
+## POST Content (preferred: system bot session)
 
-Use Supabase RPC with the service role key from an always-on feeder. Never expose
-the service role key to the browser.
+The **content-hub** default sink (`SupabaseRpcSink`) does **not** use the service
+role key. It:
+
+1. Password-logs in with `SYSTEM_BOT_EMAIL` / `SYSTEM_BOT_PASSWORD` and `SUPABASE_ANON_KEY`
+2. Calls `enqueue_agent_content_item` with that user’s JWT  
+3. Requires `profiles.is_system = true` for that user (RLS)
+
+Manual equivalent:
 
 ```bash
+# 1) Get a user access token
+TOKEN=$(curl -s "$SUPABASE_URL/auth/v1/token?grant_type=password" \
+  -H "apikey: $SUPABASE_ANON_KEY" \
+  -H "Content-Type: application/json" \
+  -d "{\"email\":\"$SYSTEM_BOT_EMAIL\",\"password\":\"$SYSTEM_BOT_PASSWORD\"}" \
+  | jq -r .access_token)
+
+# 2) Enqueue
 curl "$SUPABASE_URL/rest/v1/rpc/enqueue_agent_content_item" \
-  -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" \
-  -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
+  -H "apikey: $SUPABASE_ANON_KEY" \
+  -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
     "p_source_key": "vocabulary.en_vi",
@@ -63,12 +80,27 @@ curl "$SUPABASE_URL/rest/v1/rpc/enqueue_agent_content_item" \
   }'
 ```
 
+### Alternate: service role (ops / one-off only)
+
+Never expose `service_role` to the browser or the Hub’s default env. Use only from
+a trusted server or SQL/scripting session:
+
+```bash
+curl "$SUPABASE_URL/rest/v1/rpc/enqueue_agent_content_item" \
+  -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" \
+  -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{ ... same body ... }'
+```
+
 ## GET Queue Health
+
+As system bot (or service role for ops):
 
 ```bash
 curl "$SUPABASE_URL/rest/v1/agent_content_items?source_key=eq.vocabulary.en_vi&status=eq.ready&select=id,content_key,available_at" \
-  -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" \
-  -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY"
+  -H "apikey: $SUPABASE_ANON_KEY" \
+  -H "Authorization: Bearer $TOKEN"
 ```
 
 ## Publishing
@@ -87,6 +119,8 @@ That function:
 - refuses words already published by `do_chu_bot`,
 - creates the kinetic post,
 - marks the content item as `used`.
+
+Cron job name: `kinetic-vocabulary-bot-3x-daily` (`0 1,7,13 * * *` UTC).
 
 ## When To Split Into A Dedicated Backend
 

@@ -2,8 +2,9 @@ name: content-hub-run
 
 on:
   schedule:
-    # Daily top-up of the agent content queue. UTC cron — runs before the app's
-    # 01:10 UTC publish_web_agent_posts() drain so fresh items are ready.
+    # Daily top-up of the agent content queue (UTC), ahead of Vietnam publish slots.
+    # Requires GitHub secrets: SUPABASE_URL, SUPABASE_ANON_KEY, SYSTEM_BOT_EMAIL,
+    # SYSTEM_BOT_PASSWORD — see docs/lovable-auto-posting-credentials.md
     - cron: "15 22 * * *"
   workflow_dispatch: {}
 
