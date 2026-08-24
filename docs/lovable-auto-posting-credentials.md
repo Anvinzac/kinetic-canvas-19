@@ -1,5 +1,21 @@
 # Lovable: Auto-posting credentials — where each secret goes
 
+> **UPDATE (self-contained pipeline — no external credentials needed).**
+> The producer now runs inside the app. `pg_cron` job
+> `kinetic-vocabulary-refill-daily` (22:30 UTC) calls
+> `public.request_vocabulary_refill()`, which tops the queue up only when fewer
+> than 9 `ready` items remain by POSTing to `/api/public/vocabulary-refill`.
+> That route generates fresh words with Lovable AI (`LOVABLE_API_KEY`) and
+> enqueues them with the service role. The shared token lives in
+> `public.internal_api_keys` (name `vocabulary_refill`) — the only copy, so no
+> secret has to be mirrored anywhere.
+>
+> **Nothing below is required anymore.** GitHub Actions / `content-hub` /
+> `SYSTEM_BOT_*` stay supported as an *optional* external producer.
+> Root cause of the stall these docs were meant to unblock: the curated
+> generator held only 8 words, all already `used`, so the queue was permanently
+> empty even though the system-bot login and the 3×/day publish cron were fine.
+
 **Audience:** Lovable Cloud / anyone wiring the scheduled vocabulary content generator  
 **Goal:** `content-hub` fills `agent_content_items` → Supabase `pg_cron` publishes as `do_chu_bot` 3×/day (Vietnam time).
 
