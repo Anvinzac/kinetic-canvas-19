@@ -18,12 +18,26 @@ const ingestItemSchema = z.object({
   availableAt: z.string().datetime().optional(),
 });
 
-const vocabularyPayloadSchema = z.object({
-  word: z.string().min(1).max(64),
-  vi_definition: z.string().min(1).max(240),
-  hints: z.array(z.string().min(1).max(160)).optional(),
-  difficulty: z.string().min(1).max(32).optional(),
-});
+const vocabularyPayloadSchema = z
+  .object({
+    word: z.string().min(1).max(64),
+    vi_definition: z.string().min(1).max(240),
+    hints: z.array(z.string().min(1).max(160)).optional(),
+    difficulty: z.string().min(1).max(32).optional(),
+    // Extended WordCrawler 7-page fields (deck-backed, optional for backward compat)
+    leadVi: z.string().min(1).max(240).optional(),
+    usageEn: z.string().min(1).max(240).optional(),
+    usageVi: z.string().min(1).max(240).optional(),
+    ipa: z.string().min(1).max(32).optional(),
+    pos: z.string().min(1).max(16).optional(),
+    topic: z.string().min(1).max(32).optional(),
+    level: z.string().min(1).max(8).optional(),
+    style: z.enum(["detective", "speed", "confession", "minimal"]).optional(),
+    chars: z.number().int().min(1).max(32).optional(),
+    initial: z.string().min(1).max(2).optional(),
+    anticipateVi: z.string().min(1).max(160).optional(),
+  })
+  .passthrough();
 
 export const ingestAgentContent = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => ingestItemSchema.parse(d))

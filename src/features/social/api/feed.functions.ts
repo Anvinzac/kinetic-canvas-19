@@ -7,6 +7,7 @@
 
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { VOCAB_ONLY_MODE, isVocabularyPost } from "@/lib/feature-flags";
 
 // ===== Authenticated feed reads =====
 
@@ -66,7 +67,12 @@ export const getFeed = createServerFn({ method: "GET" })
       .limit(FEED_POOL_LIMIT);
     if (error) throw new Error(error.message);
 
-    const poolPosts = (feedPool ?? []) as FeedPost[];
+    let poolPosts = (feedPool ?? []) as FeedPost[];
+    // Temporary vocab-only mode: hide non-vocabulary posts (reversible via src/lib/feature-flags.ts)
+    if (VOCAB_ONLY_MODE) {
+      const viewerId = viewer?.id ?? null;
+      poolPosts = poolPosts.filter((p) => isVocabularyPost(p) || (viewerId != null && p.author_id === viewerId));
+    }
     const poolPostIds = poolPosts.map((post) => post.id);
     if (poolPostIds.length === 0) {
       return { posts: [], profiles: [], likes: [], comments: [] };

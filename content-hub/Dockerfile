@@ -8,6 +8,7 @@ COPY package.json ./
 RUN npm install --omit=dev && npm install tsx
 
 COPY tsconfig.json ./
+COPY data ./data
 COPY src ./src
 
 # Default to the long-running scheduler. For platform-cron hosts, override the

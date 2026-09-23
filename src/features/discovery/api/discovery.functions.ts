@@ -8,6 +8,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
+import { VOCAB_ONLY_MODE, isVocabularyPost } from "@/lib/feature-flags";
 
 // ===== Search users + posts =====
 /**
@@ -49,14 +50,18 @@ export const getDiscover = createServerFn({ method: "GET" }).handler(async () =>
       .from("posts")
       .select("id, author_id, post_type, canvas_html, media_urls, bg_gradient, created_at")
       .order("created_at", { ascending: false })
-      .limit(36),
+      .limit(80),
     supabaseAdmin
       .from("profiles")
       .select("id, username, display_name, avatar_url, bio")
       .order("created_at", { ascending: false })
       .limit(12),
   ]);
-  return { posts: posts ?? [], profiles: profiles ?? [] };
+  let filteredPosts = (posts ?? []) as { id: string; author_id: string; canvas_html: string }[];
+  if (VOCAB_ONLY_MODE) {
+    filteredPosts = filteredPosts.filter((p) => isVocabularyPost(p as never));
+  }
+  return { posts: filteredPosts.slice(0, 36), profiles: profiles ?? [] };
 });
 
 // ===== Follow / unfollow =====
