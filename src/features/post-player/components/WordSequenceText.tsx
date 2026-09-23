@@ -46,6 +46,7 @@ export type WordSequenceTextProps = {
   background?: string | null;
   photoBackdrop?: boolean;
   entranceSeed?: string;
+  fitAsUnit?: boolean;
 };
 
 /**
@@ -65,9 +66,13 @@ export function WordSequenceText({
   background,
   photoBackdrop = false,
   entranceSeed,
+  fitAsUnit = false,
 }: WordSequenceTextProps): ReactElement {
-  const words = getWords(spec.text);
-  const isVietnamese = isLikelyVietnameseText(spec.text);
+  const words = useMemo(
+    () => (fitAsUnit ? [spec.text.trim()] : getWords(spec.text)),
+    [fitAsUnit, spec.text],
+  );
+  const isVietnamese = words.length > 1 && isLikelyVietnameseText(spec.text);
   const emphasized = getEmphasizedWordIndexes(words);
   const isSolo = words.length <= 1;
   const visualScaleGuard = Math.max(
@@ -77,39 +82,40 @@ export function WordSequenceText({
   const vietnameseLayout = useMemo(
     () =>
       isVietnamese
-        ? getVietnameseLayoutMetrics(words, canvasWidth, spec.size, visualScaleGuard): { lines: [], suggestedFitScale: 1 },
+        ? getVietnameseLayoutMetrics(words, canvasWidth, spec.size, visualScaleGuard)
+        : { lines: [], suggestedFitScale: 1 },
     [isVietnamese, words, canvasWidth, spec.size, visualScaleGuard],
   );
   const entranceStyle = getEntranceStyle(entranceSeed ?? spec.text, spec.rhythm);
   const layoutMode = getKineticTextLayoutMode(spec.text, isVietnamese, words.length, emphasized);
   const leftAnchoredText = layoutMode !== "center";
   const spotlightEmphasis = layoutMode === "left-spotlight";
-  const soloInitialFit =
-    isSolo && !disableFit
-      ? estimateSoloRevealFit(
-          spec.text,
-          spec.size,
-          canvasWidth,
-          visualScaleGuard,
-          spec.font,
-          spec.weight,
-          emphasized.size > 0 ? EMPHASIS_FONT_SCALE : 1,
-        ): 1;
-  const initialFit =
-    isSolo
-      ? soloInitialFit
-      : isVietnamese && !disableFit
-        ? vietnameseLayout.suggestedFitScale
-        : 1;
+  const soloInitialFit = isSolo
+    ? estimateSoloRevealFit(
+        spec.text,
+        spec.size,
+        canvasWidth,
+        visualScaleGuard,
+        spec.font,
+        emphasized.size > 0 ? 900 : spec.weight,
+        emphasized.size > 0 ? EMPHASIS_FONT_SCALE : 1,
+      )
+    : 1;
+  const initialFit = isSolo
+    ? soloInitialFit
+    : isVietnamese && !disableFit
+      ? vietnameseLayout.suggestedFitScale
+      : 1;
   const wrapperRef = useRef<HTMLDivElement>(null);
   const textRef = useRef<HTMLDivElement>(null);
   const staticRender = revealed || measure;
   const { fontSize, soloInlineScale, safeCenterY } = useWordSequenceFit({
     initialFit,
+    measurementKey: `${playKey}-${staticRender}`,
     canvasWidth,
     background,
     spec,
-    disableFit,
+    disableFit: disableFit && !isSolo,
     onFitScale,
     isSolo,
     isVietnamese,
@@ -119,9 +125,10 @@ export function WordSequenceText({
     textRef,
   });
   const textColor = photoBackdrop
-    ? resolveTextColorOnPhotoBackdrop(spec): getCanvasTextColor(spec, background);
+    ? resolveTextColorOnPhotoBackdrop(spec)
+    : getCanvasTextColor(spec, background);
   const emphasisColor = getCanvasEmphasisColor({ ...spec, color: textColor }, background);
-  const photoTextShadow = photoBackdrop ? getPhotoBackdropTextShadow(textColor): undefined;
+  const photoTextShadow = photoBackdrop ? getPhotoBackdropTextShadow(textColor) : undefined;
   const textSafeMaxWidth = hasVisibleStickerAccent(spec.stickers, spec.text)
     ? "min(90%, calc(100% - 2.5rem))"
     : TEXT_SAFE_MAX_WIDTH;

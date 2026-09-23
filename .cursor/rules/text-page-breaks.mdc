@@ -1,6 +1,6 @@
 ---
-description: Kinetic text pagination — break at ideas, never mid-phrase
-globs: src/components/PostCard.tsx
+description: Kinetic typography — natural spacing, phrase-safe pagination, viewport-safe reveals
+globs: src/components/PostCard.tsx,src/features/post-player/**/*,src/features/kinetic-text/**/*,src/features/vocabulary/**/*,scripts/check-vietnamese-line-fit.ts
 alwaysApply: false
 ---
 
@@ -23,3 +23,19 @@ Good:
 
 - Page 1: `Trong một cuộc trò chuyện,`
 - Page 2: `tốc độ không phải tất cả.`
+
+## Word spacing
+
+- Words and bound phrases occupy intrinsic width (`flex: 0 0 auto`). Never assign a phrase `flex-basis: 100%` inside a shared non-wrapping line or distribute words with `space-between` / `space-around`.
+- Use one explicit gap per boundary: `0.24em` within phrases and Vietnamese lines, at most `0.34em` between English tokens. Do not stack large emphasis margins on top of gaps and frame padding.
+- Grouped emphasis frames use explicit `display: inline-flex`, baseline alignment, and an internal gap. Preserve real spaces inside reveal phrases.
+- Index emphasis groups using the original word indices, including segments starting after index zero.
+
+## Reveal containment
+
+- Reveal answers, including long words and multiword terms, must fit completely inside the visible viewport with at least 16px side clearance. Reduce the actual font size proportionally; never rely on clipping, ellipsis, letter splitting, or horizontal squashing.
+- Minimum font sizes, fit floors, and hero-size targets must never override containment. Short words may grow; long words must be allowed to shrink as far as needed.
+- Measure untransformed glyph layout, including emphasis/frame padding. Do not size text from animated `getBoundingClientRect()` glyph widths.
+- Recheck before paint on page changes and after container/viewport resize, orientation changes, and font loading. Pause/replay and reduced-motion modes use the same fitting rules.
+- Reserve room for pulse effects. Reveal entrances must not translate sideways, rotate, or overshoot the fitted width.
+- Extend `scripts/check-vietnamese-line-fit.ts` for spacing or fitting changes. Verify narrow viewports (280–430px), long/wide-glyph answers, grouped emphasis, and font/viewport changes.

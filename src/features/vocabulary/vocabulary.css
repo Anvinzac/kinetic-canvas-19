@@ -1,0 +1,470 @@
+/* Vocabulary-only layout. Virtual rows keep viewport-sized snap targets and bounded coordinates. */
+.vocabulary-shell {
+  --vocab-ink: #f5f2ff;
+  background: #151224;
+  color: #f5f2ff;
+  height: 100dvh;
+  overflow: hidden;
+  font-family: "Inter", sans-serif;
+}
+.vocabulary-shell :is(button, a, select, input):focus-visible {
+  outline: 3px solid currentColor;
+  outline-offset: 4px;
+}
+.vocabulary-shell button {
+  cursor: pointer;
+}
+.vocabulary-shell button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.vocab-toolbar {
+  position: fixed;
+  z-index: 50;
+  top: max(12px, env(safe-area-inset-top));
+  left: max(16px, env(safe-area-inset-left));
+  right: max(16px, env(safe-area-inset-right));
+  color: #fff;
+}
+.vocab-toolbar-row,
+.vocab-toolbar-actions,
+.vocab-card-heading,
+.vocab-card-actions,
+.vocab-scroll-nav {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.vocab-toolbar-row {
+  justify-content: space-between;
+}
+.vocab-brand {
+  text-shadow: 0 2px 14px #0009;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -1px;
+  line-height: 1.2;
+}
+.vocab-brand > span {
+  color: #bbf7d0;
+}
+.vocab-brand small {
+  display: block;
+  color: #ffffffb3;
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  margin-top: 4px;
+}
+.vocab-icon-button {
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid color-mix(in srgb, currentColor 25%, transparent);
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: #12101d40;
+  color: #fff;
+  backdrop-filter: blur(12px);
+}
+.vocab-icon-button:hover:not(:disabled) {
+  background: color-mix(in srgb, currentColor 10%, transparent);
+}
+.vocab-options {
+  width: min(100%, 520px);
+  margin-left: auto;
+  margin-top: 14px;
+  padding: 22px;
+  background: #252136;
+  border: 1px solid #58506e;
+  border-radius: 22px;
+  box-shadow: 0 20px 60px #0008;
+  max-height: calc(100dvh - 110px - env(safe-area-inset-top));
+  overflow-y: auto;
+}
+.vocab-options-summary {
+  font-size: 12px;
+  line-height: 1.7;
+  color: #d4cfe2;
+}
+.vocab-select-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin: 18px 0;
+}
+.vocab-select-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.vocab-select-grid select {
+  color: #f5f2ff;
+  background: #181426;
+  border: 1px solid #665d7a;
+  border-radius: 10px;
+  padding: 10px;
+  min-width: 0;
+  width: 100%;
+  min-height: 44px;
+}
+.vocab-autoplay {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  font-size: 13px;
+}
+.vocab-autoplay input {
+  width: 20px;
+  height: 20px;
+  accent-color: #bbf7d0;
+}
+.vocab-site-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 16px;
+  font-size: 13px;
+}
+.vocab-site-links > * {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.vocab-viewport {
+  height: 100dvh;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  scroll-snap-type: y mandatory;
+  overflow-anchor: none;
+  scrollbar-width: none;
+  touch-action: pan-y;
+}
+.vocab-viewport::-webkit-scrollbar {
+  display: none;
+}
+.vocab-viewport:focus-visible {
+  outline: 2px solid #bbf7d0;
+  outline-offset: -3px;
+}
+.vocab-virtual-track {
+  position: relative;
+  width: 100%;
+}
+.vocab-slot {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  box-sizing: border-box;
+}
+.vocab-card {
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+.vocab-backdrop {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: -1;
+}
+.vocab-backdrop::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, #0005, transparent 28%, transparent 65%, #0005);
+}
+.vocab-card-heading {
+  position: absolute;
+  z-index: 3;
+  top: max(80px, calc(env(safe-area-inset-top) + 68px));
+  left: max(24px, env(safe-area-inset-left));
+  right: max(24px, env(safe-area-inset-right));
+  color: #fff;
+  gap: 6px;
+}
+.vocab-chip {
+  border: 1px solid color-mix(in srgb, currentColor 25%, transparent);
+  padding: 5px 9px;
+  border-radius: 50px;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  background: #12101d40;
+  backdrop-filter: blur(12px);
+}
+.vocab-theme-name {
+  margin-left: auto;
+  font-family: "Inter", sans-serif;
+  font-size: 10px;
+  text-align: right;
+}
+.vocab-caption {
+  display: none;
+}
+.vocab-stage {
+  position: absolute;
+  inset: 0;
+}
+.vocab-stage > .vocab-eyebrow {
+  position: absolute;
+  top: max(124px, calc(env(safe-area-inset-top) + 112px));
+  left: max(24px, env(safe-area-inset-left));
+  color: #fff;
+  text-shadow: 0 2px 10px #0008;
+}
+.vocab-stage > .vocab-translation {
+  position: absolute;
+  bottom: max(160px, calc(env(safe-area-inset-bottom) + 150px));
+  left: 8%;
+  right: 8%;
+  text-align: center;
+  color: #fff;
+  text-shadow: 0 2px 12px #000b;
+}
+.vocab-eyebrow {
+  font-family: "Inter", sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  flex-shrink: 0;
+  color: var(--vocab-accent, #bbf7d0);
+}
+.vocab-stage-text {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.vocab-reveal-details {
+  position: absolute;
+  top: 56%;
+  bottom: max(154px, calc(env(safe-area-inset-bottom) + 144px));
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(680px, 84%);
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  scrollbar-width: thin;
+  font-family: "Inter", sans-serif;
+  font-size: clamp(14px, 1.6vw, 18px);
+  line-height: 1.6;
+  padding: 14px 18px;
+  border-radius: 16px;
+  background: #12101d66;
+  backdrop-filter: blur(16px);
+  color: #fff;
+}
+.vocab-pronunciation {
+  margin-bottom: 18px;
+  font-size: 14px;
+  color: #fff;
+}
+.vocab-example {
+  margin-top: 18px;
+  border-top: 1px solid color-mix(in srgb, currentColor 22%, transparent);
+  padding-top: 14px;
+}
+.vocab-translation {
+  font-family: "Inter", sans-serif;
+  font-size: 14px;
+  line-height: 1.65;
+  margin-top: 10px;
+}
+.vocab-progress {
+  position: absolute;
+  z-index: 3;
+  bottom: max(128px, calc(env(safe-area-inset-bottom) + 118px));
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(440px, calc(100% - 48px));
+  display: flex;
+  gap: 5px;
+}
+.vocab-progress span {
+  height: 3px;
+  flex: 1;
+  border-radius: 4px;
+  background: #ffffff40;
+  overflow: hidden;
+}
+.vocab-progress span[data-complete="true"] {
+  background: #fff;
+}
+.vocab-progress i {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: #fff;
+  transform: scaleX(0);
+  transform-origin: left;
+  animation: vocab-page-progress linear forwards;
+}
+@keyframes vocab-page-progress {
+  to {
+    transform: scaleX(1);
+  }
+}
+.vocab-card-actions {
+  position: absolute;
+  z-index: 3;
+  bottom: max(60px, calc(env(safe-area-inset-bottom) + 50px));
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(360px, calc(100% - 48px));
+  justify-content: space-between;
+  gap: 10px;
+}
+.vocab-reveal-button {
+  flex: 1;
+  min-height: 46px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  background: var(--vocab-ink);
+  color: #252136;
+  border-radius: 30px;
+  font-family: "Inter", sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+}
+.vocab-card .vocab-reveal-button:focus-visible {
+  outline-color: var(--vocab-ink);
+}
+.vocab-reveal-button {
+  color: var(--vocab-button-ink, #252136);
+}
+.vocab-card-footer {
+  position: absolute;
+  bottom: max(22px, env(safe-area-inset-bottom));
+  left: max(24px, env(safe-area-inset-left));
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-family: "Inter", sans-serif;
+  font-size: 10px;
+  color: #fff;
+  text-shadow: 0 2px 10px #0008;
+}
+.vocab-scroll-nav {
+  position: fixed;
+  z-index: 20;
+  bottom: max(8px, env(safe-area-inset-bottom));
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(490px, calc(100% - 44px));
+  justify-content: space-between;
+  font-size: 11px;
+  color: #fff;
+  text-shadow: 0 2px 10px #0008;
+}
+.vocab-scroll-nav .vocab-icon-button {
+  width: 40px;
+  height: 40px;
+}
+.vocab-empty {
+  height: 100dvh;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding: 100px 28px;
+  text-align: center;
+}
+.vocab-empty h1 {
+  font-size: clamp(24px, 5vw, 38px);
+  font-weight: 700;
+}
+.vocab-empty > p:not(.vocab-eyebrow) {
+  max-width: 360px;
+  color: #c9c3dd;
+  font-size: 14px;
+  line-height: 1.7;
+}
+.vocab-light-button {
+  background: #bbf7d0;
+  color: #17231b;
+  border-radius: 40px;
+  padding: 14px 24px;
+  font-weight: 700;
+}
+.vocab-stream-status {
+  position: fixed;
+  z-index: 30;
+  bottom: max(66px, calc(env(safe-area-inset-bottom) + 58px));
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(480px, calc(100% - 36px));
+  background: #282237;
+  color: #fff;
+  padding: 14px 18px;
+  border: 1px solid #6b607f;
+  border-radius: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  font-size: 12px;
+  box-shadow: 0 8px 24px #0005;
+}
+.vocab-stream-status button {
+  text-decoration: underline;
+  min-height: 44px;
+  font-weight: 700;
+}
+@media (max-width: 760px) {
+  .vocab-card-footer {
+    display: none;
+  }
+}
+@media (max-width: 380px) {
+  .vocab-brand small {
+    display: none;
+  }
+  .vocab-toolbar-actions {
+    gap: 6px;
+  }
+  .vocab-card-heading {
+    flex-wrap: wrap;
+  }
+  .vocab-theme-name {
+    font-size: 9px;
+  }
+}
+@media (max-height: 620px) {
+  .vocab-caption,
+  .vocab-card-footer {
+    display: none;
+  }
+  .vocab-stage > .vocab-eyebrow {
+    display: none;
+  }
+  .vocab-reveal-details {
+    top: 50%;
+    padding: 8px 12px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .vocabulary-shell *,
+  .vocabulary-shell *::before,
+  .vocabulary-shell *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}

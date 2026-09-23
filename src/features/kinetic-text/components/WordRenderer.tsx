@@ -6,11 +6,8 @@
  */
 
 import { motion } from "framer-motion";
-import type { CSSProperties, ReactElement} from "react";
-import {
-  getCanvasEmphasisWordColor,
-  type CanvasSpec,
-} from "@/features/canvas";
+import type { CSSProperties, ReactElement } from "react";
+import { getCanvasEmphasisWordColor, type CanvasSpec } from "@/features/canvas";
 import {
   getAuraColor,
   getEmphasisInnerAnimation,
@@ -18,10 +15,7 @@ import {
   getEmphasisVariant,
   isDimEmphasisColor,
 } from "../lib/emphasis";
-import {
-  getBoundPhraseEmphasisSeed,
-  getBoundPhraseStartIndex,
-} from "../lib/text-language";
+import { getBoundPhraseEmphasisSeed, getBoundPhraseStartIndex } from "../lib/text-language";
 import { getWordAnchorKey } from "../lib/words";
 import { entranceVariants, getRhythmDelay } from "./preview-tempo";
 
@@ -45,6 +39,7 @@ export function AnimatedWord({
   emphasisColor,
   staticLayout,
   words,
+  skipFrame = false,
 }: {
   word: string;
   index: number;
@@ -60,17 +55,20 @@ export function AnimatedWord({
   emphasisColor: string;
   staticLayout: boolean;
   words: string[];
+  skipFrame?: boolean;
 }): ReactElement {
-  const emphasisAnchorIndex = important ? getBoundPhraseStartIndex(words, index): index;
+  const emphasisAnchorIndex = important ? getBoundPhraseStartIndex(words, index) : index;
   const emphasisVariant = important
     ? getEmphasisVariant(
         spec.text,
         getBoundPhraseEmphasisSeed(words, index),
         emphasisAnchorIndex,
         !isDimEmphasisColor(emphasisColor),
-      ): null;
+      )
+    : null;
   const wordColor = important
-    ? getCanvasEmphasisWordColor(emphasisVariant, textColor, emphasisColor): textColor;
+    ? getCanvasEmphasisWordColor(emphasisVariant, textColor, emphasisColor)
+    : textColor;
   const entranceDelay = getRhythmDelay(
     important ? emphasisAnchorIndex : index,
     spec.tempo,
@@ -84,9 +82,10 @@ export function AnimatedWord({
         ...(emphasisVariant === "halo" || emphasisVariant === "glow"
           ? { "--kinetic-aura-color": getAuraColor(textColor) }
           : {}),
-      } as CSSProperties): undefined;
+      } as CSSProperties)
+    : undefined;
   const innerAnimation =
-    important && !staticLayout ? getEmphasisInnerAnimation(emphasisVariant): undefined;
+    important && !staticLayout ? getEmphasisInnerAnimation(emphasisVariant) : undefined;
   return (
     <motion.span
       key={`${playKey}-${word}-${index}`}
@@ -107,6 +106,7 @@ export function AnimatedWord({
       }}
       style={{
         display: spotlightWord ? "inline-flex" : "inline-block",
+        flexShrink: 0,
         flexBasis: spotlightWord ? "100%" : undefined,
         justifyContent: spotlightWord ? "center" : undefined,
         marginBottom: spotlightWord ? "0.08em" : undefined,
@@ -118,7 +118,7 @@ export function AnimatedWord({
         overflowWrap: "normal",
         whiteSpace: "nowrap",
         wordBreak: "normal",
-        textShadow: important ? getEmphasisTextShadow(emphasisVariant): undefined,
+        textShadow: important ? getEmphasisTextShadow(emphasisVariant) : undefined,
         transformOrigin: anchorFromStart && !spotlightWord ? "left center" : "center",
       }}
     >
@@ -129,7 +129,9 @@ export function AnimatedWord({
                 emphasisVariant === "halo"
                   ? " kinetic-emph-halo"
                   : emphasisVariant === "frame"
-                    ? " kinetic-emph-frame"
+                    ? skipFrame
+                      ? ""
+                      : " kinetic-emph-frame"
                     : emphasisVariant === "underline"
                       ? " kinetic-emph-underline"
                       : emphasisVariant === "sweep"

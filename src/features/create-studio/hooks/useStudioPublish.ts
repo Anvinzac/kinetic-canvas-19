@@ -88,7 +88,8 @@ export function useStudioPublish({
           toast.success("posted");
         },
       });
-      navigate({ to: "/feed" });
+      await qc.invalidateQueries({ queryKey: socialKeys.feedRoot });
+      navigate({ to: "/community" });
     } catch (e) {
       toast.error((e as Error).message);
     } finally {

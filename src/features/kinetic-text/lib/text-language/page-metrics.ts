@@ -191,10 +191,12 @@ function getVietnameseWordSegments(words: string[]): WordSegment[] {
 
   for (let index = 0; index < words.length; ) {
     // A bound phrase is one meaningful Vietnamese word (two syllables). It is
-    // ALWAYS kept whole as a single, unbreakable segment — the line packer never
+    // kept whole as a single, unbreakable segment — the line packer never
     // splits a segment, so a compound word can never straddle two lines. A phrase
     // wider than a line simply lands alone and the page font shrinks to fit it;
-    // we never break the word to save space.
+    // we never break the word to save space. Words not in the bound-phrase
+    // list (e.g. "khoảng" and "thở") are separate segments and can land on
+    // different lines.
     const phraseLength = getBoundPhraseLength(words, index);
     const segmentWords = words.slice(index, index + phraseLength).map((text, offset) => ({
       text,

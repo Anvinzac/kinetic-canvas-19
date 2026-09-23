@@ -1,6 +1,6 @@
 ---
 description: Vietnamese emphasis must cover whole bound phrases
-globs: src/lib/text-language.ts,src/components/PostCard.tsx,src/components/KineticText.tsx
+globs: src/lib/text-language.ts,src/components/PostCard.tsx,src/components/KineticText.tsx,src/features/kinetic-text/**/*,src/features/post-player/**/*
 alwaysApply: false
 ---
 
@@ -15,3 +15,5 @@ When adding new two-syllable Vietnamese words, add both accented and unaccented 
 Bad: only `lặng` glows in `… im lặng.`
 
 Good: both `im` and `lặng` glow together with the **same** emphasis variant (halo, sweep, etc.) — use `getBoundPhraseEmphasisSeed` / `getBoundPhraseStartIndex`, not per-syllable variant keys.
+
+Emphasis must not create oversized spaces. Phrase containers retain intrinsic width and use a single `0.24em` gap, including inside shared frames. Never center a full-width highlighted phrase beside other words in a non-wrapping line. Look up emphasis with each word's original page index, not its segment-local position.

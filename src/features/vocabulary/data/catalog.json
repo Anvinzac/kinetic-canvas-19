@@ -1,0 +1,497 @@
+{
+  "revision": "f8334fe45566bf31df91134d",
+  "name": "WordCrawler mock deck v0",
+  "count": 25,
+  "topics": [
+    "attention",
+    "character",
+    "communication",
+    "daily",
+    "emotion",
+    "thinking",
+    "time",
+    "work"
+  ],
+  "levels": [
+    "A2",
+    "B1",
+    "B2"
+  ],
+  "words": [
+    {
+      "id": "resilient",
+      "word": "resilient",
+      "defVi": "Mau phục hồi sau khó khăn hoặc áp lực.",
+      "leadVi": "Bị nhấn xuống rồi… bật lên lại.",
+      "anticipateVi": "Đoán xem nào…",
+      "pos": "adj",
+      "ipa": "/rɪˈzɪl.i.ənt/",
+      "topic": "character",
+      "level": "B2",
+      "chars": 9,
+      "initial": "R",
+      "usage": [
+        {
+          "en": "Kids are often more _____ than we think.",
+          "vi": "Trẻ con thường bền bỉ hơn ta nghĩ."
+        }
+      ]
+    },
+    {
+      "id": "vague",
+      "word": "vague",
+      "defVi": "Mơ hồ, thiếu rõ ràng, khó hiểu cụ thể.",
+      "leadVi": "Nghe rồi mà vẫn… không nắm được gì.",
+      "anticipateVi": "Bạn nghĩ ra chưa?",
+      "pos": "adj",
+      "ipa": "/veɪɡ/",
+      "topic": "communication",
+      "level": "B1",
+      "chars": 5,
+      "initial": "V",
+      "usage": [
+        {
+          "en": "His answer was too _____ to be useful.",
+          "vi": "Câu trả lời của anh ấy quá mơ hồ, chẳng dùng được."
+        }
+      ]
+    },
+    {
+      "id": "negotiate",
+      "word": "negotiate",
+      "defVi": "Thương lượng để đạt thỏa thuận.",
+      "leadVi": "Hai bên ngồi lại, mỗi bên nhường một chút.",
+      "anticipateVi": "Sắp mở rồi đó.",
+      "pos": "verb",
+      "ipa": "/nɪˈɡoʊ.ʃi.eɪt/",
+      "topic": "work",
+      "level": "B1",
+      "chars": 9,
+      "initial": "N",
+      "usage": [
+        {
+          "en": "We need to _____ a better price.",
+          "vi": "Chúng ta cần thương lượng giá tốt hơn."
+        }
+      ]
+    },
+    {
+      "id": "deadline",
+      "word": "deadline",
+      "defVi": "Hạn chót phải hoàn thành công việc.",
+      "leadVi": "Cái mốc khiến cả team chạy hết tốc lực.",
+      "anticipateVi": "Cũng hơi ít ai biết đấy.",
+      "pos": "noun",
+      "ipa": "/ˈded.laɪn/",
+      "topic": "work",
+      "level": "A2",
+      "chars": 8,
+      "initial": "D",
+      "usage": [
+        {
+          "en": "The _____ is Friday at noon.",
+          "vi": "Hạn chót là thứ Sáu buổi trưa."
+        }
+      ]
+    },
+    {
+      "id": "overlook",
+      "word": "overlook",
+      "defVi": "Bỏ sót; không để ý tới (cũng có nghĩa: nhìn xuống từ trên cao).",
+      "leadVi": "Nhìn qua rồi… bỏ sót luôn.",
+      "anticipateVi": "Khó một chút — gần đúng chưa?",
+      "pos": "verb",
+      "ipa": "/ˌoʊ.vɚˈlʊk/",
+      "topic": "attention",
+      "level": "B2",
+      "chars": 8,
+      "initial": "O",
+      "usage": [
+        {
+          "en": "Don’t _____ the small print in the contract.",
+          "vi": "Đừng bỏ sót phần chữ nhỏ trong hợp đồng."
+        }
+      ]
+    },
+    {
+      "id": "reluctant",
+      "word": "reluctant",
+      "defVi": "Miễn cưỡng; không muốn làm dù vẫn có thể làm.",
+      "leadVi": "Biết nên làm, nhưng trong lòng… ngại.",
+      "anticipateVi": "Ba… hai… một…",
+      "pos": "adj",
+      "ipa": "/rɪˈlʌk.tənt/",
+      "topic": "emotion",
+      "level": "B2",
+      "chars": 9,
+      "initial": "R",
+      "usage": [
+        {
+          "en": "She was _____ to share the news.",
+          "vi": "Cô ấy miễn cưỡng chia sẻ tin đó."
+        }
+      ]
+    },
+    {
+      "id": "genuine",
+      "word": "genuine",
+      "defVi": "Thật, chân thật; không giả tạo.",
+      "leadVi": "Không phải diễn — đúng là từ trong bụng.",
+      "anticipateVi": "Nếu đoán được thì khá ghê.",
+      "pos": "adj",
+      "ipa": "/ˈdʒen.ju.ɪn/",
+      "topic": "character",
+      "level": "B1",
+      "chars": 7,
+      "initial": "G",
+      "usage": [
+        {
+          "en": "His apology sounded _____.",
+          "vi": "Lời xin lỗi của anh ấy nghe chân thành."
+        }
+      ]
+    },
+    {
+      "id": "compromise",
+      "word": "compromise",
+      "defVi": "Sự thỏa hiệp; giải pháp hai bên cùng nhượng bộ.",
+      "leadVi": "Không ai thắng hết — mỗi bên lấy một nửa.",
+      "anticipateVi": "Gợi ý đủ rồi. Từ đó là gì?",
+      "pos": "noun",
+      "ipa": "/ˈkɑːm.prə.maɪz/",
+      "topic": "work",
+      "level": "B2",
+      "chars": 10,
+      "initial": "C",
+      "usage": [
+        {
+          "en": "They reached a fair _____.",
+          "vi": "Họ đạt được một thỏa hiệp công bằng."
+        }
+      ]
+    },
+    {
+      "id": "subtle",
+      "word": "subtle",
+      "defVi": "Tinh tế, khó nhận ra ngay; không lộ liễu.",
+      "leadVi": "Nhẹ đến mức phải nhìn kỹ mới thấy.",
+      "anticipateVi": "Nhắm mắt một cái — rồi mở.",
+      "pos": "adj",
+      "ipa": "/ˈsʌt.əl/",
+      "topic": "thinking",
+      "level": "B2",
+      "chars": 6,
+      "initial": "S",
+      "usage": [
+        {
+          "en": "There’s a _____ difference between the two plans.",
+          "vi": "Hai phương án có một khác biệt tinh tế."
+        }
+      ]
+    },
+    {
+      "id": "postpone",
+      "word": "postpone",
+      "defVi": "Hoãn lại sang thời điểm sau.",
+      "leadVi": "Không hủy — chỉ đẩy sang lúc khác.",
+      "anticipateVi": "Chắc trong đầu bạn đang có một từ.",
+      "pos": "verb",
+      "ipa": "/poʊstˈpoʊn/",
+      "topic": "time",
+      "level": "B1",
+      "chars": 8,
+      "initial": "P",
+      "usage": [
+        {
+          "en": "We had to _____ the meeting until Monday.",
+          "vi": "Chúng tôi phải hoãn họp đến thứ Hai."
+        }
+      ]
+    },
+    {
+      "id": "reliable",
+      "word": "reliable",
+      "defVi": "Đáng tin cậy; làm đúng và ổn định.",
+      "leadVi": "Giao việc là yên tâm — người này không làm hỏng.",
+      "anticipateVi": "Đừng lướt vội — đoán xong hãy mở.",
+      "pos": "adj",
+      "ipa": "/rɪˈlaɪ.ə.bəl/",
+      "topic": "character",
+      "level": "B1",
+      "chars": 8,
+      "initial": "R",
+      "usage": [
+        {
+          "en": "She’s the most _____ person on the team.",
+          "vi": "Cô ấy là người đáng tin nhất trong nhóm."
+        }
+      ]
+    },
+    {
+      "id": "assume",
+      "word": "assume",
+      "defVi": "Giả định; cho là đúng dù chưa có bằng chứng chắc.",
+      "leadVi": "Chưa hỏi, đã tự kết luận trong đầu.",
+      "anticipateVi": "Hơi mẹo một tí… sẵn sàng chưa?",
+      "pos": "verb",
+      "ipa": "/əˈsuːm/",
+      "topic": "thinking",
+      "level": "B1",
+      "chars": 6,
+      "initial": "A",
+      "usage": [
+        {
+          "en": "Don’t _____ everyone knows the plan.",
+          "vi": "Đừng mặc định ai cũng biết kế hoạch."
+        }
+      ]
+    },
+    {
+      "id": "feedback",
+      "word": "feedback",
+      "defVi": "Phản hồi; ý kiến về chất lượng công việc.",
+      "leadVi": "Sau khi làm xong, nghe lại từ người xem.",
+      "anticipateVi": "Còn thiếu mỗi cái tên thôi.",
+      "pos": "noun",
+      "ipa": "/ˈfiːd.bæk/",
+      "topic": "work",
+      "level": "A2",
+      "chars": 8,
+      "initial": "F",
+      "usage": [
+        {
+          "en": "Thanks for the honest _____.",
+          "vi": "Cảm ơn phản hồi thẳng thắn của bạn."
+        }
+      ]
+    },
+    {
+      "id": "anxious",
+      "word": "anxious",
+      "defVi": "Lo âu, bồn chồn vì sợ chuyện xấu xảy ra.",
+      "leadVi": "Trong bụng rối, đầu cứ chạy vòng quanh.",
+      "anticipateVi": "Tới lúc mở bài rồi.",
+      "pos": "adj",
+      "ipa": "/ˈæŋk.ʃəs/",
+      "topic": "emotion",
+      "level": "B1",
+      "chars": 7,
+      "initial": "A",
+      "usage": [
+        {
+          "en": "He felt _____ before the interview.",
+          "vi": "Anh ấy thấy lo trước buổi phỏng vấn."
+        }
+      ]
+    },
+    {
+      "id": "clarify",
+      "word": "clarify",
+      "defVi": "Làm rõ; giải thích cho dễ hiểu hơn.",
+      "leadVi": "Làm cho câu chuyện hết mù mờ.",
+      "anticipateVi": "Thử nói to lên xem đúng không.",
+      "pos": "verb",
+      "ipa": "/ˈkler.ə.faɪ/",
+      "topic": "communication",
+      "level": "B1",
+      "chars": 7,
+      "initial": "C",
+      "usage": [
+        {
+          "en": "Can you _____ what you mean by “soon”?",
+          "vi": "Bạn làm rõ “sớm” nghĩa là khi nào được không?"
+        }
+      ]
+    },
+    {
+      "id": "priority",
+      "word": "priority",
+      "defVi": "Ưu tiên; việc quan trọng hơn những việc khác.",
+      "leadVi": "Trong đống việc, cái này được làm trước.",
+      "anticipateVi": "Nghe quen mà khó nhớ mặt chữ.",
+      "pos": "noun",
+      "ipa": "/praɪˈɔːr.ə.ti/",
+      "topic": "work",
+      "level": "B1",
+      "chars": 8,
+      "initial": "P",
+      "usage": [
+        {
+          "en": "Sleep should be a _____, not a luxury.",
+          "vi": "Ngủ nên là ưu tiên, không phải xa xỉ."
+        }
+      ]
+    },
+    {
+      "id": "hesitate",
+      "word": "hesitate",
+      "defVi": "Do dự; ngập ngừng trước khi hành động.",
+      "leadVi": "Đứng trước cửa, tay đã nắm… mà chưa mở.",
+      "anticipateVi": "Gần rồi — giữ lấy chữ cái đầu.",
+      "pos": "verb",
+      "ipa": "/ˈhez.ə.teɪt/",
+      "topic": "emotion",
+      "level": "B1",
+      "chars": 8,
+      "initial": "H",
+      "usage": [
+        {
+          "en": "Don’t _____ to ask questions.",
+          "vi": "Đừng ngại hỏi nếu chưa hiểu."
+        }
+      ]
+    },
+    {
+      "id": "accurate",
+      "word": "accurate",
+      "defVi": "Chính xác; khớp với sự thật hoặc số liệu.",
+      "leadVi": "Không gần đúng — đúng từng chi tiết.",
+      "anticipateVi": "Một từ. Đúng một từ thôi.",
+      "pos": "adj",
+      "ipa": "/ˈæk.jɚ.ət/",
+      "topic": "thinking",
+      "level": "B1",
+      "chars": 8,
+      "initial": "A",
+      "usage": [
+        {
+          "en": "We need _____ numbers, not guesses.",
+          "vi": "Chúng ta cần số liệu chính xác, không phải đoán."
+        }
+      ]
+    },
+    {
+      "id": "outcome",
+      "word": "outcome",
+      "defVi": "Kết quả; điều xảy ra sau một quá trình.",
+      "leadVi": "Cuối cùng thì chuyện kết thúc ra sao?",
+      "anticipateVi": "Ít người đoán trúng ngay từ đầu.",
+      "pos": "noun",
+      "ipa": "/ˈaʊt.kʌm/",
+      "topic": "thinking",
+      "level": "B1",
+      "chars": 7,
+      "initial": "O",
+      "usage": [
+        {
+          "en": "We can’t control every _____.",
+          "vi": "Không phải kết quả nào ta cũng kiểm soát được."
+        }
+      ]
+    },
+    {
+      "id": "persuade",
+      "word": "persuade",
+      "defVi": "Thuyết phục ai đó tin hoặc làm theo.",
+      "leadVi": "Nói sao để người kia đổi ý… một cách tình nguyện.",
+      "anticipateVi": "Ghép số chữ với chữ cái đầu xem sao.",
+      "pos": "verb",
+      "ipa": "/pɚˈsweɪd/",
+      "topic": "communication",
+      "level": "B1",
+      "chars": 8,
+      "initial": "P",
+      "usage": [
+        {
+          "en": "She tried to _____ him to stay.",
+          "vi": "Cô ấy cố thuyết phục anh ấy ở lại."
+        }
+      ]
+    },
+    {
+      "id": "routine",
+      "word": "routine",
+      "defVi": "Thói quen / chuỗi việc lặp lại hàng ngày.",
+      "leadVi": "Sáng nào cũng vậy — đến mức mắt nhắm cũng làm được.",
+      "anticipateVi": "Nghĩ ra rồi thì… mở thôi.",
+      "pos": "noun",
+      "ipa": "/ruːˈtiːn/",
+      "topic": "daily",
+      "level": "A2",
+      "chars": 7,
+      "initial": "R",
+      "usage": [
+        {
+          "en": "A morning _____ keeps me calm.",
+          "vi": "Một thói quen buổi sáng giúp tôi bình tĩnh."
+        }
+      ]
+    },
+    {
+      "id": "awkward",
+      "word": "awkward",
+      "defVi": "Lúng túng, ngượng; khó xử.",
+      "leadVi": "Không khí im lặng… và chẳng ai biết nói gì.",
+      "anticipateVi": "Căng thật — mở chưa?",
+      "pos": "adj",
+      "ipa": "/ˈɔː.kwɚd/",
+      "topic": "emotion",
+      "level": "B1",
+      "chars": 7,
+      "initial": "A",
+      "usage": [
+        {
+          "en": "There was an _____ silence after his joke.",
+          "vi": "Sau câu đùa của anh ấy là một khoảng im lặng khó xử."
+        }
+      ]
+    },
+    {
+      "id": "benefit",
+      "word": "benefit",
+      "defVi": "Lợi ích; điều tốt mang lại.",
+      "leadVi": "Làm việc này thì… được cái gì?",
+      "anticipateVi": "Đoán sai cũng được, miễn là có nghĩ.",
+      "pos": "noun",
+      "ipa": "/ˈben.ə.fɪt/",
+      "topic": "daily",
+      "level": "A2",
+      "chars": 7,
+      "initial": "B",
+      "usage": [
+        {
+          "en": "One _____ of walking is a clearer mind.",
+          "vi": "Một lợi ích của việc đi bộ là đầu óc tỉnh hơn."
+        }
+      ]
+    },
+    {
+      "id": "distract",
+      "word": "distract",
+      "defVi": "Làm phân tâm; kéo sự chú ý đi chỗ khác.",
+      "leadVi": "Đang tập trung… thì chuông điện thoại ré lên.",
+      "anticipateVi": "Sẵn sàng nhìn mặt chữ chưa?",
+      "pos": "verb",
+      "ipa": "/dɪˈstrækt/",
+      "topic": "attention",
+      "level": "B1",
+      "chars": 8,
+      "initial": "D",
+      "usage": [
+        {
+          "en": "Please don’t _____ me while I’m coding.",
+          "vi": "Đừng làm tôi phân tâm lúc đang code."
+        }
+      ]
+    },
+    {
+      "id": "essential",
+      "word": "essential",
+      "defVi": "Thiết yếu; cực kỳ cần thiết.",
+      "leadVi": "Thiếu cái này thì việc còn lại… đổ hết.",
+      "anticipateVi": "Và… từ đó chính là:",
+      "pos": "adj",
+      "ipa": "/ɪˈsen.ʃəl/",
+      "topic": "thinking",
+      "level": "B1",
+      "chars": 9,
+      "initial": "E",
+      "usage": [
+        {
+          "en": "Clean water is _____ for health.",
+          "vi": "Nước sạch là thiết yếu cho sức khỏe."
+        }
+      ]
+    }
+  ]
+}

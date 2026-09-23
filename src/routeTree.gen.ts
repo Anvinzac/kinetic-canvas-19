@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as FeedRouteImport } from './routes/feed'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AdminAccessDeniedRouteImport } from './routes/admin-access-denied'
 import { Route as AdminRouteRouteImport } from './routes/admin/route'
@@ -23,15 +24,21 @@ import { Route as AdminContentRouteImport } from './routes/admin/content'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedMeRouteImport } from './routes/_authenticated/me'
-import { Route as AuthenticatedFeedRouteImport } from './routes/_authenticated/feed'
 import { Route as AuthenticatedEditProfileRouteImport } from './routes/_authenticated/edit-profile'
 import { Route as AuthenticatedDiscoverRouteImport } from './routes/_authenticated/discover'
 import { Route as AuthenticatedCreateRouteImport } from './routes/_authenticated/create'
+import { Route as AuthenticatedCommunityRouteImport } from './routes/_authenticated/community'
 import { Route as AuthenticatedAboutRouteImport } from './routes/_authenticated/about'
 import { Route as ApiPublicVocabularyRefillRouteImport } from './routes/api/public/vocabulary-refill'
+import { Route as ApiPublicVocabularyRouteImport } from './routes/api/public/vocabulary'
 import { Route as AuthenticatedUUsernameRouteImport } from './routes/_authenticated/u.$username'
 import { Route as AuthenticatedPPostIdRouteImport } from './routes/_authenticated/p.$postId'
 
+const FeedRoute = FeedRouteImport.update({
+  id: '/feed',
+  path: '/feed',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
@@ -102,11 +109,6 @@ const AuthenticatedMeRoute = AuthenticatedMeRouteImport.update({
   path: '/me',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedFeedRoute = AuthenticatedFeedRouteImport.update({
-  id: '/feed',
-  path: '/feed',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
 const AuthenticatedEditProfileRoute =
   AuthenticatedEditProfileRouteImport.update({
     id: '/edit-profile',
@@ -123,6 +125,11 @@ const AuthenticatedCreateRoute = AuthenticatedCreateRouteImport.update({
   path: '/create',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedCommunityRoute = AuthenticatedCommunityRouteImport.update({
+  id: '/community',
+  path: '/community',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedAboutRoute = AuthenticatedAboutRouteImport.update({
   id: '/about',
   path: '/about',
@@ -134,6 +141,11 @@ const ApiPublicVocabularyRefillRoute =
     path: '/api/public/vocabulary-refill',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicVocabularyRoute = ApiPublicVocabularyRouteImport.update({
+  id: '/api/public/vocabulary',
+  path: '/api/public/vocabulary',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedUUsernameRoute = AuthenticatedUUsernameRouteImport.update({
   id: '/u/$username',
   path: '/u/$username',
@@ -150,11 +162,12 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRouteRouteWithChildren
   '/admin-access-denied': typeof AdminAccessDeniedRoute
   '/auth': typeof AuthRoute
+  '/feed': typeof FeedRoute
   '/about': typeof AuthenticatedAboutRoute
+  '/community': typeof AuthenticatedCommunityRoute
   '/create': typeof AuthenticatedCreateRoute
   '/discover': typeof AuthenticatedDiscoverRoute
   '/edit-profile': typeof AuthenticatedEditProfileRoute
-  '/feed': typeof AuthenticatedFeedRoute
   '/me': typeof AuthenticatedMeRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/settings': typeof AuthenticatedSettingsRoute
@@ -166,17 +179,19 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AdminIndexRoute
   '/p/$postId': typeof AuthenticatedPPostIdRoute
   '/u/$username': typeof AuthenticatedUUsernameRoute
+  '/api/public/vocabulary': typeof ApiPublicVocabularyRoute
   '/api/public/vocabulary-refill': typeof ApiPublicVocabularyRefillRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin-access-denied': typeof AdminAccessDeniedRoute
   '/auth': typeof AuthRoute
+  '/feed': typeof FeedRoute
   '/about': typeof AuthenticatedAboutRoute
+  '/community': typeof AuthenticatedCommunityRoute
   '/create': typeof AuthenticatedCreateRoute
   '/discover': typeof AuthenticatedDiscoverRoute
   '/edit-profile': typeof AuthenticatedEditProfileRoute
-  '/feed': typeof AuthenticatedFeedRoute
   '/me': typeof AuthenticatedMeRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/settings': typeof AuthenticatedSettingsRoute
@@ -188,6 +203,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminIndexRoute
   '/p/$postId': typeof AuthenticatedPPostIdRoute
   '/u/$username': typeof AuthenticatedUUsernameRoute
+  '/api/public/vocabulary': typeof ApiPublicVocabularyRoute
   '/api/public/vocabulary-refill': typeof ApiPublicVocabularyRefillRoute
 }
 export interface FileRoutesById {
@@ -197,11 +213,12 @@ export interface FileRoutesById {
   '/admin': typeof AdminRouteRouteWithChildren
   '/admin-access-denied': typeof AdminAccessDeniedRoute
   '/auth': typeof AuthRoute
+  '/feed': typeof FeedRoute
   '/_authenticated/about': typeof AuthenticatedAboutRoute
+  '/_authenticated/community': typeof AuthenticatedCommunityRoute
   '/_authenticated/create': typeof AuthenticatedCreateRoute
   '/_authenticated/discover': typeof AuthenticatedDiscoverRoute
   '/_authenticated/edit-profile': typeof AuthenticatedEditProfileRoute
-  '/_authenticated/feed': typeof AuthenticatedFeedRoute
   '/_authenticated/me': typeof AuthenticatedMeRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
@@ -213,6 +230,7 @@ export interface FileRoutesById {
   '/admin/': typeof AdminIndexRoute
   '/_authenticated/p/$postId': typeof AuthenticatedPPostIdRoute
   '/_authenticated/u/$username': typeof AuthenticatedUUsernameRoute
+  '/api/public/vocabulary': typeof ApiPublicVocabularyRoute
   '/api/public/vocabulary-refill': typeof ApiPublicVocabularyRefillRoute
 }
 export interface FileRouteTypes {
@@ -222,11 +240,12 @@ export interface FileRouteTypes {
     | '/admin'
     | '/admin-access-denied'
     | '/auth'
+    | '/feed'
     | '/about'
+    | '/community'
     | '/create'
     | '/discover'
     | '/edit-profile'
-    | '/feed'
     | '/me'
     | '/notifications'
     | '/settings'
@@ -238,17 +257,19 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/p/$postId'
     | '/u/$username'
+    | '/api/public/vocabulary'
     | '/api/public/vocabulary-refill'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/admin-access-denied'
     | '/auth'
+    | '/feed'
     | '/about'
+    | '/community'
     | '/create'
     | '/discover'
     | '/edit-profile'
-    | '/feed'
     | '/me'
     | '/notifications'
     | '/settings'
@@ -260,6 +281,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/p/$postId'
     | '/u/$username'
+    | '/api/public/vocabulary'
     | '/api/public/vocabulary-refill'
   id:
     | '__root__'
@@ -268,11 +290,12 @@ export interface FileRouteTypes {
     | '/admin'
     | '/admin-access-denied'
     | '/auth'
+    | '/feed'
     | '/_authenticated/about'
+    | '/_authenticated/community'
     | '/_authenticated/create'
     | '/_authenticated/discover'
     | '/_authenticated/edit-profile'
-    | '/_authenticated/feed'
     | '/_authenticated/me'
     | '/_authenticated/notifications'
     | '/_authenticated/settings'
@@ -284,6 +307,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/_authenticated/p/$postId'
     | '/_authenticated/u/$username'
+    | '/api/public/vocabulary'
     | '/api/public/vocabulary-refill'
   fileRoutesById: FileRoutesById
 }
@@ -293,11 +317,20 @@ export interface RootRouteChildren {
   AdminRouteRoute: typeof AdminRouteRouteWithChildren
   AdminAccessDeniedRoute: typeof AdminAccessDeniedRoute
   AuthRoute: typeof AuthRoute
+  FeedRoute: typeof FeedRoute
+  ApiPublicVocabularyRoute: typeof ApiPublicVocabularyRoute
   ApiPublicVocabularyRefillRoute: typeof ApiPublicVocabularyRefillRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/feed': {
+      id: '/feed'
+      path: '/feed'
+      fullPath: '/feed'
+      preLoaderRoute: typeof FeedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auth': {
       id: '/auth'
       path: '/auth'
@@ -396,13 +429,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMeRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/feed': {
-      id: '/_authenticated/feed'
-      path: '/feed'
-      fullPath: '/feed'
-      preLoaderRoute: typeof AuthenticatedFeedRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/edit-profile': {
       id: '/_authenticated/edit-profile'
       path: '/edit-profile'
@@ -424,6 +450,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCreateRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/community': {
+      id: '/_authenticated/community'
+      path: '/community'
+      fullPath: '/community'
+      preLoaderRoute: typeof AuthenticatedCommunityRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/about': {
       id: '/_authenticated/about'
       path: '/about'
@@ -436,6 +469,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/vocabulary-refill'
       fullPath: '/api/public/vocabulary-refill'
       preLoaderRoute: typeof ApiPublicVocabularyRefillRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/vocabulary': {
+      id: '/api/public/vocabulary'
+      path: '/api/public/vocabulary'
+      fullPath: '/api/public/vocabulary'
+      preLoaderRoute: typeof ApiPublicVocabularyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/u/$username': {
@@ -457,10 +497,10 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAboutRoute: typeof AuthenticatedAboutRoute
+  AuthenticatedCommunityRoute: typeof AuthenticatedCommunityRoute
   AuthenticatedCreateRoute: typeof AuthenticatedCreateRoute
   AuthenticatedDiscoverRoute: typeof AuthenticatedDiscoverRoute
   AuthenticatedEditProfileRoute: typeof AuthenticatedEditProfileRoute
-  AuthenticatedFeedRoute: typeof AuthenticatedFeedRoute
   AuthenticatedMeRoute: typeof AuthenticatedMeRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
@@ -470,10 +510,10 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAboutRoute: AuthenticatedAboutRoute,
+  AuthenticatedCommunityRoute: AuthenticatedCommunityRoute,
   AuthenticatedCreateRoute: AuthenticatedCreateRoute,
   AuthenticatedDiscoverRoute: AuthenticatedDiscoverRoute,
   AuthenticatedEditProfileRoute: AuthenticatedEditProfileRoute,
-  AuthenticatedFeedRoute: AuthenticatedFeedRoute,
   AuthenticatedMeRoute: AuthenticatedMeRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
@@ -512,6 +552,8 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRouteRoute: AdminRouteRouteWithChildren,
   AdminAccessDeniedRoute: AdminAccessDeniedRoute,
   AuthRoute: AuthRoute,
+  FeedRoute: FeedRoute,
+  ApiPublicVocabularyRoute: ApiPublicVocabularyRoute,
   ApiPublicVocabularyRefillRoute: ApiPublicVocabularyRefillRoute,
 }
 export const routeTree = rootRouteImport

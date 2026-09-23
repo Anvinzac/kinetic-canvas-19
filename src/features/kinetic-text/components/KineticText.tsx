@@ -7,15 +7,8 @@
 
 import type { ReactElement } from "react";
 import { motion } from "framer-motion";
-import {
-  getCanvasEmphasisColor,
-  getCanvasTextColor,
-  type CanvasSpec,
-} from "@/features/canvas";
-import {
-  getKineticTextLayoutMode,
-  hasVisibleStickerAccent,
-} from "../lib/layout";
+import { getCanvasEmphasisColor, getCanvasTextColor, type CanvasSpec } from "@/features/canvas";
+import { getKineticTextLayoutMode, hasVisibleStickerAccent } from "../lib/layout";
 import { getLoopAnimation } from "../lib/loop";
 import { isLikelyVietnameseText } from "../lib/text-language";
 import { getWords } from "../lib/words";
@@ -25,6 +18,38 @@ import { getPreviewEmphasizedWordIndexes } from "./preview-emphasis";
 import { TEXT_SAFE_MAX_WIDTH, VIETNAMESE_SCALE_FIT_GUARD } from "./preview-fit";
 import { entranceVariants, tempoConfig } from "./preview-tempo";
 import { useKineticTextFit } from "./useKineticTextFit";
+
+/**
+ * Group consecutive emphasized word indices into [start, end) ranges.
+ * @param words - words argument
+ * @param emphasized - emphasized argument
+ * @returns Array of non-overlapping ranges covering consecutive emphasized runs
+ */
+function getEmphasisGroups(
+  words: string[],
+  emphasized: Set<number>,
+): Array<{ start: number; end: number }> {
+  const groups: Array<{ start: number; end: number }> = [];
+  let i = 0;
+
+  while (i < words.length) {
+    if (!emphasized.has(i)) {
+      i += 1;
+      continue;
+    }
+
+    const start = i;
+    while (i < words.length && emphasized.has(i)) {
+      i += 1;
+    }
+
+    if (i - start >= 2) {
+      groups.push({ start, end: i });
+    }
+  }
+
+  return groups;
+}
 
 /**
  * Animated kinetic typography overlay for create/preview canvases.
@@ -126,28 +151,81 @@ export function KineticText({
             emphasisColor={emphasisColor}
             staticLayout={staticLayout}
             words={words}
-            spotlightEmphasis={spotlightEmphasis}
           />
-        ): (
-          words.map((word, i) => (
-            <AnimatedWord
-              key={`${playKey}-${word}-${i}`}
-              word={word}
-              index={i}
-              playKey={playKey}
-              wordVariants={wordVariants}
-              spec={spec}
-              tempo={tempo}
-              paused={paused}
-              anchorFromStart={leftAnchoredText}
-              spotlightWord={spotlightEmphasis && emphasized.has(i)}
-              important={emphasized.has(i)}
-              textColor={textColor}
-              emphasisColor={emphasisColor}
-              staticLayout={staticLayout}
-              words={words}
-            />
-          ))
+        ) : (
+          (() => {
+            const groups = getEmphasisGroups(words, emphasized);
+            const groupSet = new Set<number>();
+            for (const g of groups) {
+              for (let i = g.start; i < g.end; i++) groupSet.add(i);
+            }
+
+            return words.map((word, i) => {
+              if (!groupSet.has(i))
+                return (
+                  <AnimatedWord
+                    key={`${playKey}-${word}-${i}`}
+                    word={word}
+                    index={i}
+                    playKey={playKey}
+                    wordVariants={wordVariants}
+                    spec={spec}
+                    tempo={tempo}
+                    paused={paused}
+                    anchorFromStart={leftAnchoredText}
+                    spotlightWord={spotlightEmphasis && emphasized.has(i)}
+                    important={emphasized.has(i)}
+                    textColor={textColor}
+                    emphasisColor={emphasisColor}
+                    staticLayout={staticLayout}
+                    words={words}
+                  />
+                );
+
+              const grp = groups.find((g) => i >= g.start && i < g.end);
+              if (!grp || grp.start !== i) return null;
+
+              return (
+                <span
+                  key={`frame-group-${i}`}
+                  className="kinetic-emphasis-mark kinetic-emph-frame inline-flex relative"
+                  style={{
+                    display: "inline-flex",
+                    flex: "0 0 auto",
+                    alignItems: "baseline",
+                    columnGap: "0.24em",
+                    padding: "0.05em 0.3em 0.1em",
+                    borderRadius: "0.28em",
+                    border: "0.05em solid transparent",
+                    isolation: "isolate",
+                    marginLeft: "-0.02em",
+                    marginRight: "-0.02em",
+                  }}
+                >
+                  {words.slice(grp.start, grp.end).map((w, wi) => (
+                    <AnimatedWord
+                      key={`${playKey}-${w}-${grp.start + wi}`}
+                      word={w}
+                      index={grp.start + wi}
+                      playKey={playKey}
+                      wordVariants={wordVariants}
+                      spec={spec}
+                      tempo={tempo}
+                      paused={paused}
+                      anchorFromStart={leftAnchoredText}
+                      spotlightWord={false}
+                      important
+                      skipFrame
+                      textColor={textColor}
+                      emphasisColor={emphasisColor}
+                      staticLayout={staticLayout}
+                      words={words}
+                    />
+                  ))}
+                </span>
+              );
+            });
+          })()
         )}
       </motion.div>
     </div>

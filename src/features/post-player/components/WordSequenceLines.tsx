@@ -31,6 +31,39 @@ export type WordSequenceLinesProps = {
 };
 
 /**
+ * Group consecutive emphasized word indices into [start, end) ranges.
+ * @param words - words argument
+ * @param emphasized - emphasized argument
+ * @returns Array of non-overlapping ranges covering consecutive emphasized runs
+ */
+function getEmphasisGroups(
+  words: string[],
+  emphasized: Set<number>,
+  startIndex = 0,
+): Array<{ start: number; end: number }> {
+  const groups: Array<{ start: number; end: number }> = [];
+  let i = 0;
+
+  while (i < words.length) {
+    if (!emphasized.has(startIndex + i)) {
+      i += 1;
+      continue;
+    }
+
+    const start = i;
+    while (i < words.length && emphasized.has(startIndex + i)) {
+      i += 1;
+    }
+
+    if (i - start >= 2) {
+      groups.push({ start, end: i });
+    }
+  }
+
+  return groups;
+}
+
+/**
  * Map words/lines to WordSequenceWord spans.
  * @param props - WordSequenceLinesProps fields
  * @returns Rendered UI
@@ -51,7 +84,12 @@ export function WordSequenceLines({
   emphasisColor,
   entranceStyle,
 }: WordSequenceLinesProps): ReactElement {
-  const renderWord = (word: string, index: number, suppressSpotlight = false) => (
+  const renderWord = (
+    word: string,
+    index: number,
+    suppressSpotlight = false,
+    skipFrame = false,
+  ) => (
     <WordSequenceWord
       key={`${word}-${index}`}
       word={word}
@@ -69,11 +107,48 @@ export function WordSequenceLines({
       textColor={textColor}
       emphasisColor={emphasisColor}
       entranceStyle={entranceStyle}
+      skipFrame={skipFrame}
     />
   );
 
   if (!isVietnamese) {
-    return <>{words.map((word, index) => renderWord(word, index))}</>;
+    const groups = getEmphasisGroups(words, emphasized);
+    const groupSet = new Set<number>();
+    for (const g of groups) {
+      for (let i = g.start; i < g.end; i++) groupSet.add(i);
+    }
+
+    return (
+      <>
+        {words.map((word, index) => {
+          if (!groupSet.has(index)) return renderWord(word, index);
+
+          const group = groups.find((g) => index >= g.start && index < g.end);
+          if (!group || group.start !== index) return null;
+
+          return (
+            <span
+              key={`frame-group-${index}`}
+              className="kinetic-emphasis-mark kinetic-emph-frame inline-flex relative"
+              style={{
+                display: "inline-flex",
+                flex: "0 0 auto",
+                alignItems: "baseline",
+                columnGap: "0.24em",
+                padding: "0.05em 0.3em 0.1em",
+                borderRadius: "0.28em",
+                border: "0.05em solid transparent",
+                isolation: "isolate",
+              }}
+            >
+              {words
+                .slice(group.start, group.end)
+                .map((w, wi) => renderWord(w, group.start + wi, true, true))}
+            </span>
+          );
+        })}
+      </>
+    );
   }
 
   return (
@@ -95,21 +170,54 @@ export function WordSequenceLines({
           }}
         >
           {line.segments.map((segment) => {
-            const spotlightSegment =
-              spotlightEmphasis && segment.words.some(({ index }) => emphasized.has(index));
+            const flatWords = segment.words.map(({ text, index }) => ({ text, index }));
+            const segGroups = getEmphasisGroups(
+              flatWords.map((w) => w.text),
+              emphasized,
+              flatWords[0]?.index ?? 0,
+            );
+            const segGroupSet = new Set<number>();
+            for (const g of segGroups) {
+              for (let i = g.start; i < g.end; i++) segGroupSet.add(i);
+            }
+
             return (
               <span
                 key={segment.key}
                 className="inline-flex flex-nowrap items-baseline whitespace-nowrap"
                 style={{
                   columnGap: "0.24em",
-                  flexBasis: spotlightSegment ? "100%" : undefined,
-                  justifyContent: spotlightSegment ? "center" : undefined,
-                  marginBottom: spotlightSegment ? "0.08em" : undefined,
-                  marginTop: spotlightSegment ? "0.08em" : undefined,
+                  flex: "0 0 auto",
+                  justifyContent: "flex-start",
                 }}
               >
-                {segment.words.map(({ text, index }) => renderWord(text, index, true))}
+                {flatWords.map(({ text, index }, wi) => {
+                  if (!segGroupSet.has(wi)) return renderWord(text, index, true);
+
+                  const grp = segGroups.find((g) => wi >= g.start && wi < g.end);
+                  if (!grp || grp.start !== wi) return null;
+
+                  return (
+                    <span
+                      key={`v-frame-group-${index}`}
+                      className="kinetic-emphasis-mark kinetic-emph-frame inline-flex relative"
+                      style={{
+                        display: "inline-flex",
+                        flex: "0 0 auto",
+                        alignItems: "baseline",
+                        columnGap: "0.24em",
+                        padding: "0.05em 0.3em 0.1em",
+                        borderRadius: "0.28em",
+                        border: "0.05em solid transparent",
+                        isolation: "isolate",
+                      }}
+                    >
+                      {flatWords
+                        .slice(grp.start, grp.end)
+                        .map((w, innerWi) => renderWord(w.text, w.index, true, true))}
+                    </span>
+                  );
+                })}
               </span>
             );
           })}

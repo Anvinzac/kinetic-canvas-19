@@ -5,8 +5,8 @@
  * Depends on: supabase, lovable OAuth, ensureProfile, demo-session, framer-motion, sonner
  */
 
-import { useNavigate } from "@tanstack/react-router";
-import {type ReactElement, useEffect, useState } from "react";
+import { Link, useNavigate } from "@tanstack/react-router";
+import { type ReactElement, useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
@@ -151,6 +151,12 @@ export function AuthPage(): ReactElement {
           {loading === "demo" ? "opening demo…" : "✨ try as demo account"}
         </button>
 
+        <Link
+          to="/feed"
+          className="block rounded-xl px-4 py-3 text-center text-sm underline underline-offset-4"
+        >
+          Browse vocabulary without signing in
+        </Link>
         <p className="pt-2 text-center font-mono text-[10px] uppercase tracking-[0.25em] text-muted-foreground">
           one tap · no signup
         </p>

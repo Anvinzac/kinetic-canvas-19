@@ -13,13 +13,10 @@ import {
   getTextSafeInsets,
 } from "./playback-timing";
 import {
-  SOLO_REVEAL_MIN_FIT,
-  SOLO_REVEAL_MIN_INLINE_SCALE,
-  SOLO_REVEAL_MAX_STRETCH,
   SOLO_REVEAL_TARGET_WIDTH_FRACTION,
-  SOLO_TEXT_MIN_FIT,
   clampNumber,
   getMeasuredSoloWordWidth,
+  getSoloRevealFit,
 } from "./solo-text-fit";
 
 export type WordSequenceFitInput = {
@@ -55,7 +52,6 @@ export function computeWordSequenceFit(input: WordSequenceFitInput): WordSequenc
     canvas,
     canvasWidth,
     fitScale,
-    soloInlineScale,
     isSolo,
     isVietnamese,
     leftAnchoredText,
@@ -73,34 +69,51 @@ export function computeWordSequenceFit(input: WordSequenceFitInput): WordSequenc
   const maxHeight = safeHeight * 0.92;
   // A solo page's text container is forced to width:100% so it centers within the
   // wrapper — its scrollWidth is just that 100% width, not the word's actual glyph
-  // width. Measure the innermost word span directly instead, undoing scaleX.
+  // width. Measure the innermost word's untransformed layout dimensions instead.
   const measuredWidth = isSolo
-    ? getMeasuredSoloWordWidth(text, soloInlineScale): getMeasuredTextWidth(text, wrapper, leftAnchoredText);
+    ? getMeasuredSoloWordWidth(text)
+    : getMeasuredTextWidth(text, wrapper, leftAnchoredText);
   const widthRatio = wrapperWidth / Math.max(measuredWidth * visualScaleGuard, 1);
   const heightRatio = maxHeight / Math.max(text.scrollHeight, 1);
-  // A single word cannot wrap, so the usual immersive minimums must not block
-  // it from shrinking enough to fit. For reveal words, keep letters tall and
-  // condense horizontally only when needed to stay inside the canvas bounds.
+  // Reveal words use proportional font sizing with no minimum scale or horizontal distortion.
   const finalSizeFloor = Math.min(1, MIN_FONT_SIZE / Math.max(specSize, 1));
-  const floor = isSolo
-    ? SOLO_TEXT_MIN_FIT
-    : Math.max(isVietnamese ? MIN_TEXT_FIT_SCALE : MIN_ENGLISH_TEXT_FIT_SCALE, finalSizeFloor);
+  const floor = Math.max(
+    isVietnamese ? MIN_TEXT_FIT_SCALE : MIN_ENGLISH_TEXT_FIT_SCALE,
+    finalSizeFloor,
+  );
   const widthFit = Math.min(1, fitScale * widthRatio * 0.98);
   const heightFit = Math.min(1, fitScale * heightRatio * 0.98);
-  const widthFitRaw = fitScale * widthRatio * 0.98;
-  const heightFitRaw = fitScale * heightRatio * 0.98;
-  const targetWidthRatio =
-    (canvasWidth * SOLO_REVEAL_TARGET_WIDTH_FRACTION) /
-    Math.max(measuredWidth * visualScaleGuard, 1);
-  const widthFitTarget = fitScale * targetWidthRatio;
+  let soloAvailableWidth = Math.min(
+    wrapperWidth * 0.98,
+    canvasWidth * SOLO_REVEAL_TARGET_WIDTH_FRACTION,
+  );
+  if (isSolo) {
+    const rect = wrapper.getBoundingClientRect();
+    const canvasRect = canvas.getBoundingClientRect();
+    const viewport = wrapper.ownerDocument.defaultView?.visualViewport;
+    const viewportLeft = viewport?.offsetLeft ?? 0;
+    const viewportRight =
+      viewportLeft + (viewport?.width ?? wrapper.ownerDocument.documentElement.clientWidth);
+    const center = (rect.left + rect.right) / 2;
+    const left = Math.max(canvasRect.left, viewportLeft) + 16;
+    const right = Math.min(canvasRect.right, viewportRight) - 16;
+    const centeredRoom = Math.max(1, 2 * Math.min(center - left, right - center));
+    soloAvailableWidth = Math.min(
+      soloAvailableWidth,
+      (centeredRoom * wrapperWidth) / Math.max(rect.width, 1),
+    );
+  }
   const nextFit = isSolo
-    ? Math.max(floor, Math.min(Math.max(widthFitTarget, SOLO_REVEAL_MIN_FIT), heightFitRaw)): Math.max(floor, Math.min(1, widthFit, heightFit));
-  const nextSoloInlineScale = isSolo
-    ? clampNumber(
-        Math.min(widthFitTarget, widthFitRaw) / Math.max(nextFit, 0.01),
-        SOLO_REVEAL_MIN_INLINE_SCALE,
-        SOLO_REVEAL_MAX_STRETCH,
-      ): 1;
+    ? getSoloRevealFit(
+        fitScale,
+        measuredWidth,
+        text.scrollHeight,
+        soloAvailableWidth,
+        maxHeight,
+        visualScaleGuard,
+      )
+    : Math.max(floor, Math.min(1, widthFit, heightFit));
+  const nextSoloInlineScale = 1;
   const textHeight = text.scrollHeight;
   const requestedCenter = (canvasHeight * specY) / 100;
   const halfText = Math.min(textHeight / 2, safeHeight / 2);

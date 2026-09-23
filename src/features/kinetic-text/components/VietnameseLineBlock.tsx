@@ -1,4 +1,36 @@
 /**
+ * Group consecutive emphasized word indices within a segment into [start, end) ranges.
+ * @param words - words argument
+ * @param emphasized - emphasized argument
+ * @returns Array of non-overlapping ranges covering consecutive emphasized runs of 2+ words
+ */
+function getEmphasisGroups(
+  words: Array<{ text: string; index: number }>,
+  emphasized: Set<number>,
+): Array<{ start: number; end: number }> {
+  const groups: Array<{ start: number; end: number }> = [];
+  let i = 0;
+
+  while (i < words.length) {
+    if (!emphasized.has(words[i].index)) {
+      i += 1;
+      continue;
+    }
+
+    const start = i;
+    while (i < words.length && emphasized.has(words[i].index)) {
+      i += 1;
+    }
+
+    if (i - start >= 2) {
+      groups.push({ start, end: i });
+    }
+  }
+
+  return groups;
+}
+
+/**
  * Vietnamese staggered line block for KineticText preview layout.
  *
  * Exports: VietnameseLineBlock
@@ -30,7 +62,6 @@ export function VietnameseLineBlock({
   emphasisColor,
   staticLayout,
   words,
-  spotlightEmphasis,
 }: {
   lines: WordLine[];
   playKey: number;
@@ -43,7 +74,6 @@ export function VietnameseLineBlock({
   emphasisColor: string;
   staticLayout: boolean;
   words: string[];
-  spotlightEmphasis: boolean;
 }): ReactElement {
   return (
     <>
@@ -66,8 +96,11 @@ export function VietnameseLineBlock({
           }}
         >
           {line.segments.map((segment) => {
-            const spotlightSegment =
-              spotlightEmphasis && segment.words.some(({ index }) => emphasized.has(index));
+            const segGroups = getEmphasisGroups(segment.words, emphasized);
+            const segGroupSet = new Set<number>();
+            for (const g of segGroups) {
+              for (let i = g.start; i < g.end; i++) segGroupSet.add(i);
+            }
             return (
               <span
                 key={segment.key}
@@ -75,33 +108,75 @@ export function VietnameseLineBlock({
                   alignItems: "baseline",
                   columnGap: "0.24em",
                   display: "inline-flex",
-                  flexBasis: spotlightSegment ? "100%" : undefined,
+                  flex: "0 0 auto",
                   flexWrap: "nowrap",
-                  justifyContent: spotlightSegment ? "center" : undefined,
-                  marginBottom: spotlightSegment ? "0.08em" : undefined,
-                  marginTop: spotlightSegment ? "0.08em" : undefined,
+                  justifyContent: "flex-start",
                   whiteSpace: "nowrap",
                 }}
               >
-                {segment.words.map(({ text, index }) => (
-                  <AnimatedWord
-                    key={`${playKey}-${text}-${index}`}
-                    word={text}
-                    index={index}
-                    playKey={playKey}
-                    wordVariants={wordVariants}
-                    spec={spec}
-                    tempo={tempo}
-                    paused={paused}
-                    anchorFromStart
-                    spotlightWord={false}
-                    important={emphasized.has(index)}
-                    textColor={textColor}
-                    emphasisColor={emphasisColor}
-                    staticLayout={staticLayout}
-                    words={words}
-                  />
-                ))}
+                {segment.words.map(({ text, index }, wi) => {
+                  if (!segGroupSet.has(wi))
+                    return (
+                      <AnimatedWord
+                        key={`${playKey}-${text}-${index}`}
+                        word={text}
+                        index={index}
+                        playKey={playKey}
+                        wordVariants={wordVariants}
+                        spec={spec}
+                        tempo={tempo}
+                        paused={paused}
+                        anchorFromStart
+                        spotlightWord={false}
+                        important={emphasized.has(index)}
+                        textColor={textColor}
+                        emphasisColor={emphasisColor}
+                        staticLayout={staticLayout}
+                        words={words}
+                      />
+                    );
+
+                  const grp = segGroups.find((g) => wi >= g.start && wi < g.end);
+                  if (!grp || grp.start !== wi) return null;
+
+                  return (
+                    <span
+                      key={`v-frame-group-${index}`}
+                      className="kinetic-emphasis-mark kinetic-emph-frame inline-flex relative"
+                      style={{
+                        display: "inline-flex",
+                        flex: "0 0 auto",
+                        alignItems: "baseline",
+                        columnGap: "0.24em",
+                        padding: "0.05em 0.3em 0.1em",
+                        borderRadius: "0.28em",
+                        border: "0.05em solid transparent",
+                        isolation: "isolate",
+                      }}
+                    >
+                      {segment.words.slice(grp.start, grp.end).map((w, innerWi) => (
+                        <AnimatedWord
+                          key={`${playKey}-${w.text}-${w.index}`}
+                          word={w.text}
+                          index={w.index}
+                          playKey={playKey}
+                          wordVariants={wordVariants}
+                          spec={spec}
+                          tempo={tempo}
+                          paused={paused}
+                          anchorFromStart
+                          spotlightWord={false}
+                          important={emphasized.has(w.index)}
+                          skipFrame
+                          textColor={textColor}
+                          emphasisColor={emphasisColor}
+                          staticLayout={staticLayout}
+                          words={words}
+                        />
+                      ))}
+                    </span>
+                  );
+                })}
               </span>
             );
           })}

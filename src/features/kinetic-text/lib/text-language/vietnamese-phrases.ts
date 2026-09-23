@@ -26,8 +26,6 @@ const VIETNAMESE_BOUND_PHRASES = [
   "noi dung",
   "cảm xúc",
   "cam xuc",
-  "khoảng thở",
-  "khoang tho",
   "màn hình",
   "man hinh",
   "bài thử",
@@ -84,8 +82,6 @@ const VIETNAMESE_POETIC_EMPHASIS_PHRASES = [
   "chan beo",
   "hơi sương",
   "hoi suong",
-  "khoảng thở",
-  "khoang tho",
   "cảm xúc",
   "cam xuc",
 ] as const;

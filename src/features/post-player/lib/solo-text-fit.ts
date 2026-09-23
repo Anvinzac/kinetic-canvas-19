@@ -5,9 +5,8 @@
  * Depends on: none (leaf module)
  */
 
-/** Single-word pages may shrink this far to keep a long word on screen. */
-export const SOLO_TEXT_MIN_FIT = 0.3;
-export const SOLO_REVEAL_MIN_FIT = 0.62;
+/** Reveal fitting has no minimum font scale: viewport containment wins. */
+export const SOLO_REVEAL_VISUAL_GUARD = 1.14;
 // The reveal word is the punchline of a guessing post — it should dominate the
 // canvas. Solved-for directly as a share of the real canvas width, so a short
 // word ("Dawn") grows well past its nominal size and a long one ("Persistence")
@@ -16,9 +15,7 @@ export const SOLO_REVEAL_MIN_FIT = 0.62;
 // while still leaving margin for the emphasis pulse/entrance overshoot — i.e. it
 // never spills off either side even mid-animation.
 export const SOLO_REVEAL_TARGET_WIDTH_FRACTION = 0.85;
-// Horizontal-only correction (transform: scaleX) closing any gap between the
-// chosen font scale and the target width, without touching letter height.
-export const SOLO_REVEAL_MIN_INLINE_SCALE = 0.45;
+// Keep short answers large; long answers shrink proportionally, never via scaleX.
 export const SOLO_REVEAL_MAX_STRETCH = 1.7;
 
 // Average glyph advance as a fraction of the font size for the heavy sans we
@@ -49,7 +46,12 @@ export function clampNumber(value: number, min: number, max: number): number {
  * @param weight - Font weight
  * @returns Estimated width in CSS pixels
  */
-export function estimateWordWidth(word: string, size: number, font: string, weight: number): number {
+export function estimateWordWidth(
+  word: string,
+  size: number,
+  font: string,
+  weight: number,
+): number {
   const trimmed = word.trim();
   if (!trimmed) return 0;
   if (typeof document !== "undefined") {
@@ -86,21 +88,33 @@ export function estimateSoloRevealFit(
   emphasisFactor: number,
 ): number {
   const estWidth =
-    estimateWordWidth(text, size, font, weight) * Math.max(visualScaleGuard, 1) * emphasisFactor;
+    (estimateWordWidth(text, size, font, weight) + size * 0.8) *
+    Math.max(visualScaleGuard, SOLO_REVEAL_VISUAL_GUARD) *
+    emphasisFactor;
   if (estWidth <= 0 || canvasWidth <= 0) return 1;
   const target = (canvasWidth * SOLO_REVEAL_TARGET_WIDTH_FRACTION) / estWidth;
-  return clampNumber(target, SOLO_REVEAL_MIN_FIT, SOLO_REVEAL_MAX_STRETCH);
+  return Math.min(target, SOLO_REVEAL_MAX_STRETCH);
 }
 
-/**
- * Measure the innermost glyph span width, undoing the current solo inline scale.
- * @param text - Text container element
- * @param soloInlineScale - Current horizontal solo scale applied in layout
- * @returns Unscaled measured word width
- */
-export function getMeasuredSoloWordWidth(text: HTMLElement, soloInlineScale: number): number {
-  const spans = Array.from(text.querySelectorAll("span"));
-  const glyphSpan = spans.find((span) => span.querySelector("span") === null);
-  const raw = glyphSpan ? glyphSpan.getBoundingClientRect().width : text.scrollWidth;
-  return raw / Math.max(soloInlineScale, 0.01);
+/** Measure glyphs and frame padding without entrance, pulse, or ancestor transforms. */
+export function getMeasuredSoloWordWidth(text: HTMLElement): number {
+  const glyph = text.querySelector<HTMLElement>("[data-kinetic-glyph]");
+  return glyph ? Math.max(glyph.offsetWidth, glyph.scrollWidth) : text.scrollWidth;
+}
+
+/** Solve proportional font size from real layout dimensions, without an overflow-causing floor. */
+export function getSoloRevealFit(
+  currentFit: number,
+  measuredWidth: number,
+  measuredHeight: number,
+  availableWidth: number,
+  availableHeight: number,
+  visualScaleGuard = SOLO_REVEAL_VISUAL_GUARD,
+): number {
+  const guard = Math.max(visualScaleGuard, SOLO_REVEAL_VISUAL_GUARD);
+  return Math.min(
+    SOLO_REVEAL_MAX_STRETCH,
+    (currentFit * Math.max(1, availableWidth)) / Math.max(1, measuredWidth * guard),
+    (currentFit * Math.max(1, availableHeight)) / Math.max(1, measuredHeight * guard),
+  );
 }

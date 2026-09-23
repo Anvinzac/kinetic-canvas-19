@@ -20,6 +20,7 @@ const useIsomorphicLayoutEffect = typeof window === "undefined" ? useEffect : us
 
 export type UseWordSequenceFitArgs = {
   initialFit: number;
+  measurementKey: string;
   canvasWidth: number;
   background?: string | null;
   spec: CanvasSpec;
@@ -48,6 +49,7 @@ export type UseWordSequenceFitResult = {
  */
 export function useWordSequenceFit({
   initialFit,
+  measurementKey,
   canvasWidth,
   background,
   spec,
@@ -64,6 +66,37 @@ export function useWordSequenceFit({
   const [soloInlineScale, setSoloInlineScale] = useState(1);
   const [safeCenterY, setSafeCenterY] = useState(spec.y);
   const fontSize = spec.size * (disableFit ? 1 : fitScale);
+  const [measurementRevision, setMeasurementRevision] = useState(0);
+
+  useIsomorphicLayoutEffect(() => {
+    const wrapper = wrapperRef.current;
+    const text = textRef.current;
+    const canvas = wrapper?.parentElement?.parentElement;
+    if (!wrapper || !text || !canvas) return;
+    let disposed = false;
+    const remeasure = () => {
+      if (!disposed) setMeasurementRevision((revision) => revision + 1);
+    };
+    const observer = new ResizeObserver(remeasure);
+    observer.observe(wrapper);
+    observer.observe(canvas);
+    observer.observe(text);
+    const glyph = text.querySelector("[data-kinetic-glyph]");
+    if (glyph) observer.observe(glyph);
+    const fonts = wrapper.ownerDocument.fonts;
+    void fonts.ready.then(remeasure);
+    fonts.addEventListener("loadingdone", remeasure);
+    const viewport = wrapper.ownerDocument.defaultView?.visualViewport;
+    viewport?.addEventListener("resize", remeasure);
+    viewport?.addEventListener("scroll", remeasure);
+    return () => {
+      disposed = true;
+      observer.disconnect();
+      fonts.removeEventListener("loadingdone", remeasure);
+      viewport?.removeEventListener("resize", remeasure);
+      viewport?.removeEventListener("scroll", remeasure);
+    };
+  }, [measurementKey, spec.text, wrapperRef, textRef]);
 
   useIsomorphicLayoutEffect(() => {
     setFitScale(initialFit);
@@ -108,7 +141,10 @@ export function useWordSequenceFit({
     // Solo pages may need to grow fitScale past its initial 1 (to fill the
     // target width), not just shrink — react to either direction. Multi-word
     // pages never compute a nextFit above 1, so this stays shrink-only for them.
-    if (!disableFit && Math.abs(next.nextFit - fitScale) > 0.01) {
+    const fitChanged = isSolo
+      ? Math.abs(next.nextFit - fitScale) / Math.max(fitScale, Number.EPSILON) > 0.002
+      : Math.abs(next.nextFit - fitScale) > 0.01;
+    if (!disableFit && fitChanged) {
       setFitScale(next.nextFit);
     } else {
       // Converged — report the scale this page needs so the parent can pick a
@@ -122,6 +158,11 @@ export function useWordSequenceFit({
       setSafeCenterY(next.nextCenterY);
     }
   }, [
+    measurementKey,
+    measurementRevision,
+    wrapperRef,
+    textRef,
+    isSolo,
     disableFit,
     onFitScale,
     fitScale,

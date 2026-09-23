@@ -7,7 +7,7 @@
 
 import { useQueryClient } from "@tanstack/react-query";
 import { Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
-import { useEffect, useState, type ReactNode, ReactElement} from "react";
+import { useEffect, useState, type ReactNode, ReactElement } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Bell,
@@ -19,6 +19,7 @@ import {
   Search,
   Settings,
   User,
+  Users,
 } from "lucide-react";
 import { endDemoSession, isDemoSession } from "../demo-session";
 
@@ -49,7 +50,7 @@ export function AuthedShell(): ReactElement {
     qc.clear();
     if (demoMode) endDemoSession();
     else await supabase.auth.signOut();
-    navigate({ to: "/auth", replace: true });
+    navigate({ to: "/feed", replace: true });
   }
 
   return (
@@ -70,7 +71,8 @@ export function AuthedShell(): ReactElement {
           {menuOpen && (
             <div className="w-48 overflow-hidden rounded-2xl bg-black/70 p-1.5 text-white shadow-[0_18px_55px_rgba(0,0,0,0.42)] ring-1 ring-white/10 backdrop-blur-xl">
               <MenuLink to="/create" icon={<Plus className="size-4" />} label="Create" />
-              <MenuLink to="/feed" icon={<Home className="size-4" />} label="Feed" />
+              <MenuLink to="/feed" icon={<Home className="size-4" />} label="Vocabulary" />
+              <MenuLink to="/community" icon={<Users className="size-4" />} label="Community" />
               <MenuLink to="/discover" icon={<Search className="size-4" />} label="Discover" />
               <MenuLink to="/notifications" icon={<Bell className="size-4" />} label="Activity" />
               <MenuLink to="/me" icon={<User className="size-4" />} label="Profile" />

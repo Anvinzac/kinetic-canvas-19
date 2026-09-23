@@ -38,16 +38,31 @@ export function RootApp({ queryClient }: { queryClient: QueryClient }) {
   const router = useRouter();
 
   useEffect(() => {
+    // Public vocabulary browsing does not require a configured auth provider.
+    if (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY)
+      return;
+    let disposed = false;
     let unsub: { unsubscribe?: () => void } | undefined;
-    import("@/integrations/supabase/client").then(({ supabase }) => {
-      const { data } = supabase.auth.onAuthStateChange((event) => {
-        if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
-        router.invalidate();
-        if (event !== "SIGNED_OUT") queryClient.invalidateQueries();
+    import("@/integrations/supabase/client")
+      .then(({ supabase }) => {
+        if (disposed) return;
+        const { data } = supabase.auth.onAuthStateChange((event) => {
+          if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
+          void router.invalidate();
+          if (event !== "SIGNED_OUT")
+            void queryClient.invalidateQueries({
+              predicate: (query) => query.queryKey[0] !== "vocabulary",
+            });
+        });
+        unsub = data.subscription;
+      })
+      .catch(() => {
+        // Protected routes still enforce auth; a provider failure must not disable public pages.
       });
-      unsub = data.subscription;
-    });
-    return () => unsub?.unsubscribe?.();
+    return () => {
+      disposed = true;
+      unsub?.unsubscribe?.();
+    };
   }, [router, queryClient]);
 
   return (

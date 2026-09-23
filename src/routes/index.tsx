@@ -1,27 +1,8 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect } from "react";
-import { isDemoSession } from "@/features/session";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/")({
-  component: IndexRedirect,
+  beforeLoad: ({ location }) => {
+    // Keep OAuth callback parameters while sending every visitor to the public feed.
+    throw redirect({ to: "/feed", search: location.search, hash: location.hash, replace: true });
+  },
 });
-
-function IndexRedirect() {
-  const navigate = useNavigate();
-  useEffect(() => {
-    if (isDemoSession()) {
-      navigate({ to: "/feed", replace: true });
-      return;
-    }
-
-    import("@/integrations/supabase/client").then(async ({ supabase }) => {
-      const { data } = await supabase.auth.getUser();
-      navigate({ to: data.user ? "/feed" : "/auth", replace: true });
-    });
-  }, [navigate]);
-  return (
-    <div className="flex h-[100dvh] items-center justify-center bg-background">
-      <div className="grad-aurora size-14 animate-pulse rounded-full" />
-    </div>
-  );
-}

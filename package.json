@@ -10,6 +10,7 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
+    "vocab:import": "node --experimental-strip-types scripts/import-vocabulary.ts",
     "check:gradients": "node scripts/check-canvas-gradients.ts",
     "format": "prettier --write ."
   },
