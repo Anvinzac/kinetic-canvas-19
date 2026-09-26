@@ -1,5 +1,5 @@
 /** One independent vocabulary learning card; no social mutations. Exports: VocabularyCard. Depends on: presets, playback, VocabularyStage. */
-import { useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { useCallback, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { getCanvasPatternTheme, getCanvasSceneTheme } from "@/features/canvas";
 import {
   PostCanvasBackdrop,
@@ -7,7 +7,7 @@ import {
   getPageDuration,
   getUniformPageTextSize,
 } from "@/features/post-player";
-import { ArrowLeft, ArrowRight, RotateCcw, Sparkles } from "lucide-react";
+import { RotateCcw, Sparkles } from "lucide-react";
 import { buildVocabularyCanvas, choosePresentation, fitVocabularyTextSize } from "../lib/presets";
 import { buildStages } from "../lib/stages";
 import { useLearningPlayback } from "../hooks/useLearningPlayback";
@@ -53,9 +53,7 @@ export function VocabularyCard({
     reducedMotion,
     durations: stages.map((stage) =>
       getPageDuration(
-        [stage.text, stage.secondary, stage.reveal ? entry.word.defVi : ""]
-          .filter(Boolean)
-          .join(" "),
+        [stage.text, stage.reveal ? entry.word.defVi : ""].filter(Boolean).join(" "),
         style.tempo,
         style.rhythm,
       ),
@@ -90,6 +88,62 @@ export function VocabularyCard({
     color: theme.ink,
     fontFamily: `${theme.font}, sans-serif`,
   } as CSSProperties;
+
+  // Gesture handling: tap left/right + horizontal swipe for clue navigation.
+  const gestureStart = useRef<{ x: number; y: number; t: number } | null>(null);
+  const handlePointerStart = useCallback((clientX: number, clientY: number, target: EventTarget | null) => {
+    if (target instanceof HTMLElement && target.closest("button, a, input, select, textarea, [data-no-gesture]")) {
+      gestureStart.current = null;
+      return;
+    }
+    gestureStart.current = { x: clientX, y: clientY, t: Date.now() };
+  }, []);
+  const handlePointerEnd = useCallback(
+    (clientX: number, clientY: number) => {
+      const start = gestureStart.current;
+      gestureStart.current = null;
+      if (!start) return;
+      const dx = clientX - start.x;
+      const dy = clientY - start.y;
+      const dt = Date.now() - start.t;
+      const ax = Math.abs(dx);
+      const ay = Math.abs(dy);
+      // Horizontal swipe
+      if ((ax > 44 || ay > 44) && ax > ay) {
+        if (dx < -44) {
+          if (!stage.reveal) playback.next();
+        } else if (dx > 44) {
+          playback.previous();
+        }
+        return;
+      }
+      // Vertical swipe is handled by VocabularyStream for word navigation; ignore here.
+      if (ay > 44 && ay > ax) return;
+      // Tap
+      if (dt < 600 && ax < 16 && ay < 16) {
+        const rect = cardRef.current?.getBoundingClientRect();
+        if (!rect) return;
+        const relX = clientX - rect.left;
+        const leftZone = rect.width * 0.33;
+        const rightZone = rect.width * 0.66;
+        if (relX < leftZone) {
+          playback.previous();
+        } else if (relX > rightZone) {
+          if (stage.reveal) playback.restart();
+          else if (playback.page === stages.length - 2) playback.reveal();
+          else playback.next();
+        } else {
+          // Center tap reveals or restarts
+          if (stage.reveal) playback.restart();
+          else playback.reveal();
+        }
+      }
+    },
+    [playback, stage.reveal, stages.length],
+  );
+
+  void matching;
+
   return (
     <article
       ref={cardRef}
@@ -102,6 +156,20 @@ export function VocabularyCard({
       aria-label={`Vocabulary card ${entry.position + 1}`}
       aria-posinset={entry.position + 1}
       aria-setsize={-1}
+      onTouchStart={(e) => {
+        const t = e.touches[0];
+        if (t) handlePointerStart(t.clientX, t.clientY, e.target);
+      }}
+      onTouchEnd={(e) => {
+        const t = e.changedTouches[0];
+        if (t) handlePointerEnd(t.clientX, t.clientY);
+      }}
+      onMouseDown={(e) => {
+        // Only for desktop click preview; store for mouse up
+        if (e.button !== 0) return;
+        handlePointerStart(e.clientX, e.clientY, e.target);
+      }}
+      onMouseUp={(e) => handlePointerEnd(e.clientX, e.clientY)}
     >
       <div className="vocab-backdrop" aria-hidden="true">
         <PostCanvasBackdrop
@@ -114,14 +182,6 @@ export function VocabularyCard({
           hasTransitionBackground={!!sliding && !reducedMotion}
         />
       </div>
-      <header className="vocab-card-heading">
-        <span className="vocab-chip">{entry.word.topic}</span>
-        {entry.word.level && <span className="vocab-chip">{entry.word.level}</span>}
-        <span className="vocab-theme-name">
-          {theme.label} / {style.label}
-        </span>
-      </header>
-      <p className="vocab-caption">{style.caption}</p>
       <VocabularyStage
         stage={stage}
         word={entry.word}
@@ -148,44 +208,24 @@ export function VocabularyCard({
           </span>
         ))}
       </div>
-      <div className="vocab-card-actions">
-        <button
-          type="button"
-          className="vocab-icon-button"
-          onClick={playback.previous}
-          disabled={playback.page === 0}
-          aria-label="Previous clue"
-        >
-          <ArrowLeft size={20} />
-        </button>
-        <button
-          type="button"
-          className="vocab-reveal-button"
-          onClick={stage.reveal ? playback.restart : playback.reveal}
-        >
-          {stage.reveal ? <RotateCcw size={17} /> : <Sparkles size={17} />}
-          {stage.reveal ? "Replay clues" : "Reveal word"}
-        </button>
-        <button
-          type="button"
-          className="vocab-icon-button"
-          onClick={playback.next}
-          disabled={!!stage.reveal}
-          aria-label="Next clue"
-        >
-          <ArrowRight size={20} />
-        </button>
+
+      {/* Minimal, gesture-friendly center action — arrows replaced by tap zones */}
+      <div className="vocab-gesture-hint" aria-hidden="true">
+        <span>tap left · back</span>
+        <span>tap center · reveal</span>
+        <span>tap right · next</span>
       </div>
-      <footer className="vocab-card-footer">
-        <span>
-          Word {entry.position + 1} · Cycle {entry.cycle + 1}
-        </span>
-        <span>
-          {matching === 1
-            ? "One matching word"
-            : `${matching.toLocaleString()} words, then reshuffle`}
-        </span>
-      </footer>
+
+      <button
+        type="button"
+        className="vocab-reveal-button vocab-reveal-ghost"
+        onClick={stage.reveal ? playback.restart : playback.reveal}
+        aria-label={stage.reveal ? "Replay clues" : "Reveal word"}
+        data-no-gesture
+      >
+        {stage.reveal ? <RotateCcw size={16} /> : <Sparkles size={16} />}
+        {stage.reveal ? "Replay" : "Reveal"}
+      </button>
     </article>
   );
 }

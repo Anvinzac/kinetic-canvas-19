@@ -1,6 +1,5 @@
 /** Bounded, full-screen vocabulary stream and network states. Exports: VocabularyStream. Depends on: feed/window hooks, VocabularyCard. */
-import { useEffect } from "react";
-import { ArrowDown, ArrowUp } from "lucide-react";
+import { useEffect, useRef } from "react";
 import { useVocabularyFeed } from "../hooks/useVocabularyFeed";
 import { useVocabularyWindow } from "../hooks/useVocabularyWindow";
 import { useFeedPagination } from "../hooks/useFeedPagination";
@@ -34,6 +33,32 @@ export function VocabularyStream({
   useEffect(() => {
     if (query.metadata) onMetadata(query.metadata);
   }, [query.metadata, onMetadata]);
+
+  // Natural vertical flick gestures: flick up -> next word, flick down -> previous word
+  const flickStart = useRef<{ x: number; y: number; t: number } | null>(null);
+  const handleFlickStart = (x: number, y: number) => {
+    flickStart.current = { x, y, t: Date.now() };
+  };
+  const handleFlickEnd = (x: number, y: number) => {
+    const start = flickStart.current;
+    flickStart.current = null;
+    if (!start || suspended) return;
+    const dx = x - start.x;
+    const dy = y - start.y;
+    const dt = Date.now() - start.t;
+    // Require a decisive vertical swipe; ignore horizontal card gestures
+    if (Math.abs(dy) < 52 || Math.abs(dy) < Math.abs(dx) * 1.1) return;
+    if (dt > 700) return;
+    // Velocity hint: short duration + sufficient distance already gated; allow both directions
+    if (dy < 0) {
+      // flick up -> next word
+      if (activeIndex < query.entries.length - 1) move(1);
+    } else {
+      // flick down -> previous word
+      if (activeIndex > 0) move(-1);
+    }
+  };
+
   const empty = query.isSuccess && !query.entries.length;
   const initialError = query.isError && !query.entries.length;
   const exhausted =
@@ -49,6 +74,14 @@ export function VocabularyStream({
         tabIndex={0}
         onScroll={onScroll}
         onKeyDown={onKeyDown}
+        onTouchStart={(e) => {
+          const t = e.touches[0];
+          if (t) handleFlickStart(t.clientX, t.clientY);
+        }}
+        onTouchEnd={(e) => {
+          const t = e.changedTouches[0];
+          if (t) handleFlickEnd(t.clientX, t.clientY);
+        }}
         inert={suspended}
       >
         {!query.entries.length && (
@@ -133,33 +166,6 @@ export function VocabularyStream({
               </button>
             </div>
           )}
-          <nav className="vocab-scroll-nav" aria-label="Word navigation" inert={suspended}>
-            <button
-              type="button"
-              className="vocab-icon-button"
-              onClick={() => move(-1)}
-              disabled={activeIndex === 0}
-              aria-label="Previous word"
-            >
-              <ArrowUp size={18} />
-            </button>
-            <span aria-live="polite">
-              {query.isFetching
-                ? "Loading words…"
-                : presentation.autoplay && !reducedMotion
-                  ? "Autoplay · swipe to skip"
-                  : "Scroll for another word"}
-            </span>
-            <button
-              type="button"
-              className="vocab-icon-button"
-              onClick={() => move(1)}
-              disabled={activeIndex >= query.entries.length - 1}
-              aria-label="Next word"
-            >
-              <ArrowDown size={18} />
-            </button>
-          </nav>
         </>
       )}
     </>

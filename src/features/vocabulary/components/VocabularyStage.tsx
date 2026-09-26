@@ -67,11 +67,6 @@ export function VocabularyStage({
           </motion.div>
         )}
       </AnimatePresence>
-      {stage.secondary && (
-        <p className="vocab-translation" lang="vi">
-          {stage.secondary}
-        </p>
-      )}
       {stage.reveal && (
         <div
           ref={details}
@@ -88,11 +83,6 @@ export function VocabularyStage({
           {word.usage.map((example, index) => (
             <div className="vocab-example" key={index}>
               <p lang="en">{completeUsage(example.en, word.word)}</p>
-              {example.vi && (
-                <p className="vocab-translation" lang="vi">
-                  {example.vi}
-                </p>
-              )}
             </div>
           ))}
         </div>
