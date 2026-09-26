@@ -30,9 +30,45 @@ export type VocabularyTheme = {
 };
 const typography = (index: number) => ({
   ink: "#ffffff",
-  accent: "#06FFA5",
   font: ["Space Grotesk", "Inter", "Playfair Display"][index % 3],
 });
+
+/** Bright accents used only when a theme's own palette yields no usable highlight. */
+const ACCENT_FALLBACKS = ["#FFD60A", "#06FFA5", "#00E5FF", "#FF7AC6", "#B6FF3D", "#FFB703"];
+
+/** Relative luminance of a #rgb/#rrggbb color for contrast-aware accent selection. @pure true */
+function luminance(hex: string): number {
+  const raw = hex.replace("#", "");
+  const full = raw.length === 3 ? raw.replace(/(.)/g, "$1$1") : raw.slice(0, 6);
+  const channel = (offset: number) => {
+    const value = parseInt(full.slice(offset, offset + 2), 16) / 255;
+    return value <= 0.03928 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
+  };
+  return 0.2126 * channel(0) + 0.7152 * channel(2) + 0.0722 * channel(4);
+}
+
+/**
+ * Derive a per-theme accent from the theme's own background so highlights harmonize
+ * and stay legible against white ink, instead of shipping one fixed accent for all.
+ * @param background - the theme gradient/base color
+ * @param index - theme index, used only for the fallback palette
+ * @returns A bright accent color drawn from the theme palette
+ * @pure true
+ */
+function accentFor(background: string, index: number): string {
+  const colors = background.match(/#[0-9a-fA-F]{3,8}\b/g) ?? [];
+  if (colors.length) {
+    const brightest = colors.reduce((best, color) =>
+      luminance(color) > luminance(best) ? color : best,
+    );
+    const light = luminance(brightest);
+    // Only reuse a palette color when it is bright enough to read as a highlight on the
+    // (usually dark) card yet distinct from the white ink. Dark or near-white stops — e.g.
+    // solid scene/pattern bases — fall back to a guaranteed-bright accent instead.
+    if (light >= 0.3 && light < 0.92) return brightest;
+  }
+  return ACCENT_FALLBACKS[index % ACCENT_FALLBACKS.length];
+}
 
 // Use the original player/studio catalogs, keeping every design selectable.
 export const THEMES: VocabularyTheme[] = [
@@ -41,6 +77,7 @@ export const THEMES: VocabularyTheme[] = [
     id: path.id,
     label: path.label,
     background: path.gradients[0],
+    accent: accentFor(path.gradients[0], index),
     canvas: { backgroundStyle: "transition" as const, gradientPath: [...path.gradients] },
   })),
   ...Array.from(new Set(GRADIENTS)).map((background, index) => ({
@@ -48,12 +85,14 @@ export const THEMES: VocabularyTheme[] = [
     id: `gradient-${index}`,
     label: `Original gradient ${index + 1}`,
     background,
+    accent: accentFor(background, index),
   })),
   ...CANVAS_SCENE_THEMES.map((scene, index) => ({
     ...typography(index),
     id: scene.id,
     label: scene.label,
     background: scene.base,
+    accent: accentFor(scene.base, index),
     canvas: { backgroundScene: scene.id },
   })),
   ...CANVAS_PATTERN_THEMES.map((pattern, index) => ({
@@ -61,6 +100,7 @@ export const THEMES: VocabularyTheme[] = [
     id: pattern.id,
     label: pattern.label,
     background: pattern.base,
+    accent: accentFor(pattern.base, index),
     canvas: { backgroundPattern: pattern.id },
   })),
 ];

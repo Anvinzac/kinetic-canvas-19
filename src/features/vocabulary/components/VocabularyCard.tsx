@@ -69,6 +69,10 @@ export function VocabularyCard({
     sceneTheme || patternTheme
       ? null
       : getSlidingCanvasBackground(canvas, theme.background, reducedMotion ? 0 : playback.page);
+  // Only the single active card animates the sweeping transition backdrop. Inactive
+  // neighbours keep a static gradient, so a transient active-index flip can never make
+  // every visible background strobe at once.
+  const sweep = !!sliding && !reducedMotion && active;
   const cluePages = stages.filter((item) => !item.reveal).map((item) => item.text);
   const textSize = fitVocabularyTextSize(
     stage.text,
@@ -91,13 +95,19 @@ export function VocabularyCard({
 
   // Gesture handling: tap left/right + horizontal swipe for clue navigation.
   const gestureStart = useRef<{ x: number; y: number; t: number } | null>(null);
-  const handlePointerStart = useCallback((clientX: number, clientY: number, target: EventTarget | null) => {
-    if (target instanceof HTMLElement && target.closest("button, a, input, select, textarea, [data-no-gesture]")) {
-      gestureStart.current = null;
-      return;
-    }
-    gestureStart.current = { x: clientX, y: clientY, t: Date.now() };
-  }, []);
+  const handlePointerStart = useCallback(
+    (clientX: number, clientY: number, target: EventTarget | null) => {
+      if (
+        target instanceof HTMLElement &&
+        target.closest("button, a, input, select, textarea, [data-no-gesture]")
+      ) {
+        gestureStart.current = null;
+        return;
+      }
+      gestureStart.current = { x: clientX, y: clientY, t: Date.now() };
+    },
+    [],
+  );
   const handlePointerEnd = useCallback(
     (clientX: number, clientY: number) => {
       const start = gestureStart.current;
@@ -179,7 +189,7 @@ export function VocabularyCard({
           patternTheme={patternTheme}
           slidingCanvasBackground={sliding}
           staticCanvasBackground={theme.background}
-          hasTransitionBackground={!!sliding && !reducedMotion}
+          hasTransitionBackground={sweep}
         />
       </div>
       <VocabularyStage
