@@ -89,26 +89,78 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
-  margin: 18px 0;
 }
 .vocab-select-grid label {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
+  color: #c9c3dd;
 }
 .vocab-select-grid select {
   color: #f5f2ff;
   background: #181426;
   border: 1px solid #665d7a;
   border-radius: 10px;
-  padding: 10px;
+  padding: 8px 10px;
   min-width: 0;
   width: 100%;
   min-height: 44px;
+  font-size: 13px;
+}
+/* Three secondary controls: the category spans a row so theme and reveal sit side by side. */
+.vocab-select-grid label:first-child {
+  grid-column: 1 / -1;
+}
+.vocab-group-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #a79fc0;
+}
+/* Difficulty is the default control, so it gets the loudest, fastest-to-tap treatment. */
+.vocab-level-switch {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.vocab-level-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.vocab-level-chips button {
+  min-width: 58px;
+  min-height: 46px;
+  padding: 0 15px;
+  border-radius: 999px;
+  border: 1px solid #665d7a;
+  background: #181426;
+  color: var(--vocab-ink);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+.vocab-level-chips button:hover {
+  border-color: #bbf7d0;
+}
+.vocab-level-chips button[data-active] {
+  background: #bbf7d0;
+  border-color: #bbf7d0;
+  color: #17231b;
+}
+.vocab-options-secondary {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid #3b3550;
 }
 .vocab-autoplay {
+  margin-top: 18px;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -321,25 +373,6 @@
   box-shadow: 0 8px 24px #0005;
   border: 1px solid color-mix(in srgb, var(--vocab-ink) 18%, transparent);
 }
-.vocab-gesture-hint {
-  position: absolute;
-  z-index: 3;
-  bottom: max(88px, calc(env(safe-area-inset-bottom) + 78px));
-  left: 50%;
-  transform: translateX(-50%);
-  width: min(520px, calc(100% - 40px));
-  display: flex;
-  justify-content: center;
-  gap: 10px 14px;
-  flex-wrap: wrap;
-  font-size: 10px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: #ffffffcc;
-  text-shadow: 0 1px 10px #000a;
-  pointer-events: none;
-  text-align: center;
-}
 .vocab-tap-zones {
   position: absolute;
   inset: 0;
@@ -413,9 +446,13 @@
   .vocab-toolbar-actions {
     gap: 6px;
   }
-  .vocab-gesture-hint {
-    font-size: 9px;
-    gap: 8px 10px;
+  .vocab-level-chips button {
+    min-width: 50px;
+    padding: 0 12px;
+    font-size: 14px;
+  }
+  .vocab-select-grid {
+    grid-template-columns: 1fr;
   }
 }
 @media (max-height: 620px) {
@@ -425,9 +462,6 @@
   .vocab-reveal-details {
     top: 50%;
     padding: 8px 12px;
-  }
-  .vocab-gesture-hint {
-    display: none;
   }
 }
 @media (prefers-reduced-motion: reduce) {

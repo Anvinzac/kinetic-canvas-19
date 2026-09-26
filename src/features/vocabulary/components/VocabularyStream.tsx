@@ -100,7 +100,7 @@ export function VocabularyStream({
               {initialError
                 ? "The word stream couldn’t load. Your settings are still here."
                 : empty
-                  ? "Try a different topic or level."
+                  ? "Try a different difficulty or category."
                   : "Vietnamese clues. English discoveries. No sign-in needed."}
             </p>
             {initialError && (

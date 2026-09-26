@@ -3,7 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { useId, useRef } from "react";
 import { Pause, Play, Shuffle, SlidersHorizontal, X } from "lucide-react";
 import { STYLES, THEMES } from "../lib/presets";
-import type { NarrativeStyle, VocabularyLevel } from "../lib/schema";
+import { LEVELS, type NarrativeStyle, type VocabularyLevel } from "../lib/schema";
 import type { FeedPage, Presentation, VocabularyFilters } from "../types";
 
 /** Control word selection separately from appearance. @param props Settings and callbacks. @returns Public header and options panel. */
@@ -30,6 +30,8 @@ export function FeedControls({
 }) {
   const panelId = useId();
   const toggleButton = useRef<HTMLButtonElement>(null);
+  // Difficulty is the primary control, so keep the chips visible before metadata arrives.
+  const levelOptions: VocabularyLevel[] = metadata?.levels?.length ? metadata.levels : [...LEVELS];
   const close = () => {
     onOpen(false);
     toggleButton.current?.focus();
@@ -82,76 +84,91 @@ export function FeedControls({
             if (event.key === "Escape") close();
           }}
         >
+          <div className="vocab-level-switch" role="group" aria-label="Difficulty">
+            <span className="vocab-group-label">Difficulty</span>
+            <div className="vocab-level-chips">
+              <button
+                type="button"
+                aria-pressed={filters.level === ""}
+                data-active={filters.level === "" || undefined}
+                onClick={() => onFilters({ ...filters, level: "" })}
+              >
+                All
+              </button>
+              {levelOptions.map((level) => (
+                <button
+                  key={level}
+                  type="button"
+                  aria-pressed={filters.level === level}
+                  data-active={filters.level === level || undefined}
+                  onClick={() =>
+                    onFilters({ ...filters, level: filters.level === level ? "" : level })
+                  }
+                >
+                  {level}
+                </button>
+              ))}
+            </div>
+          </div>
           <p className="vocab-options-summary">
             {metadata
               ? `${metadata.total.toLocaleString()} distinct words in this catalog.`
               : "Your word stream is loading."}{" "}
             Every completed deck reshuffles.
           </p>
-          <div className="vocab-select-grid">
-            <label>
-              Topic
-              <select
-                value={filters.topic}
-                onChange={(event) => onFilters({ ...filters, topic: event.target.value })}
-              >
-                <option value="">All topics</option>
-                {metadata?.topics.map((topic) => (
-                  <option key={topic} value={topic}>
-                    {topic}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label>
-              Level
-              <select
-                value={filters.level}
-                onChange={(event) =>
-                  onFilters({ ...filters, level: event.target.value as VocabularyLevel | "" })
-                }
-              >
-                <option value="">All levels</option>
-                {metadata?.levels.map((level) => (
-                  <option key={level} value={level}>
-                    {level}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label>
-              Theme
-              <select
-                value={presentation.theme}
-                onChange={(event) => onPresentation({ ...presentation, theme: event.target.value })}
-              >
-                <option value="mix">Mix themes</option>
-                {THEMES.map((theme) => (
-                  <option key={theme.id} value={theme.id}>
-                    {theme.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label>
-              Style
-              <select
-                value={presentation.style}
-                onChange={(event) =>
-                  onPresentation({
-                    ...presentation,
-                    style: event.target.value as NarrativeStyle | "mix",
-                  })
-                }
-              >
-                <option value="mix">Mix styles</option>
-                {STYLES.map((style) => (
-                  <option key={style.id} value={style.id}>
-                    {style.label}
-                  </option>
-                ))}
-              </select>
-            </label>
+          <div className="vocab-options-secondary">
+            <span className="vocab-group-label">Category, theme and reveal</span>
+            <div className="vocab-select-grid">
+              <label>
+                Category
+                <select
+                  value={filters.topic}
+                  onChange={(event) => onFilters({ ...filters, topic: event.target.value })}
+                >
+                  <option value="">All categories</option>
+                  {metadata?.topics.map((topic) => (
+                    <option key={topic} value={topic}>
+                      {topic}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                Theme
+                <select
+                  value={presentation.theme}
+                  onChange={(event) =>
+                    onPresentation({ ...presentation, theme: event.target.value })
+                  }
+                >
+                  <option value="mix">Mix themes</option>
+                  {THEMES.map((theme) => (
+                    <option key={theme.id} value={theme.id}>
+                      {theme.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                Reveal
+                <select
+                  value={presentation.style}
+                  onChange={(event) =>
+                    onPresentation({
+                      ...presentation,
+                      style: event.target.value as NarrativeStyle | "mix",
+                    })
+                  }
+                >
+                  <option value="mix">Mix reveals</option>
+                  {STYLES.map((style) => (
+                    <option key={style.id} value={style.id}>
+                      {style.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
           </div>
           <label className="vocab-autoplay">
             <input

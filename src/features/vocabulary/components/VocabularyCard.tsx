@@ -209,13 +209,6 @@ export function VocabularyCard({
         ))}
       </div>
 
-      {/* Minimal, gesture-friendly center action — arrows replaced by tap zones */}
-      <div className="vocab-gesture-hint" aria-hidden="true">
-        <span>tap left · back</span>
-        <span>tap center · reveal</span>
-        <span>tap right · next</span>
-      </div>
-
       <button
         type="button"
         className="vocab-reveal-button vocab-reveal-ghost"
