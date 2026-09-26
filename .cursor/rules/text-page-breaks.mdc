@@ -1,18 +1,19 @@
 ---
 description: Kinetic typography — natural spacing, phrase-safe pagination, viewport-safe reveals
-globs: src/components/PostCard.tsx,src/features/post-player/**/*,src/features/kinetic-text/**/*,src/features/vocabulary/**/*,scripts/check-vietnamese-line-fit.ts
+globs: src/components/PostCard.tsx,src/features/post-player/**/*,src/features/kinetic-text/**/*,src/features/vocabulary/**/*,scripts/check-text-pagination.ts,scripts/check-vietnamese-line-fit.ts
 alwaysApply: false
 ---
 
 # Text page breaks
 
-When splitting long status text into animated pages (`paginateText` / `chunkSentenceByWords`):
+When splitting long status text into animated pages (`paginateText` in `src/features/post-player/lib/paginate.ts`):
 
-1. **Use the word budget** — long sentences still paginate across multiple screens.
-2. **On overflow, retreat to the last natural break** (comma, semicolon, colon, or full stop) so leftover words move to the next page whole.
-3. **Never split bonded phrases** — `tốc` and `độ` must stay together; hyphen phrases (`word - word`) stay on one page.
-4. **After a full stop or hyphen phrase**, do not add more words to that page.
-5. Comma breaks are for fluidity between ideas (setup on page 1, continuation on page 2).
+1. **Sentences stay whole** — a complete sentence always occupies one page, especially in Vietnamese, where a sentence carries its full meaning. The word budget (7 EN / 10 VI) is a soft preference for page rhythm, never a hard split boundary.
+2. **Only very long sentences may break** — at least 2× the word budget (English 14+ words, Vietnamese 20+ words), and only at major clause boundaries:
+   - English: `;`, `:`, or an em-dash (`—` / `--`). Commas never end a page.
+   - Vietnamese: `;`, an em-dash, or an explicit conjunction (`nhưng`, `tuy nhiên`, `mặc dù`, `vì`, `nên`, `và`, `hoặc`, `hay`) that opens the next page.
+3. **Break points stay semantic** — never split at an arbitrary word count, at a comma (weak break), or inside bonded Vietnamese / hyphen phrases (`tốc độ`, `im lặng`, `word - word`). A long sentence with no qualifying boundary keeps its page whole.
+4. **Anti-orphan** — an overflow continuation shorter than 3 words merges back into the previous page.
 
 Bad:
 
@@ -21,8 +22,9 @@ Bad:
 
 Good:
 
-- Page 1: `Trong một cuộc trò chuyện,`
-- Page 2: `tốc độ không phải tất cả.`
+- Page 1: `Trong một cuộc trò chuyện, tốc độ không phải tất cả.`
+- Page 2: `Có lúc câu trả lời hay nhất là im lặng.`
+- Very long Vietnamese: `… khung cửa sổ,` / `nhưng lòng người …` (split only at the conjunction)
 
 ## Word spacing
 

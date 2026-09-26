@@ -5,14 +5,11 @@
  * Depends on: text-language/page-metrics, text-language/vietnamese-phrases
  */
 
-import {
-  VIETNAMESE_BOUND_PHRASE_KEYS,
-  normalizeVietnameseToken,
-} from "./vietnamese-phrases";
+import { VIETNAMESE_BOUND_PHRASE_KEYS, normalizeVietnameseToken } from "./vietnamese-phrases";
 
-/** Default max words per English kinetic page. */
+/** Default max words per English kinetic page — a soft preference for page rhythm, not a split boundary. */
 export const DEFAULT_TEXT_PAGE_WORD_LIMIT = 7;
-/** Default max words per Vietnamese kinetic page. */
+/** Default max words per Vietnamese kinetic page — a soft preference for page rhythm, not a split boundary. */
 export const VIETNAMESE_TEXT_PAGE_WORD_LIMIT = 10;
 
 export type {
@@ -37,7 +34,10 @@ export {
 } from "./vietnamese-phrases";
 
 /**
- * Choose page word budget based on detected language.
+ * Choose the page word budget based on detected language.
+ * Sentence-safe pagination keeps sentences whole, so the limit acts as a soft
+ * preference for page rhythm — it also anchors the long-sentence threshold
+ * (2× the limit) below which a sentence never breaks.
  * @param text - text argument
  * @returns VIETNAMESE_TEXT_PAGE_WORD_LIMIT or DEFAULT_TEXT_PAGE_WORD_LIMIT
  */
