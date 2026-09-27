@@ -15,6 +15,8 @@ import {
   getAdminHealthHistory,
   getAdminRollups,
 } from "./telemetry.functions";
+import { listVocabularyWords, getCompletedWordCount, type VocabWordRow } from "./vocabulary.functions";
+import { listTemplates, type TemplateData } from "./template.functions";
 import { ensureDemoSeeded, listDailyRollups, listErrorReports, listEvents } from "./telemetry.core";
 import { buildHealthSnapshot } from "../lib/health";
 import { readDemoTelemetry } from "../lib/demo-store";
@@ -102,6 +104,39 @@ export function adminHealthHistoryQueryOptions(mode: AdminMode) {
       }
       return getAdminHealthHistory({ data: { mode } });
     },
+  });
+}
+
+/**
+ * Vocabulary words list.
+ */
+export function adminVocabularyQueryOptions() {
+  return queryOptions({
+    queryKey: adminKeys.vocabulary(),
+    staleTime: 30_000,
+    queryFn: () => listVocabularyWords() as Promise<VocabWordRow[]>,
+  });
+}
+
+/**
+ * Completed vocabulary word count.
+ */
+export function adminVocabularyCompletedQueryOptions() {
+  return queryOptions({
+    queryKey: adminKeys.vocabularyCompleted(),
+    staleTime: 30_000,
+    queryFn: () => getCompletedWordCount() as Promise<number>,
+  });
+}
+
+/**
+ * Template data (gradients, patterns, scenes, etc.).
+ */
+export function adminTemplatesQueryOptions() {
+  return queryOptions({
+    queryKey: adminKeys.templates(),
+    staleTime: 30_000,
+    queryFn: () => listTemplates() as Promise<TemplateData>,
   });
 }
 

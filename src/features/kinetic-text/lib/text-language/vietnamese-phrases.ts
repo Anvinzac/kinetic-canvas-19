@@ -1,7 +1,7 @@
 /**
  * Vietnamese bound phrases, poetic emphasis keys, and phrase-aware emphasis helpers.
  *
- * Exports: expandEmphasisToBoundPhrases, getBoundPhrase*, getSpecialPoeticWordIndexes, normalizeVietnameseToken
+ * Exports: expandEmphasisToBoundPhrases, getBoundPhrase*, getCompoundTokenKey, getSpecialPoeticWordIndexes, isLikelyVietnameseText, normalizeVietnameseToken, repairSplitCompoundEmphasis
  * Depends on: none
  */
 
@@ -100,7 +100,7 @@ const LONGEST_VIETNAMESE_BOUND_PHRASE = Math.max(
  * @param words - words argument
  * @returns Computed value
  */
-export function getSpecialPoeticWordIndexes(words: string[]): Set<number>{
+export function getSpecialPoeticWordIndexes(words: string[]): Set<number> {
   const selected = new Set<number>();
   const normalizedWords = words.map(normalizeVietnameseToken);
 
@@ -131,7 +131,10 @@ export function getSpecialPoeticWordIndexes(words: string[]): Set<number>{
  * @param selected - selected argument
  * @returns Computed value
  */
-export function expandEmphasisToBoundPhrases(words: string[], selected: Iterable<number>): Set<number> {
+export function expandEmphasisToBoundPhrases(
+  words: string[],
+  selected: Iterable<number>,
+): Set<number> {
   const expanded = new Set<number>();
 
   for (const index of selected) {
@@ -221,4 +224,169 @@ export function normalizeVietnameseToken(token: string): string {
     .replace(/[đĐ]/g, (letter) => (letter === "Đ" ? "D" : "d"))
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "");
+}
+
+/**
+ * Heuristic: Vietnamese diacritics or known bound phrases.
+ * Lives here so the compound-repair guard below can gate on it without a
+ * circular import back into the text-language barrel.
+ * @param text - text argument
+ * @returns true when text looks Vietnamese
+ */
+export function isLikelyVietnameseText(text: string): boolean {
+  if (
+    /[ăâđêôơưĂÂĐÊÔƠƯ]/.test(text) ||
+    /[\u0300\u0301\u0303\u0309\u0323]/.test(text.normalize("NFD"))
+  ) {
+    return true;
+  }
+
+  const tokens = text.match(/\S+/g)?.map(normalizeVietnameseToken) ?? [];
+  return VIETNAMESE_BOUND_PHRASE_KEYS.some((phrase) =>
+    tokens.some(
+      (_, index) =>
+        index + phrase.length <= tokens.length &&
+        phrase.every((token, phraseIndex) => token === tokens[index + phraseIndex]),
+    ),
+  );
+}
+
+// Vietnamese function words that can never be one half of a compound word.
+// Lookups go through getCompoundTokenKey, which keeps diacritics on purpose:
+// accent-stripped keys would let "những" stand in for "nhưng" and make the
+// content word "nền" collide with the function word "nên".
+const VIETNAMESE_STOP_WORDS = new Set([
+  "và",
+  "là",
+  "của",
+  "có",
+  "được",
+  "trong",
+  "cho",
+  "với",
+  "từ",
+  "đến",
+  "để",
+  "do",
+  "về",
+  "theo",
+  "tại",
+  "qua",
+  "ra",
+  "lên",
+  "xuống",
+  "vào",
+  "này",
+  "đó",
+  "các",
+  "những",
+  "một",
+  "hai",
+  "ba",
+  "rất",
+  "cũng",
+  "đã",
+  "đang",
+  "sẽ",
+  "không",
+  "chưa",
+  "còn",
+  "nếu",
+  "thì",
+  "mà",
+  "nhưng",
+  "hay",
+  "hoặc",
+  "vì",
+  "nên",
+]);
+
+// Sentence and clause punctuation can never sit inside a compound word. When
+// the left token of a pair closes with one of these marks (quotes or brackets
+// may follow), the next token opens a new clause instead of completing a pair.
+const COMPOUND_JOIN_BREAKER = /[.!?…,;:]["'”’»)\]]*$/u;
+
+/**
+ * Lowercase, punctuation-free key for single-token matching. Diacritics are
+ * preserved (NFC-unified) on purpose: stripping them would collapse distinct
+ * words like "nền"/"nên" or "những"/"nhưng" onto one key.
+ * @param token - raw word token
+ * @returns Comparison key made of letters and digits only
+ */
+export function getCompoundTokenKey(token: string): string {
+  return token
+    .normalize("NFC")
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}]+/gu, "");
+}
+
+/**
+ * True when two adjacent syllables plausibly form one Vietnamese compound
+ * word: both are content syllables (at least 2 letters, outside the stop-word
+ * set) and no clause punctuation separates them.
+ * @param left - left syllable of the pair
+ * @param right - right syllable of the pair
+ * @returns Whether the pair looks like one compound word
+ */
+function isLikelyCompoundPair(left: string, right: string): boolean {
+  const leftKey = getCompoundTokenKey(left);
+  if (leftKey.length < 2 || VIETNAMESE_STOP_WORDS.has(leftKey)) return false;
+
+  const rightKey = getCompoundTokenKey(right);
+  if (rightKey.length < 2 || VIETNAMESE_STOP_WORDS.has(rightKey)) return false;
+
+  return !COMPOUND_JOIN_BREAKER.test(left);
+}
+
+/**
+ * Bounds-checked compound test for the pair starting at `leftIndex`.
+ * @param words - words argument
+ * @param leftIndex - index of the left syllable
+ * @returns Whether words[leftIndex] + words[leftIndex + 1] look like a compound
+ */
+function isLikelyCompoundPairAt(words: string[], leftIndex: number): boolean {
+  if (leftIndex < 0 || leftIndex + 1 >= words.length) return false;
+  return isLikelyCompoundPair(words[leftIndex], words[leftIndex + 1]);
+}
+
+/**
+ * @responsibility Repair emphasis that splits a likely Vietnamese compound word.
+ * @inputs Words + emphasized indexes (call only for Vietnamese text)
+ * @outputs Emphasized indexes with the missing compound syllable added
+ * @pure true
+ */
+// Vietnamese compound words are written as syllable pairs ("học sinh", "bệnh
+// viện") and most never appear in VIETNAMESE_BOUND_PHRASES, so scoring can
+// leave one syllable glowing on its own. This second pass runs AFTER
+// expandEmphasisToBoundPhrases and pulls in an adjacent syllable whenever the
+// pair still reads as one compound. Expansion stops at pairs: each originally
+// selected index adds at most one syllable to its left and one to its right, so
+// chains of content syllables never cascade across the sentence.
+/**
+ * repairSplitCompoundEmphasis helper
+ * @param words - words argument
+ * @param emphasizedIndices - emphasizedIndices argument
+ * @returns Deduplicated ascending emphasized indexes
+ */
+export function repairSplitCompoundEmphasis(
+  words: string[],
+  emphasizedIndices: number[],
+): number[] {
+  const emphasized = new Set(emphasizedIndices);
+  if (!isLikelyVietnameseText(words.join(" "))) {
+    return [...emphasized].sort((left, right) => left - right);
+  }
+
+  const repaired = new Set(emphasized);
+  for (const index of emphasized) {
+    if (index < 0 || index >= words.length) continue;
+
+    const left = index - 1;
+    if (!emphasized.has(left) && isLikelyCompoundPairAt(words, left)) repaired.add(left);
+
+    const right = index + 1;
+    if (!emphasized.has(right) && isLikelyCompoundPairAt(words, right - 1)) repaired.add(right);
+  }
+
+  return [...repaired].sort((left, right) => left - right);
 }

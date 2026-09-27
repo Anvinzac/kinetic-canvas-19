@@ -36,6 +36,8 @@ const vocabularyPayloadSchema = z
     chars: z.number().int().min(1).max(32).optional(),
     initial: z.string().min(1).max(2).optional(),
     anticipateVi: z.string().min(1).max(160).optional(),
+    // Crawler-produced Vietnamese emphasis phrases (deck field `emphasis`), validated shape-only here
+    emphasis: z.array(z.string().min(1).max(80)).max(6).optional(),
   })
   .passthrough();
 

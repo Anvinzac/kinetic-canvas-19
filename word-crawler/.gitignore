@@ -1,0 +1,10 @@
+node_modules/
+.npm-cache/
+.env
+# Crawl checkpoints and generated decks written inside the package stay local.
+*.checkpoint.jsonl
+out/
+*.tmp
+
+# Temp dirs created by the test suite and removed on exit.
+.test-tmp-*/

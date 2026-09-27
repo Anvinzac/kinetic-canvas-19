@@ -47,6 +47,8 @@ export type WordSequenceTextProps = {
   photoBackdrop?: boolean;
   entranceSeed?: string;
   fitAsUnit?: boolean;
+  /** Optional upstream emphasis annotations; only phrases occurring in this page's text match. */
+  dataEmphasis?: string[];
 };
 
 /**
@@ -67,13 +69,14 @@ export function WordSequenceText({
   photoBackdrop = false,
   entranceSeed,
   fitAsUnit = false,
+  dataEmphasis,
 }: WordSequenceTextProps): ReactElement {
   const words = useMemo(
     () => (fitAsUnit ? [spec.text.trim()] : getWords(spec.text)),
     [fitAsUnit, spec.text],
   );
   const isVietnamese = words.length > 1 && isLikelyVietnameseText(spec.text);
-  const emphasized = getEmphasizedWordIndexes(words);
+  const emphasized = getEmphasizedWordIndexes(words, dataEmphasis);
   const isSolo = words.length <= 1;
   const visualScaleGuard = Math.max(
     emphasized.size > 0 && !isSolo ? EMPHASIS_SCALE_FIT_GUARD : 1,

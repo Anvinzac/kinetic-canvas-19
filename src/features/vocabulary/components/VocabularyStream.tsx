@@ -1,8 +1,14 @@
 /** Bounded, full-screen vocabulary stream and network states. Exports: VocabularyStream. Depends on: feed/window hooks, VocabularyCard. */
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useVocabularyFeed } from "../hooks/useVocabularyFeed";
 import { useVocabularyWindow } from "../hooks/useVocabularyWindow";
 import { useFeedPagination } from "../hooks/useFeedPagination";
+import {
+  formatCountdown,
+  isWordAllowed,
+  nextAvailableAt,
+  type ViewHistory,
+} from "../lib/history";
 import type { FeedPage, Presentation, VocabularyFilters } from "../types";
 import { VocabularyCard } from "./VocabularyCard";
 
@@ -13,6 +19,9 @@ export function VocabularyStream({
   presentation,
   reducedMotion,
   suspended,
+  history,
+  onRecordView,
+  onClearHistory,
   onMetadata,
   onRestart,
   onClearFilters,
@@ -22,17 +31,86 @@ export function VocabularyStream({
   presentation: Presentation;
   reducedMotion: boolean;
   suspended: boolean;
+  history: ViewHistory;
+  onRecordView: (wordId: string) => void;
+  onClearHistory: () => void;
   onMetadata: (page: FeedPage) => void;
   onRestart: () => void;
   onClearFilters: () => void;
 }) {
   const query = useVocabularyFeed(seed, filters);
-  const windowState = useVocabularyWindow(query.entries);
-  const retry = useFeedPagination(query, windowState);
+  // Tick so day-window expiries re-evaluate without a reload.
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 60_000);
+    return () => clearInterval(timer);
+  }, []);
+
+  // Occurrences admitted before they were recorded stay mounted so the
+  // current card never vanishes the moment its view is stored.
+  const admitted = useRef(new Set<string>());
+  const visibleEntries = useMemo(() => {
+    const out: typeof query.entries = [];
+    for (const entry of query.entries) {
+      if (admitted.current.has(entry.occurrenceId)) {
+        out.push(entry);
+        continue;
+      }
+      if (isWordAllowed(history, entry.word.id, now)) {
+        admitted.current.add(entry.occurrenceId);
+        out.push(entry);
+      }
+    }
+    return out;
+  }, [query.entries, history, now]);
+
+  const windowState = useVocabularyWindow(visibleEntries);
+  const feedForPaging = useMemo(
+    () => ({ ...query, entries: visibleEntries }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [query.data, query.hasNextPage, query.hasPreviousPage, query.isFetching, visibleEntries],
+  );
+  const retry = useFeedPagination(
+    feedForPaging as unknown as ReturnType<typeof useVocabularyFeed>,
+    windowState,
+  );
   const { viewport, height, activeIndex, virtualizer, onScroll, onKeyDown, move } = windowState;
   useEffect(() => {
     if (query.metadata) onMetadata(query.metadata);
   }, [query.metadata, onMetadata]);
+
+  // Record a view once per occurrence when its card becomes active.
+  const recorded = useRef(new Set<string>());
+  const activeEntry = visibleEntries[activeIndex];
+  useEffect(() => {
+    if (!activeEntry || suspended) return;
+    if (recorded.current.has(activeEntry.occurrenceId)) return;
+    recorded.current.add(activeEntry.occurrenceId);
+    onRecordView(activeEntry.word.id);
+  }, [activeEntry, suspended, onRecordView]);
+
+  // Backfill: blocked words shrink the visible list, so pull more server
+  // positions until enough showable words are buffered (bounded by maxPages).
+  useEffect(() => {
+    if (
+      query.entries.length > 0 &&
+      visibleEntries.length < 6 &&
+      query.hasNextPage &&
+      !query.isFetching &&
+      !query.isPaused &&
+      !query.error
+    ) {
+      void query.fetchNextPage({ cancelRefetch: false });
+    }
+  }, [
+    query.entries.length,
+    visibleEntries.length,
+    query.hasNextPage,
+    query.isFetching,
+    query.isPaused,
+    query.error,
+    query.fetchNextPage,
+  ]);
 
   // Natural vertical flick gestures: flick up -> next word, flick down -> previous word
   const flickStart = useRef<{ x: number; y: number; t: number } | null>(null);
@@ -52,7 +130,7 @@ export function VocabularyStream({
     // Velocity hint: short duration + sufficient distance already gated; allow both directions
     if (dy < 0) {
       // flick up -> next word
-      if (activeIndex < query.entries.length - 1) move(1);
+      if (activeIndex < visibleEntries.length - 1) move(1);
     } else {
       // flick down -> previous word
       if (activeIndex > 0) move(-1);
@@ -61,8 +139,20 @@ export function VocabularyStream({
 
   const empty = query.isSuccess && !query.entries.length;
   const initialError = query.isError && !query.entries.length;
+  const allBlocked =
+    query.entries.length > 0 && visibleEntries.length === 0 && !query.isFetching && !initialError;
   const exhausted =
-    query.entries.length > 0 && !query.hasNextPage && activeIndex === query.entries.length - 1;
+    visibleEntries.length > 0 &&
+    !query.hasNextPage &&
+    activeIndex === visibleEntries.length - 1;
+  const nextUnlock = useMemo(() => {
+    if (!allBlocked) return null;
+    const ids = new Set(query.entries.map((entry) => entry.word.id));
+    let target = Number.POSITIVE_INFINITY;
+    for (const id of ids) target = Math.min(target, nextAvailableAt(history, id, now));
+    return Number.isFinite(target) ? target : null;
+  }, [allBlocked, query.entries, history, now]);
+
   return (
     <>
       <div
@@ -84,7 +174,7 @@ export function VocabularyStream({
         }}
         inert={suspended}
       >
-        {!query.entries.length && (
+        {!visibleEntries.length && (
           <div className="vocab-empty" role="status">
             <p className="vocab-eyebrow">A word is a beginning</p>
             <h1>
@@ -92,16 +182,22 @@ export function VocabularyStream({
                 ? "Let’s try that again."
                 : empty
                   ? "No words match just yet."
-                  : query.isPaused
-                    ? "Waiting for a connection."
-                    : "Finding your first word…"}
+                  : allBlocked
+                    ? "You’ve seen every word for now."
+                    : query.isPaused
+                      ? "Waiting for a connection."
+                      : "Finding your first word…"}
             </h1>
             <p>
               {initialError
                 ? "The word stream couldn’t load. Your settings are still here."
                 : empty
                   ? "Try a different difficulty or category."
-                  : "Vietnamese clues. English discoveries. No sign-in needed."}
+                  : allBlocked
+                    ? `On-device memory holds each word to once a day, twice in 3 days, three times a week.${
+                        nextUnlock ? ` Next word unlocks in ${formatCountdown(nextUnlock, now)}.` : ""
+                      }`
+                    : "Vietnamese clues. English discoveries. No sign-in needed."}
             </p>
             {initialError && (
               <button
@@ -117,11 +213,16 @@ export function VocabularyStream({
                 Show all words
               </button>
             )}
+            {allBlocked && (
+              <button type="button" className="vocab-light-button" onClick={onClearHistory}>
+                Reset viewing history
+              </button>
+            )}
           </div>
         )}
         <div className="vocab-virtual-track" style={{ height: virtualizer.getTotalSize() }}>
           {virtualizer.getVirtualItems().map((item) => {
-            const entry = query.entries[item.index];
+            const entry = visibleEntries[item.index];
             if (!entry) return null;
             return (
               <div
@@ -136,7 +237,7 @@ export function VocabularyStream({
                   presentation={presentation}
                   reducedMotion={reducedMotion}
                   matching={query.metadata?.matching ?? 0}
-                  canAdvance={activeIndex < query.entries.length - 1}
+                  canAdvance={activeIndex < visibleEntries.length - 1}
                   onAdvance={() => move(1)}
                 />
               </div>
@@ -144,7 +245,7 @@ export function VocabularyStream({
           })}
         </div>
       </div>
-      {query.entries.length > 0 && (
+      {visibleEntries.length > 0 && (
         <>
           {(query.error || query.isPaused || exhausted) && (
             <div className="vocab-stream-status" role="status">

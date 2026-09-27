@@ -19,6 +19,8 @@ const NAV: { to: string; label: string; exact?: boolean }[] = [
   { to: "/admin", label: "Overview", exact: true },
   { to: "/admin/users", label: "Users" },
   { to: "/admin/content", label: "Content" },
+  { to: "/admin/vocabulary", label: "Vocabulary" },
+  { to: "/admin/templates", label: "Templates" },
   { to: "/admin/links", label: "Links" },
   { to: "/admin/errors", label: "Errors" },
   { to: "/admin/system", label: "System" },

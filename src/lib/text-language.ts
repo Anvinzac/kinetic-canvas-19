@@ -7,6 +7,7 @@ export {
   expandEmphasisToBoundPhrases,
   getBoundPhraseEmphasisSeed,
   getBoundPhraseStartIndex,
+  getDataEmphasisWordIndexes,
   getSpecialPoeticWordIndexes,
   getTextPageWordLimit,
   getVietnameseCanvasInnerWidth,
@@ -14,6 +15,7 @@ export {
   getVietnameseLayoutMetrics,
   getVietnameseWordLines,
   isLikelyVietnameseText,
+  repairSplitCompoundEmphasis,
 } from "@/features/kinetic-text";
 export type {
   VietnameseLayoutMetrics,

@@ -15,4 +15,7 @@ export const adminKeys = {
   healthHistory: (mode: string) => [...adminKeys.all, "healthHistory", mode] as const,
   errors: (from: string, to: string, mode: string, status?: string) =>
     [...adminKeys.all, "errors", from, to, mode, status ?? "all"] as const,
+  vocabulary: () => [...adminKeys.all, "vocabulary"] as const,
+  vocabularyCompleted: () => [...adminKeys.all, "vocabulary-completed"] as const,
+  templates: () => [...adminKeys.all, "templates"] as const,
 };

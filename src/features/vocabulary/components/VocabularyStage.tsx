@@ -50,6 +50,9 @@ export function VocabularyStage({
             exit={{ opacity: 0 }}
             transition={{ duration: reducedMotion ? 0 : 0.45 }}
           >
+            {/* Deck emphasis annotations for the whole word are passed every stage;
+                exact phrase matching keeps only the ones occurring in this stage's
+                text, so unrelated annotations never glow. */}
             <WordSequenceText
               spec={{
                 ...spec,
@@ -63,6 +66,7 @@ export function VocabularyStage({
               background={background}
               entranceSeed={word.id}
               fitAsUnit={stage.reveal}
+              dataEmphasis={word.emphasis}
             />
           </motion.div>
         )}

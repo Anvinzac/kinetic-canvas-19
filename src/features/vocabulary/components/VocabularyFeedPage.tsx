@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useReducedMotion } from "framer-motion";
 import type { FeedPage, Presentation, VocabularyFilters } from "../types";
+import { useViewHistory } from "../hooks/useViewHistory";
 import { FeedControls } from "./FeedControls";
 import { VocabularyStream } from "./VocabularyStream";
 import "../vocabulary.css";
@@ -23,6 +24,7 @@ export function VocabularyFeedPage() {
   });
   const [metadata, setMetadata] = useState<FeedPage>();
   const [optionsOpen, setOptionsOpen] = useState(false);
+  const viewHistory = useViewHistory();
   const reducedMotion = !!useReducedMotion();
   const shuffle = () => {
     setSeed(newSeed());
@@ -43,6 +45,8 @@ export function VocabularyFeedPage() {
         open={optionsOpen}
         onOpen={setOptionsOpen}
         reducedMotion={reducedMotion}
+        historyStats={viewHistory.stats}
+        onClearHistory={viewHistory.clear}
       />
       <VocabularyStream
         key={`${seed}:${filters.topic}:${filters.level}`}
@@ -51,6 +55,9 @@ export function VocabularyFeedPage() {
         presentation={presentation}
         reducedMotion={reducedMotion}
         suspended={optionsOpen}
+        history={viewHistory.history}
+        onRecordView={viewHistory.record}
+        onClearHistory={viewHistory.clear}
         onMetadata={setMetadata}
         onRestart={shuffle}
         onClearFilters={() => setFilters({ topic: "", level: "" })}

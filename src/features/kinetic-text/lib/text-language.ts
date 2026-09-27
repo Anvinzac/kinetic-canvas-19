@@ -11,6 +11,7 @@ export {
   expandEmphasisToBoundPhrases,
   getBoundPhraseEmphasisSeed,
   getBoundPhraseStartIndex,
+  getDataEmphasisWordIndexes,
   getSpecialPoeticWordIndexes,
   getTextPageWordLimit,
   getVietnameseCanvasInnerWidth,
@@ -18,6 +19,7 @@ export {
   getVietnameseLayoutMetrics,
   getVietnameseWordLines,
   isLikelyVietnameseText,
+  repairSplitCompoundEmphasis,
 } from "./text-language/index";
 export type {
   VietnameseLayoutMetrics,

@@ -4,6 +4,7 @@ import { useId, useRef } from "react";
 import { Pause, Play, Shuffle, SlidersHorizontal, X } from "lucide-react";
 import { STYLES, THEMES } from "../lib/presets";
 import { LEVELS, type NarrativeStyle, type VocabularyLevel } from "../lib/schema";
+import type { HistoryStats } from "../lib/history";
 import type { FeedPage, Presentation, VocabularyFilters } from "../types";
 
 /** Control word selection separately from appearance. @param props Settings and callbacks. @returns Public header and options panel. */
@@ -17,6 +18,8 @@ export function FeedControls({
   open,
   onOpen,
   reducedMotion,
+  historyStats,
+  onClearHistory,
 }: {
   metadata?: FeedPage;
   filters: VocabularyFilters;
@@ -27,6 +30,8 @@ export function FeedControls({
   open: boolean;
   onOpen: (value: boolean) => void;
   reducedMotion: boolean;
+  historyStats: HistoryStats;
+  onClearHistory: () => void;
 }) {
   const panelId = useId();
   const toggleButton = useRef<HTMLButtonElement>(null);
@@ -186,6 +191,17 @@ export function FeedControls({
               ? "Reduced motion is on. Clues advance manually."
               : "Clues and words play automatically for a full-screen stream. Turn off to pause."}
           </p>
+          <div className="vocab-memory" aria-label="On-device viewing memory">
+            <span className="vocab-group-label">On-device memory</span>
+            <p className="vocab-options-summary">
+              {historyStats.distinctToday} seen today · {historyStats.distinct3d} in 3 days ·{" "}
+              {historyStats.distinct7d} this week. Each word returns at most once a day, twice in
+              3 days, three times a week. Stored only in this browser.
+            </p>
+            <button type="button" className="vocab-memory-clear" onClick={onClearHistory}>
+              Forget viewing history
+            </button>
+          </div>
           <nav aria-label="Site navigation" className="vocab-site-links">
             <Link to="/community">Community</Link>
             <Link to="/auth">Sign in</Link>

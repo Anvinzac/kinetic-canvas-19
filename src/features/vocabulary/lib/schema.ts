@@ -4,6 +4,19 @@ import { z } from "zod";
 export const LEVELS = ["A1", "A2", "B1", "B2", "C1", "C2"] as const;
 export const STYLE_IDS = ["detective", "speed", "confession", "minimal"] as const;
 const optionalText = (max: number) => z.string().trim().max(max).optional().default("");
+// Crawler-produced Vietnamese emphasis annotations (deck field `emphasis`, converted
+// from the crawler's internal emphasisVi). Meaningful phrases only: trimmed,
+// letter-bearing, short enough to be a compound phrase rather than a sentence.
+const emphasisPhrase = z
+  .string()
+  .trim()
+  .min(1)
+  .max(80)
+  .refine((phrase) => /\p{L}/u.test(phrase), "Emphasis phrases must contain letters")
+  .refine(
+    (phrase) => phrase.split(/\s+/).filter(Boolean).length <= 6,
+    "Emphasis phrases must be at most 6 words",
+  );
 const wordSchema = z.object({
   id: z
     .string()
@@ -20,6 +33,7 @@ const wordSchema = z.object({
   defVi: z.string().trim().min(2).max(400),
   leadVi: optionalText(240),
   anticipateVi: optionalText(180),
+  emphasis: z.array(emphasisPhrase).max(6).optional(),
   pos: optionalText(40),
   ipa: optionalText(120),
   topic: z
@@ -65,6 +79,28 @@ export function answerPattern(word: string): RegExp {
   return new RegExp(`(?<![\\p{L}])${escaped}(?![\\p{L}])`, "giu");
 }
 
+/**
+ * Normalize emphasis annotations: NFC + whitespace collapse, deduplicated by a
+ * case-insensitive key that keeps diacritics (so "những"/"nhưng" stay distinct).
+ * The first occurrence wins and is kept verbatim for exact downstream matching.
+ * @param phrases Raw deck annotations.
+ * @returns Normalized deduplicated phrases, or undefined when none survive.
+ */
+function normalizeEmphasisPhrases(phrases?: string[]): string[] | undefined {
+  if (!phrases?.length) return undefined;
+  const seen = new Set<string>();
+  const normalized: string[] = [];
+  for (const phrase of phrases) {
+    const value = phrase.normalize("NFC").trim().replace(/\s+/g, " ");
+    if (!value) continue;
+    const key = value.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    normalized.push(value);
+  }
+  return normalized.length ? normalized : undefined;
+}
+
 /** Validate the complete deck before allowing any output. @param input Untrusted JSON. @returns Normalized content without a revision. */
 export function normalizeDeck(input: unknown): Omit<Catalog, "revision"> {
   const parsed = deckSchema.safeParse(input);
@@ -93,6 +129,7 @@ export function normalizeDeck(input: unknown): Omit<Catalog, "revision"> {
       topic: entry.topic || "general",
       chars: (word.match(/\p{L}/gu) ?? []).length,
       initial: word[0].toUpperCase(),
+      emphasis: normalizeEmphasisPhrases(entry.emphasis),
     };
   });
   if (errors.length) throw new Error(errors.join("\n"));

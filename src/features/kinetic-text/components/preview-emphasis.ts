@@ -2,12 +2,15 @@
  * Preview-only emphasis scoring for KineticText (diverges from PostCard).
  *
  * Exports: getPreviewEmphasizedWordIndexes
- * Depends on: text-language poetic/bound phrase helpers
+ * Depends on: text-language poetic/bound-phrase + compound-repair helpers
  */
 
 import {
   expandEmphasisToBoundPhrases,
+  getDataEmphasisWordIndexes,
   getSpecialPoeticWordIndexes,
+  isLikelyVietnameseText,
+  repairSplitCompoundEmphasis,
 } from "../lib/text-language";
 
 // Preview emphasis scoring — narrower word list / no digit-or-ALLCAPS bonuses.
@@ -15,9 +18,24 @@ import {
 /**
  * Compute previewemphasizedwordindexes.
  * @param words - words argument
+ * @param dataEmphasis - optional upstream annotation phrases; exact matches win over scoring
  * @returns Computed value
  */
-export function getPreviewEmphasizedWordIndexes(words: string[]): Set<number>{
+export function getPreviewEmphasizedWordIndexes(
+  words: string[],
+  dataEmphasis?: string[],
+): Set<number> {
+  // Upstream annotations are author intent and outrank every heuristic: when at
+  // least one data phrase occurs in this text, use exactly those indexes, then
+  // keep the bound-phrase expansion + compound-repair defenses so a
+  // partial-syllable annotation still heals into its compound.
+  const dataIndexes = getDataEmphasisWordIndexes(words, dataEmphasis);
+  if (dataIndexes.size > 0) {
+    const expanded = expandEmphasisToBoundPhrases(words, dataIndexes);
+    if (!isLikelyVietnameseText(words.join(" "))) return expanded;
+    return new Set(repairSplitCompoundEmphasis(words, [...expanded]));
+  }
+
   const poeticIndexes = getSpecialPoeticWordIndexes(words);
   if (poeticIndexes.size > 0) return poeticIndexes;
 
@@ -30,13 +48,17 @@ export function getPreviewEmphasizedWordIndexes(words: string[]): Set<number>{
     .sort((a, b) => b.score - a.score || a.index - b.index);
 
   const selected = candidates.slice(0, Math.min(2, Math.max(1, Math.ceil(words.length / 4))));
-  if (selected.length === 0 && words.length > 0) {
-    return expandEmphasisToBoundPhrases(words, [words.length - 1]);
-  }
-  return expandEmphasisToBoundPhrases(
-    words,
-    selected.map((item) => item.index),
-  );
+  const expanded =
+    selected.length === 0 && words.length > 0
+      ? expandEmphasisToBoundPhrases(words, [words.length - 1])
+      : expandEmphasisToBoundPhrases(
+          words,
+          selected.map((item) => item.index),
+        );
+
+  // Compound guard: never leave one syllable of a Vietnamese pair glowing alone.
+  if (!isLikelyVietnameseText(words.join(" "))) return expanded;
+  return new Set(repairSplitCompoundEmphasis(words, [...expanded]));
 }
 
 function getPreviewWordImportance(word: string, index: number, total: number) {

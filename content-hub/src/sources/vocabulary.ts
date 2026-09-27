@@ -18,6 +18,8 @@ export interface VocabularyWord {
   difficulty?: Difficulty;
   /** Optional playful nudge shown as the 3rd hint line, in Vietnamese. */
   nudge?: string;
+  /** Optional crawler-produced Vietnamese emphasis phrases (deck field `emphasis`). */
+  emphasis?: string[];
   // Extended WordCrawler fields (when sourced from deck)
   leadVi?: string;
   usageEn?: string;
@@ -111,6 +113,13 @@ export class VocabularySource implements SourceAdapter {
       const style = w.style ?? styleForTopic(w.topic);
       const anticipate = w.anticipateVi?.trim() || w.nudge?.trim() || "Đoán tiếp nào, bạn tìm ra chứ?";
       const hints = buildStyleHints(word, letters, anticipate, style);
+      const emphasis = sanitizeEmphasisPhrases(w.emphasis, [
+        w.viDefinition,
+        w.leadVi,
+        w.usageVi,
+        w.anticipateVi,
+        w.nudge,
+      ]);
 
       items.push({
         sourceKey: this.sourceKey,
@@ -133,12 +142,84 @@ export class VocabularySource implements SourceAdapter {
           chars: letters,
           initial: word[0]!.toUpperCase(),
           anticipateVi: anticipate,
+          // Validated crawler/generator emphasis annotations (undefined when none survive)
+          emphasis,
         },
       });
     }
 
     return items;
   }
+}
+
+// ── Emphasis annotation validation ─────────────────────────────────────────────
+// Deck field `emphasis` carries crawler-produced Vietnamese emphasis phrases
+// (converted from the crawler's internal emphasisVi). The Hub validates them
+// conservatively before payload assembly without importing main-app code: the
+// token comparison re-uses the app's compound-key concept — NFC-normalized,
+// lowercased, punctuation-stripped keys that KEEP diacritics, so "những" never
+// stands in for "nhưng". Compound healing (a partial-syllable annotation
+// glowing beside its partner syllable) stays in the renderer's
+// repairSplitCompoundEmphasis guard, which also runs for data matches.
+const EMPHASIS_MAX_PHRASES = 6;
+const EMPHASIS_MAX_TOKENS = 6;
+const EMPHASIS_MAX_CHARS = 80;
+
+function emphasisTokenKey(token: string): string {
+  return token
+    .normalize("NFC")
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}]+/gu, "");
+}
+
+/** Tokenize one annotation phrase into comparison keys, or null when unusable. */
+function emphasisPhraseKeys(phrase: string): string[] | null {
+  const tokens = phrase.trim().split(/\s+/).filter(Boolean);
+  if (!tokens.length || tokens.length > EMPHASIS_MAX_TOKENS) return null;
+  const keys = tokens.map(emphasisTokenKey);
+  // Punctuation-only tokens ("—", "…") cannot anchor a meaningful emphasis match.
+  if (keys.some((key) => key.length === 0)) return null;
+  return keys;
+}
+
+/**
+ * Keep only meaningful emphasis phrases that actually occur as consecutive
+ * tokens in one of the word's Vietnamese texts.
+ * @param emphasis raw annotations (deck or generator output)
+ * @param vietnameseTexts Vietnamese source fields the annotations may come from
+ * @returns Validated deduplicated phrases, or undefined when none survive
+ */
+function sanitizeEmphasisPhrases(
+  emphasis: string[] | undefined,
+  vietnameseTexts: Array<string | undefined>,
+): string[] | undefined {
+  if (!emphasis?.length) return undefined;
+  const haystacks = vietnameseTexts
+    .filter((text): text is string => !!text && text.trim().length > 0)
+    .map((text) => text.split(/\s+/).map(emphasisTokenKey));
+
+  const kept: string[] = [];
+  const seen = new Set<string>();
+  for (const raw of emphasis) {
+    if (kept.length >= EMPHASIS_MAX_PHRASES) break;
+    const phrase = raw.normalize("NFC").trim().replace(/\s+/g, " ");
+    if (!phrase || phrase.length > EMPHASIS_MAX_CHARS) continue;
+    const keys = emphasisPhraseKeys(phrase);
+    if (!keys) continue;
+    const occurs = haystacks.some((hay) =>
+      hay.some(
+        (_, start) =>
+          start + keys.length <= hay.length &&
+          keys.every((key, offset) => hay[start + offset] === key),
+      ),
+    );
+    if (!occurs) continue;
+    const dedupeKey = keys.join(" ");
+    if (seen.has(dedupeKey)) continue;
+    seen.add(dedupeKey);
+    kept.push(phrase);
+  }
+  return kept.length ? kept : undefined;
 }
 
 function countLetters(word: string): number {
@@ -159,6 +240,8 @@ type DeckWord = {
   topic: string;
   level: string;
   anticipateVi: string;
+  /** Optional crawler-produced Vietnamese emphasis phrases. */
+  emphasis?: string[];
 };
 
 function loadDeck(): DeckWord[] {
@@ -192,6 +275,7 @@ function deckToVocabularyWord(d: DeckWord): VocabularyWord {
     level: d.level,
     style: styleForTopic(d.topic),
     nudge: d.anticipateVi,
+    emphasis: d.emphasis,
   };
 }
 
@@ -221,8 +305,105 @@ export class CuratedVocabularyGenerator implements VocabularyGenerator {
 }
 
 // ── Generator 2: Claude (the always-on feed) ──────────────────────────────────
-// Asks Claude for fresh words + Vietnamese definitions as strict JSON, then
-// validates. Set ANTHROPIC_API_KEY and select VOCAB_GENERATOR=claude to use it.
+// Asks Claude for fresh words + full Vietnamese annotations as strict JSON,
+// then validates. Set ANTHROPIC_API_KEY and select VOCAB_GENERATOR=claude.
+//
+// Prompt design mirrors the word-crawler's proven ANNOTATION_SYSTEM_PROMPT
+// (word-crawler/src/annotate/prompt.ts) but adapted for generative mode:
+// the model picks its own words instead of annotating a given list.
+
+/**
+ * System prompt — field rules, negative prompts, quality bar.
+ * Output schema matches the word-crawler contract so downstream mapping is trivial.
+ */
+const CLAUDE_VOCAB_SYSTEM_PROMPT = `You are a vocabulary curriculum designer for a mobile "learn one English word at a time" app targeting Vietnamese learners. The reader sees Vietnamese hints first and only later the English word, so the Vietnamese text must be engaging on its own.
+
+For each word requested, return exactly one JSON object with these 10 fields and no others:
+word, pos, ipa, defVi, leadVi, anticipateVi, usageEn, usageVi, topic, emphasisVi
+
+── Field rules ─────────────────────────────────────────────────────────────────
+
+"word": a single English headword, 4–12 letters, lowercase.
+  ✗ No phrases ("in spite of"), no hyphens, no proper nouns ("Shakespeare").
+  ✗ No trivially easy words ("cat", "dog", "book", "good", "big", "go", "is").
+  ✗ No offensive, vulgar, or culturally sensitive words.
+  ✗ No technical jargon ("photosynthesis", "mitochondria").
+  ✗ No archaic or literary words unlikely to appear in conversation ("thou", "betwixt").
+  ✗ No compound phrases longer than one word.
+  ✓ Prefer concrete, vivid words that evoke a scene or feeling.
+
+"pos": exactly one of: noun, verb, adj, adv.
+  ✗ No "prep", "conj", "phrase" — the app only teaches these four parts of speech.
+
+"ipa": IPA transcription between forward slashes, e.g. "/rɪˈzɪl.i.ənt/".
+  ✗ No phonetic respelling like "ri-ZIL-ee-ent".
+  ✗ No plain pronunciation like "re-zi-lent".
+  ✓ Use standard IPA symbols only: stress marks ˈ ˌ, length ː, schwa ə, etc.
+
+"defVi": ONE Vietnamese sentence defining the word. 8–11 words, max 140 characters.
+  ✗ Never include the English target word or any English word.
+  ✗ Never wrap any word in quotes or parentheses.
+  ✗ Never write a circular definition ("X means the act of X-ing").
+  ✗ Never add an English translation in parentheses.
+  ✓ Be concise and natural, like a Vietnamese teacher explaining to a student.
+
+"leadVi": a Vietnamese teaser that hints at the meaning WITHOUT naming it directly. 8–11 words, max 120 characters.
+  ✗ Never include the English target word or any English word.
+  ✗ Never give away the answer — do not restate the definition.
+  ✗ Never be a copy of defVi reworded.
+  ✓ Be evocative and poetic, like a riddle. Use ellipsis (…) for dramatic pause.
+  ✓ Create curiosity that makes the learner want to see the word.
+  Example style: "Bị nhấn xuống rồi… bật lên lại." (for "resilient")
+
+"anticipateVi": a very short playful Vietnamese nudge. 3–8 words, max 40 characters.
+  ✗ Never include the English target word or any English word.
+  ✗ Never be a plain statement ("Từ này nghĩa là…").
+  ✓ Be fun and inviting: "Đoán xem nào…", "Sắp mở rồi đó.", "Ba… hai… một…"
+
+"usageEn": ONE natural English sentence using the word. Max 20 words.
+  ✗ Replace the target word with exactly five underscores: _____
+  ✗ Never include the target word in any form.
+  ✓ The sentence should feel like something a real person would say.
+
+"usageVi": the Vietnamese translation of the usage example. Max 140 characters.
+  ✗ No English words at all — pure Vietnamese.
+  ✓ Sound natural, not a word-by-word translation.
+
+"topic": one lowercase tag from this exact list:
+  communication, attention, work, time, emotion, character, thinking, daily
+
+"emphasisVi": 2 to 4 Vietnamese phrases that will glow on screen for visual emphasis.
+  Each phrase MUST be copied EXACTLY, diacritics included, from the defVi or leadVi you wrote.
+  ✗ Never a single syllable of a longer compound word ("hiệp" alone from "thỏa hiệp").
+  ✗ Never a function word (và, là, của, có, được, trong, cho, với, một, rất, cũng, đã, đang, sẽ, không, những, các, thì, mà).
+  ✗ Never longer than 30 characters or 3 syllables.
+  ✓ A meaningful unit: noun phrase, verb phrase, or adjective + noun.
+  ✓ Unique within the list — no duplicates.
+
+── Hard rules ──────────────────────────────────────────────────────────────────
+
+1. Write correct Vietnamese with full diacritics in ALL Vietnamese fields.
+2. Never include the English target word (or any English word) in defVi, leadVi, anticipateVi, or usageVi.
+3. No word may appear twice in the same batch.
+4. Distribute difficulty roughly: ~25% easy everyday words (A2), ~50% intermediate (B1), ~25% challenging (B2).
+5. Spread topics — do not put 3+ consecutive words in the same topic.
+6. Return ONLY a JSON array with one object per word. No markdown fences, no headings, no commentary, no prose before or after the array.
+
+── Example (one word, shortened) ──────────────────────────────────────────────
+
+[{"word":"negotiate","pos":"verb","ipa":"/nɪˈɡoʊ.ʃi.eɪt/","defVi":"Thương lượng để đạt thỏa thuận.","leadVi":"Hai bên ngồi lại, mỗi bên nhường một chút.","anticipateVi":"Sắp mở rồi đó.","usageEn":"We need to _____ a better price.","usageVi":"Chúng ta cần thương lượng giá tốt hơn.","topic":"work","emphasisVi":["Thương lượng","thỏa thuận"]}]`;
+
+/** Build the user message requesting a specific number of words. */
+function buildClauedVocabUserPrompt(count: number): string {
+  return [
+    `Generate ${count} English vocabulary words for Vietnamese learners.`,
+    "Pick words that are useful in everyday conversation, work, and relationships.",
+    "Mix topics and difficulty levels.",
+    "",
+    `Return the JSON array with exactly ${count} objects.`,
+  ].join("\n");
+}
+
 export class ClaudeVocabularyGenerator implements VocabularyGenerator {
   readonly name = "claude";
 
@@ -232,13 +413,6 @@ export class ClaudeVocabularyGenerator implements VocabularyGenerator {
   ) {}
 
   async generate(count: number): Promise<VocabularyWord[]> {
-    const prompt =
-      `Generate ${count} interesting but learnable English vocabulary words for Vietnamese learners. ` +
-      `Return ONLY a JSON array, no prose. Each element: ` +
-      `{ "word": string (one English word), "viDefinition": string (a short, natural Vietnamese definition, no English), ` +
-      `"difficulty": "easy"|"medium"|"hard", "nudge": string (a short playful Vietnamese hint) }. ` +
-      `Avoid proper nouns and offensive words.`;
-
     const res = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: {
@@ -248,8 +422,9 @@ export class ClaudeVocabularyGenerator implements VocabularyGenerator {
       },
       body: JSON.stringify({
         model: this.model,
-        max_tokens: 1024,
-        messages: [{ role: "user", content: prompt }],
+        max_tokens: 4096,
+        system: CLAUDE_VOCAB_SYSTEM_PROMPT,
+        messages: [{ role: "user", content: buildClauedVocabUserPrompt(count) }],
       }),
     });
 
@@ -258,8 +433,35 @@ export class ClaudeVocabularyGenerator implements VocabularyGenerator {
     const data = (await res.json()) as { content?: Array<{ type: string; text?: string }> };
     const text = data.content?.find((c) => c.type === "text")?.text ?? "[]";
     const json = extractJsonArray(text);
-    const parsed = JSON.parse(json) as VocabularyWord[];
-    return parsed.filter((w) => w && typeof w.word === "string" && typeof w.viDefinition === "string");
+    const parsed = JSON.parse(json) as Array<Record<string, unknown>>;
+
+    // Map crawler-contract field names → VocabularyWord field names,
+    // validate required fields, drop unusable entries.
+    const levelToDiff: Record<string, Difficulty> = { easy: "easy", medium: "medium", hard: "hard" };
+    return parsed
+      .filter((w) => w && typeof w.word === "string" && typeof w.defVi === "string")
+      .map((w) => {
+        const word = (w.word as string).trim();
+        const emphasis = Array.isArray(w.emphasisVi)
+          ? w.emphasisVi.filter((p): p is string => typeof p === "string")
+          : undefined;
+        return {
+          word,
+          viDefinition: (w.defVi as string).trim(),
+          difficulty: levelToDiff[String(w.difficulty ?? "medium")] ?? "medium",
+          pos: typeof w.pos === "string" ? w.pos.trim() : undefined,
+          ipa: typeof w.ipa === "string" ? w.ipa.trim() : undefined,
+          topic: typeof w.topic === "string" ? w.topic.trim() : undefined,
+          leadVi: typeof w.leadVi === "string" ? w.leadVi.trim() : undefined,
+          anticipateVi: typeof w.anticipateVi === "string" ? w.anticipateVi.trim() : undefined,
+          usageEn: typeof w.usageEn === "string" ? w.usageEn.trim() : undefined,
+          usageVi: typeof w.usageVi === "string" ? w.usageVi.trim() : undefined,
+          chars: (word.match(/\p{L}/gu) ?? []).length,
+          initial: word[0]?.toUpperCase() ?? "",
+          nudge: typeof w.anticipateVi === "string" ? (w.anticipateVi as string).trim() : undefined,
+          emphasis,
+        } satisfies VocabularyWord;
+      });
   }
 }
 
