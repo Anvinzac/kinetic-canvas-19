@@ -1,4 +1,5 @@
-/** Anonymous browser fetch adapter. Exports: fetchVocabularyPage, VocabularyRequestError. Depends on: transport types. */
+/** Anonymous browser fetch adapter. Exports: fetchVocabularyPage, VocabularyRequestError. Depends on: transport types, backfill bounds. */
+import { VOCAB_PAGE_LIMIT } from "../lib/backfill";
 import type { FeedCursor, FeedPage, VocabularyFilters } from "../types";
 
 export class VocabularyRequestError extends Error {
@@ -22,7 +23,7 @@ export async function fetchVocabularyPage(input: {
     topic: input.filters.topic,
     level: input.filters.level,
     position: String(input.cursor.position),
-    limit: "12",
+    limit: String(VOCAB_PAGE_LIMIT),
     ...(input.cursor.revision ? { revision: input.cursor.revision } : {}),
   });
   const controller = new AbortController();

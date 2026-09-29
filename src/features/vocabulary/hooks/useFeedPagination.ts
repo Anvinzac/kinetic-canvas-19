@@ -3,10 +3,11 @@ import { useCallback, useEffect } from "react";
 import type { useVocabularyFeed } from "./useVocabularyFeed";
 import type { useVocabularyWindow } from "./useVocabularyWindow";
 
-/** Prefetch only in the direction of travel. @param query Feed query. @param windowState Virtual viewport. @returns Explicit retry handler. */
+/** Prefetch only in the direction of travel. @param query Feed query. @param windowState Virtual viewport. @param canFetchMore Whether another forward page can still hold an unseen word. @returns Explicit retry handler. */
 export function useFeedPagination(
   query: ReturnType<typeof useVocabularyFeed>,
   windowState: ReturnType<typeof useVocabularyWindow>,
+  canFetchMore = true,
 ) {
   const { activeIndex, direction, adjusting } = windowState;
   const {
@@ -20,13 +21,19 @@ export function useFeedPagination(
   } = query;
   useEffect(() => {
     if (adjusting.current || isFetching || error || !entries.length) return;
-    if (direction.current === "next" && activeIndex >= entries.length - 4 && hasNextPage) {
+    if (
+      direction.current === "next" &&
+      canFetchMore &&
+      activeIndex >= entries.length - 4 &&
+      hasNextPage
+    ) {
       void fetchNextPage({ cancelRefetch: false });
     } else if (direction.current === "previous" && activeIndex <= 3 && hasPreviousPage) {
       void fetchPreviousPage({ cancelRefetch: false });
     }
   }, [
     activeIndex,
+    canFetchMore,
     direction,
     adjusting,
     entries,

@@ -1,10 +1,11 @@
-/** Bounded, bidirectional query state for a single vocabulary stream. Exports: useVocabularyFeed. Depends on: React Query, fetch adapter. */
+/** Bounded, bidirectional query state for a single vocabulary stream. Exports: useVocabularyFeed. Depends on: React Query, fetch adapter, backfill bounds. */
 import { useEffect, useMemo } from "react";
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchVocabularyPage, VocabularyRequestError } from "../api/feed";
+import { VOCAB_MAX_PAGES } from "../lib/backfill";
 import type { FeedCursor, VocabularyFilters } from "../types";
 
-/** Load deterministic pages, retaining at most 120 cards. @param seed Stable visit seed. @param filters Content filters. @returns Query and flattened cards. */
+/** Load deterministic pages, retaining at most VOCAB_MAX_PAGES of them. @param seed Stable visit seed. @param filters Content filters. @returns Query and flattened cards. */
 export function useVocabularyFeed(seed: string, filters: VocabularyFilters) {
   const client = useQueryClient();
   const queryKey = useMemo(
@@ -24,7 +25,7 @@ export function useVocabularyFeed(seed: string, filters: VocabularyFilters) {
       first.previousPosition === null
         ? undefined
         : { position: first.previousPosition, revision: first.revision },
-    maxPages: 10,
+    maxPages: VOCAB_MAX_PAGES,
     staleTime: Infinity,
     gcTime: 0,
     refetchOnWindowFocus: false,
