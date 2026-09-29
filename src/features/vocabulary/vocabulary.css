@@ -379,17 +379,79 @@
 .vocab-card .vocab-reveal-button:focus-visible {
   outline-color: var(--vocab-ink);
 }
-.vocab-reveal-ghost {
+.vocab-action-bar {
   position: absolute;
   z-index: 3;
   bottom: max(44px, calc(env(safe-area-inset-bottom) + 34px));
   left: 50%;
   transform: translateX(-50%);
-  padding: 0 18px;
-  min-width: 118px;
-  max-width: calc(100% - 48px);
+  width: min(440px, calc(100% - 48px));
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  align-items: start;
+}
+.vocab-reveal-half {
+  width: 100%;
+  min-width: 0;
+  white-space: nowrap;
   box-shadow: 0 8px 24px #0005;
   border: 1px solid color-mix(in srgb, var(--vocab-ink) 18%, transparent);
+}
+@media (max-width: 420px) {
+  .vocab-reveal-half {
+    gap: 6px;
+    font-size: 12px;
+  }
+}
+.vocab-reaction-group {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+.vocab-reaction {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+.vocab-reaction-button {
+  min-width: 64px;
+  min-height: 44px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 30px;
+  border: 1px solid color-mix(in srgb, var(--vocab-ink) 18%, transparent);
+  background: color-mix(in srgb, var(--vocab-ink) 10%, transparent);
+  color: var(--vocab-ink);
+  box-shadow: 0 8px 24px #0005;
+  transition: color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+.vocab-reaction-button:disabled {
+  opacity: 0.4;
+}
+.vocab-reaction-button:not(:disabled):active {
+  transform: scale(0.92);
+}
+.vocab-card .vocab-reaction-button:focus-visible {
+  outline-color: var(--vocab-ink);
+}
+.vocab-reaction-heart[data-on] {
+  color: #ff4d6d;
+  border-color: #ff4d6d88;
+}
+.vocab-reaction-bookmark[data-on] {
+  color: #ffb020;
+  border-color: #ffb02088;
+}
+.vocab-reaction-count {
+  font-family: "Inter", sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 14px;
+  min-height: 14px;
+  color: color-mix(in srgb, var(--vocab-ink) 72%, transparent);
 }
 .vocab-tap-zones {
   position: absolute;

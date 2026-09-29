@@ -1,5 +1,5 @@
-/** One independent vocabulary learning card; no social mutations. Exports: VocabularyCard. Depends on: presets, playback, VocabularyStage. */
-import { useCallback, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+/** One independent vocabulary learning card; clue navigation stays local while heart/bookmark reactions post to the public engagement totals. Exports: VocabularyCard. Depends on: presets, playback, VocabularyStage, engagement api. */
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { getCanvasPatternTheme, getCanvasSceneTheme } from "@/features/canvas";
 import {
   PostCanvasBackdrop,
@@ -7,9 +7,16 @@ import {
   getPageDuration,
   getUniformPageTextSize,
 } from "@/features/post-player";
-import { RotateCcw, Sparkles } from "lucide-react";
+import { Bookmark, Heart, RotateCcw, Sparkles } from "lucide-react";
 import { buildVocabularyCanvas, choosePresentation, fitVocabularyTextSize } from "../lib/presets";
 import { buildStages } from "../lib/stages";
+import { flipReaction, hasReaction, type ReactionKind } from "../lib/reactions";
+import {
+  changeEngagement,
+  getCachedEngagement,
+  loadEngagement,
+  type EngagementCounts,
+} from "../api/engagement";
 import { useLearningPlayback } from "../hooks/useLearningPlayback";
 import type { FeedEntry, Presentation } from "../types";
 import { VocabularyStage } from "./VocabularyStage";
@@ -98,9 +105,11 @@ export function VocabularyCard({
   const handlePointerStart = useCallback(
     (clientX: number, clientY: number, target: EventTarget | null) => {
       if (
-        target instanceof HTMLElement &&
+        target instanceof Element &&
         target.closest("button, a, input, select, textarea, [data-no-gesture]")
       ) {
+        // Element (not HTMLElement): taps land on SVG icons inside buttons, and
+        // SVGElement must be excluded or reaction taps would also flip pages.
         gestureStart.current = null;
         return;
       }
@@ -153,6 +162,58 @@ export function VocabularyCard({
   );
 
   void matching;
+
+  // Heart / bookmark: totals come from the public engagement store; this device
+  // tracks its own taps in localStorage so they toggle instead of stacking.
+  const wordId = entry.word.id;
+  const [counts, setCounts] = useState<EngagementCounts | null>(() =>
+    getCachedEngagement(wordId),
+  );
+  const [reactions, setReactions] = useState(() => ({
+    heart: hasReaction(wordId, "heart"),
+    bookmark: hasReaction(wordId, "bookmark"),
+  }));
+  useEffect(() => {
+    setReactions({ heart: hasReaction(wordId, "heart"), bookmark: hasReaction(wordId, "bookmark") });
+    setCounts(getCachedEngagement(wordId));
+    if (!active) return;
+    let alive = true;
+    void loadEngagement(wordId).then((fresh) => {
+      if (alive && fresh) setCounts(fresh);
+    });
+    return () => {
+      alive = false;
+    };
+  }, [active, wordId]);
+  const toggleReaction = useCallback(
+    (kind: ReactionKind) => {
+      // Reactions unlock only once the definition is revealed.
+      if (!stage.reveal) return;
+      const nextActive = flipReaction(wordId, kind);
+      setReactions((r) => ({ ...r, [kind]: nextActive }));
+      const before = getCachedEngagement(wordId);
+      if (before) {
+        const delta = nextActive ? 1 : -1;
+        setCounts(
+          kind === "heart"
+            ? { ...before, hearts: Math.max(0, before.hearts + delta) }
+            : { ...before, bookmarks: Math.max(0, before.bookmarks + delta) },
+        );
+      }
+      void changeEngagement(wordId, kind, nextActive).then((authoritative) => {
+        if (authoritative) setCounts(authoritative);
+        else if (before) {
+          setCounts(before);
+          flipReaction(wordId, kind); // roll the device flag back so counts stay honest
+          setReactions((r) => ({ ...r, [kind]: !nextActive }));
+        }
+      });
+    },
+    [stage.reveal, wordId],
+  );
+  const reactionLocked = !stage.reveal;
+  const heartsLabel = formatReactionCount(counts?.hearts);
+  const bookmarksLabel = formatReactionCount(counts?.bookmarks);
 
   return (
     <article
@@ -219,16 +280,57 @@ export function VocabularyCard({
         ))}
       </div>
 
-      <button
-        type="button"
-        className="vocab-reveal-button vocab-reveal-ghost"
-        onClick={stage.reveal ? playback.restart : playback.reveal}
-        aria-label={stage.reveal ? "Replay clues" : "Reveal word"}
-        data-no-gesture
-      >
-        {stage.reveal ? <RotateCcw size={16} /> : <Sparkles size={16} />}
-        {stage.reveal ? "Replay" : "Reveal"}
-      </button>
+      <div className="vocab-action-bar" data-no-gesture>
+        <button
+          type="button"
+          className="vocab-reveal-button vocab-reveal-half"
+          onClick={stage.reveal ? playback.restart : playback.reveal}
+          aria-label={stage.reveal ? "Replay clues" : "Reveal word"}
+        >
+          {stage.reveal ? <RotateCcw size={16} /> : <Sparkles size={16} />}
+          {stage.reveal ? "Replay" : "Ê, từ này biết nè"}
+        </button>
+        <div className="vocab-reaction-group">
+          <div className="vocab-reaction">
+            <button
+              type="button"
+              className="vocab-reaction-button vocab-reaction-heart"
+              data-on={reactions.heart || undefined}
+              disabled={reactionLocked}
+              onClick={() => toggleReaction("heart")}
+              aria-label={reactions.heart ? "Remove your heart from this word" : "Heart this word"}
+            >
+              <Heart size={17} fill={reactions.heart ? "currentColor" : "none"} />
+            </button>
+            <span className="vocab-reaction-count">{heartsLabel}</span>
+          </div>
+          <div className="vocab-reaction">
+            <button
+              type="button"
+              className="vocab-reaction-button vocab-reaction-bookmark"
+              data-on={reactions.bookmark || undefined}
+              disabled={reactionLocked}
+              onClick={() => toggleReaction("bookmark")}
+              aria-label={
+                reactions.bookmark ? "Remove this word from saved" : "Save this word"
+              }
+            >
+              <Bookmark size={17} fill={reactions.bookmark ? "currentColor" : "none"} />
+            </button>
+            <span className="vocab-reaction-count">{bookmarksLabel}</span>
+          </div>
+        </div>
+      </div>
     </article>
   );
+}
+
+/** Compact count label shown under a reaction button. */
+function formatReactionCount(value: number | undefined): string {
+  if (value == null) return "";
+  if (value >= 1000) {
+    const thousands = value / 1000;
+    return `${thousands >= 10 ? Math.round(thousands) : thousands.toFixed(1).replace(/\.0$/, "")}k`;
+  }
+  return String(value);
 }

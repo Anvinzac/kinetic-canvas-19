@@ -34,6 +34,7 @@ import { Route as AuthenticatedCommunityRouteImport } from './routes/_authentica
 import { Route as AuthenticatedAboutRouteImport } from './routes/_authenticated/about'
 import { Route as ApiPublicVocabularyRefillRouteImport } from './routes/api/public/vocabulary-refill'
 import { Route as ApiPublicVocabularyRouteImport } from './routes/api/public/vocabulary'
+import { Route as ApiPublicEngagementRouteImport } from './routes/api/public/engagement'
 import { Route as AuthenticatedUUsernameRouteImport } from './routes/_authenticated/u.$username'
 import { Route as AuthenticatedPPostIdRouteImport } from './routes/_authenticated/p.$postId'
 
@@ -164,6 +165,11 @@ const ApiPublicVocabularyRoute = ApiPublicVocabularyRouteImport.update({
   path: '/api/public/vocabulary',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicEngagementRoute = ApiPublicEngagementRouteImport.update({
+  id: '/api/public/engagement',
+  path: '/api/public/engagement',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedUUsernameRoute = AuthenticatedUUsernameRouteImport.update({
   id: '/u/$username',
   path: '/u/$username',
@@ -200,6 +206,7 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AdminIndexRoute
   '/p/$postId': typeof AuthenticatedPPostIdRoute
   '/u/$username': typeof AuthenticatedUUsernameRoute
+  '/api/public/engagement': typeof ApiPublicEngagementRoute
   '/api/public/vocabulary': typeof ApiPublicVocabularyRoute
   '/api/public/vocabulary-refill': typeof ApiPublicVocabularyRefillRoute
 }
@@ -227,6 +234,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminIndexRoute
   '/p/$postId': typeof AuthenticatedPPostIdRoute
   '/u/$username': typeof AuthenticatedUUsernameRoute
+  '/api/public/engagement': typeof ApiPublicEngagementRoute
   '/api/public/vocabulary': typeof ApiPublicVocabularyRoute
   '/api/public/vocabulary-refill': typeof ApiPublicVocabularyRefillRoute
 }
@@ -257,6 +265,7 @@ export interface FileRoutesById {
   '/admin/': typeof AdminIndexRoute
   '/_authenticated/p/$postId': typeof AuthenticatedPPostIdRoute
   '/_authenticated/u/$username': typeof AuthenticatedUUsernameRoute
+  '/api/public/engagement': typeof ApiPublicEngagementRoute
   '/api/public/vocabulary': typeof ApiPublicVocabularyRoute
   '/api/public/vocabulary-refill': typeof ApiPublicVocabularyRefillRoute
 }
@@ -287,6 +296,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/p/$postId'
     | '/u/$username'
+    | '/api/public/engagement'
     | '/api/public/vocabulary'
     | '/api/public/vocabulary-refill'
   fileRoutesByTo: FileRoutesByTo
@@ -314,6 +324,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/p/$postId'
     | '/u/$username'
+    | '/api/public/engagement'
     | '/api/public/vocabulary'
     | '/api/public/vocabulary-refill'
   id:
@@ -343,6 +354,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/_authenticated/p/$postId'
     | '/_authenticated/u/$username'
+    | '/api/public/engagement'
     | '/api/public/vocabulary'
     | '/api/public/vocabulary-refill'
   fileRoutesById: FileRoutesById
@@ -354,6 +366,7 @@ export interface RootRouteChildren {
   AdminAccessDeniedRoute: typeof AdminAccessDeniedRoute
   AuthRoute: typeof AuthRoute
   FeedRoute: typeof FeedRoute
+  ApiPublicEngagementRoute: typeof ApiPublicEngagementRoute
   ApiPublicVocabularyRoute: typeof ApiPublicVocabularyRoute
   ApiPublicVocabularyRefillRoute: typeof ApiPublicVocabularyRefillRoute
 }
@@ -535,6 +548,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicVocabularyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/engagement': {
+      id: '/api/public/engagement'
+      path: '/api/public/engagement'
+      fullPath: '/api/public/engagement'
+      preLoaderRoute: typeof ApiPublicEngagementRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/u/$username': {
       id: '/_authenticated/u/$username'
       path: '/u/$username'
@@ -616,6 +636,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminAccessDeniedRoute: AdminAccessDeniedRoute,
   AuthRoute: AuthRoute,
   FeedRoute: FeedRoute,
+  ApiPublicEngagementRoute: ApiPublicEngagementRoute,
   ApiPublicVocabularyRoute: ApiPublicVocabularyRoute,
   ApiPublicVocabularyRefillRoute: ApiPublicVocabularyRefillRoute,
 }
