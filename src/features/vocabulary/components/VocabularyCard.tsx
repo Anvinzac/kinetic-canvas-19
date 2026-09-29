@@ -1,5 +1,13 @@
 /** One independent vocabulary learning card; clue navigation stays local while heart/bookmark reactions post to the public engagement totals. Exports: VocabularyCard. Depends on: presets, playback, VocabularyStage, engagement api. */
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+} from "react";
 import { getCanvasPatternTheme, getCanvasSceneTheme } from "@/features/canvas";
 import {
   PostCanvasBackdrop,
@@ -166,15 +174,16 @@ export function VocabularyCard({
   // Heart / bookmark: totals come from the public engagement store; this device
   // tracks its own taps in localStorage so they toggle instead of stacking.
   const wordId = entry.word.id;
-  const [counts, setCounts] = useState<EngagementCounts | null>(() =>
-    getCachedEngagement(wordId),
-  );
+  const [counts, setCounts] = useState<EngagementCounts | null>(() => getCachedEngagement(wordId));
   const [reactions, setReactions] = useState(() => ({
     heart: hasReaction(wordId, "heart"),
     bookmark: hasReaction(wordId, "bookmark"),
   }));
   useEffect(() => {
-    setReactions({ heart: hasReaction(wordId, "heart"), bookmark: hasReaction(wordId, "bookmark") });
+    setReactions({
+      heart: hasReaction(wordId, "heart"),
+      bookmark: hasReaction(wordId, "bookmark"),
+    });
     setCounts(getCachedEngagement(wordId));
     if (!active) return;
     let alive = true;
@@ -311,9 +320,7 @@ export function VocabularyCard({
               data-on={reactions.bookmark || undefined}
               disabled={reactionLocked}
               onClick={() => toggleReaction("bookmark")}
-              aria-label={
-                reactions.bookmark ? "Remove this word from saved" : "Save this word"
-              }
+              aria-label={reactions.bookmark ? "Remove this word from saved" : "Save this word"}
             >
               <Bookmark size={17} fill={reactions.bookmark ? "currentColor" : "none"} />
             </button>

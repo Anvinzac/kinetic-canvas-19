@@ -16,16 +16,11 @@ import { z } from "zod";
 
 export type EngagementCounts = { hearts: number; bookmarks: number };
 
-const STORE_PATH = resolve(
-  process.cwd(),
-  "src/features/vocabulary/data/engagement.json",
-);
+const STORE_PATH = resolve(process.cwd(), "src/features/vocabulary/data/engagement.json");
 
 const COUNT_CAP = 1_000_000;
 
-const idSchema = z
-  .string()
-  .regex(/^[a-zA-Z0-9_-]{1,64}$/);
+const idSchema = z.string().regex(/^[a-zA-Z0-9_-]{1,64}$/);
 const kindSchema = z.enum(["heart", "bookmark"]);
 const actionSchema = z.enum(["add", "remove"]);
 
@@ -102,9 +97,7 @@ export async function engagementPostResponse(request: Request): Promise<Response
       { status: 400, headers },
     );
   }
-  const parsed = z
-    .object({ id: idSchema, kind: kindSchema, action: actionSchema })
-    .safeParse(body);
+  const parsed = z.object({ id: idSchema, kind: kindSchema, action: actionSchema }).safeParse(body);
   if (!parsed.success) {
     return Response.json(
       { code: "INVALID_REQUEST", error: "Invalid engagement request" },
@@ -117,10 +110,7 @@ export async function engagementPostResponse(request: Request): Promise<Response
   const store = { ...(await loadStore()) };
   const current = store[id] ?? { hearts: 0, bookmarks: 0 };
   const field = fieldForKind[kind];
-  const nextValue = Math.min(
-    COUNT_CAP,
-    Math.max(0, current[field] + (action === "add" ? 1 : -1)),
-  );
+  const nextValue = Math.min(COUNT_CAP, Math.max(0, current[field] + (action === "add" ? 1 : -1)));
   const next = { ...current, [field]: nextValue };
   store[id] = next;
   try {
