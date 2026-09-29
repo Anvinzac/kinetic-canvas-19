@@ -9,8 +9,8 @@
  */
 
 import { createServerFn } from "@tanstack/react-start";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
+import { requireAdminAccess } from "../lib/admin-access";
 import { requireAdminContext } from "../lib/require-admin";
 import { readFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
@@ -156,7 +156,7 @@ export const listTemplates = createServerFn({ method: "GET" }).handler(
  * Replace an entire section of the template data.
  */
 export const updateTemplateSection = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAdminAccess])
   .inputValidator((d: unknown) =>
     z.object({ section: sectionSchema, data: z.unknown() }).parse(d),
   )
@@ -173,7 +173,7 @@ export const updateTemplateSection = createServerFn({ method: "POST" })
  * Delete one item from a section by its id (or string value for plain arrays).
  */
 export const deleteTemplateItem = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAdminAccess])
   .inputValidator((d: unknown) =>
     z.object({ section: sectionSchema, id: z.string().min(1) }).parse(d),
   )
@@ -192,7 +192,7 @@ export const deleteTemplateItem = createServerFn({ method: "POST" })
  * Add one item to a section.
  */
 export const addTemplateItem = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAdminAccess])
   .inputValidator((d: unknown) =>
     z.object({ section: sectionSchema, item: z.unknown() }).parse(d),
   )

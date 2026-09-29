@@ -14,5 +14,6 @@ export { ErrorsPage } from "./components/errors/ErrorsPage";
 export { SystemPage } from "./components/system/SystemPage";
 export { VocabularyWordsPage } from "./components/vocabulary/VocabularyWordsPage";
 export { TemplateManagerPage } from "./components/templates/TemplateManagerPage";
+export { LlmSettingsPage } from "./components/llm/LlmSettingsPage";
 export { APP_ID } from "./types/telemetry";
 export { isDemoAdminEnabled } from "./lib/require-admin";

@@ -14,10 +14,12 @@ import {
 import {
   updateVocabularyWord,
   markVocabularyWordDone,
+  regenerateVocabularyField,
   type VocabWordRow,
 } from "../../api/vocabulary.functions";
 import { LEVELS } from "@/features/vocabulary/lib/schema";
 import { EditableCell } from "./EditableCell";
+import { FlagRegenerateMenu } from "./FlagRegenerateMenu";
 import { adminKeys } from "../../api/keys";
 import { Check } from "lucide-react";
 
@@ -31,6 +33,7 @@ type VocabUpdate = {
   topic?: string;
   level?: string | null;
 };
+type RegenField = "def_vi" | "lead_vi" | "anticipate_vi";
 
 const PAGE_SIZE = 20;
 
@@ -74,6 +77,23 @@ export function VocabularyWordsPage(): React.ReactElement {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: adminKeys.vocabulary() });
       queryClient.invalidateQueries({ queryKey: adminKeys.vocabularyCompleted() });
+    },
+  });
+
+  // Claude rewrite of a flagged Vietnamese field — updates the row live on success.
+  const regenMutation = useMutation({
+    mutationFn: async (v: { id: string; field: RegenField; complaints: string[] }) =>
+      regenerateVocabularyField({ data: v }),
+    onSuccess: (res, vars) => {
+      queryClient.setQueryData<VocabWordRow[]>(adminKeys.vocabulary(), (old) =>
+        old?.map((w) =>
+          w.id === vars.id
+            ? { ...w, [vars.field]: res.value, emphasis: res.emphasis, updated_at: new Date().toISOString() }
+            : w,
+        ),
+      );
+      setStatus({ id: vars.id, state: "saved" });
+      setTimeout(() => setStatus(null), 1500);
     },
   });
 
@@ -158,6 +178,9 @@ export function VocabularyWordsPage(): React.ReactElement {
                   justSaved={status?.id === word.id && status.state === "saved"}
                   onSave={save}
                   onSaveLevel={saveLevel}
+                  onRegenerate={(id, field, complaints) =>
+                    regenMutation.mutateAsync({ id, field, complaints })
+                  }
                   onDone={(id) => doneMutation.mutate(id)}
                   isMarkingDone={doneMutation.isPending}
                 />
@@ -202,6 +225,7 @@ function WordRow({
   justSaved,
   onSave,
   onSaveLevel,
+  onRegenerate,
   onDone,
   isMarkingDone,
 }: {
@@ -210,6 +234,7 @@ function WordRow({
   justSaved: boolean;
   onSave: (id: string, field: string, value: string) => void;
   onSaveLevel: (id: string, level: string) => void;
+  onRegenerate: (id: string, field: RegenField, complaints: string[]) => Promise<unknown>;
   onDone: (id: string) => void;
   isMarkingDone: boolean;
 }) {
@@ -224,14 +249,26 @@ function WordRow({
       <td className="px-1 py-1 font-medium">
         <EditableCell value={word.word} onSave={(v) => onSave(word.id, "word", v)} placeholder="word" />
       </td>
-      <td className="px-1 py-1">
-        <EditableCell value={word.def_vi} onSave={(v) => onSave(word.id, "def_vi", v)} multiline placeholder="definition" />
+      <td className="relative px-1 py-1">
+        <FlagRegenerateMenu
+          label={`definition of ${word.word}`}
+          onRegenerate={(c) => onRegenerate(word.id, "def_vi", c)}
+        />
+        <EditableCell value={word.def_vi} onSave={(v) => onSave(word.id, "def_vi", v)} multiline className="pb-6" placeholder="definition" />
       </td>
-      <td className="px-1 py-1">
-        <EditableCell value={word.lead_vi} onSave={(v) => onSave(word.id, "lead_vi", v)} placeholder="lead text" />
+      <td className="relative px-1 py-1">
+        <FlagRegenerateMenu
+          label={`lead of ${word.word}`}
+          onRegenerate={(c) => onRegenerate(word.id, "lead_vi", c)}
+        />
+        <EditableCell value={word.lead_vi} onSave={(v) => onSave(word.id, "lead_vi", v)} className="pb-6" placeholder="lead text" />
       </td>
-      <td className="px-1 py-1">
-        <EditableCell value={word.anticipate_vi} onSave={(v) => onSave(word.id, "anticipate_vi", v)} placeholder="teaser before reveal" />
+      <td className="relative px-1 py-1">
+        <FlagRegenerateMenu
+          label={`teaser of ${word.word}`}
+          onRegenerate={(c) => onRegenerate(word.id, "anticipate_vi", c)}
+        />
+        <EditableCell value={word.anticipate_vi} onSave={(v) => onSave(word.id, "anticipate_vi", v)} className="pb-6" placeholder="teaser before reveal" />
       </td>
       <td className="px-1 py-1">
         <EditableCell value={word.topic} onSave={(v) => onSave(word.id, "topic", v)} placeholder="topic" />

@@ -18,4 +18,5 @@ export const adminKeys = {
   vocabulary: () => [...adminKeys.all, "vocabulary"] as const,
   vocabularyCompleted: () => [...adminKeys.all, "vocabulary-completed"] as const,
   templates: () => [...adminKeys.all, "templates"] as const,
+  llmSettings: () => [...adminKeys.all, "llm-settings"] as const,
 };
