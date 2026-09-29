@@ -8,11 +8,14 @@ import {
   getBoundPhraseEmphasisSeed,
   getBoundPhraseStartIndex,
   getDataEmphasisWordIndexes,
+  getEmphasisPhraseKeysForLayout,
+  getVietnameseWordLines,
   repairSplitCompoundEmphasis,
 } from "../src/lib/text-language";
 import { getEmphasizedWordIndexes } from "../src/features/post-player/lib/feed-emphasis";
 import { getPreviewEmphasizedWordIndexes } from "../src/features/kinetic-text/components/preview-emphasis";
 import { normalizeDeck } from "../src/features/vocabulary/lib/schema";
+import type { WordLine, WordSegment } from "../src/lib/text-language";
 
 function emphasisStyleKey(text: string, words: string[], index: number) {
   const anchor = getBoundPhraseStartIndex(words, index);
@@ -265,3 +268,99 @@ if (!rejected) {
 }
 
 console.log("OK — data-driven emphasis: exact matches, diacritic safety, fallback");
+
+// ── 7. Annotated compounds behave as bound phrases (whole-word highlight) ───
+// "thực sự" or "dùng dằng" come from deck annotations, not the curated list.
+// They must share one emphasis seed (identical styling across syllables) and
+// pack into one unbreakable line segment so the pair is never split across
+// lines — the partial-highlight bug the user reported.
+
+const layoutKeys = getEmphasisPhraseKeysForLayout(["thực sự", "dùng dằng"]);
+expectJson("annotation phrases convert to diacritic-preserving token keys", layoutKeys, [
+  ["thực", "sự"],
+  ["dùng", "dằng"],
+]);
+
+const tightCapacity = { getLineCapacity: (_lineIndex: number) => 5 };
+const rawLines: WordLine[] = getVietnameseWordLines(["thực", "sự", "muốn", "làm"], tightCapacity);
+type SegmentWord = { text: string; index: number };
+const rawPairSegment: WordSegment | undefined = rawLines
+  .flatMap((line: WordLine) => line.segments)
+  .find((segment: WordSegment) => segment.words.some((entry: SegmentWord) => entry.index === 0));
+if (!rawPairSegment || rawPairSegment.words.length !== 1) {
+  console.error("FAIL: baseline expected thực/sự to split without phrase keys");
+  process.exit(1);
+}
+const gluedLines: WordLine[] = getVietnameseWordLines(["thực", "sự", "muốn", "làm"], {
+  ...tightCapacity,
+  phraseKeys: [["thực", "sự"]],
+});
+const gluedPairSegment: WordSegment | undefined = gluedLines
+  .flatMap((line: WordLine) => line.segments)
+  .find((segment: WordSegment) => segment.words.some((entry: SegmentWord) => entry.index === 0));
+if (!gluedPairSegment || !gluedPairSegment.words.some((entry: SegmentWord) => entry.index === 1)) {
+  console.error("FAIL: thực sự must stay inside one line segment with phrase keys");
+  process.exit(1);
+}
+
+const seedWords = tokenize("Không thực sự muốn làm dù biết.");
+const seedKeys = [["thực", "sự"]];
+const anchor1 = getBoundPhraseStartIndex(seedWords, 1, seedKeys);
+const anchor2 = getBoundPhraseStartIndex(seedWords, 2, seedKeys);
+const seed1 = getBoundPhraseEmphasisSeed(seedWords, 1, seedKeys);
+const seed2 = getBoundPhraseEmphasisSeed(seedWords, 2, seedKeys);
+if (anchor1 !== 1 || anchor2 !== 1 || seed1 !== "thực sự" || seed2 !== "thực sự") {
+  console.error(
+    `FAIL: annotated pair must share anchor+seed: anchors ${anchor1}/${anchor2}, seeds "${seed1}"/"${seed2}"`,
+  );
+  process.exit(1);
+}
+
+console.log("OK — annotated Vietnamese compounds stay whole: shared seed + unbreakable segment");
+
+// ── 8. English spotlights a single word only ────────────────────────────────
+// Whole-word compound repair is Vietnamese-only; two adjacent English content
+// words must never share a highlight frame on feed or preview pages.
+
+const englishWords = tokenize("Her smile looked completely honest.");
+expectSet(
+  "feed English page emphasizes exactly one word",
+  getEmphasizedWordIndexes(englishWords),
+  [4],
+);
+expectSet(
+  "preview English page emphasizes exactly one word",
+  getPreviewEmphasizedWordIndexes(englishWords),
+  [4],
+);
+
+console.log("OK — English pages spotlight a single word");
+
+// ── 9. At most two highlighted words per page, never fewer than one ────────
+// A highlighted word is one contiguous run (compounds count as a single word).
+
+expectIndexes(
+  "a complete pair never reaches out to neighbouring words",
+  repairSplitCompoundEmphasis(["cứ", "dùng", "dằng", "mãi"], [1, 2]),
+  [1, 2],
+);
+const manyPhrases = tokenize("Tự nhận xét giúp kết quả rõ ràng hơn.");
+expectSet(
+  "feed caps a page at the first two annotated words",
+  getEmphasizedWordIndexes(manyPhrases, ["nhận xét", "kết quả", "rõ ràng"]),
+  [1, 2, 4, 5],
+);
+expectSet(
+  "preview caps a page at the first two annotated words",
+  getPreviewEmphasizedWordIndexes(manyPhrases, ["nhận xét", "kết quả", "rõ ràng"]),
+  [1, 2, 4, 5],
+);
+expectSet(
+  "an annotated compound keeps exactly its own syllables",
+  getEmphasizedWordIndexes(tokenize("Chân muốn bước nhưng lòng cứ dùng dằng mãi thôi."), [
+    "dùng dằng",
+  ]),
+  [6, 7],
+);
+
+console.log("OK — at most two highlighted words per page");

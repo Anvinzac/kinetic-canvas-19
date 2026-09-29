@@ -18,6 +18,8 @@ export type WordSequenceLinesProps = {
   vietnameseLines: VietnameseLines;
   words: string[];
   emphasized: Set<number>;
+  /** Data-annotated phrase keys treated as bound phrases for shared emphasis styling. */
+  phraseKeys?: readonly (readonly string[])[];
   spotlightEmphasis: boolean;
   spec: CanvasSpec;
   staticRender: boolean;
@@ -73,6 +75,7 @@ export function WordSequenceLines({
   vietnameseLines,
   words,
   emphasized,
+  phraseKeys,
   spotlightEmphasis,
   spec,
   staticRender,
@@ -97,6 +100,7 @@ export function WordSequenceLines({
       words={words}
       spec={spec}
       emphasized={emphasized}
+      phraseKeys={phraseKeys}
       spotlightEmphasis={spotlightEmphasis}
       suppressSpotlight={suppressSpotlight}
       staticRender={staticRender}

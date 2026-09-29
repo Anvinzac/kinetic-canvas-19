@@ -34,7 +34,11 @@ export {
   isLikelyVietnameseText,
   repairSplitCompoundEmphasis,
 } from "./vietnamese-phrases";
-export { getDataEmphasisWordIndexes } from "./data-emphasis";
+export {
+  getDataEmphasisWordIndexes,
+  getDataEmphasisWordSpans,
+  getEmphasisPhraseKeysForLayout,
+} from "./data-emphasis";
 
 /**
  * Choose the page word budget based on detected language.

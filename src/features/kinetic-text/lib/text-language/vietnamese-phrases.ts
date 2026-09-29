@@ -134,13 +134,14 @@ export function getSpecialPoeticWordIndexes(words: string[]): Set<number> {
 export function expandEmphasisToBoundPhrases(
   words: string[],
   selected: Iterable<number>,
+  phraseKeys?: readonly (readonly string[])[],
 ): Set<number> {
   const expanded = new Set<number>();
 
   for (const index of selected) {
     let matchedPhrase = false;
     for (let start = 0; start <= index; start += 1) {
-      const length = getBoundPhraseLength(words, start);
+      const length = getBoundPhraseLength(words, start, phraseKeys);
       if (length > 1 && start <= index && index < start + length) {
         for (let offset = 0; offset < length; offset += 1) {
           expanded.add(start + offset);
@@ -159,11 +160,16 @@ export function expandEmphasisToBoundPhrases(
  * Start index of the bound phrase containing `index`, or `index` for a solo token.
  * @param words - words argument
  * @param index - index argument
+ * @param phraseKeys - extra data-annotated phrase keys treated as bound phrases
  * @returns Anchor index for shared emphasis styling
  */
-export function getBoundPhraseStartIndex(words: string[], index: number): number {
+export function getBoundPhraseStartIndex(
+  words: string[],
+  index: number,
+  phraseKeys?: readonly (readonly string[])[],
+): number {
   for (let start = 0; start <= index; start += 1) {
-    const length = getBoundPhraseLength(words, start);
+    const length = getBoundPhraseLength(words, start, phraseKeys);
     if (length > 1 && start <= index && index < start + length) {
       return start;
     }
@@ -175,11 +181,16 @@ export function getBoundPhraseStartIndex(words: string[], index: number): number
  * Stable label for emphasis styling — whole phrase for bound pairs, else the token.
  * @param words - words argument
  * @param index - index argument
+ * @param phraseKeys - extra data-annotated phrase keys treated as bound phrases
  * @returns Phrase string or single word used as emphasis seed
  */
-export function getBoundPhraseEmphasisSeed(words: string[], index: number): string {
-  const start = getBoundPhraseStartIndex(words, index);
-  const length = getBoundPhraseLength(words, start);
+export function getBoundPhraseEmphasisSeed(
+  words: string[],
+  index: number,
+  phraseKeys?: readonly (readonly string[])[],
+): string {
+  const start = getBoundPhraseStartIndex(words, index, phraseKeys);
+  const length = getBoundPhraseLength(words, start, phraseKeys);
   if (length > 1) {
     return words.slice(start, start + length).join(" ");
   }
@@ -190,14 +201,22 @@ export function getBoundPhraseEmphasisSeed(words: string[], index: number): stri
  * Compute boundphraselength.
  * @param words - words argument
  * @param startIndex - startIndex argument
- * @returns Computed value
+ * @param phraseKeys - extra data-annotated phrase keys (diacritic-preserving) treated as bound
+ * @returns Number of tokens the bound phrase starting at startIndex spans
  */
-export function getBoundPhraseLength(words: string[], startIndex: number): number {
+export function getBoundPhraseLength(
+  words: string[],
+  startIndex: number,
+  phraseKeys: readonly (readonly string[])[] = [],
+): number {
   const remaining = words.length - startIndex;
-  const maxLength = Math.min(LONGEST_VIETNAMESE_BOUND_PHRASE, remaining);
+  let longestExtra = 0;
+  for (const phrase of phraseKeys) longestExtra = Math.max(longestExtra, phrase.length);
+  const maxLength = Math.min(Math.max(LONGEST_VIETNAMESE_BOUND_PHRASE, longestExtra), remaining);
 
   for (let length = maxLength; length > 1; length -= 1) {
-    const candidate = words.slice(startIndex, startIndex + length).map(normalizeVietnameseToken);
+    const slice = words.slice(startIndex, startIndex + length);
+    const candidate = slice.map(normalizeVietnameseToken);
 
     if (
       VIETNAMESE_BOUND_PHRASE_KEYS.some(
@@ -206,6 +225,21 @@ export function getBoundPhraseLength(words: string[], startIndex: number): numbe
       )
     ) {
       return length;
+    }
+
+    // Data-annotated phrases (e.g. deck `emphasis` compounds like "thực sự") count
+    // as bound too, compared through diacritic-preserving keys so "những" never
+    // matches "nhưng".
+    if (phraseKeys.length > 0) {
+      const keyed = slice.map(getCompoundTokenKey);
+      if (
+        phraseKeys.some(
+          (phrase) =>
+            phrase.length === length && phrase.every((token, index) => token === keyed[index]),
+        )
+      ) {
+        return length;
+      }
     }
   }
 
@@ -381,11 +415,20 @@ export function repairSplitCompoundEmphasis(
   for (const index of emphasized) {
     if (index < 0 || index >= words.length) continue;
 
-    const left = index - 1;
-    if (!emphasized.has(left) && isLikelyCompoundPairAt(words, left)) repaired.add(left);
+    // Only orphan syllables reach for a partner. A selection that already sits
+    // next to a highlighted syllable is a complete compound run — reaching out
+    // from either side would drag neighbouring words ("cứ", "mãi") into the
+    // highlight and blow past the two-words-per-page cap.
+    const hasLeftPartner = emphasized.has(index - 1);
+    const hasRightPartner = emphasized.has(index + 1);
 
-    const right = index + 1;
-    if (!emphasized.has(right) && isLikelyCompoundPairAt(words, right - 1)) repaired.add(right);
+    if (!hasLeftPartner && !hasRightPartner) {
+      const left = index - 1;
+      if (!emphasized.has(left) && isLikelyCompoundPairAt(words, left)) repaired.add(left);
+
+      const right = index + 1;
+      if (!emphasized.has(right) && isLikelyCompoundPairAt(words, right - 1)) repaired.add(right);
+    }
   }
 
   return [...repaired].sort((left, right) => left - right);

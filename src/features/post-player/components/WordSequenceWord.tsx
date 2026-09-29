@@ -32,6 +32,8 @@ export type WordSequenceWordProps = {
   words: string[];
   spec: CanvasSpec;
   emphasized: Set<number>;
+  /** Data-annotated phrase keys treated as bound phrases for shared emphasis styling. */
+  phraseKeys?: readonly (readonly string[])[];
   spotlightEmphasis: boolean;
   suppressSpotlight?: boolean;
   staticRender: boolean;
@@ -56,6 +58,7 @@ export function WordSequenceWord({
   words,
   spec,
   emphasized,
+  phraseKeys,
   spotlightEmphasis,
   suppressSpotlight = false,
   staticRender,
@@ -70,11 +73,13 @@ export function WordSequenceWord({
 }: WordSequenceWordProps): ReactElement {
   const important = emphasized.has(index);
   const spotlightWord = spotlightEmphasis && important && !suppressSpotlight;
-  const emphasisAnchorIndex = important ? getBoundPhraseStartIndex(words, index) : index;
+  const emphasisAnchorIndex = important
+    ? getBoundPhraseStartIndex(words, index, phraseKeys)
+    : index;
   const emphasisVariant = important
     ? getEmphasisVariant(
         spec.text,
-        getBoundPhraseEmphasisSeed(words, index),
+        getBoundPhraseEmphasisSeed(words, index, phraseKeys),
         emphasisAnchorIndex,
         !isDimEmphasisColor(emphasisColor),
       )

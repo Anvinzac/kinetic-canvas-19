@@ -1,7 +1,7 @@
 /**
  * Upstream (data-provided) emphasis phrase matching.
  *
- * Exports: getDataEmphasisWordIndexes
+ * Exports: getDataEmphasisWordIndexes, getDataEmphasisWordSpans, getEmphasisPhraseKeysForLayout
  * Depends on: text-language/vietnamese-phrases (compound token keys)
  */
 
@@ -39,31 +39,57 @@ function getEmphasisPhraseKeys(phrase: string): string[] | null {
  */
 export function getDataEmphasisWordIndexes(words: string[], dataEmphasis?: string[]): Set<number> {
   const matches = new Set<number>();
-  if (!dataEmphasis?.length || words.length === 0) return matches;
+  for (const span of getDataEmphasisWordSpans(words, dataEmphasis)) {
+    for (let offset = 0; offset < span.length; offset += 1) matches.add(span.start + offset);
+  }
+  return matches;
+}
+
+/**
+ * Map data emphasis phrases to their exact token spans in `words`, grouped by
+ * annotation. Spans come out in annotation order first, then text order, so a
+ * caller can cap the page by highlighted WORDS: taking the first N spans keeps
+ * the author's highest-priority annotations, and two adjacent phrases are
+ * never counted as one word just because their indexes touch.
+ * @param words - tokenized stage text
+ * @param dataEmphasis - optional upstream annotation phrases
+ * @returns Matched spans (empty when nothing matches)
+ */
+export function getDataEmphasisWordSpans(
+  words: string[],
+  dataEmphasis?: string[],
+): Array<{ start: number; length: number }> {
+  const spans: Array<{ start: number; length: number }> = [];
+  if (!dataEmphasis?.length || words.length === 0) return spans;
 
   const phrases = dataEmphasis
     .map((phrase) => getEmphasisPhraseKeys(phrase))
     .filter((keys): keys is string[] => keys !== null);
-  if (!phrases.length) return matches;
+  if (!phrases.length) return spans;
 
   const wordKeys = words.map(getCompoundTokenKey);
 
   for (const phraseKeys of phrases) {
     for (let start = 0; start + phraseKeys.length <= wordKeys.length; start += 1) {
-      let matched = true;
-      for (let offset = 0; offset < phraseKeys.length; offset += 1) {
-        if (wordKeys[start + offset] !== phraseKeys[offset]) {
-          matched = false;
-          break;
-        }
-      }
-      if (matched) {
-        for (let offset = 0; offset < phraseKeys.length; offset += 1) {
-          matches.add(start + offset);
-        }
+      if (phraseKeys.every((key, offset) => wordKeys[start + offset] === key)) {
+        spans.push({ start, length: phraseKeys.length });
       }
     }
   }
 
-  return matches;
+  return spans;
+}
+
+/**
+ * Convert data emphasis phrases into the token-key form the bound-phrase helpers
+ * compare against, so an annotated compound ("thực sự") is treated as one
+ * unbreakable word by line packing and shared emphasis styling.
+ * @param dataEmphasis - optional upstream annotation phrases
+ * @returns Diacritic-preserving token keys per usable phrase
+ */
+export function getEmphasisPhraseKeysForLayout(dataEmphasis?: string[]): string[][] {
+  if (!dataEmphasis?.length) return [];
+  return dataEmphasis
+    .map((phrase) => getEmphasisPhraseKeys(phrase))
+    .filter((keys): keys is string[] => keys !== null);
 }

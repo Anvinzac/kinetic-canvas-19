@@ -31,6 +31,9 @@ export type WordSegment = {
  */
 export type VietnameseLineLayoutOptions = {
   getLineCapacity?: (lineIndex: number) => number;
+  // Data-annotated phrase keys (diacritic-preserving) that must stay unbreakable
+  // on a line, exactly like the curated bound phrases.
+  phraseKeys?: readonly (readonly string[])[];
 };
 /**
  * @responsibility Packed lines plus a pre-shrink fit scale suggestion.

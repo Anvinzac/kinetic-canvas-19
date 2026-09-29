@@ -15,6 +15,7 @@ import {
   type CanvasSpec,
 } from "@/features/canvas";
 import {
+  getEmphasisPhraseKeysForLayout,
   getKineticTextLayoutMode,
   getLoopAnimation,
   getVietnameseLayoutMetrics,
@@ -77,6 +78,9 @@ export function WordSequenceText({
   );
   const isVietnamese = words.length > 1 && isLikelyVietnameseText(spec.text);
   const emphasized = getEmphasizedWordIndexes(words, dataEmphasis);
+  // Annotated compounds act as bound phrases everywhere below: unbreakable line
+  // segments plus one shared emphasis variant across all their syllables.
+  const phraseKeys = useMemo(() => getEmphasisPhraseKeysForLayout(dataEmphasis), [dataEmphasis]);
   const isSolo = words.length <= 1;
   const visualScaleGuard = Math.max(
     emphasized.size > 0 && !isSolo ? EMPHASIS_SCALE_FIT_GUARD : 1,
@@ -85,9 +89,9 @@ export function WordSequenceText({
   const vietnameseLayout = useMemo(
     () =>
       isVietnamese
-        ? getVietnameseLayoutMetrics(words, canvasWidth, spec.size, visualScaleGuard)
+        ? getVietnameseLayoutMetrics(words, canvasWidth, spec.size, visualScaleGuard, phraseKeys)
         : { lines: [], suggestedFitScale: 1 },
-    [isVietnamese, words, canvasWidth, spec.size, visualScaleGuard],
+    [isVietnamese, words, canvasWidth, spec.size, visualScaleGuard, phraseKeys],
   );
   const entranceStyle = getEntranceStyle(entranceSeed ?? spec.text, spec.rhythm);
   const layoutMode = getKineticTextLayoutMode(spec.text, isVietnamese, words.length, emphasized);
@@ -186,6 +190,7 @@ export function WordSequenceText({
           vietnameseLines={vietnameseLayout.lines}
           words={words}
           emphasized={emphasized}
+          phraseKeys={phraseKeys}
           spotlightEmphasis={spotlightEmphasis}
           spec={spec}
           staticRender={staticRender}

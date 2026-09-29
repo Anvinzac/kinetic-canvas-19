@@ -8,6 +8,8 @@ export {
   getBoundPhraseEmphasisSeed,
   getBoundPhraseStartIndex,
   getDataEmphasisWordIndexes,
+  getDataEmphasisWordSpans,
+  getEmphasisPhraseKeysForLayout,
   getSpecialPoeticWordIndexes,
   getTextPageWordLimit,
   getVietnameseCanvasInnerWidth,

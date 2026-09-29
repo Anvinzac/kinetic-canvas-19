@@ -74,6 +74,7 @@ export function getVietnameseCharBudgetForLine(
  * @param canvasWidthPx - canvasWidthPx argument
  * @param fontSizePx - fontSizePx argument
  * @param visualScaleGuard - visualScaleGuard argument
+ * @param phraseKeys - data-annotated phrase keys kept unbreakable on a line
  * @returns Lines + suggestedFitScale (≥ VIETNAMESE_MIN_FIT_SCALE)
  */
 export function getVietnameseLayoutMetrics(
@@ -81,11 +82,12 @@ export function getVietnameseLayoutMetrics(
   canvasWidthPx: number,
   fontSizePx: number,
   visualScaleGuard = 1,
+  phraseKeys?: readonly (readonly string[])[],
 ): VietnameseLayoutMetrics {
   const innerWidth = getVietnameseCanvasInnerWidth(canvasWidthPx);
   const getLineCapacity = (lineIndex: number) =>
     getVietnameseCharBudgetForLine(lineIndex, innerWidth, fontSizePx);
-  const lines = getVietnameseWordLines(words, { getLineCapacity });
+  const lines = getVietnameseWordLines(words, { getLineCapacity, phraseKeys });
   let suggestedFitScale = 1;
 
   for (let lineIndex = 0; lineIndex < lines.length; lineIndex += 1) {
@@ -118,7 +120,7 @@ export function getVietnameseWordLines(
 ): WordLine[] {
   if (words.length === 0) return [];
 
-  const segments = getVietnameseWordSegments(words);
+  const segments = getVietnameseWordSegments(words, options?.phraseKeys);
   const lines: WordLine[] = [];
   let index = 0;
   let consecutiveSolo = 0;
@@ -186,7 +188,10 @@ export function getVietnameseWordLines(
   return lines;
 }
 
-function getVietnameseWordSegments(words: string[]): WordSegment[] {
+function getVietnameseWordSegments(
+  words: string[],
+  phraseKeys?: readonly (readonly string[])[],
+): WordSegment[] {
   const segments: WordSegment[] = [];
 
   for (let index = 0; index < words.length; ) {
@@ -194,10 +199,10 @@ function getVietnameseWordSegments(words: string[]): WordSegment[] {
     // kept whole as a single, unbreakable segment — the line packer never
     // splits a segment, so a compound word can never straddle two lines. A phrase
     // wider than a line simply lands alone and the page font shrinks to fit it;
-    // we never break the word to save space. Words not in the bound-phrase
-    // list (e.g. "khoảng" and "thở") are separate segments and can land on
-    // different lines.
-    const phraseLength = getBoundPhraseLength(words, index);
+    // we never break the word to save space. Data-annotated phrases join the
+    // curated list. Words matching neither (e.g. "khoảng" and "thở") are
+    // separate segments and can land on different lines.
+    const phraseLength = getBoundPhraseLength(words, index, phraseKeys);
     const segmentWords = words.slice(index, index + phraseLength).map((text, offset) => ({
       text,
       index: index + offset,
