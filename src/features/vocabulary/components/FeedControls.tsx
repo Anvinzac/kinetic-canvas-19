@@ -1,10 +1,11 @@
 /** Public navigation and stream/presentation controls. Exports: FeedControls. Depends on: router, presets, transport types. */
 import { Link } from "@tanstack/react-router";
 import { useId, useRef } from "react";
-import { Pause, Play, Shuffle, SlidersHorizontal, X } from "lucide-react";
+import { Bookmark, Pause, Play, Shuffle, SlidersHorizontal, X } from "lucide-react";
 import { STYLES, THEMES } from "../lib/presets";
 import { LEVELS, type NarrativeStyle, type VocabularyLevel } from "../lib/schema";
 import type { HistoryStats } from "../lib/history";
+import { useSavedCount } from "../hooks/useSavedCount";
 import type { FeedPage, Presentation, VocabularyFilters } from "../types";
 
 /** Control word selection separately from appearance. @param props Settings and callbacks. @returns Public header and options panel. */
@@ -35,6 +36,7 @@ export function FeedControls({
 }) {
   const panelId = useId();
   const toggleButton = useRef<HTMLButtonElement>(null);
+  const savedCount = useSavedCount();
   // Difficulty is the primary control, so keep the chips visible before metadata arrives.
   const levelOptions: VocabularyLevel[] = metadata?.levels?.length ? metadata.levels : [...LEVELS];
   const close = () => {
@@ -49,6 +51,22 @@ export function FeedControls({
           <small>A little English, endlessly.</small>
         </Link>
         <div className="vocab-toolbar-actions">
+          <Link
+            className="vocab-icon-button vocab-saved-link"
+            to="/feed/saved"
+            aria-label={
+              savedCount
+                ? `View your ${savedCount} saved word${savedCount === 1 ? "" : "s"}`
+                : "View your saved words"
+            }
+          >
+            <Bookmark size={19} fill={savedCount ? "currentColor" : "none"} />
+            {savedCount > 0 && (
+              <span className="vocab-saved-badge-count" aria-hidden="true">
+                {savedCount > 99 ? "99+" : savedCount}
+              </span>
+            )}
+          </Link>
           <button
             className="vocab-icon-button"
             type="button"

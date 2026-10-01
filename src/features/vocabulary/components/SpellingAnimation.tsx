@@ -1,0 +1,180 @@
+/**
+ * Post-reveal spelling replay: the answered word dissolves and every letter pops
+ * in one at a time, giving the reader a beat to spell it silently. The variant
+ * catalogue and all timing live in ../lib/spelling so the playback timer, not
+ * this component, decides when the card ends.
+ *
+ * Exports: SpellingAnimation
+ * Depends on: framer-motion, React, ../lib/spelling
+ */
+
+import { useLayoutEffect, useMemo, useRef, useState } from "react";
+import { motion } from "framer-motion";
+import type { Transition, Variants } from "framer-motion";
+import { SPELLING_STAGGER, type SpellingVariant } from "../lib/spelling";
+
+/** Per-variant letter motion. Scatter needs the index for its radial offset. */
+function variantMotion(
+  variant: SpellingVariant,
+  index: number,
+): { initial: Record<string, number>; animate: Record<string, number>; transition: Transition } {
+  switch (variant) {
+    case "bounce":
+      return {
+        initial: { scale: 0, opacity: 0 },
+        animate: { scale: 1, opacity: 1 },
+        transition: { type: "spring", stiffness: 520, damping: 11, mass: 0.7 },
+      };
+    case "drop":
+      return {
+        initial: { y: -130, opacity: 0, scaleY: 1.25 },
+        animate: { y: 0, opacity: 1, scaleY: 1 },
+        transition: { type: "spring", stiffness: 420, damping: 13, mass: 0.9 },
+      };
+    case "spin":
+      return {
+        initial: { rotate: -360, scale: 0, opacity: 0 },
+        animate: { rotate: 0, scale: 1, opacity: 1 },
+        transition: { type: "spring", stiffness: 260, damping: 16, mass: 0.8 },
+      };
+    case "scatter": {
+      // Golden-angle spread: deterministic, so a re-render cannot re-shuffle.
+      const angle = (index * 137.508 * Math.PI) / 180;
+      const radius = 70 + ((index * 37) % 55);
+      return {
+        initial: {
+          x: Math.cos(angle) * radius,
+          y: Math.sin(angle) * radius,
+          opacity: 0,
+          scale: 0.4,
+        },
+        animate: { x: 0, y: 0, opacity: 1, scale: 1 },
+        transition: { type: "spring", stiffness: 210, damping: 19, mass: 0.75 },
+      };
+    }
+    case "wave":
+      return {
+        initial: { y: 46, opacity: 0, scale: 0.85 },
+        animate: { y: 0, opacity: 1, scale: 1 },
+        transition: { type: "spring", stiffness: 380, damping: 12, mass: 0.6 },
+      };
+    case "flip":
+      return {
+        initial: { rotateY: 92, opacity: 0 },
+        animate: { rotateY: 0, opacity: 1 },
+        transition: { type: "spring", stiffness: 300, damping: 20, mass: 0.8 },
+      };
+    case "elastic":
+      return {
+        initial: { scaleX: 0, scaleY: 1.5, opacity: 0 },
+        animate: { scaleX: 1, scaleY: 1, opacity: 1 },
+        transition: { type: "spring", stiffness: 620, damping: 9, mass: 0.65 },
+      };
+    case "slide":
+      return {
+        initial: { x: index % 2 === 0 ? -64 : 64, opacity: 0, rotate: index % 2 === 0 ? -18 : 18 },
+        animate: { x: 0, opacity: 1, rotate: 0 },
+        transition: { type: "spring", stiffness: 340, damping: 18, mass: 0.7 },
+      };
+  }
+}
+
+/** Base font size before the fit pass scales it down for long words. */
+const NOMINAL_FONT_SIZE = 96;
+
+/** Keep the word inside the safe area even at peak animation overshoot. */
+const FIT_GUARD = 0.86;
+
+/** Smallest legible size; long words shrink but never below this. */
+const MIN_FONT_SIZE = 18;
+
+/**
+ * Render the answered word letter by letter.
+ * @param props Word, chosen variant and motion preference. @returns Centred spelling overlay.
+ */
+export function SpellingAnimation({
+  word,
+  variant,
+  reducedMotion,
+}: {
+  word: string;
+  variant: SpellingVariant;
+  reducedMotion: boolean;
+}) {
+  const hostRef = useRef<HTMLDivElement>(null);
+  const wordRef = useRef<HTMLDivElement>(null);
+  const [fontSize, setFontSize] = useState(NOMINAL_FONT_SIZE);
+
+  // Array.from keeps surrogate pairs and combining marks together, so an
+  // accented letter never animates as two separate glyphs.
+  const letters = useMemo(() => Array.from(word), [word]);
+  const motions = useMemo(
+    () => letters.map((_, index) => variantMotion(variant, index)),
+    [letters, variant],
+  );
+
+  // Fit the whole word inside the card. offsetWidth is a layout measurement and
+  // is unaffected by the per-letter transforms, so it stays trustworthy here.
+  useLayoutEffect(() => {
+    const host = hostRef.current;
+    const row = wordRef.current;
+    if (!host || !row) return;
+    const measure = () => {
+      const available = host.clientWidth * FIT_GUARD;
+      row.style.fontSize = `${NOMINAL_FONT_SIZE}px`;
+      const natural = row.offsetWidth;
+      if (!natural || !available) {
+        setFontSize(NOMINAL_FONT_SIZE);
+        return;
+      }
+      const scaled = (available / natural) * NOMINAL_FONT_SIZE;
+      setFontSize(Math.max(MIN_FONT_SIZE, Math.min(NOMINAL_FONT_SIZE, scaled)));
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(host);
+    return () => observer.disconnect();
+  }, [word]);
+
+  const containerVariants: Variants = {
+    hidden: {},
+    shown: {
+      transition: { staggerChildren: reducedMotion ? 0 : SPELLING_STAGGER[variant] },
+    },
+  };
+
+  return (
+    <div className="vocab-spelling" ref={hostRef} aria-hidden="true">
+      <p className="vocab-spelling-label">Spell it once more</p>
+      <p className="sr-only" lang="en">
+        {word}
+      </p>
+      <motion.div
+        className="vocab-spelling-word"
+        ref={wordRef}
+        style={{ fontSize }}
+        variants={containerVariants}
+        initial="hidden"
+        animate="shown"
+        lang="en"
+      >
+        {letters.map((letter, index) => {
+          const child: Variants = reducedMotion
+            ? { hidden: { opacity: 1 }, shown: { opacity: 1 } }
+            : { hidden: motions[index]!.initial, shown: motions[index]!.animate };
+          return (
+            <motion.span
+              key={`${letter}-${index}`}
+              className="vocab-spelling-char"
+              variants={child}
+              transition={reducedMotion ? { duration: 0 } : motions[index]!.transition}
+              data-glow={variant === "flip" && !reducedMotion ? "" : undefined}
+            >
+              {letter}
+            </motion.span>
+          );
+        })}
+      </motion.div>
+    </div>
+  );
+}

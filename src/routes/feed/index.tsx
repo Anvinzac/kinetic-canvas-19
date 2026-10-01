@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { VocabularyFeedPage } from "@/features/vocabulary/components/VocabularyFeedPage";
 
-export const Route = createFileRoute("/feed")({
+export const Route = createFileRoute("/feed/")({
   ssr: false,
   head: () => ({
     meta: [

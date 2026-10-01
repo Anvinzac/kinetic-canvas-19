@@ -9,13 +9,14 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as FeedRouteImport } from './routes/feed'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AdminAccessDeniedRouteImport } from './routes/admin-access-denied'
 import { Route as AdminRouteRouteImport } from './routes/admin/route'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as FeedIndexRouteImport } from './routes/feed/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
+import { Route as FeedSavedRouteImport } from './routes/feed/saved'
 import { Route as AdminVocabularyRouteImport } from './routes/admin/vocabulary'
 import { Route as AdminUsersRouteImport } from './routes/admin/users'
 import { Route as AdminTemplatesRouteImport } from './routes/admin/templates'
@@ -38,11 +39,6 @@ import { Route as ApiPublicEngagementRouteImport } from './routes/api/public/eng
 import { Route as AuthenticatedUUsernameRouteImport } from './routes/_authenticated/u.$username'
 import { Route as AuthenticatedPPostIdRouteImport } from './routes/_authenticated/p.$postId'
 
-const FeedRoute = FeedRouteImport.update({
-  id: '/feed',
-  path: '/feed',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
@@ -67,10 +63,20 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FeedIndexRoute = FeedIndexRouteImport.update({
+  id: '/feed/',
+  path: '/feed/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AdminRouteRoute,
+} as any)
+const FeedSavedRoute = FeedSavedRouteImport.update({
+  id: '/feed/saved',
+  path: '/feed/saved',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AdminVocabularyRoute = AdminVocabularyRouteImport.update({
   id: '/vocabulary',
@@ -186,7 +192,6 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRouteRouteWithChildren
   '/admin-access-denied': typeof AdminAccessDeniedRoute
   '/auth': typeof AuthRoute
-  '/feed': typeof FeedRoute
   '/about': typeof AuthenticatedAboutRoute
   '/community': typeof AuthenticatedCommunityRoute
   '/create': typeof AuthenticatedCreateRoute
@@ -203,7 +208,9 @@ export interface FileRoutesByFullPath {
   '/admin/templates': typeof AdminTemplatesRoute
   '/admin/users': typeof AdminUsersRoute
   '/admin/vocabulary': typeof AdminVocabularyRoute
+  '/feed/saved': typeof FeedSavedRoute
   '/admin/': typeof AdminIndexRoute
+  '/feed/': typeof FeedIndexRoute
   '/p/$postId': typeof AuthenticatedPPostIdRoute
   '/u/$username': typeof AuthenticatedUUsernameRoute
   '/api/public/engagement': typeof ApiPublicEngagementRoute
@@ -214,7 +221,6 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin-access-denied': typeof AdminAccessDeniedRoute
   '/auth': typeof AuthRoute
-  '/feed': typeof FeedRoute
   '/about': typeof AuthenticatedAboutRoute
   '/community': typeof AuthenticatedCommunityRoute
   '/create': typeof AuthenticatedCreateRoute
@@ -231,7 +237,9 @@ export interface FileRoutesByTo {
   '/admin/templates': typeof AdminTemplatesRoute
   '/admin/users': typeof AdminUsersRoute
   '/admin/vocabulary': typeof AdminVocabularyRoute
+  '/feed/saved': typeof FeedSavedRoute
   '/admin': typeof AdminIndexRoute
+  '/feed': typeof FeedIndexRoute
   '/p/$postId': typeof AuthenticatedPPostIdRoute
   '/u/$username': typeof AuthenticatedUUsernameRoute
   '/api/public/engagement': typeof ApiPublicEngagementRoute
@@ -245,7 +253,6 @@ export interface FileRoutesById {
   '/admin': typeof AdminRouteRouteWithChildren
   '/admin-access-denied': typeof AdminAccessDeniedRoute
   '/auth': typeof AuthRoute
-  '/feed': typeof FeedRoute
   '/_authenticated/about': typeof AuthenticatedAboutRoute
   '/_authenticated/community': typeof AuthenticatedCommunityRoute
   '/_authenticated/create': typeof AuthenticatedCreateRoute
@@ -262,7 +269,9 @@ export interface FileRoutesById {
   '/admin/templates': typeof AdminTemplatesRoute
   '/admin/users': typeof AdminUsersRoute
   '/admin/vocabulary': typeof AdminVocabularyRoute
+  '/feed/saved': typeof FeedSavedRoute
   '/admin/': typeof AdminIndexRoute
+  '/feed/': typeof FeedIndexRoute
   '/_authenticated/p/$postId': typeof AuthenticatedPPostIdRoute
   '/_authenticated/u/$username': typeof AuthenticatedUUsernameRoute
   '/api/public/engagement': typeof ApiPublicEngagementRoute
@@ -276,7 +285,6 @@ export interface FileRouteTypes {
     | '/admin'
     | '/admin-access-denied'
     | '/auth'
-    | '/feed'
     | '/about'
     | '/community'
     | '/create'
@@ -293,7 +301,9 @@ export interface FileRouteTypes {
     | '/admin/templates'
     | '/admin/users'
     | '/admin/vocabulary'
+    | '/feed/saved'
     | '/admin/'
+    | '/feed/'
     | '/p/$postId'
     | '/u/$username'
     | '/api/public/engagement'
@@ -304,7 +314,6 @@ export interface FileRouteTypes {
     | '/'
     | '/admin-access-denied'
     | '/auth'
-    | '/feed'
     | '/about'
     | '/community'
     | '/create'
@@ -321,7 +330,9 @@ export interface FileRouteTypes {
     | '/admin/templates'
     | '/admin/users'
     | '/admin/vocabulary'
+    | '/feed/saved'
     | '/admin'
+    | '/feed'
     | '/p/$postId'
     | '/u/$username'
     | '/api/public/engagement'
@@ -334,7 +345,6 @@ export interface FileRouteTypes {
     | '/admin'
     | '/admin-access-denied'
     | '/auth'
-    | '/feed'
     | '/_authenticated/about'
     | '/_authenticated/community'
     | '/_authenticated/create'
@@ -351,7 +361,9 @@ export interface FileRouteTypes {
     | '/admin/templates'
     | '/admin/users'
     | '/admin/vocabulary'
+    | '/feed/saved'
     | '/admin/'
+    | '/feed/'
     | '/_authenticated/p/$postId'
     | '/_authenticated/u/$username'
     | '/api/public/engagement'
@@ -365,7 +377,8 @@ export interface RootRouteChildren {
   AdminRouteRoute: typeof AdminRouteRouteWithChildren
   AdminAccessDeniedRoute: typeof AdminAccessDeniedRoute
   AuthRoute: typeof AuthRoute
-  FeedRoute: typeof FeedRoute
+  FeedSavedRoute: typeof FeedSavedRoute
+  FeedIndexRoute: typeof FeedIndexRoute
   ApiPublicEngagementRoute: typeof ApiPublicEngagementRoute
   ApiPublicVocabularyRoute: typeof ApiPublicVocabularyRoute
   ApiPublicVocabularyRefillRoute: typeof ApiPublicVocabularyRefillRoute
@@ -373,13 +386,6 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/feed': {
-      id: '/feed'
-      path: '/feed'
-      fullPath: '/feed'
-      preLoaderRoute: typeof FeedRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/auth': {
       id: '/auth'
       path: '/auth'
@@ -415,12 +421,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/feed/': {
+      id: '/feed/'
+      path: '/feed'
+      fullPath: '/feed/'
+      preLoaderRoute: typeof FeedIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/': {
       id: '/admin/'
       path: '/'
       fullPath: '/admin/'
       preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof AdminRouteRoute
+    }
+    '/feed/saved': {
+      id: '/feed/saved'
+      path: '/feed/saved'
+      fullPath: '/feed/saved'
+      preLoaderRoute: typeof FeedSavedRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/admin/vocabulary': {
       id: '/admin/vocabulary'
@@ -635,7 +655,8 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRouteRoute: AdminRouteRouteWithChildren,
   AdminAccessDeniedRoute: AdminAccessDeniedRoute,
   AuthRoute: AuthRoute,
-  FeedRoute: FeedRoute,
+  FeedSavedRoute: FeedSavedRoute,
+  FeedIndexRoute: FeedIndexRoute,
   ApiPublicEngagementRoute: ApiPublicEngagementRoute,
   ApiPublicVocabularyRoute: ApiPublicVocabularyRoute,
   ApiPublicVocabularyRefillRoute: ApiPublicVocabularyRefillRoute,

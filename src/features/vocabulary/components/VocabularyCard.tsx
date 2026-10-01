@@ -1,4 +1,4 @@
-/** One independent vocabulary learning card; clue navigation stays local while heart/bookmark reactions post to the public engagement totals. Exports: VocabularyCard. Depends on: presets, playback, VocabularyStage, engagement api. */
+/** One independent vocabulary learning card; clue navigation and heart/bookmark reactions stay on-device, and the reveal is followed by a letter-by-letter spelling coda. Exports: VocabularyCard. Depends on: presets, playback, VocabularyStage, SpellingAnimation, reactions. */
 import {
   useCallback,
   useEffect,
@@ -15,19 +15,25 @@ import {
   getPageDuration,
   getUniformPageTextSize,
 } from "@/features/post-player";
-import { Bookmark, Heart, RotateCcw, Sparkles } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { Bookmark, Heart, RotateCcw } from "lucide-react";
 import { buildVocabularyCanvas, choosePresentation, fitVocabularyTextSize } from "../lib/presets";
 import { buildStages } from "../lib/stages";
-import { flipReaction, hasReaction, type ReactionKind } from "../lib/reactions";
+import { getSpellingDurationMs, pickSpellingVariant } from "../lib/spelling";
 import {
-  changeEngagement,
-  getCachedEngagement,
-  loadEngagement,
-  type EngagementCounts,
-} from "../api/engagement";
+  REACTIONS_EVENT,
+  REACTIONS_KEY,
+  addEmojiComment,
+  flipReaction,
+  getTapCount,
+  hasReaction,
+  type ReactionKind,
+} from "../lib/reactions";
 import { useLearningPlayback } from "../hooks/useLearningPlayback";
 import type { FeedEntry, Presentation } from "../types";
+import { SpellingAnimation } from "./SpellingAnimation";
 import { VocabularyStage } from "./VocabularyStage";
+import { EmojiReactions, EMOJI_PALETTE } from "./EmojiReactions";
 
 /** Play a single occurrence, keeping answer content hidden until reveal. @param props Entry/display settings. @returns Full-height card. */
 export function VocabularyCard({
@@ -50,6 +56,20 @@ export function VocabularyCard({
   const { theme, style } = choosePresentation(entry.occurrenceId, presentation);
   const stages = useMemo(() => buildStages(entry.word, style.id), [entry.word, style.id]);
   const canvas = useMemo(() => buildVocabularyCanvas(theme, style), [theme, style]);
+  // The spelling coda is one extra page appended after the reveal stage, so the
+  // playback timer — not the animation component — decides when the card ends.
+  const spellingVariant = useMemo(
+    () => pickSpellingVariant(entry.occurrenceId),
+    [entry.occurrenceId],
+  );
+  const spellingDuration = useMemo(
+    () => getSpellingDurationMs(entry.word.word, spellingVariant, reducedMotion),
+    [entry.word.word, spellingVariant, reducedMotion],
+  );
+  const revealPage = stages.length - 1;
+  const pageCount = stages.length + 1;
+  /** Progress-bar keys: one per clue stage plus the trailing spelling coda. */
+  const pageKeys = useMemo(() => [...stages.map((item) => item.id), "spelling"], [stages]);
   const cardRef = useRef<HTMLElement>(null);
   const [{ width, height }, setSize] = useState({ width: 390, height: 844 });
   useLayoutEffect(() => {
@@ -62,22 +82,32 @@ export function VocabularyCard({
     return () => observer.disconnect();
   }, []);
   const playback = useLearningPlayback({
-    count: stages.length,
+    count: pageCount,
     active,
     autoplay: presentation.autoplay,
     reducedMotion,
-    durations: stages.map((stage) =>
-      getPageDuration(
-        [stage.text, stage.reveal ? entry.word.defVi : ""].filter(Boolean).join(" "),
-        style.tempo,
-        style.rhythm,
+    durations: [
+      ...stages.map((stage) =>
+        getPageDuration(
+          [stage.text, stage.reveal ? entry.word.defVi : ""].filter(Boolean).join(" "),
+          style.tempo,
+          style.rhythm,
+        ),
       ),
-    ),
+      spellingDuration,
+    ],
     canAdvance,
+    revealPage,
     onFinish: onAdvance,
   });
-  const stage = stages[playback.page];
-  const playKey = playback.replay * stages.length + playback.page;
+  const isSpelling = playback.page > revealPage;
+  // During the coda there is no matching stage; the answer stage stays mounted
+  // underneath so its reveal details and unlocked reactions persist.
+  const stage = stages[Math.min(playback.page, revealPage)]!;
+  // Anticipation is the last clue stage before the reveal — the "your guess?" moment.
+  // The emoji strip replaces the reveal button here so tapping an emoji reveals the word.
+  const isAnticipation = stage.id.startsWith("anticipation");
+  const playKey = playback.replay * pageCount + playback.page;
   const sceneTheme = getCanvasSceneTheme(canvas.backgroundScene);
   const patternTheme = getCanvasPatternTheme(canvas.backgroundPattern);
   const sliding =
@@ -138,7 +168,8 @@ export function VocabularyCard({
       // Horizontal swipe
       if ((ax > 44 || ay > 44) && ax > ay) {
         if (dx < -44) {
-          if (!stage.reveal) playback.next();
+          if (isSpelling) onAdvance();
+          else if (!stage.reveal) playback.next();
         } else if (dx > 44) {
           playback.previous();
         }
@@ -148,6 +179,11 @@ export function VocabularyCard({
       if (ay > 44 && ay > ax) return;
       // Tap
       if (dt < 600 && ax < 16 && ay < 16) {
+        // During the spelling coda a tap means "I have it" — skip to the next word.
+        if (isSpelling) {
+          onAdvance();
+          return;
+        }
         const rect = cardRef.current?.getBoundingClientRect();
         if (!rect) return;
         const relX = clientX - rect.left;
@@ -157,7 +193,7 @@ export function VocabularyCard({
           playback.previous();
         } else if (relX > rightZone) {
           if (stage.reveal) playback.restart();
-          else if (playback.page === stages.length - 2) playback.reveal();
+          else if (playback.page === revealPage - 1) playback.reveal();
           else playback.next();
         } else {
           // Center tap reveals or restarts
@@ -166,63 +202,62 @@ export function VocabularyCard({
         }
       }
     },
-    [playback, stage.reveal, stages.length],
+    [playback, stage.reveal, isSpelling, revealPage, onAdvance],
   );
 
   void matching;
 
-  // Heart / bookmark: totals come from the public engagement store; this device
-  // tracks its own taps in localStorage so they toggle instead of stacking.
+  // Heart / bookmark: everything stays on-device. Both the toggle flag and the
+  // cumulative tap counter live in localStorage, so no request is made and no
+  // account exists — the numbers shown are this reader's own.
   const wordId = entry.word.id;
-  const [counts, setCounts] = useState<EngagementCounts | null>(() => getCachedEngagement(wordId));
   const [reactions, setReactions] = useState(() => ({
     heart: hasReaction(wordId, "heart"),
     bookmark: hasReaction(wordId, "bookmark"),
   }));
-  useEffect(() => {
+  const [taps, setTaps] = useState(() => ({
+    heart: getTapCount(wordId, "heart"),
+    bookmark: getTapCount(wordId, "bookmark"),
+  }));
+  const readLocalReactions = useCallback(() => {
     setReactions({
       heart: hasReaction(wordId, "heart"),
       bookmark: hasReaction(wordId, "bookmark"),
     });
-    setCounts(getCachedEngagement(wordId));
-    if (!active) return;
-    let alive = true;
-    void loadEngagement(wordId).then((fresh) => {
-      if (alive && fresh) setCounts(fresh);
+    setTaps({
+      heart: getTapCount(wordId, "heart"),
+      bookmark: getTapCount(wordId, "bookmark"),
     });
-    return () => {
-      alive = false;
+  }, [wordId]);
+  useEffect(() => {
+    readLocalReactions();
+  }, [readLocalReactions, active]);
+  // The cycling stream can mount the same word twice, and the saved-words page
+  // writes the same key, so re-read on both the cross-tab and same-tab signal.
+  useEffect(() => {
+    const onStorage = (event: StorageEvent) => {
+      if (event.key === REACTIONS_KEY) readLocalReactions();
     };
-  }, [active, wordId]);
+    window.addEventListener("storage", onStorage);
+    window.addEventListener(REACTIONS_EVENT, readLocalReactions);
+    return () => {
+      window.removeEventListener("storage", onStorage);
+      window.removeEventListener(REACTIONS_EVENT, readLocalReactions);
+    };
+  }, [readLocalReactions]);
   const toggleReaction = useCallback(
     (kind: ReactionKind) => {
       // Reactions unlock only once the definition is revealed.
       if (!stage.reveal) return;
-      const nextActive = flipReaction(wordId, kind);
-      setReactions((r) => ({ ...r, [kind]: nextActive }));
-      const before = getCachedEngagement(wordId);
-      if (before) {
-        const delta = nextActive ? 1 : -1;
-        setCounts(
-          kind === "heart"
-            ? { ...before, hearts: Math.max(0, before.hearts + delta) }
-            : { ...before, bookmarks: Math.max(0, before.bookmarks + delta) },
-        );
-      }
-      void changeEngagement(wordId, kind, nextActive).then((authoritative) => {
-        if (authoritative) setCounts(authoritative);
-        else if (before) {
-          setCounts(before);
-          flipReaction(wordId, kind); // roll the device flag back so counts stay honest
-          setReactions((r) => ({ ...r, [kind]: !nextActive }));
-        }
-      });
+      // flipReaction bumps the tap counter itself when the reaction turns on.
+      flipReaction(wordId, kind);
+      readLocalReactions();
     },
-    [stage.reveal, wordId],
+    [stage.reveal, wordId, readLocalReactions],
   );
   const reactionLocked = !stage.reveal;
-  const heartsLabel = formatReactionCount(counts?.hearts);
-  const bookmarksLabel = formatReactionCount(counts?.bookmarks);
+  const heartsLabel = formatReactionCount(taps.heart);
+  const bookmarksLabel = formatReactionCount(taps.bookmark);
 
   return (
     <article
@@ -230,7 +265,7 @@ export function VocabularyCard({
       className="vocab-card"
       style={colors}
       data-theme={theme.id}
-      data-stage={stage.id}
+      data-stage={isSpelling ? "spelling" : stage.id}
       inert={!active}
       aria-hidden={!active}
       aria-label={`Vocabulary card ${entry.position + 1}`}
@@ -262,20 +297,28 @@ export function VocabularyCard({
           hasTransitionBackground={sweep}
         />
       </div>
-      <VocabularyStage
-        stage={stage}
-        word={entry.word}
-        spec={{ ...canvas, text: stage.text, size: stage.reveal ? 128 : textSize }}
-        background={theme.background}
-        canvasWidth={width}
-        active={active}
-        playing={playback.playing}
-        reducedMotion={reducedMotion}
-        playKey={playKey}
-      />
-      <div className="vocab-progress" aria-label={`Page ${playback.page + 1} of ${stages.length}`}>
-        {stages.map((item, index) => (
-          <span key={item.id} data-complete={index < playback.page}>
+      {isSpelling ? (
+        <SpellingAnimation
+          word={entry.word.word}
+          variant={spellingVariant}
+          reducedMotion={reducedMotion}
+        />
+      ) : (
+        <VocabularyStage
+          stage={stage}
+          word={entry.word}
+          spec={{ ...canvas, text: stage.text, size: stage.reveal ? 128 : textSize }}
+          background={theme.background}
+          canvasWidth={width}
+          active={active}
+          playing={playback.playing}
+          reducedMotion={reducedMotion}
+          playKey={playKey}
+        />
+      )}
+      <div className="vocab-progress" aria-label={`Page ${playback.page + 1} of ${pageCount}`}>
+        {pageKeys.map((key, index) => (
+          <span key={key} data-complete={index < playback.page}>
             {index === playback.page && (
               <i
                 key={`${playKey}-${playback.playing}`}
@@ -289,52 +332,122 @@ export function VocabularyCard({
         ))}
       </div>
 
-      <div className="vocab-action-bar" data-no-gesture>
-        <button
-          type="button"
-          className="vocab-reveal-button vocab-reveal-half"
-          onClick={stage.reveal ? playback.restart : playback.reveal}
-          aria-label={stage.reveal ? "Replay clues" : "Reveal word"}
-        >
-          {stage.reveal ? <RotateCcw size={16} /> : <Sparkles size={16} />}
-          {stage.reveal ? "Replay" : "Ê, từ này biết nè"}
-        </button>
-        <div className="vocab-reaction-group">
-          <div className="vocab-reaction">
-            <button
-              type="button"
-              className="vocab-reaction-button vocab-reaction-heart"
-              data-on={reactions.heart || undefined}
-              disabled={reactionLocked}
-              onClick={() => toggleReaction("heart")}
-              aria-label={reactions.heart ? "Remove your heart from this word" : "Heart this word"}
+      {/* Floating emoji comment rail — right edge, visible only after reveal. */}
+      <EmojiReactions wordId={wordId} locked={!stage.reveal} reducedMotion={reducedMotion} />
+
+      <div
+        className="vocab-action-bar"
+        data-anticipation={isAnticipation || undefined}
+        data-no-gesture
+      >
+        <AnimatePresence mode="wait">
+          {isAnticipation ? (
+            <motion.div
+              key="emoji-strip"
+              className="vocab-emoji-strip"
+              initial={{ opacity: 0, scale: 0.85, filter: "blur(4px)" }}
+              animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+              exit={{ opacity: 0, scale: 0.85, filter: "blur(4px)" }}
+              transition={{ duration: reducedMotion ? 0 : 0.28, ease: [0.22, 1, 0.36, 1] }}
             >
-              <Heart size={17} fill={reactions.heart ? "currentColor" : "none"} />
-            </button>
-            <span className="vocab-reaction-count">{heartsLabel}</span>
-          </div>
-          <div className="vocab-reaction">
-            <button
-              type="button"
-              className="vocab-reaction-button vocab-reaction-bookmark"
-              data-on={reactions.bookmark || undefined}
-              disabled={reactionLocked}
-              onClick={() => toggleReaction("bookmark")}
-              aria-label={reactions.bookmark ? "Remove this word from saved" : "Save this word"}
+              {EMOJI_PALETTE.map((emoji) => (
+                <button
+                  key={emoji}
+                  type="button"
+                  className="vocab-emoji-strip-btn"
+                  onClick={() => {
+                    addEmojiComment(wordId, emoji);
+                    playback.reveal();
+                  }}
+                >
+                  {emoji}
+                </button>
+              ))}
+              <div className="vocab-emoji-strip-sep" aria-hidden="true" />
+              <button
+                type="button"
+                className="vocab-emoji-strip-btn vocab-reaction-heart"
+                data-on={reactions.heart || undefined}
+                disabled={reactionLocked}
+                onClick={() => toggleReaction("heart")}
+                aria-label={
+                  reactions.heart ? "Remove your heart from this word" : "Heart this word"
+                }
+              >
+                <Heart size={16} fill={reactions.heart ? "currentColor" : "none"} />
+              </button>
+              <button
+                type="button"
+                className="vocab-emoji-strip-btn vocab-reaction-bookmark"
+                data-on={reactions.bookmark || undefined}
+                disabled={reactionLocked}
+                onClick={() => toggleReaction("bookmark")}
+                aria-label={reactions.bookmark ? "Remove this word from saved" : "Save this word"}
+              >
+                <Bookmark size={16} fill={reactions.bookmark ? "currentColor" : "none"} />
+              </button>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="reveal-bar"
+              className="vocab-reveal-row"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ duration: reducedMotion ? 0 : 0.22 }}
             >
-              <Bookmark size={17} fill={reactions.bookmark ? "currentColor" : "none"} />
-            </button>
-            <span className="vocab-reaction-count">{bookmarksLabel}</span>
-          </div>
-        </div>
+              <button
+                type="button"
+                className="vocab-reveal-button vocab-reveal-half"
+                onClick={stage.reveal ? playback.restart : playback.reveal}
+                aria-label={stage.reveal ? "Replay clues" : "Reveal word"}
+              >
+                <RotateCcw size={16} />
+                {stage.reveal ? "Replay" : "Ê, từ này biết nè"}
+              </button>
+              <div className="vocab-reaction-group">
+                <div className="vocab-reaction">
+                  <button
+                    type="button"
+                    className="vocab-reaction-button vocab-reaction-heart"
+                    data-on={reactions.heart || undefined}
+                    disabled={reactionLocked}
+                    onClick={() => toggleReaction("heart")}
+                    aria-label={
+                      reactions.heart ? "Remove your heart from this word" : "Heart this word"
+                    }
+                  >
+                    <Heart size={17} fill={reactions.heart ? "currentColor" : "none"} />
+                  </button>
+                  <span className="vocab-reaction-count">{heartsLabel}</span>
+                </div>
+                <div className="vocab-reaction">
+                  <button
+                    type="button"
+                    className="vocab-reaction-button vocab-reaction-bookmark"
+                    data-on={reactions.bookmark || undefined}
+                    disabled={reactionLocked}
+                    onClick={() => toggleReaction("bookmark")}
+                    aria-label={
+                      reactions.bookmark ? "Remove this word from saved" : "Save this word"
+                    }
+                  >
+                    <Bookmark size={17} fill={reactions.bookmark ? "currentColor" : "none"} />
+                  </button>
+                  <span className="vocab-reaction-count">{bookmarksLabel}</span>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </article>
   );
 }
 
-/** Compact count label shown under a reaction button. */
-function formatReactionCount(value: number | undefined): string {
-  if (value == null) return "";
+/** Compact local tap-count label shown under a reaction button. */
+function formatReactionCount(value: number): string {
+  if (!value) return "";
   if (value >= 1000) {
     const thousands = value / 1000;
     return `${thousands >= 10 ? Math.round(thousands) : thousands.toFixed(1).replace(/\.0$/, "")}k`;

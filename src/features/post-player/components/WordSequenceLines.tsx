@@ -6,9 +6,12 @@
  */
 
 import type { ReactElement } from "react";
+import { motion } from "framer-motion";
 import type { CanvasSpec } from "@/features/canvas";
 import type { getVietnameseLayoutMetrics } from "@/features/kinetic-text";
 import type { ResolvedEntranceStyle } from "../lib/entrances";
+import { getEntranceTransition } from "../lib/entrances";
+import { getWordDelay, tempoConfig } from "../lib/playback-timing";
 import { WordSequenceWord } from "./WordSequenceWord";
 
 type VietnameseLines = ReturnType<typeof getVietnameseLayoutMetrics>["lines"];
@@ -115,6 +118,17 @@ export function WordSequenceLines({
     />
   );
 
+  // Frame-group wrapper entrance: fade in alongside the first word so the
+  // rounded-rect outline never appears before the words it frames.
+  const rhythmDurationMultiplier = spec.rhythm === "poetic" ? 1.28 : 1;
+  const frameEntrance = (firstWordIndex: number) => {
+    const delay = staticRender ? 0 : getWordDelay(firstWordIndex, spec.tempo, spec.rhythm);
+    const duration = staticRender
+      ? 0.01
+      : tempoConfig[spec.tempo].wordDuration * 1.22 * rhythmDurationMultiplier;
+    return { delay, duration };
+  };
+
   if (!isVietnamese) {
     const groups = getEmphasisGroups(words, emphasized);
     const groupSet = new Set<number>();
@@ -130,10 +144,15 @@ export function WordSequenceLines({
           const group = groups.find((g) => index >= g.start && index < g.end);
           if (!group || group.start !== index) return null;
 
+          const { delay: frameDelay, duration: frameDuration } = frameEntrance(group.start);
+
           return (
-            <span
+            <motion.span
               key={`frame-group-${index}`}
               className="kinetic-emphasis-mark kinetic-emph-frame inline-flex relative"
+              initial={staticRender ? false : { opacity: 0, filter: "blur(6px)" }}
+              animate={{ opacity: 1, filter: "blur(0px)" }}
+              transition={getEntranceTransition(entranceStyle, frameDelay, frameDuration)}
               style={{
                 display: "inline-flex",
                 flex: "0 0 auto",
@@ -148,7 +167,7 @@ export function WordSequenceLines({
               {words
                 .slice(group.start, group.end)
                 .map((w, wi) => renderWord(w, group.start + wi, true, true))}
-            </span>
+            </motion.span>
           );
         })}
       </>
@@ -201,10 +220,15 @@ export function WordSequenceLines({
                   const grp = segGroups.find((g) => wi >= g.start && wi < g.end);
                   if (!grp || grp.start !== wi) return null;
 
+                  const { delay: frameDelay, duration: frameDuration } = frameEntrance(grp.start);
+
                   return (
-                    <span
+                    <motion.span
                       key={`v-frame-group-${index}`}
                       className="kinetic-emphasis-mark kinetic-emph-frame inline-flex relative"
+                      initial={staticRender ? false : { opacity: 0, filter: "blur(6px)" }}
+                      animate={{ opacity: 1, filter: "blur(0px)" }}
+                      transition={getEntranceTransition(entranceStyle, frameDelay, frameDuration)}
                       style={{
                         display: "inline-flex",
                         flex: "0 0 auto",
@@ -219,7 +243,7 @@ export function WordSequenceLines({
                       {flatWords
                         .slice(grp.start, grp.end)
                         .map((w, innerWi) => renderWord(w.text, w.index, true, true))}
-                    </span>
+                    </motion.span>
                   );
                 })}
               </span>

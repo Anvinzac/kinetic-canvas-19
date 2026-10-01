@@ -9,6 +9,12 @@ export function useLearningPlayback(options: {
   reducedMotion: boolean;
   durations: number[];
   canAdvance: boolean;
+  /**
+   * Page that `reveal()` jumps to. Defaults to the last page; the vocabulary
+   * card passes the reveal stage index because it appends a spelling coda after
+   * it, and "reveal" must land on the answer rather than on the coda.
+   */
+  revealPage?: number;
   onFinish?: () => void;
 }) {
   const [page, setPage] = useState(0);
@@ -57,7 +63,7 @@ export function useLearningPlayback(options: {
     replay,
     previous: () => setPage((current) => Math.max(0, current - 1)),
     next: () => setPage((current) => Math.min(options.count - 1, current + 1)),
-    reveal: () => setPage(options.count - 1),
+    reveal: () => setPage(options.revealPage ?? options.count - 1),
     restart: () => {
       setPage(0);
       setReplay((current) => current + 1);

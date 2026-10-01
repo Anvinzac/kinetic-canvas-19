@@ -68,6 +68,28 @@
 .vocab-icon-button:hover:not(:disabled) {
   background: color-mix(in srgb, currentColor 10%, transparent);
 }
+/* Saved-words shortcut: the badge sits on the button's top-right corner. */
+.vocab-saved-link {
+  position: relative;
+}
+.vocab-saved-badge-count {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  min-width: 19px;
+  height: 19px;
+  padding: 0 5px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: #ffb020;
+  color: #2a1d02;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0;
+  box-shadow: 0 2px 8px #0007;
+}
 .vocab-options {
   width: min(100%, 520px);
   margin-left: auto;
@@ -386,10 +408,59 @@
   left: 50%;
   transform: translateX(-50%);
   width: min(440px, calc(100% - 48px));
+}
+.vocab-reveal-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
   align-items: start;
+}
+/* ── Anticipation emoji strip ── */
+.vocab-emoji-strip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  flex-wrap: nowrap;
+}
+.vocab-emoji-strip-btn {
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 16px;
+  line-height: 1;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--vocab-ink) 18%, transparent);
+  background: color-mix(in srgb, var(--vocab-ink) 10%, transparent);
+  color: var(--vocab-ink);
+  box-shadow: 0 4px 12px #0003;
+  padding: 0;
+  flex-shrink: 0;
+  transition: transform 0.12s ease, border-color 0.15s ease, color 0.15s ease;
+}
+.vocab-emoji-strip-btn:not(:disabled):active {
+  transform: scale(0.88);
+}
+.vocab-emoji-strip-sep {
+  width: 1px;
+  height: 20px;
+  background: color-mix(in srgb, var(--vocab-ink) 16%, transparent);
+  flex-shrink: 0;
+  margin: 0 2px;
+}
+.vocab-emoji-strip-btn.vocab-reaction-heart,
+.vocab-emoji-strip-btn.vocab-reaction-bookmark {
+  font-size: 15px;
+}
+.vocab-emoji-strip-btn.vocab-reaction-heart[data-on] {
+  color: #ff4d6d;
+  border-color: #ff4d6d88;
+}
+.vocab-emoji-strip-btn.vocab-reaction-bookmark[data-on] {
+  color: #ffb020;
+  border-color: #ffb02088;
 }
 .vocab-reveal-half {
   width: 100%;
@@ -518,6 +589,313 @@
   text-decoration: underline;
   min-height: 44px;
   font-weight: 700;
+}
+/* ── Saved words page (/feed/saved) ───────────────────────────────────────────
+   The feed shell locks overflow for its snap-scroll viewport; the saved list is
+   an ordinary document flow page, so it opts back into scrolling. */
+.vocab-saved-shell {
+  overflow-y: auto;
+  height: 100dvh;
+  overscroll-behavior-y: contain;
+}
+.vocab-saved-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: max(20px, env(safe-area-inset-top)) max(18px, env(safe-area-inset-right)) 18px
+    max(18px, env(safe-area-inset-left));
+}
+.vocab-saved-title {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  line-height: 1.2;
+}
+.vocab-saved-subtitle {
+  margin-top: 4px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #a79fc0;
+}
+.vocab-saved-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 0 max(18px, env(safe-area-inset-right)) calc(env(safe-area-inset-bottom) + 32px)
+    max(18px, env(safe-area-inset-left));
+}
+.vocab-saved-item {
+  background: #252136;
+  border: 1px solid #3b3550;
+  border-radius: 20px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.vocab-saved-word-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.vocab-saved-word {
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.6px;
+  color: #bbf7d0;
+}
+.vocab-saved-badges {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.vocab-saved-badge {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #c9c3dd;
+  border: 1px solid #58506e;
+  border-radius: 999px;
+  padding: 3px 9px;
+}
+.vocab-saved-ipa {
+  font-size: 13px;
+  color: #a79fc0;
+}
+.vocab-saved-def {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--vocab-ink);
+}
+.vocab-saved-usage {
+  border-top: 1px solid #3b3550;
+  padding-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #c9c3dd;
+}
+.vocab-saved-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 4px;
+}
+.vocab-saved-taps {
+  font-size: 11px;
+  font-weight: 600;
+  color: #a79fc0;
+  min-width: 14px;
+}
+.vocab-saved-remove {
+  color: #ffb020;
+  border-color: #ffb02088;
+  margin-left: auto;
+}
+/* Emoji comments on the saved-words page: inline row of emoji + count pairs. */
+.vocab-saved-emojis {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 8px;
+  flex-wrap: wrap;
+}
+.vocab-saved-emoji {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 15px;
+  line-height: 1;
+}
+.vocab-saved-emoji-count {
+  font-family: "Inter", sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  color: #a79fc0;
+}
+.vocab-saved-empty {
+  height: calc(100dvh - 120px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 0 28px;
+  text-align: center;
+  color: #a79fc0;
+}
+.vocab-saved-empty h2 {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--vocab-ink);
+}
+.vocab-saved-empty p {
+  max-width: 320px;
+  font-size: 14px;
+  line-height: 1.7;
+}
+/* ── Post-reveal spelling replay ──────────────────────────────────────────────
+   The revealed word dissolves, then every letter pops in one at a time so the
+   reader can spell it silently before the stream advances. */
+.vocab-spelling {
+  position: absolute;
+  z-index: 4;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  padding: 0 24px;
+  pointer-events: none;
+}
+.vocab-spelling-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--vocab-ink) 62%, transparent);
+}
+.vocab-spelling-word {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: baseline;
+  gap: 0.02em;
+  /* Letters are transformed individually, so the row needs real depth. */
+  perspective: 600px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  text-align: center;
+}
+.vocab-spelling-char {
+  display: inline-block;
+  white-space: pre;
+  will-change: transform, opacity;
+}
+/* The 3D flip variant flashes a glow as each letter lands face-on. */
+.vocab-spelling-char[data-glow] {
+  animation: vocab-spelling-glow 0.6s ease-out;
+}
+@keyframes vocab-spelling-glow {
+  0% {
+    text-shadow: 0 0 0 transparent;
+  }
+  45% {
+    text-shadow:
+      0 0 18px color-mix(in srgb, var(--vocab-accent) 85%, transparent),
+      0 0 42px color-mix(in srgb, var(--vocab-accent) 45%, transparent);
+  }
+  100% {
+    text-shadow: 0 0 0 transparent;
+  }
+}
+/* ── Emoji comment rail (floating, right edge) ────────────────────────────────
+   A vertical stack of reacted emojis with a "+" trigger that opens a horizontal
+   picker. Sits above the action bar so it never overlaps the reaction buttons. */
+.vocab-emoji-rail {
+  position: absolute;
+  z-index: 4;
+  right: max(12px, env(safe-area-inset-right));
+  bottom: max(160px, calc(env(safe-area-inset-bottom) + 150px));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.vocab-emoji-bubble {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 40px;
+  min-height: 40px;
+  padding: 4px 6px 2px;
+  border-radius: 20px;
+  background: #12101daa;
+  border: 1px solid #ffffff22;
+  backdrop-filter: blur(10px);
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+.vocab-emoji-bubble:active {
+  transform: scale(0.9);
+  background: #12101dcc;
+}
+.vocab-emoji-glyph {
+  font-size: 20px;
+  line-height: 1.2;
+}
+.vocab-emoji-count {
+  font-family: "Inter", sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+  color: #fff;
+  min-height: 12px;
+}
+.vocab-emoji-trigger {
+  display: inline-grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px dashed #ffffff55;
+  background: #12101d88;
+  color: #ffffffcc;
+  backdrop-filter: blur(10px);
+  cursor: pointer;
+  transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+.vocab-emoji-trigger:hover {
+  border-color: #bbf7d0;
+  color: #bbf7d0;
+}
+.vocab-emoji-trigger:active,
+.vocab-emoji-trigger[data-open] {
+  transform: scale(0.92);
+  border-style: solid;
+  border-color: #bbf7d0;
+  background: #bbf7d022;
+}
+.vocab-emoji-picker {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  right: 0;
+  display: flex;
+  gap: 4px;
+  padding: 8px 10px;
+  border-radius: 24px;
+  background: #252136ee;
+  border: 1px solid #58506e;
+  box-shadow: 0 12px 40px #000a;
+  backdrop-filter: blur(16px);
+}
+.vocab-emoji-picker-btn {
+  display: inline-grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 0;
+  background: transparent;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  transition: transform 0.12s ease, background 0.12s ease;
+}
+.vocab-emoji-picker-btn:hover {
+  background: #ffffff15;
+}
+.vocab-emoji-picker-btn:active {
+  transform: scale(0.85);
+  background: #ffffff25;
 }
 @media (max-width: 380px) {
   .vocab-brand small {

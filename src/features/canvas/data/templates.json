@@ -285,30 +285,6 @@
         "x": -18,
         "y": 24
       }
-    },
-    {
-      "id": "alpenglow",
-      "label": "alpenglow",
-      "mood": "fine art · mountain dusk poster",
-      "base": "#130d20",
-      "image": "repeating-linear-gradient(0deg, rgba(255,255,255,0.03) 0 1px, transparent 1px 8px), url(\"data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%20900%201600'%20preserveAspectRatio%3D'none'%3E%3Cdefs%3E%3ClinearGradient%20id%3D'asky'%20x1%3D'0'%20y1%3D'0'%20x2%3D'0'%20y2%3D'1'%3E%3Cstop%20offset%3D'0'%20stop-color%3D'%23241640'%2F%3E%3Cstop%20offset%3D'0.30'%20stop-color%3D'%235b2a63'%2F%3E%3Cstop%20offset%3D'0.44'%20stop-color%3D'%23b34a6a'%2F%3E%3Cstop%20offset%3D'0.53'%20stop-color%3D'%23f08a4e'%2F%3E%3Cstop%20offset%3D'0.60'%20stop-color%3D'%23c98f56'%2F%3E%3Cstop%20offset%3D'0.70'%20stop-color%3D'%233c2447'%2F%3E%3Cstop%20offset%3D'1'%20stop-color%3D'%23130d20'%2F%3E%3C%2FlinearGradient%3E%3CradialGradient%20id%3D'asun'%20cx%3D'50%25'%20cy%3D'50%25'%20r%3D'50%25'%3E%3Cstop%20offset%3D'0'%20stop-color%3D'%23fff0c4'%2F%3E%3Cstop%20offset%3D'0.4'%20stop-color%3D'%23ffd277'%2F%3E%3Cstop%20offset%3D'0.7'%20stop-color%3D'%23ff9d54'%20stop-opacity%3D'0.45'%2F%3E%3Cstop%20offset%3D'1'%20stop-color%3D'%23ff9d54'%20stop-opacity%3D'0'%2F%3E%3C%2FradialGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D'900'%20height%3D'1600'%20fill%3D'url(%23asky)'%2F%3E%3Cg%20fill%3D'%23ffffff'%3E%3Ccircle%20cx%3D'120'%20cy%3D'150'%20r%3D'2'%20opacity%3D'0.8'%2F%3E%3Ccircle%20cx%3D'300'%20cy%3D'90'%20r%3D'1.6'%20opacity%3D'0.7'%2F%3E%3Ccircle%20cx%3D'700'%20cy%3D'130'%20r%3D'2.4'%20opacity%3D'0.85'%2F%3E%3Ccircle%20cx%3D'820'%20cy%3D'250'%20r%3D'1.8'%20opacity%3D'0.7'%2F%3E%3Ccircle%20cx%3D'560'%20cy%3D'210'%20r%3D'1.5'%20opacity%3D'0.6'%2F%3E%3Ccircle%20cx%3D'220'%20cy%3D'280'%20r%3D'1.4'%20opacity%3D'0.6'%2F%3E%3C%2Fg%3E%3Ccircle%20cx%3D'450'%20cy%3D'560'%20r%3D'300'%20fill%3D'url(%23asun)'%2F%3E%3Ccircle%20cx%3D'450'%20cy%3D'560'%20r%3D'118'%20fill%3D'%23ffd97a'%2F%3E%3Cpolygon%20points%3D'0%2C840%20150%2C760%20320%2C820%20450%2C700%20600%2C800%20760%2C730%20900%2C810%20900%2C1600%200%2C1600'%20fill%3D'%237a3f6e'%20opacity%3D'0.92'%2F%3E%3Cpolygon%20points%3D'0%2C1000%20200%2C900%20410%2C980%20640%2C880%20900%2C960%20900%2C1600%200%2C1600'%20fill%3D'%234a2856'%2F%3E%3Cpolygon%20points%3D'0%2C1240%20250%2C1090%20520%2C1210%20770%2C1070%20900%2C1150%20900%2C1600%200%2C1600'%20fill%3D'%23160f22'%2F%3E%3Crect%20x%3D'0'%20y%3D'980'%20width%3D'900'%20height%3D'90'%20fill%3D'%23f08a4e'%20opacity%3D'0.10'%2F%3E%3C%2Fsvg%3E\")",
-      "size": "20px 20px, 100% 100%",
-      "step": {
-        "x": -24,
-        "y": -16
-      }
-    },
-    {
-      "id": "deco",
-      "label": "deco metropolis",
-      "mood": "fine art · art-deco skyline",
-      "base": "#06141c",
-      "image": "repeating-linear-gradient(90deg, rgba(255,255,255,0.025) 0 1px, transparent 1px 9px), url(\"data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%20900%201600'%20preserveAspectRatio%3D'none'%3E%3Cdefs%3E%3ClinearGradient%20id%3D'dsky'%20x1%3D'0'%20y1%3D'0'%20x2%3D'0'%20y2%3D'1'%3E%3Cstop%20offset%3D'0'%20stop-color%3D'%230a2230'%2F%3E%3Cstop%20offset%3D'0.45'%20stop-color%3D'%23103a47'%2F%3E%3Cstop%20offset%3D'0.75'%20stop-color%3D'%230a2230'%2F%3E%3Cstop%20offset%3D'1'%20stop-color%3D'%2306141c'%2F%3E%3C%2FlinearGradient%3E%3ClinearGradient%20id%3D'dgold'%20x1%3D'0'%20y1%3D'0'%20x2%3D'0'%20y2%3D'1'%3E%3Cstop%20offset%3D'0'%20stop-color%3D'%23f6d27a'%2F%3E%3Cstop%20offset%3D'1'%20stop-color%3D'%23bb8a32'%2F%3E%3C%2FlinearGradient%3E%3Cpolygon%20id%3D'dray'%20points%3D'444%2C560%20412%2C-160%20476%2C-160'%2F%3E%3C%2Fdefs%3E%3Crect%20width%3D'900'%20height%3D'1600'%20fill%3D'url(%23dsky)'%2F%3E%3Cg%20fill%3D'url(%23dgold)'%20opacity%3D'0.22'%3E%3Cuse%20href%3D'%23dray'%20transform%3D'rotate(-80%20450%20560)'%2F%3E%3Cuse%20href%3D'%23dray'%20transform%3D'rotate(-64%20450%20560)'%2F%3E%3Cuse%20href%3D'%23dray'%20transform%3D'rotate(-48%20450%20560)'%2F%3E%3Cuse%20href%3D'%23dray'%20transform%3D'rotate(-32%20450%20560)'%2F%3E%3Cuse%20href%3D'%23dray'%20transform%3D'rotate(-16%20450%20560)'%2F%3E%3Cuse%20href%3D'%23dray'%20transform%3D'rotate(0%20450%20560)'%2F%3E%3Cuse%20href%3D'%23dray'%20transform%3D'rotate(16%20450%20560)'%2F%3E%3Cuse%20href%3D'%23dray'%20transform%3D'rotate(32%20450%20560)'%2F%3E%3Cuse%20href%3D'%23dray'%20transform%3D'rotate(48%20450%20560)'%2F%3E%3Cuse%20href%3D'%23dray'%20transform%3D'rotate(64%20450%20560)'%2F%3E%3Cuse%20href%3D'%23dray'%20transform%3D'rotate(80%20450%20560)'%2F%3E%3C%2Fg%3E%3Ccircle%20cx%3D'450'%20cy%3D'560'%20r%3D'150'%20fill%3D'%230c2c38'%2F%3E%3Ccircle%20cx%3D'450'%20cy%3D'560'%20r%3D'150'%20fill%3D'none'%20stroke%3D'url(%23dgold)'%20stroke-width%3D'3'%20opacity%3D'0.55'%2F%3E%3Ccircle%20cx%3D'450'%20cy%3D'560'%20r%3D'120'%20fill%3D'none'%20stroke%3D'url(%23dgold)'%20stroke-width%3D'1'%20opacity%3D'0.3'%2F%3E%3Cpolygon%20fill%3D'%2304101a'%20points%3D'0%2C1180%200%2C1600%20900%2C1600%20900%2C1180%20840%2C1180%20840%2C1120%20800%2C1120%20800%2C1180%20720%2C1180%20720%2C1040%20690%2C1000%20660%2C1040%20660%2C1180%20560%2C1180%20560%2C1080%20520%2C1080%20520%2C1180%20470%2C1180%20470%2C980%20450%2C940%20430%2C980%20430%2C1180%20380%2C1180%20380%2C1080%20340%2C1080%20340%2C1180%20240%2C1180%20240%2C1040%20210%2C1000%20180%2C1040%20180%2C1180%20100%2C1180%20100%2C1120%2060%2C1120%2060%2C1180'%2F%3E%3Cg%20stroke%3D'url(%23dgold)'%20stroke-width%3D'1.5'%20opacity%3D'0.5'%3E%3Cline%20x1%3D'450'%20y1%3D'940'%20x2%3D'450'%20y2%3D'1180'%2F%3E%3Cline%20x1%3D'690'%20y1%3D'1000'%20x2%3D'690'%20y2%3D'1180'%2F%3E%3Cline%20x1%3D'210'%20y1%3D'1000'%20x2%3D'210'%20y2%3D'1180'%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E\")",
-      "size": "20px 20px, 100% 100%",
-      "step": {
-        "x": 20,
-        "y": -18
-      }
     }
   ],
   "animationTemplates": [
