@@ -74,20 +74,22 @@ const EMPHASIS_WORDS = new Set([
 // Feed emphasis selection — selection fallback and getWordImportance scoring diverge
 // from KineticText getPreviewEmphasizedWordIndexes / getPreviewWordImportance.
 /**
- * Keep at most two highlighted words on a page. A highlighted word is one
- * contiguous run of emphasized tokens (a compound counts as one word); runs are
- * kept in text order, and a non-empty input never shrinks below one run.
+ * Keep at most N highlighted runs on a page. A highlighted run is one
+ * contiguous sequence of emphasized tokens (a Vietnamese compound counts as
+ * one run); runs are kept in text order, and a non-empty input never shrinks
+ * below one run.
  * @param indexes - emphasized token indexes
- * @returns The indexes of the first two runs
+ * @param maxRuns - maximum number of runs to keep
+ * @returns The indexes of the first N runs
  */
-function keepFirstTwoRuns(indexes: Iterable<number>): Set<number> {
+function keepFirstRuns(indexes: Iterable<number>, maxRuns: number): Set<number> {
   const runs: number[][] = [];
   for (const index of [...indexes].sort((left, right) => left - right)) {
     const last = runs[runs.length - 1];
     if (last && index === last[last.length - 1] + 1) last.push(index);
     else runs.push([index]);
   }
-  return new Set(runs.slice(0, 2).flat());
+  return new Set(runs.slice(0, maxRuns).flat());
 }
 
 /**
@@ -104,8 +106,9 @@ export function getEmphasizedWordIndexes(words: string[], dataEmphasis?: string[
   // expansion + repair defenses still heal single-syllable annotations.
   const spans = getDataEmphasisWordSpans(words, dataEmphasis);
   if (spans.length > 0) {
+    const maxSpans = isVietnameseText ? 1 : 2;
     const chosen = new Set<number>();
-    for (const span of spans.slice(0, 2)) {
+    for (const span of spans.slice(0, maxSpans)) {
       for (let offset = 0; offset < span.length; offset += 1) chosen.add(span.start + offset);
     }
     const expanded = expandEmphasisToBoundPhrases(
@@ -128,16 +131,15 @@ export function getEmphasizedWordIndexes(words: string[], dataEmphasis?: string[
     .filter((item) => item.score > 0)
     .sort((a, b) => b.score - a.score || a.index - b.index);
 
-  // Whole-word emphasis is a Vietnamese notion (compound syllable pairs). English
-  // spotlights a single word only, so scoring never selects two words there.
-  const desiredCount = isVietnameseText ? Math.min(2, Math.max(1, Math.ceil(words.length / 4))) : 1;
+  // Vietnamese spotlights a single word only; English spotlights a single word.
+  const desiredCount = 1;
   const selected = candidates.slice(0, desiredCount).map((item) => item.index);
   if (selected.length === 0 && words.length > 0) selected.push(words.length - 1);
   const expanded = expandEmphasisToBoundPhrases(words, selected);
 
   // Compound guard: never leave one syllable of a Vietnamese pair glowing alone.
-  if (!isVietnameseText) return keepFirstTwoRuns(expanded);
-  return keepFirstTwoRuns(repairSplitCompoundEmphasis(words, [...expanded]));
+  if (!isVietnameseText) return keepFirstRuns(expanded, 2);
+  return keepFirstRuns(repairSplitCompoundEmphasis(words, [...expanded]), 1);
 }
 
 // Feed scoring — includes digit punchline + ALLCAPS bonuses and a wider EMPHASIS_WORDS

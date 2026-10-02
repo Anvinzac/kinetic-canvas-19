@@ -1,11 +1,21 @@
 /** Public navigation and stream/presentation controls. Exports: FeedControls. Depends on: router, presets, transport types. */
 import { Link } from "@tanstack/react-router";
 import { useId, useRef } from "react";
-import { Bookmark, Pause, Play, Shuffle, SlidersHorizontal, X } from "lucide-react";
+import {
+  Bookmark,
+  Pause,
+  Play,
+  Shuffle,
+  SlidersHorizontal,
+  Volume2,
+  VolumeX,
+  X,
+} from "lucide-react";
 import { STYLES, THEMES } from "../lib/presets";
 import { LEVELS, type NarrativeStyle, type VocabularyLevel } from "../lib/schema";
 import type { HistoryStats } from "../lib/history";
 import { useSavedCount } from "../hooks/useSavedCount";
+import { useAmbientSound } from "../hooks/useAmbientSound";
 import type { FeedPage, Presentation, VocabularyFilters } from "../types";
 
 /** Control word selection separately from appearance. @param props Settings and callbacks. @returns Public header and options panel. */
@@ -37,6 +47,7 @@ export function FeedControls({
   const panelId = useId();
   const toggleButton = useRef<HTMLButtonElement>(null);
   const savedCount = useSavedCount();
+  const ambient = useAmbientSound();
   // Difficulty is the primary control, so keep the chips visible before metadata arrives.
   const levelOptions: VocabularyLevel[] = metadata?.levels?.length ? metadata.levels : [...LEVELS];
   const close = () => {
@@ -80,7 +91,17 @@ export function FeedControls({
           <button
             className="vocab-icon-button"
             type="button"
-            onClick={onShuffle}
+            onClick={ambient.toggle}
+            aria-label={ambient.enabled ? "Mute background music" : "Play background music"}
+            aria-pressed={ambient.enabled}
+            data-active={ambient.enabled || undefined}
+          >
+            {ambient.enabled ? <Volume2 size={19} /> : <VolumeX size={19} />}
+          </button>
+          <button
+            className="vocab-icon-button"
+            type="button"
+            onClick={() => { onShuffle(); ambient.nextTrack(); }}
             aria-label="Shuffle words and start a new stream"
           >
             <Shuffle size={19} />
@@ -213,8 +234,8 @@ export function FeedControls({
             <span className="vocab-group-label">On-device memory</span>
             <p className="vocab-options-summary">
               {historyStats.distinctToday} seen today · {historyStats.distinct3d} in 3 days ·{" "}
-              {historyStats.distinct7d} this week. Each word returns at most once a day, twice in
-              3 days, three times a week. Stored only in this browser.
+              {historyStats.distinct7d} this week. Each word returns at most once a day, twice in 3
+              days, three times a week. Stored only in this browser.
             </p>
             <button type="button" className="vocab-memory-clear" onClick={onClearHistory}>
               Forget viewing history

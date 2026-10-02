@@ -84,10 +84,10 @@ check(
 const catalog = rawCatalog as { words: Array<{ id: string; word: string }> };
 check(catalog.words.length > 0, `catalog holds words to test (${catalog.words.length})`);
 
-/** A card must not stall the stream: the coda stays inside a five-second budget. */
-const BUDGET_MS = 5000;
+/** A card must not stall the stream: the coda stays inside a twelve-second budget. */
+const BUDGET_MS = 12000;
 /** Reduced motion is a static word plus a reading beat, never an animation run. */
-const REDUCED_BUDGET_MS = 2000;
+const REDUCED_BUDGET_MS = 4000;
 
 let longest = { word: "", variant: "" as string, ms: 0 };
 const overBudget: string[] = [];

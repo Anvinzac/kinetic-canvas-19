@@ -9,7 +9,22 @@ export type LearningStage = {
   secondary?: string;
   lang: "vi" | "en";
   reveal?: boolean;
+  /** Emphasis phrases extracted from /word/ markers in the source text field. */
+  dataEmphasis?: string[];
 };
+
+/**
+ * Parse /word/ emphasis markers from a text field.
+ * Returns the clean text (markers stripped) and the list of marked phrases.
+ */
+function parseEmphasisMarkers(text: string): { clean: string; markers: string[] } {
+  const markers: string[] = [];
+  const clean = text.replace(/\/([^/]+)\//g, (_, word) => {
+    markers.push(word.trim());
+    return word.trim();
+  });
+  return { clean, markers };
+}
 
 /** Fill a deck's deliberate answer blank. @param text Example sentence. @param word Target. @returns Completed sentence. */
 export function completeUsage(text: string, word: string): string {
@@ -20,46 +35,63 @@ export function completeUsage(text: string, word: string): string {
 export function buildStages(word: VocabularyWord, style: NarrativeStyle): LearningStage[] {
   const mask = (text: string) => text.replace(answerPattern(word.word), "_____");
   const stages: LearningStage[] = [];
-  const leadLabels = {
-    detective: "The scene",
-    speed: "Ready?",
-    confession: "Sound familiar?",
-    minimal: "A thought",
+  const leadLabels: Record<NarrativeStyle, string> = {
+    detective: "Bối cảnh",
+    speed: "Sẵn sàng chưa?",
+    confession: "Có quen không?",
+    minimal: "Một suy nghĩ",
   };
-  if (word.leadVi)
-    stages.push({ id: "lead", label: leadLabels[style], text: mask(word.leadVi), lang: "vi" });
-  stages.push({ id: "definition", label: "The meaning", text: mask(word.defVi), lang: "vi" });
+  if (word.leadVi) {
+    const { clean, markers } = parseEmphasisMarkers(word.leadVi);
+    stages.push({
+      id: "lead",
+      label: leadLabels[style],
+      text: mask(clean),
+      lang: "vi",
+      dataEmphasis: markers.length ? markers : undefined,
+    });
+  }
+  {
+    const { clean, markers } = parseEmphasisMarkers(word.defVi);
+    stages.push({
+      id: "definition",
+      label: "Ý nghĩa",
+      text: mask(clean),
+      lang: "vi",
+      dataEmphasis: markers.length ? markers : undefined,
+    });
+  }
   const count = (word.word.match(/\p{L}/gu) ?? []).length;
-  const prefix = style === "detective" ? "Manh mối — " : style === "confession" ? "Nhỏ thôi: " : "";
   stages.push({
     id: "letters",
-    label: "Count the letters",
-    text: `${prefix}Cả từ gồm ${count} chữ cái.`,
+    label: "Đếm chữ cái",
+    text: `Gồm ${count} chữ cái, bắt đầu bằng ${word.word[0].toUpperCase()}`,
     lang: "vi",
   });
   const example = word.usage[0];
-  if (example)
+  if (example) {
+    const { clean: enClean, markers: enMarkers } = parseEmphasisMarkers(example.en);
+    const { clean: viClean } = parseEmphasisMarkers(example.vi);
     stages.push({
       id: "usage",
-      label: "In a sentence",
-      text: mask(example.en),
-      secondary: mask(example.vi),
+      label: "Trong câu",
+      text: mask(enClean),
+      secondary: mask(viClean),
       lang: "en",
+      dataEmphasis: enMarkers.length ? enMarkers : undefined,
     });
-  stages.push({
-    id: "initial",
-    label: "A little hint",
-    text: `${prefix}Từ này bắt đầu bằng chữ ${word.word[0].toUpperCase()}.`,
-    lang: "vi",
-  });
-  if (word.anticipateVi)
+  }
+  if (word.anticipateVi) {
+    const { clean, markers } = parseEmphasisMarkers(word.anticipateVi);
     stages.push({
       id: "anticipation",
-      label: "Your guess?",
-      text: mask(word.anticipateVi),
+      label: "Bạn đoán gì?",
+      text: mask(clean),
       lang: "vi",
+      dataEmphasis: markers.length ? markers : undefined,
     });
-  stages.push({ id: "reveal", label: "Meet your word", text: word.word, lang: "en", reveal: true });
+  }
+  stages.push({ id: "reveal", label: "Đây rồi!", text: word.word, lang: "en", reveal: true });
   return stages.flatMap((stage) => {
     if (stage.reveal) return [stage];
     return paginateText(stage.text).map((text, index) => ({

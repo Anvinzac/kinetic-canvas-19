@@ -22,6 +22,7 @@ const NAV: { to: string; label: string; exact?: boolean }[] = [
   { to: "/admin/vocabulary", label: "Vocabulary" },
   { to: "/admin/templates", label: "Templates" },
   { to: "/admin/model", label: "Model" },
+  { to: "/admin/ambient", label: "Ambient" },
   { to: "/admin/links", label: "Links" },
   { to: "/admin/errors", label: "Errors" },
   { to: "/admin/system", label: "System" },
@@ -53,9 +54,8 @@ export function AdminShell(): React.ReactElement {
 
   const criticalCount = useMemo(
     () =>
-      (errorsQuery.data?.items ?? []).filter(
-        (e) => e.severity === "critical" || e.status === "new",
-      ).length,
+      (errorsQuery.data?.items ?? []).filter((e) => e.severity === "critical" || e.status === "new")
+        .length,
     [errorsQuery.data],
   );
 

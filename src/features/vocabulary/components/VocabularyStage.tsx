@@ -34,7 +34,6 @@ export function VocabularyStage({
   }, [stage.id, playKey]);
   return (
     <div className="vocab-stage" aria-live={active ? "polite" : "off"} aria-atomic="true">
-      <p className="vocab-eyebrow">{stage.label}</p>
       <p className="sr-only" lang={stage.lang}>
         {stage.text}
       </p>
@@ -66,7 +65,7 @@ export function VocabularyStage({
               background={background}
               entranceSeed={word.id}
               fitAsUnit={stage.reveal}
-              dataEmphasis={word.emphasis}
+              dataEmphasis={stage.dataEmphasis}
             />
           </motion.div>
         )}

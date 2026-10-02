@@ -21,13 +21,9 @@
     {
       "id": "resilient",
       "word": "resilient",
-      "defVi": "Khả năng bật dậy nhanh sau nghịch cảnh.",
-      "leadVi": "Ngã xuống rồi tự đứng dậy, chẳng cần ai.",
+      "defVi": "Khả năng /bật dậy/ nhanh sau nghịch cảnh.",
+      "leadVi": "Ngã xuống rồi tự /đứng dậy/, chẳng cần ai.",
       "anticipateVi": "Thử nhắm mắt đoán…",
-      "emphasis": [
-        "bật dậy nhanh",
-        "chẳng cần ai"
-      ],
       "pos": "adj",
       "ipa": "/rɪˈzɪl.i.ənt/",
       "topic": "character",
@@ -44,13 +40,9 @@
     {
       "id": "vague",
       "word": "vague",
-      "defVi": "Không rõ ràng, khó nắm bắt hay hiểu.",
-      "leadVi": "Mơ hồ như sương mù… khó định hình.",
+      "defVi": "Không /rõ ràng/, khó nắm bắt hay hiểu.",
+      "leadVi": "/Mơ hồ/ như sương mù… khó định hình.",
       "anticipateVi": "Nghĩ thử xem nha!",
-      "emphasis": [
-        "khó nắm bắt",
-        "khó định hình"
-      ],
       "pos": "adj",
       "ipa": "/veɪɡ/",
       "topic": "communication",
@@ -67,13 +59,9 @@
     {
       "id": "negotiate",
       "word": "negotiate",
-      "defVi": "Thảo luận để đạt thỏa thuận với người khác.",
+      "defVi": "/Thảo luận/ để đạt thỏa thuận với người khác.",
       "leadVi": "Cuộc trò chuyện hai bên để tìm giải pháp…",
       "anticipateVi": "Thử đoán xem nào!",
-      "emphasis": [
-        "Thảo luận",
-        "tìm giải pháp"
-      ],
       "pos": "verb",
       "ipa": "/nɪˈɡoʊ.ʃi.eɪt/",
       "topic": "work",
@@ -91,12 +79,8 @@
       "id": "deadline",
       "word": "deadline",
       "defVi": "Thời hạn cuối để hoàn thành công việc.",
-      "leadVi": "Hạn chót đã cận kề… bạn sẵn sàng chưa?",
+      "leadVi": "/Hạn chót/ đã cận kề… bạn sẵn sàng chưa?",
       "anticipateVi": "Nghe quen chưa nhỉ?",
-      "emphasis": [
-        "Thời hạn cuối",
-        "Hạn chót"
-      ],
       "pos": "noun",
       "ipa": "/ˈded.laɪn/",
       "topic": "work",
@@ -113,13 +97,9 @@
     {
       "id": "overlook",
       "word": "overlook",
-      "defVi": "Bỏ qua một chi tiết nhỏ mà không nhận ra.",
-      "leadVi": "Đôi khi… lại bỏ sót điều rất nhỏ.",
+      "defVi": "/Bỏ qua/ một chi tiết nhỏ mà không nhận ra.",
+      "leadVi": "Đôi khi… lại /bỏ sót/ điều rất nhỏ.",
       "anticipateVi": "Có thấy điều gì không?",
-      "emphasis": [
-        "Bỏ qua",
-        "bỏ sót"
-      ],
       "pos": "verb",
       "ipa": "/ˌoʊ.vɚˈlʊk/",
       "topic": "attention",
@@ -136,13 +116,9 @@
     {
       "id": "reluctant",
       "word": "reluctant",
-      "defVi": "Không muốn làm điều gì đó một cách miễn cưỡng.",
+      "defVi": "Không muốn làm điều gì đó một cách /miễn cưỡng/.",
       "leadVi": "Có điều gì đó khiến anh ấy ngại thừa nhận…",
       "anticipateVi": "Đoán thử xem nhé…",
-      "emphasis": [
-        "ngại thừa nhận",
-        "miễn cưỡng"
-      ],
       "pos": "adj",
       "ipa": "/rɪˈlʌk.tənt/",
       "topic": "emotion",
@@ -159,13 +135,9 @@
     {
       "id": "genuine",
       "word": "genuine",
-      "defVi": "Thật lòng, không giả tạo hay che đậy.",
-      "leadVi": "Nụ cười tỏa sáng từ tận đáy lòng…",
+      "defVi": "/Thật lòng/, không giả tạo hay che đậy.",
+      "leadVi": "Nụ cười /tỏa sáng/ từ tận đáy lòng…",
       "anticipateVi": "Nhắm mắt đoán thử…",
-      "emphasis": [
-        "Thật lòng",
-        "tỏa sáng"
-      ],
       "pos": "adj",
       "ipa": "/ˈdʒen.ju.ɪn/",
       "topic": "character",
@@ -182,13 +154,9 @@
     {
       "id": "compromise",
       "word": "compromise",
-      "defVi": "Thỏa hiệp giữa hai bên để đạt đồng thuận.",
-      "leadVi": "Đôi khi phải nhường nhịn để tiến xa hơn…",
+      "defVi": "/Thỏa hiệp/ giữa hai bên để đạt đồng thuận.",
+      "leadVi": "Đôi khi phải /nhường nhịn/ để tiến xa hơn…",
       "anticipateVi": "Đoán thử xem nào!",
-      "emphasis": [
-        "Thỏa hiệp",
-        "nhường nhịn"
-      ],
       "pos": "noun",
       "ipa": "/ˈkɑːm.prə.maɪz/",
       "topic": "work",
@@ -205,13 +173,9 @@
     {
       "id": "subtle",
       "word": "subtle",
-      "defVi": "Nhẹ nhàng và khó nhận ra ngay lập tức.",
-      "leadVi": "Thay đổi nhỏ nhưng tác động lớn đấy nhé…",
+      "defVi": "/Nhẹ nhàng/ và khó nhận ra ngay lập tức.",
+      "leadVi": "/Thay đổi/ nhỏ nhưng tác động lớn đấy nhé…",
       "anticipateVi": "Nghĩ thử xem nào…",
-      "emphasis": [
-        "khó nhận ra",
-        "tác động lớn"
-      ],
       "pos": "adj",
       "ipa": "/ˈsʌt.əl/",
       "topic": "thinking",
@@ -228,13 +192,9 @@
     {
       "id": "postpone",
       "word": "postpone",
-      "defVi": "Dời kế hoạch sang một thời gian khác.",
+      "defVi": "Dời /kế hoạch/ sang một thời gian khác.",
       "leadVi": "Khi mưa đến, đôi khi phải... chờ thôi!",
       "anticipateVi": "Hóng nhé, đoán đi!",
-      "emphasis": [
-        "Dời kế hoạch",
-        "Khi mưa đến"
-      ],
       "pos": "verb",
       "ipa": "/poʊstˈpoʊn/",
       "topic": "time",
@@ -251,13 +211,9 @@
     {
       "id": "reliable",
       "word": "reliable",
-      "defVi": "Dễ tin cậy và luôn giữ lời hứa.",
-      "leadVi": "Người mà ai cũng có thể dựa vào…",
+      "defVi": "Dễ /tin cậy/ và luôn giữ lời hứa.",
+      "leadVi": "Người mà ai cũng có thể /dựa vào/…",
       "anticipateVi": "Đoán thử xem nhé!",
-      "emphasis": [
-        "Dễ tin cậy",
-        "giữ lời hứa"
-      ],
       "pos": "adj",
       "ipa": "/rɪˈlaɪ.ə.bəl/",
       "topic": "character",
@@ -274,13 +230,9 @@
     {
       "id": "assume",
       "word": "assume",
-      "defVi": "Tin tưởng mà không cần chứng minh rõ ràng",
-      "leadVi": "Đoán, không cần bằng chứng vẫn điềm nhiên",
+      "defVi": "/Tin tưởng/ mà không cần chứng minh rõ ràng",
+      "leadVi": "Đoán, không cần /bằng chứng/ vẫn điềm nhiên",
       "anticipateVi": "Bạn đã đoán chưa?",
-      "emphasis": [
-        "Tin tưởng",
-        "bằng chứng"
-      ],
       "pos": "verb",
       "ipa": "/əˈsuːm/",
       "topic": "thinking",
@@ -297,13 +249,9 @@
     {
       "id": "feedback",
       "word": "feedback",
-      "defVi": "Phản hồi là ý kiến nhận xét về công việc.",
+      "defVi": "/Phản hồi/ là ý kiến nhận xét về /công việc/.",
       "leadVi": "Phản hồi giúp cải thiện chất lượng công việc.",
       "anticipateVi": "ý kiến đóng góp",
-      "emphasis": [
-        "Phản hồi",
-        "công việc"
-      ],
       "pos": "noun",
       "ipa": "/ˈfiːd.bæk/",
       "topic": "work",
@@ -320,13 +268,9 @@
     {
       "id": "anxious",
       "word": "anxious",
-      "defVi": "Cảm giác lo lắng, bồn chồn khi chờ đợi.",
+      "defVi": "Cảm giác /lo lắng/, /bồn chồn/ khi chờ đợi.",
       "leadVi": "Tim đập nhanh khi chờ điều chưa biết...",
       "anticipateVi": "Đoán xem thử nào!",
-      "emphasis": [
-        "lo lắng",
-        "bồn chồn"
-      ],
       "pos": "adj",
       "ipa": "/ˈæŋk.ʃəs/",
       "topic": "emotion",
@@ -344,12 +288,8 @@
       "id": "clarify",
       "word": "clarify",
       "defVi": "Giúp làm rõ điều gì đó cho dễ hiểu.",
-      "leadVi": "Khi mọi thứ mơ hồ, cần một ánh sáng…",
+      "leadVi": "Khi mọi thứ /mơ hồ/, cần một ánh sáng…",
       "anticipateVi": "Bạn nghĩ ra chưa?",
-      "emphasis": [
-        "Giúp làm rõ",
-        "mơ hồ"
-      ],
       "pos": "verb",
       "ipa": "/ˈkler.ə.faɪ/",
       "topic": "communication",
@@ -366,13 +306,9 @@
     {
       "id": "priority",
       "word": "priority",
-      "defVi": "Thứ quan trọng cần làm trước các việc khác.",
+      "defVi": "Thứ /quan trọng/ cần làm trước các việc khác.",
       "leadVi": "Điều gì cần làm trước tiên trong kế hoạch…",
       "anticipateVi": "Đoán xem điều gì nhé!",
-      "emphasis": [
-        "quan trọng",
-        "làm trước tiên"
-      ],
       "pos": "noun",
       "ipa": "/praɪˈɔːr.ə.ti/",
       "topic": "work",
@@ -389,13 +325,9 @@
     {
       "id": "hesitate",
       "word": "hesitate",
-      "defVi": "Ngập ngừng không quyết định ngay lập tức.",
-      "leadVi": "Chần chừ, do dự khi đứng trước lựa chọn…",
+      "defVi": "/Ngập ngừng/ không quyết định ngay lập tức.",
+      "leadVi": "Chần chừ, /do dự/ khi đứng trước lựa chọn…",
       "anticipateVi": "Có đoán ra chưa nhỉ?",
-      "emphasis": [
-        "Ngập ngừng",
-        "do dự"
-      ],
       "pos": "verb",
       "ipa": "/ˈhez.ə.teɪt/",
       "topic": "emotion",
@@ -412,13 +344,9 @@
     {
       "id": "accurate",
       "word": "accurate",
-      "defVi": "Chính xác và không có sai sót nào",
+      "defVi": "/Chính xác/ và không có sai sót nào",
       "leadVi": "Vì sao biết điều này không lệch lạc?",
       "anticipateVi": "Đoán thử xem!",
-      "emphasis": [
-        "Chính xác",
-        "không lệch lạc"
-      ],
       "pos": "adj",
       "ipa": "/ˈæk.jɚ.ət/",
       "topic": "thinking",
@@ -435,13 +363,9 @@
     {
       "id": "outcome",
       "word": "outcome",
-      "defVi": "Kết quả của quá trình hay sự kiện.",
-      "leadVi": "Điều gì xảy ra cuối cùng trong chuyện.",
+      "defVi": "/Kết quả/ của quá trình hay sự kiện.",
+      "leadVi": "Điều gì xảy ra /cuối cùng/ trong chuyện.",
       "anticipateVi": "Đoán thử nhé!",
-      "emphasis": [
-        "Kết quả",
-        "cuối cùng"
-      ],
       "pos": "noun",
       "ipa": "/ˈaʊt.kʌm/",
       "topic": "thinking",
@@ -458,13 +382,9 @@
     {
       "id": "persuade",
       "word": "persuade",
-      "defVi": "Thuyết phục người khác làm theo ý mình.",
+      "defVi": "/Thuyết phục/ người khác làm theo ý mình.",
       "leadVi": "Dùng lời ngọt ngào để đạt mục đích…",
       "anticipateVi": "Có đoán ra không?",
-      "emphasis": [
-        "Thuyết phục",
-        "lời ngọt ngào"
-      ],
       "pos": "verb",
       "ipa": "/pɚˈsweɪd/",
       "topic": "communication",
@@ -481,13 +401,9 @@
     {
       "id": "routine",
       "word": "routine",
-      "defVi": "Thói quen hàng ngày giúp ta tổ chức tốt hơn.",
+      "defVi": "/Thói quen/ /hàng ngày/ giúp ta tổ chức tốt hơn.",
       "leadVi": "Mọi người nên có một thói quen nhất định.",
       "anticipateVi": "thói quen hàng ngày",
-      "emphasis": [
-        "thói quen",
-        "hàng ngày"
-      ],
       "pos": "noun",
       "ipa": "/ruːˈtiːn/",
       "topic": "daily",
@@ -504,13 +420,9 @@
     {
       "id": "awkward",
       "word": "awkward",
-      "defVi": "Cảm giác không thoải mái, hơi kỳ quặc.",
-      "leadVi": "Khi nói chuyện mà thấy không tự nhiên...",
+      "defVi": "Cảm giác không /thoải mái/, hơi kỳ quặc.",
+      "leadVi": "Khi nói chuyện mà thấy không /tự nhiên/...",
       "anticipateVi": "Đoán thử nào!",
-      "emphasis": [
-        "không thoải mái",
-        "hơi kỳ quặc"
-      ],
       "pos": "adj",
       "ipa": "/ˈɔː.kwɚd/",
       "topic": "emotion",
@@ -528,12 +440,8 @@
       "id": "benefit",
       "word": "benefit",
       "defVi": "Điều có lợi hay mang lại ích lợi.",
-      "leadVi": "Chăm chỉ một chút, lợi ích sẽ đến…",
+      "leadVi": "Chăm chỉ một chút, /lợi ích/ sẽ đến…",
       "anticipateVi": "Có đoán ra không?",
-      "emphasis": [
-        "lợi ích",
-        "Điều có lợi"
-      ],
       "pos": "noun",
       "ipa": "/ˈben.ə.fɪt/",
       "topic": "daily",
@@ -550,13 +458,9 @@
     {
       "id": "distract",
       "word": "distract",
-      "defVi": "Làm mất sự tập trung vào việc chính.",
+      "defVi": "Làm /mất sự/ tập trung vào việc chính.",
       "leadVi": "Tiếng ồn có thể làm phai… chú tâm.",
       "anticipateVi": "Đoán từ này đi!",
-      "emphasis": [
-        "mất sự",
-        "phai… chú tâm"
-      ],
       "pos": "verb",
       "ipa": "/dɪˈstrækt/",
       "topic": "attention",
@@ -573,13 +477,9 @@
     {
       "id": "essential",
       "word": "essential",
-      "defVi": "Điều cần có để duy trì cuộc sống.",
+      "defVi": "Điều /cần có/ để duy trì /cuộc sống/.",
       "leadVi": "Thứ không thể thiếu trong cuộc sống thường ngày…",
       "anticipateVi": "Cùng đoán thử nhé!",
-      "emphasis": [
-        "Điều cần có",
-        "không thể thiếu"
-      ],
       "pos": "adj",
       "ipa": "/ɪˈsen.ʃəl/",
       "topic": "thinking",

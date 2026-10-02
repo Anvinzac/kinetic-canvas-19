@@ -68,6 +68,11 @@
 .vocab-icon-button:hover:not(:disabled) {
   background: color-mix(in srgb, currentColor 10%, transparent);
 }
+.vocab-icon-button[data-active] {
+  background: #bbf7d022;
+  border-color: #bbf7d0;
+  color: #bbf7d0;
+}
 /* Saved-words shortcut: the badge sits on the button's top-right corner. */
 .vocab-saved-link {
   position: relative;
@@ -288,12 +293,20 @@
   position: absolute;
   inset: 0;
 }
-.vocab-stage > .vocab-eyebrow {
+.vocab-stage-label {
   position: absolute;
-  top: max(124px, calc(env(safe-area-inset-top) + 112px));
-  left: max(24px, env(safe-area-inset-left));
-  color: #fff;
-  text-shadow: 0 2px 10px #0008;
+  z-index: 3;
+  bottom: calc(max(128px, calc(env(safe-area-inset-bottom) + 118px)) + 10px);
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: "Inter", sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--vocab-accent, #bbf7d0);
+  text-shadow: 0 1px 6px #0006;
+  pointer-events: none;
+  white-space: nowrap;
 }
 /* Vietnamese bottom translation removed — gesture hint occupies that space */
 .vocab-eyebrow {
@@ -385,22 +398,6 @@
   display: none !important;
 }
 
-.vocab-reveal-button {
-  min-height: 44px;
-  display: inline-flex;
-  justify-content: center;
-  align-items: center;
-  gap: 8px;
-  background: var(--vocab-ink);
-  color: var(--vocab-button-ink, #252136);
-  border-radius: 30px;
-  font-family: "Inter", sans-serif;
-  font-size: 13px;
-  font-weight: 700;
-}
-.vocab-card .vocab-reveal-button:focus-visible {
-  outline-color: var(--vocab-ink);
-}
 .vocab-action-bar {
   position: absolute;
   z-index: 3;
@@ -409,11 +406,30 @@
   transform: translateX(-50%);
   width: min(440px, calc(100% - 48px));
 }
-.vocab-reveal-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  align-items: start;
+.vocab-action-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 14px;
+}
+.vocab-reveal-pill {
+  min-height: 44px;
+  padding: 0 20px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  background: var(--vocab-ink);
+  color: var(--vocab-button-ink, #252136);
+  border-radius: 30px;
+  font-family: "Inter", sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  box-shadow: 0 8px 24px #0005;
+  border: 1px solid color-mix(in srgb, var(--vocab-ink) 18%, transparent);
+}
+.vocab-card .vocab-reveal-pill:focus-visible {
+  outline-color: var(--vocab-ink);
 }
 /* ── Anticipation emoji strip ── */
 .vocab-emoji-strip {
@@ -461,24 +477,6 @@
 .vocab-emoji-strip-btn.vocab-reaction-bookmark[data-on] {
   color: #ffb020;
   border-color: #ffb02088;
-}
-.vocab-reveal-half {
-  width: 100%;
-  min-width: 0;
-  white-space: nowrap;
-  box-shadow: 0 8px 24px #0005;
-  border: 1px solid color-mix(in srgb, var(--vocab-ink) 18%, transparent);
-}
-@media (max-width: 420px) {
-  .vocab-reveal-half {
-    gap: 6px;
-    font-size: 12px;
-  }
-}
-.vocab-reaction-group {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
 }
 .vocab-reaction {
   display: flex;
@@ -796,107 +794,6 @@
     text-shadow: 0 0 0 transparent;
   }
 }
-/* ── Emoji comment rail (floating, right edge) ────────────────────────────────
-   A vertical stack of reacted emojis with a "+" trigger that opens a horizontal
-   picker. Sits above the action bar so it never overlaps the reaction buttons. */
-.vocab-emoji-rail {
-  position: absolute;
-  z-index: 4;
-  right: max(12px, env(safe-area-inset-right));
-  bottom: max(160px, calc(env(safe-area-inset-bottom) + 150px));
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-}
-.vocab-emoji-bubble {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-  min-width: 40px;
-  min-height: 40px;
-  padding: 4px 6px 2px;
-  border-radius: 20px;
-  background: #12101daa;
-  border: 1px solid #ffffff22;
-  backdrop-filter: blur(10px);
-  cursor: pointer;
-  transition: transform 0.15s ease, background 0.15s ease;
-}
-.vocab-emoji-bubble:active {
-  transform: scale(0.9);
-  background: #12101dcc;
-}
-.vocab-emoji-glyph {
-  font-size: 20px;
-  line-height: 1.2;
-}
-.vocab-emoji-count {
-  font-family: "Inter", sans-serif;
-  font-size: 10px;
-  font-weight: 700;
-  line-height: 1;
-  color: #fff;
-  min-height: 12px;
-}
-.vocab-emoji-trigger {
-  display: inline-grid;
-  place-items: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  border: 1px dashed #ffffff55;
-  background: #12101d88;
-  color: #ffffffcc;
-  backdrop-filter: blur(10px);
-  cursor: pointer;
-  transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
-}
-.vocab-emoji-trigger:hover {
-  border-color: #bbf7d0;
-  color: #bbf7d0;
-}
-.vocab-emoji-trigger:active,
-.vocab-emoji-trigger[data-open] {
-  transform: scale(0.92);
-  border-style: solid;
-  border-color: #bbf7d0;
-  background: #bbf7d022;
-}
-.vocab-emoji-picker {
-  position: absolute;
-  bottom: calc(100% + 8px);
-  right: 0;
-  display: flex;
-  gap: 4px;
-  padding: 8px 10px;
-  border-radius: 24px;
-  background: #252136ee;
-  border: 1px solid #58506e;
-  box-shadow: 0 12px 40px #000a;
-  backdrop-filter: blur(16px);
-}
-.vocab-emoji-picker-btn {
-  display: inline-grid;
-  place-items: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  border: 0;
-  background: transparent;
-  font-size: 22px;
-  line-height: 1;
-  cursor: pointer;
-  transition: transform 0.12s ease, background 0.12s ease;
-}
-.vocab-emoji-picker-btn:hover {
-  background: #ffffff15;
-}
-.vocab-emoji-picker-btn:active {
-  transform: scale(0.85);
-  background: #ffffff25;
-}
 @media (max-width: 380px) {
   .vocab-brand small {
     display: none;
@@ -914,7 +811,7 @@
   }
 }
 @media (max-height: 620px) {
-  .vocab-stage > .vocab-eyebrow {
+  .vocab-stage-label {
     display: none;
   }
   .vocab-reveal-details {

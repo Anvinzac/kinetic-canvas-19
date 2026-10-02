@@ -15,5 +15,6 @@ export { SystemPage } from "./components/system/SystemPage";
 export { VocabularyWordsPage } from "./components/vocabulary/VocabularyWordsPage";
 export { TemplateManagerPage } from "./components/templates/TemplateManagerPage";
 export { LlmSettingsPage } from "./components/llm/LlmSettingsPage";
+export { AmbientMusicPage } from "./components/ambient/AmbientMusicPage";
 export { APP_ID } from "./types/telemetry";
 export { isDemoAdminEnabled } from "./lib/require-admin";

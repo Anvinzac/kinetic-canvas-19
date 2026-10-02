@@ -23,24 +23,24 @@ export type SpellingVariant = (typeof SPELLING_VARIANTS)[number];
 
 /** Seconds between consecutive letters for each variant. */
 export const SPELLING_STAGGER: Record<SpellingVariant, number> = {
-  bounce: 0.1,
-  drop: 0.09,
-  spin: 0.11,
-  scatter: 0.08,
-  wave: 0.07,
-  flip: 0.1,
-  elastic: 0.095,
-  slide: 0.085,
+  bounce: 0.38,
+  drop: 0.35,
+  spin: 0.4,
+  scatter: 0.32,
+  wave: 0.3,
+  flip: 0.38,
+  elastic: 0.36,
+  slide: 0.34,
 };
 
 /** Seconds the last letter takes to settle before the hold starts. */
-export const SPELLING_SETTLE_SECONDS = 0.7;
+export const SPELLING_SETTLE_SECONDS = 1;
 
 /** Seconds the fully spelled word stays on screen before the stream advances. */
-export const SPELLING_HOLD_SECONDS = 2;
+export const SPELLING_HOLD_SECONDS = 3;
 
 /** Reduced-motion readers get a static word plus a short reading beat. */
-export const SPELLING_REDUCED_MOTION_MS = 1400;
+export const SPELLING_REDUCED_MOTION_MS = 3000;
 
 /**
  * Deterministic variant choice so a card replays the same motion on re-render

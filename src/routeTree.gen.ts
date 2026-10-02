@@ -25,6 +25,7 @@ import { Route as AdminModelRouteImport } from './routes/admin/model'
 import { Route as AdminLinksRouteImport } from './routes/admin/links'
 import { Route as AdminErrorsRouteImport } from './routes/admin/errors'
 import { Route as AdminContentRouteImport } from './routes/admin/content'
+import { Route as AdminAmbientRouteImport } from './routes/admin/ambient'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedMeRouteImport } from './routes/_authenticated/me'
@@ -118,6 +119,11 @@ const AdminContentRoute = AdminContentRouteImport.update({
   path: '/content',
   getParentRoute: () => AdminRouteRoute,
 } as any)
+const AdminAmbientRoute = AdminAmbientRouteImport.update({
+  id: '/ambient',
+  path: '/ambient',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -200,6 +206,7 @@ export interface FileRoutesByFullPath {
   '/me': typeof AuthenticatedMeRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/admin/ambient': typeof AdminAmbientRoute
   '/admin/content': typeof AdminContentRoute
   '/admin/errors': typeof AdminErrorsRoute
   '/admin/links': typeof AdminLinksRoute
@@ -229,6 +236,7 @@ export interface FileRoutesByTo {
   '/me': typeof AuthenticatedMeRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/admin/ambient': typeof AdminAmbientRoute
   '/admin/content': typeof AdminContentRoute
   '/admin/errors': typeof AdminErrorsRoute
   '/admin/links': typeof AdminLinksRoute
@@ -261,6 +269,7 @@ export interface FileRoutesById {
   '/_authenticated/me': typeof AuthenticatedMeRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
+  '/admin/ambient': typeof AdminAmbientRoute
   '/admin/content': typeof AdminContentRoute
   '/admin/errors': typeof AdminErrorsRoute
   '/admin/links': typeof AdminLinksRoute
@@ -293,6 +302,7 @@ export interface FileRouteTypes {
     | '/me'
     | '/notifications'
     | '/settings'
+    | '/admin/ambient'
     | '/admin/content'
     | '/admin/errors'
     | '/admin/links'
@@ -322,6 +332,7 @@ export interface FileRouteTypes {
     | '/me'
     | '/notifications'
     | '/settings'
+    | '/admin/ambient'
     | '/admin/content'
     | '/admin/errors'
     | '/admin/links'
@@ -353,6 +364,7 @@ export interface FileRouteTypes {
     | '/_authenticated/me'
     | '/_authenticated/notifications'
     | '/_authenticated/settings'
+    | '/admin/ambient'
     | '/admin/content'
     | '/admin/errors'
     | '/admin/links'
@@ -498,6 +510,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminContentRouteImport
       parentRoute: typeof AdminRouteRoute
     }
+    '/admin/ambient': {
+      id: '/admin/ambient'
+      path: '/ambient'
+      fullPath: '/admin/ambient'
+      preLoaderRoute: typeof AdminAmbientRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
     '/_authenticated/settings': {
       id: '/_authenticated/settings'
       path: '/settings'
@@ -622,6 +641,7 @@ const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
 interface AdminRouteRouteChildren {
+  AdminAmbientRoute: typeof AdminAmbientRoute
   AdminContentRoute: typeof AdminContentRoute
   AdminErrorsRoute: typeof AdminErrorsRoute
   AdminLinksRoute: typeof AdminLinksRoute
@@ -634,6 +654,7 @@ interface AdminRouteRouteChildren {
 }
 
 const AdminRouteRouteChildren: AdminRouteRouteChildren = {
+  AdminAmbientRoute: AdminAmbientRoute,
   AdminContentRoute: AdminContentRoute,
   AdminErrorsRoute: AdminErrorsRoute,
   AdminLinksRoute: AdminLinksRoute,
