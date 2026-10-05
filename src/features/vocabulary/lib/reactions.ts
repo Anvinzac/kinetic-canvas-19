@@ -23,7 +23,8 @@ export const REACTIONS_EVENT = "kinetic:vocab-reactions";
 
 /**
  * One word's reaction record. `heart`/`bookmark` are the current toggle state;
- * `heartTaps`/`bookmarkTaps` are cumulative tap counters that never decrease.
+ * `heartTaps`/`bookmarkTaps` are the reader's running totals — +1 when a reaction
+ * turns on and -1 when it turns off, so un-tapping lowers the count (never below 0).
  * `emojis` maps each emoji character the reader tapped to its cumulative count.
  */
 export type ReactionEntry = {
@@ -109,8 +110,9 @@ export function hasReaction(wordId: string, kind: ReactionKind): boolean {
 }
 
 /**
- * Toggle this device's reaction, persist it, and bump the tap counter when the
- * reaction turns on. Counters never decrease, so un-tapping keeps the history.
+ * Toggle this device's reaction, persist it, and move the running total by one: +1
+ * when the reaction turns on and -1 (clamped at 0) when it turns off, so the number
+ * follows the reader's current reactions instead of only ever climbing.
  * @returns The new active state (true = reaction added).
  */
 export function flipReaction(wordId: string, kind: ReactionKind): boolean {
@@ -122,6 +124,9 @@ export function flipReaction(wordId: string, kind: ReactionKind): boolean {
     entry[TAP_FIELD[kind]] = toCount(entry[TAP_FIELD[kind]]) + 1;
   } else {
     delete entry[kind];
+    const remaining = Math.max(0, toCount(entry[TAP_FIELD[kind]]) - 1);
+    if (remaining > 0) entry[TAP_FIELD[kind]] = remaining;
+    else delete entry[TAP_FIELD[kind]];
   }
   if (Object.keys(entry).length > 0) store[wordId] = entry;
   else delete store[wordId];
@@ -129,7 +134,7 @@ export function flipReaction(wordId: string, kind: ReactionKind): boolean {
   return nextActive;
 }
 
-/** Cumulative local taps for one word and reaction kind (0 when never tapped). */
+/** Running local total for one word and reaction kind (0 when never tapped or fully un-tapped). */
 export function getTapCount(wordId: string, kind: ReactionKind): number {
   return toCount(readReactions()[wordId]?.[TAP_FIELD[kind]]);
 }

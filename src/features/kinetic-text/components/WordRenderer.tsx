@@ -33,8 +33,8 @@ export function AnimatedWord({
   tempo,
   paused,
   anchorFromStart,
-  spotlightWord,
-  important,
+  spotlightWord: spotlightProp,
+  important: importantProp,
   textColor,
   emphasisColor,
   staticLayout,
@@ -57,6 +57,14 @@ export function AnimatedWord({
   words: string[];
   skipFrame?: boolean;
 }): ReactElement {
+  // Mirror the feed renderer (WordSequenceWord): a token with no letter/number —
+  // trailing punctuation, or a masked "_____" answer blank (underscore is \p{Pc},
+  // not \p{L}/\p{N}) — can still arrive marked important. Framing it draws an empty
+  // rounded rect, and spotlighting it centers a full-width box around nothing, so a
+  // glyph-less token is never treated as emphasized or spotlighted here.
+  const hasGlyph = /\p{L}|\p{N}/u.test(word);
+  const important = importantProp && hasGlyph;
+  const spotlightWord = spotlightProp && hasGlyph;
   const emphasisAnchorIndex = important ? getBoundPhraseStartIndex(words, index) : index;
   const emphasisVariant = important
     ? getEmphasisVariant(

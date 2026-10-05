@@ -16,8 +16,9 @@
 
 import { randomGenerator } from "./random";
 
-/** The eight emojis a reader can leave on a word, and the burst draws from. */
-export const EMOJI_PALETTE = ["🔥", "💡", "🤔", "❤️", "😂", "👏", "🎉", "💪"] as const;
+/** The six emojis a reader can leave on a word, and the burst draws from. Kept to six
+ *  so the reaction strip (these plus the heart/bookmark toggles) fits a phone width. */
+export const EMOJI_PALETTE = ["🔥", "💡", "😂", "👏", "🎉", "💪"] as const;
 
 export type PaletteEmoji = (typeof EMOJI_PALETTE)[number];
 

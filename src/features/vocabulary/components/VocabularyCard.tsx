@@ -118,20 +118,22 @@ export function VocabularyCard({
   // During the coda there is no matching stage; the answer stage stays mounted
   // underneath so its reveal details and unlocked reactions persist.
   const stage = stages[Math.min(playback.page, revealPage)]!;
-  // Reveal page — emoji strip replaces the action bar so tapping an emoji both
-  // comments and advances to the spelling coda.
-  const isAnticipation = !isSpelling && playback.page === revealPage;
+  // The emoji strip is the chrome for the WHOLE answer — the reveal page and the
+  // trailing spelling coda — and is dropped only when a new word's card mounts. It no
+  // longer swaps away at the reveal→spelling flip, which flickered the strip (and its
+  // badge counts) off mid-answer for no reason.
+  const showEmojiStrip = isRevealed;
   const playKey = playback.replay * pageCount + playback.page;
   // The burst billows out of each emoji's OWN button instead of out of the card's
-  // corners, so every button's launch point is measured from the strip. It is sampled
-  // only while the strip is on screen: re-measuring when the spelling coda swaps the
-  // bar's contents would move the base position of glyphs already in mid-flight.
+  // corners, so every button's launch point is measured from the strip. The strip now
+  // stays mounted across the whole answer, so this runs once when it appears and the
+  // base positions of glyphs already in flight never move on the reveal→spelling flip.
   const [burstOrigin, setBurstOrigin] = useState({ x: 195, y: 702 });
   const [emojiOrigins, setEmojiOrigins] = useState<Record<string, { x: number; y: number }>>({});
   useLayoutEffect(() => {
     const card = cardRef.current;
     const bar = actionBarRef.current;
-    if (!card || !bar || !isAnticipation) return;
+    if (!card || !bar || !showEmojiStrip) return;
     const cardRect = card.getBoundingClientRect();
     const barRect = bar.getBoundingClientRect();
     setBurstOrigin({
@@ -153,7 +155,7 @@ export function VocabularyCard({
         };
       });
     setEmojiOrigins(next);
-  }, [isAnticipation, width, height]);
+  }, [showEmojiStrip, width, height]);
   const sceneTheme = getCanvasSceneTheme(canvas.backgroundScene);
   const patternTheme = getCanvasPatternTheme(canvas.backgroundPattern);
   const sliding =
@@ -301,15 +303,13 @@ export function VocabularyCard({
   }, [readLocalReactions]);
   const toggleReaction = useCallback(
     (kind: ReactionKind) => {
-      // Reactions unlock only once the definition is revealed.
-      if (!stage.reveal) return;
-      // flipReaction bumps the tap counter itself when the reaction turns on.
+      // Reactions are always live — no pre-reveal lock. flipReaction bumps the tap
+      // counter itself when the reaction turns on.
       flipReaction(wordId, kind);
       readLocalReactions();
     },
-    [stage.reveal, wordId, readLocalReactions],
+    [wordId, readLocalReactions],
   );
-  const reactionLocked = !stage.reveal;
   const heartsLabel = formatReactionCount(taps.heart);
   const bookmarksLabel = formatReactionCount(taps.bookmark);
 
@@ -422,11 +422,11 @@ export function VocabularyCard({
       <div
         className="vocab-action-bar"
         ref={actionBarRef}
-        data-anticipation={isAnticipation || undefined}
+        data-anticipation={showEmojiStrip || undefined}
         data-no-gesture
       >
         <AnimatePresence mode="wait">
-          {isAnticipation ? (
+          {showEmojiStrip ? (
             <motion.div
               key="emoji-strip"
               ref={emojiStripRef}
@@ -461,7 +461,6 @@ export function VocabularyCard({
                 type="button"
                 className="vocab-emoji-strip-btn vocab-reaction-heart"
                 data-on={reactions.heart || undefined}
-                disabled={reactionLocked}
                 onClick={() => toggleReaction("heart")}
                 aria-label={
                   reactions.heart ? "Remove your heart from this word" : "Heart this word"
@@ -473,7 +472,6 @@ export function VocabularyCard({
                 type="button"
                 className="vocab-emoji-strip-btn vocab-reaction-bookmark"
                 data-on={reactions.bookmark || undefined}
-                disabled={reactionLocked}
                 onClick={() => toggleReaction("bookmark")}
                 aria-label={reactions.bookmark ? "Remove this word from saved" : "Save this word"}
               >
@@ -504,7 +502,6 @@ export function VocabularyCard({
                   type="button"
                   className="vocab-reaction-button vocab-reaction-heart"
                   data-on={reactions.heart || undefined}
-                  disabled={reactionLocked}
                   onClick={() => toggleReaction("heart")}
                   aria-label={
                     reactions.heart ? "Remove your heart from this word" : "Heart this word"
@@ -519,7 +516,6 @@ export function VocabularyCard({
                   type="button"
                   className="vocab-reaction-button vocab-reaction-bookmark"
                   data-on={reactions.bookmark || undefined}
-                  disabled={reactionLocked}
                   onClick={() => toggleReaction("bookmark")}
                   aria-label={reactions.bookmark ? "Remove this word from saved" : "Save this word"}
                 >

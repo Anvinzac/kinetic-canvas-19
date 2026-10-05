@@ -83,10 +83,16 @@ export function WordSequenceWord({
   entranceStyle,
   skipFrame = false,
 }: WordSequenceWordProps): ReactElement {
-  const primary = emphasized.has(index);
+  // A token with no letter/number — trailing punctuation, or a masked "_____"
+  // answer blank — can still be handed to us by the emphasis sets. Framing it
+  // would draw an empty highlight box around nothing, so a glyph-less token never
+  // counts as important, no matter which selection path (heuristic, fallback,
+  // data annotation, secondary, poetic) proposed it.
+  const hasGlyph = /\p{L}|\p{N}/u.test(word);
+  const primary = hasGlyph && emphasized.has(index);
   // A secondary mark is caller-forced and never drives the spotlight layout, so
   // adding one cannot re-centre the page or claim a full-width line.
-  const secondary = !primary && (secondaryEmphasized?.has(index) ?? false);
+  const secondary = hasGlyph && !primary && (secondaryEmphasized?.has(index) ?? false);
   const important = primary || secondary;
   const spotlightWord = spotlightEmphasis && primary && !suppressSpotlight;
   const emphasisAnchorIndex = important

@@ -40,18 +40,24 @@
   position: absolute;
   z-index: -1;
   inset: -14px -18px -26px;
-  border-radius: 24px;
+  /* Square on top, rounded only on the bottom two corners: the scrim sits flush against
+     the top edge of the viewport, so rounded top corners would let the card background
+     leak through the gaps. The bottom edge still fades over the content, so it keeps its
+     radius. */
+  border-radius: 0 0 24px 24px;
   background: linear-gradient(180deg, #090712a8, #09071252 58%, transparent);
   pointer-events: none;
 }
 .vocab-toolbar-row {
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  grid-template-columns: auto 1fr auto;
   align-items: center;
   gap: 12px;
 }
-/* Equal 1fr side columns keep the three transport controls genuinely centred on the
-   top edge, regardless of how wide the title or the saved badge get. */
+/* Side columns are content-sized (auto) and only the middle track stretches (1fr), so
+   `justify-self: center` on the controls centres them within the LEFTOVER space between
+   the title/gear cluster and the bookmark — not on the whole screen. Equal 1fr side
+   columns would force a screen-centre that ignores how wide each cluster actually is. */
 .vocab-toolbar-left,
 .vocab-player-controls {
   display: flex;
@@ -539,14 +545,27 @@
 }
 .vocab-reveal-details {
   position: absolute;
-  top: 56%;
-  bottom: max(154px, calc(env(safe-area-inset-bottom) + 144px));
+  /* Top-anchored at the stage midline and content-hugging (height:auto): the frosted
+     box grows to cover the ENTIRE definition + example instead of clipping them to a
+     fixed band, so no line is ever left outside the panel. max-height keeps that growth
+     inside the viewport — it stops right above the bottom chrome (top:50% + maxheight =
+     100% − reserve) — and overflow-y stays only as a last-resort safety valve for
+     pathologically long text on very short screens. */
+  top: 50%;
   left: 50%;
   transform: translateX(-50%);
   width: min(680px, 84%);
+  height: auto;
+  max-height: calc(50% - max(154px, calc(env(safe-area-inset-bottom) + 144px)));
   overflow-y: auto;
+  overflow-x: hidden;
   overscroll-behavior-y: contain;
   scrollbar-width: thin;
+  /* Never let a single over-wide token push the meaning past the viewport edge: break it
+     inside the box (inherited by every paragraph below), so the panel is exactly the width
+     it declares and its text can never overflow horizontally on a phone. */
+  overflow-wrap: anywhere;
+  word-break: break-word;
   font-family: "Inter", sans-serif;
   /* Definition + examples were reading too small next to the large kinetic stage
      text, so the panel baseline is lifted a step; the pronunciation tracks it in em
@@ -662,19 +681,19 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: 6px;
   flex-wrap: nowrap;
 }
 .vocab-emoji-strip-btn {
   position: relative;
-  width: 32px;
-  height: 32px;
+  width: 40px;
+  height: 40px;
   display: inline-flex;
   justify-content: center;
   align-items: center;
-  font-size: 16px;
+  font-size: 20px;
   line-height: 1;
-  border-radius: 10px;
+  border-radius: 12px;
   border: 1px solid color-mix(in srgb, var(--vocab-ink) 18%, transparent);
   background: color-mix(in srgb, var(--vocab-ink) 10%, transparent);
   color: var(--vocab-ink);
@@ -721,7 +740,7 @@
 }
 .vocab-emoji-strip-btn.vocab-reaction-heart,
 .vocab-emoji-strip-btn.vocab-reaction-bookmark {
-  font-size: 15px;
+  font-size: 18px;
 }
 .vocab-emoji-strip-btn.vocab-reaction-heart[data-on] {
   color: var(--vocab-accent);
@@ -761,6 +780,10 @@
   will-change: transform, opacity;
 }
 .vocab-reaction {
+  /* Sized to the button alone: the count label is positioned out of flow below, so this
+     box is 44px tall exactly like the reveal pill and the row centres all three on one
+     horizontal line. */
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -800,6 +823,13 @@
   border-color: color-mix(in srgb, var(--vocab-accent-alt) 55%, transparent);
 }
 .vocab-reaction-count {
+  /* Out of flow so the label cannot add height to the .vocab-reaction box. Centred
+     directly under its button; keeping the box at button height is what aligns the
+     reveal pill with the heart/bookmark on the same centreline. */
+  position: absolute;
+  top: calc(100% + 3px);
+  left: 50%;
+  transform: translateX(-50%);
   font-family: "Inter", sans-serif;
   font-size: 11px;
   font-weight: 600;
@@ -1118,6 +1148,35 @@
   .vocab-toolbar-left {
     gap: 6px;
   }
+  /* Bottom reaction strip: the palette is only six now, so on phones we ENLARGE the
+     tap targets instead of shrinking them. Budget at the tight end of this tier, a
+     361px row (action bar usable = 361 − 48 = 313px): 8 buttons × 35 + 7 gaps × 3 +
+     divider ≈ 306px, so a two-digit badge still clears the width. The ≤360px tier
+     below takes a smaller step for the tightest 320px screens. */
+  .vocab-emoji-strip {
+    gap: 3px;
+  }
+  .vocab-emoji-strip-btn {
+    width: 35px;
+    height: 35px;
+    font-size: 18px;
+  }
+  /* Meaning panel fit-to-view rule (phones): the box hugs its content but is capped to
+     the lower half of the screen, so trim the type and internal rhythm to keep a full
+     definition + example inside that cap WITHOUT relying on vertical scroll (which
+     fights the snap feed and would strand text outside the frosted box). */
+  .vocab-reveal-details {
+    font-size: clamp(13px, 4vw, 16px);
+    line-height: 1.45;
+    padding: 10px 14px;
+  }
+  .vocab-pronunciation {
+    margin-bottom: 8px;
+  }
+  .vocab-example {
+    margin-top: 8px;
+    padding-top: 10px;
+  }
   .vocab-select-grid {
     grid-template-columns: 1fr;
   }
@@ -1148,14 +1207,36 @@
   .vocab-toolbar-left {
     gap: 5px;
   }
+  /* Tightest phones (down to a 320px row, action bar usable = 320 − 48 = 272px):
+     8 buttons × 30 + 7 gaps × 2 + divider ≈ 259px, so the six-emoji strip plus the
+     heart/bookmark toggles never overflow. */
+  .vocab-emoji-strip {
+    gap: 2px;
+  }
+  .vocab-emoji-strip-btn {
+    width: 30px;
+    height: 30px;
+    font-size: 16px;
+  }
 }
 @media (max-height: 620px) {
   .vocab-stage-label {
     display: none;
   }
+  /* Short screens give the meaning panel even less vertical room, so trim padding and
+     the inter-block gaps further. The box still hugs its content and stays capped to
+     the space above the bottom chrome, so the whole meaning fits in view without scroll. */
   .vocab-reveal-details {
-    top: 50%;
     padding: 8px 12px;
+    font-size: clamp(12px, 3.6vw, 15px);
+    line-height: 1.4;
+  }
+  .vocab-pronunciation {
+    margin-bottom: 6px;
+  }
+  .vocab-example {
+    margin-top: 6px;
+    padding-top: 8px;
   }
 }
 @media (prefers-reduced-motion: reduce) {

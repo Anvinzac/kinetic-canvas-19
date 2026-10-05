@@ -134,7 +134,18 @@ export function getEmphasizedWordIndexes(words: string[], dataEmphasis?: string[
   // Vietnamese spotlights a single word only; English spotlights a single word.
   const desiredCount = 1;
   const selected = candidates.slice(0, desiredCount).map((item) => item.index);
-  if (selected.length === 0 && words.length > 0) selected.push(words.length - 1);
+  // Fallback when nothing scores above zero: still give the page its one highlight,
+  // but only on a token that renders a real glyph. Never the trailing punctuation or
+  // a masked "_____" blank — framing those is exactly the empty-box defect. If the
+  // whole page is punctuation/blank, leave it unemphasised.
+  if (selected.length === 0) {
+    for (let i = words.length - 1; i >= 0; i -= 1) {
+      if (/\p{L}|\p{N}/u.test(words[i])) {
+        selected.push(i);
+        break;
+      }
+    }
+  }
   const expanded = expandEmphasisToBoundPhrases(words, selected);
 
   // Compound guard: never leave one syllable of a Vietnamese pair glowing alone.

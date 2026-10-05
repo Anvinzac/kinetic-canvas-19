@@ -30,16 +30,20 @@ function getEmphasisGroups(
   emphasized: Set<number>,
 ): Array<{ start: number; end: number }> {
   const groups: Array<{ start: number; end: number }> = [];
+  // A glyph-less token (punctuation, a masked "_____" blank) can carry an index in
+  // `emphasized`, but framing it draws an empty box around nothing. Break runs on such
+  // tokens so they neither start, extend, nor sit inside a shared frame (mirrors feed).
+  const hasGlyph = (word: string) => /\p{L}|\p{N}/u.test(word);
   let i = 0;
 
   while (i < words.length) {
-    if (!emphasized.has(i)) {
+    if (!emphasized.has(i) || !hasGlyph(words[i])) {
       i += 1;
       continue;
     }
 
     const start = i;
-    while (i < words.length && emphasized.has(i)) {
+    while (i < words.length && emphasized.has(i) && hasGlyph(words[i])) {
       i += 1;
     }
 
