@@ -89,6 +89,7 @@
 /* The brand is the difficulty trigger, so it is a real button reset to look like
    the old link: no chrome, left-aligned, title stacked over the tagline slot. */
 .vocab-brand {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -116,28 +117,30 @@
 .vocab-brand-name > span {
   color: var(--vocab-accent);
 }
-/* The tagline slot now reports the active difficulty track, so it is styled as a
-   control (heavier, brighter on hover) rather than as muted decoration. */
+/* The tagline slot reports the active difficulty track. It is taken OUT OF FLOW
+   (absolute) so its single nowrap line can run up to ~2x the title width to the
+   right — over the empty band beneath the controls — WITHOUT ever widening the brand
+   box. That keeps the settings gear hugging the title and the three transport controls
+   genuinely centred, and the label is never wrapped or cropped. */
 .vocab-brand small {
-  display: flex;
+  position: absolute;
+  top: calc(100% + 1px);
+  left: 0;
+  display: inline-flex;
   align-items: center;
   gap: 5px;
-  max-width: 100%;
+  white-space: nowrap;
   color: #ffffffb3;
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 600;
   letter-spacing: 0.02em;
-  line-height: 1.3;
+  line-height: 1.25;
   transition: color 0.15s ease;
 }
-/* The brand title keeps its full width (it is the row's automatic minimum size) and
-   the track name gives way first, so a long label like "văn chương · B2–C2"
-   ellipsises instead of pushing into the action buttons. */
+/* The track label never wraps or ellipsises: on a nowrap absolute tagline it renders
+   in full, extending to the right as needed. */
 .vocab-difficulty-current {
-  min-width: 0;
-  overflow: hidden;
   white-space: nowrap;
-  text-overflow: ellipsis;
 }
 /* The trigger reports the whole selection, so the leading difficulty emoji gets a hair
    of separation from the label it denotes. */
@@ -282,7 +285,9 @@
 .vocab-difficulty-pop {
   position: absolute;
   z-index: 60;
-  top: calc(100% + 8px);
+  /* +20 (not +8): the tagline is absolute now, so the brand box is only the title's
+     height — the panel must drop far enough to clear the floating track label. */
+  top: calc(100% + 20px);
   left: 0;
   display: flex;
   flex-direction: column;
@@ -1076,58 +1081,29 @@
     text-shadow: 0 0 0 transparent;
   }
 }
-/* Mobile toolbar layout.
-   The row is `1fr auto 1fr`, so the centred transport cluster only stays clear of the
-   title while BOTH 1fr side columns can hold their own content. The left column
-   carries the title *and* the settings gear *and* (under the title) the difficulty
-   label — three things far wider than the right column's single bookmark, so on a
-   phone the equal split spills the left side into the centre and clips the difficulty
-   text. Clamping the brand to a tiny max-width was the wrong lever: it made the title
-   overflow onto the gear and ellipsised the difficulty label every time. Instead, on
-   narrow screens we STACK the left cell — the title + difficulty line takes the whole
-   1fr column and the gear drops beneath it — so (a) the gear can never sit on the
-   title's line, (b) the difficulty label uses the full column width and wraps onto as
-   many lines as it needs (always fully visible), and (c) the controls stay centred
-   because the row is still `1fr auto 1fr`, with the row gap keeping them clear of the
-   left block. Breakpoint is 430px (not 380px) because 390–430px covers the common
+/* Mobile toolbar sizing.
+   The row stays `1fr auto 1fr` with the settings gear INLINE right next to the title —
+   the absolute, nowrap tagline from the base rules keeps its own single line and is the
+   only thing allowed to run wide, so it never pushes the gear out of the title row nor
+   widens the left column. On phones we therefore only shrink the transport buttons, the
+   icons and the gaps so the short title + gear still fit inside a 1fr column beside the
+   centred controls. Breakpoint is 430px (not 380px) because 390–430px covers the common
    modern phones (iPhone 12/13/14/Pro Max and most Androids) that got no help before. */
 @media (max-width: 430px) {
   .vocab-toolbar-row {
-    gap: 10px;
-    /* Pin the chrome to the top edge; the left cell is now taller (stacked). */
-    align-items: start;
+    gap: 8px;
   }
-  .vocab-toolbar-left {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 4px;
-  }
-  .vocab-difficulty {
-    width: 100%;
-  }
+  /* Budget at 390px (row = 358): centre = 3×34 + 2×6 = 114, two row gaps = 16, so each
+     1fr column is (358 − 114 − 16) / 2 ≈ 114px. Left = title(15px ≈ 72) + gap(6) +
+     gear(30) ≈ 108 ≤ 114; right = one 34px bookmark. The tagline floats beneath the
+     title, outside this budget, so it never counts against it. */
   .vocab-brand {
-    /* Fill the column instead of a cramped fixed width: the title keeps its line and
-       the difficulty line below it gets room to wrap. */
-    width: 100%;
-    max-width: 100%;
     font-size: 15px;
     letter-spacing: -0.5px;
   }
-  /* Wrap the difficulty label onto as many lines as it needs instead of ellipsising a
-     narrow sliver, so the active track is always fully readable. */
-  .vocab-brand small {
-    align-items: flex-start;
-  }
-  .vocab-difficulty-current {
-    white-space: normal;
-    overflow: visible;
-    text-overflow: clip;
-  }
-  /* Gear sits below the title block, left-aligned, with its own tap size. */
   .vocab-settings-button {
     width: 30px;
     height: 30px;
-    align-self: flex-start;
   }
   .vocab-icon-button {
     width: 34px;
@@ -1138,19 +1114,20 @@
     width: 17px;
     height: 17px;
   }
-  .vocab-player-controls {
-    gap: 7px;
+  .vocab-player-controls,
+  .vocab-toolbar-left {
+    gap: 6px;
   }
   .vocab-select-grid {
     grid-template-columns: 1fr;
   }
 }
 /* Very small phones (≤360px, down to a 320px row): shave the same dimensions one more
-   step. The column-stack layout and full-width wrapping difficulty label above still
-   apply; only the control sizes tighten. */
+   step. At 360px each 1fr column is ≈ 108px vs title(14px ≈ 67) + gap(5) + gear(28) ≈
+   100, so the inline title + gear still clears the centred controls. */
 @media (max-width: 360px) {
   .vocab-toolbar-row {
-    gap: 8px;
+    gap: 6px;
   }
   .vocab-brand {
     font-size: 14px;
@@ -1167,8 +1144,9 @@
     width: 16px;
     height: 16px;
   }
-  .vocab-player-controls {
-    gap: 6px;
+  .vocab-player-controls,
+  .vocab-toolbar-left {
+    gap: 5px;
   }
 }
 @media (max-height: 620px) {

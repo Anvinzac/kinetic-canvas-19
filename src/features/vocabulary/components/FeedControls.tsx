@@ -6,7 +6,7 @@ import {
   ChevronDown,
   Pause,
   Play,
-  Settings2,
+  Settings,
   Shuffle,
   Volume2,
   VolumeX,
@@ -168,8 +168,8 @@ function DifficultyDropdown({
           anh.chay<span>Lá</span>
         </span>
         <small>
-          {/* Own element so the summary can ellipsis instead of wrapping into the
-              action buttons on a 360px row, where there is almost no slack. */}
+          {/* Single nowrap line, taken out of flow in CSS so it can read in full
+              without pushing the gear or the centred controls. */}
           <span className="vocab-difficulty-current">
             <span className="vocab-difficulty-current-emoji" aria-hidden="true">
               {summary.emoji}
@@ -322,7 +322,7 @@ export function FeedControls({
             aria-controls={panelId}
             aria-label={open ? "Close feed options" : "Open feed options"}
           >
-            {open ? <X size={20} /> : <Settings2 size={20} />}
+            {open ? <X size={20} /> : <Settings size={20} />}
           </button>
         </div>
         {/* Centre: the three transport controls, centred on the top edge. */}
