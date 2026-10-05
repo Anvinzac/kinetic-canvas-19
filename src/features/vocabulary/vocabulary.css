@@ -591,7 +591,10 @@
   overflow: hidden;
 }
 .vocab-progress span[data-complete="true"] {
-  background: var(--vocab-accent-alt);
+  /* Keep the finished colour identical to the loading fill (--vocab-accent) so a
+     segment never flips hue when the page completes; the earlier accent-alt switch
+     read as an unnecessary flash. */
+  background: var(--vocab-accent);
 }
 .vocab-progress i {
   display: block;
@@ -1073,23 +1076,40 @@
     text-shadow: 0 0 0 transparent;
   }
 }
-@media (max-width: 380px) {
-  /* The tagline slot is the difficulty control now, so it must never be hidden the
-     way the old decorative tagline was; shrink the brand instead to leave the
-     toolbar row room for the action buttons. */
-  .vocab-brand {
-    font-size: 19px;
-    letter-spacing: -0.8px;
-    /* Capped so a long track name truncates instead of widening the brand: at
-       360px the row is only 328px wide and five action buttons already claim most
-       of it. 92px still shows the whole title (its min-content is ~84px). */
-    max-width: 92px;
+/* Mobile toolbar compaction.
+   The row is `1fr auto 1fr`, so the centred cluster only stays clear of the title
+   while BOTH 1fr side columns can hold their own content. The left column carries
+   the title *and* the settings gear, so it is much wider than the right column's
+   single bookmark — the equal split lets the left side spill into the centre. The
+   answer is to shrink the transport buttons, the gaps and the brand footprint
+   together (proportionately, so the cluster keeps its rhythm) until the whole row
+   fits its tracks. The breakpoint is 430px, not 380px, because 390–430px covers the
+   common modern phones (iPhone 12/13/14/Pro Max and most Androids) that previously
+   got no compaction at all and overlapped on the first render. */
+@media (max-width: 430px) {
+  .vocab-toolbar-row {
+    gap: 8px;
   }
-  /* 40px buttons and a 4px gap bring the action row to 216px, so brand + gap +
-     actions fit inside 328px with slack. 44px targets are kept above 380px. */
+  /* Budget for a 361px-wide phone (row = 329px): centre = 3×34 + 2×6 = 108, two
+     side gaps = 16, leaving 102px per 1fr column. Left = title(60) + gap(6) +
+     gear(30) = 96 ≤ 102; right = one 34px bookmark ≤ 102. Everything fits. */
+  .vocab-brand {
+    font-size: 15px;
+    letter-spacing: -0.5px;
+    max-width: 60px;
+  }
+  .vocab-settings-button {
+    width: 30px;
+    height: 30px;
+  }
   .vocab-icon-button {
-    width: 40px;
-    height: 40px;
+    width: 34px;
+    height: 34px;
+  }
+  /* The 19px glyph would crowd a 34px button, so the icon scales with it. */
+  .vocab-icon-button svg {
+    width: 17px;
+    height: 17px;
   }
   .vocab-player-controls,
   .vocab-toolbar-left {
@@ -1097,6 +1117,34 @@
   }
   .vocab-select-grid {
     grid-template-columns: 1fr;
+  }
+}
+/* Very small phones (≤360px, down to a 320px row): shave the same dimensions one
+   more step so the tightest budget (320px) still leaves each 1fr column enough for
+   title + gear without touching the centre. */
+@media (max-width: 360px) {
+  .vocab-toolbar-row {
+    gap: 6px;
+  }
+  .vocab-brand {
+    font-size: 14px;
+    max-width: 54px;
+  }
+  .vocab-settings-button {
+    width: 28px;
+    height: 28px;
+  }
+  .vocab-icon-button {
+    width: 30px;
+    height: 30px;
+  }
+  .vocab-icon-button svg {
+    width: 16px;
+    height: 16px;
+  }
+  .vocab-player-controls,
+  .vocab-toolbar-left {
+    gap: 5px;
   }
 }
 @media (max-height: 620px) {

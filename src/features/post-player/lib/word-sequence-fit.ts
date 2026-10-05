@@ -1,15 +1,16 @@
 /**
  * Pure layout-fit math for WordSequenceText (scale, solo stretch, safe Y).
  *
- * Exports: computeWordSequenceFit
+ * Exports: computeWordSequenceFit, clampFitToWidestWord
  * Depends on: kinetic-text getMeasuredTextWidth, playback-timing + solo-text-fit helpers
  */
 
-import { getMeasuredTextWidth } from "@/features/kinetic-text";
+import { getMeasuredTextWidth, getWidestWordWidth } from "@/features/kinetic-text";
 import {
   MIN_ENGLISH_TEXT_FIT_SCALE,
   MIN_FONT_SIZE,
   MIN_TEXT_FIT_SCALE,
+  TEXT_SAFE_MIN_EDGE_GAP_PX,
   getTextSafeInsets,
 } from "./playback-timing";
 import {
@@ -39,6 +40,35 @@ export type WordSequenceFitOutput = {
   nextSoloInlineScale: number;
   nextCenterY: number;
 };
+
+/**
+ * Let horizontal containment override the legibility floor on a wrapping page.
+ *
+ * `floorFit` keeps multi-word pages readable, but it can re-inflate a page whose
+ * longest unbreakable word no longer fits the safe width — which is how a word of
+ * more than a few letters spills past both screen edges. Because words wrap whole,
+ * the page only truly overflows when its WIDEST single word is too wide; that one
+ * case is the only time this shrinks below the floor, and it shrinks exactly enough
+ * for that word to land inside `availableWidth`. Everything that already fits is
+ * returned untouched, so normal pages keep their floor-governed size.
+ * @param input floorFit/current fitScale, the widest word's measured width, the safe
+ * width to fit it in, and an absolute lower bound so text never collapses to nothing
+ * @returns Fit scale that keeps the widest word on screen without over-shrinking
+ */
+export function clampFitToWidestWord(input: {
+  floorFit: number;
+  fitScale: number;
+  widestWordWidth: number;
+  availableWidth: number;
+  absoluteMin?: number;
+}): number {
+  const { floorFit, fitScale, widestWordWidth, availableWidth, absoluteMin = 0.05 } = input;
+  if (!(widestWordWidth > 0) || !(availableWidth > 0) || !(fitScale > 0)) return floorFit;
+  // Width the widest word occupies if the page is drawn at floorFit.
+  const widthAtFloor = widestWordWidth * (floorFit / fitScale);
+  if (widthAtFloor <= availableWidth) return floorFit;
+  return Math.max(absoluteMin, (floorFit * availableWidth) / widthAtFloor);
+}
 
 /**
  * Measure the text node and compute the next fit / stretch / Y.
@@ -95,8 +125,8 @@ export function computeWordSequenceFit(input: WordSequenceFitInput): WordSequenc
     const viewportRight =
       viewportLeft + (viewport?.width ?? wrapper.ownerDocument.documentElement.clientWidth);
     const center = (rect.left + rect.right) / 2;
-    const left = Math.max(canvasRect.left, viewportLeft) + 16;
-    const right = Math.min(canvasRect.right, viewportRight) - 16;
+    const left = Math.max(canvasRect.left, viewportLeft) + TEXT_SAFE_MIN_EDGE_GAP_PX;
+    const right = Math.min(canvasRect.right, viewportRight) - TEXT_SAFE_MIN_EDGE_GAP_PX;
     const centeredRoom = Math.max(1, 2 * Math.min(center - left, right - center));
     soloAvailableWidth = Math.min(
       soloAvailableWidth,
@@ -112,7 +142,13 @@ export function computeWordSequenceFit(input: WordSequenceFitInput): WordSequenc
         maxHeight,
         visualScaleGuard,
       )
-    : Math.max(floor, Math.min(1, widthFit, heightFit));
+    : clampFitToWidestWord({
+        floorFit: Math.max(floor, Math.min(1, widthFit, heightFit)),
+        fitScale,
+        widestWordWidth: getWidestWordWidth(text),
+        // Reserve the minimum leading/trailing gap on top of the safe-width wrapper.
+        availableWidth: Math.max(1, wrapperWidth - TEXT_SAFE_MIN_EDGE_GAP_PX * 2),
+      });
   const nextSoloInlineScale = 1;
   const textHeight = text.scrollHeight;
   const requestedCenter = (canvasHeight * specY) / 100;

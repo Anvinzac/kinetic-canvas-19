@@ -55,6 +55,25 @@ export function getMeasuredTextWidth(
 }
 
 /**
+ * Measure the widest single word the text node holds, ignoring any transforms.
+ *
+ * Each rendered word wraps its glyphs in one `[data-kinetic-glyph]` span, so the
+ * largest of those is the longest unbreakable token on the page. Words never
+ * break mid-glyph, so this — not the wrapped line width — is what has to fit the
+ * safe width: if the widest word fits, wrapping keeps every line inside it too.
+ * @param text - text node containing the rendered words
+ * @returns Widest word layout width in CSS pixels (0 when nothing is measured)
+ */
+export function getWidestWordWidth(text: HTMLElement): number {
+  let widest = 0;
+  for (const glyph of text.querySelectorAll("[data-kinetic-glyph]")) {
+    const element = glyph as HTMLElement;
+    widest = Math.max(widest, element.offsetWidth, element.scrollWidth);
+  }
+  return widest;
+}
+
+/**
  * Detect whether any sticker word appears in the canvas text.
  * @param stickers - stickers argument
  * @param text - text argument

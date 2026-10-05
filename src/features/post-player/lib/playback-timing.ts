@@ -10,6 +10,10 @@ import { getWords, isLikelyVietnameseText } from "@/features/kinetic-text";
 
 /** Keep kinetic text clear of the canvas edge without stealing its scale. */
 export const TEXT_SAFE_MAX_WIDTH = "min(92%, calc(100% - 2rem))";
+// Hard minimum leading/trailing gap the fit solver reserves on a wrapping page, so a
+// long unbreakable word shrinks to sit inside this gutter instead of spilling off both
+// screen edges. Applied on top of the safe-width cap above.
+export const TEXT_SAFE_MIN_EDGE_GAP_PX = 16;
 export const TEXT_SAFE_TOP_PX = 72;
 export const TEXT_SAFE_BOTTOM_PX = 132;
 export const MIN_TEXT_FIT_SCALE = 0.46;
@@ -49,7 +53,11 @@ export function isSoloTextPage(text: string): boolean {
  * @param fullText - fullText argument
  * @returns Computed value
  */
-export function getUniformPageTextSize(baseSize: number, pages: string[], fullText: string): number {
+export function getUniformPageTextSize(
+  baseSize: number,
+  pages: string[],
+  fullText: string,
+): number {
   // Single page: use its optimal size
   if (pages.length <= 1) {
     return Math.max(

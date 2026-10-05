@@ -18,6 +18,7 @@ import {
   getSoloRevealFit,
   SOLO_REVEAL_VISUAL_GUARD,
 } from "../src/features/post-player/lib/solo-text-fit";
+import { clampFitToWidestWord } from "../src/features/post-player/lib/word-sequence-fit";
 import { getVietnameseLayoutMetrics } from "../src/lib/text-language";
 import { VOCAB_LINE_SPACING_SCALE } from "../src/features/vocabulary/lib/presets";
 
@@ -357,6 +358,56 @@ assert(
   /left:\s*-0\.\d+em/.test(joinRule) && /right:\s*-0\.\d+em/.test(joinRule),
   "the join rule still bleeds the bar past both ends (half the 0.24em column gap)",
 );
+// Widest-word containment: a wrapping page may only shrink below its legibility floor
+// when a single unbreakable word no longer fits the safe width — the case that made a
+// long word spill past both screen edges.
+// (a) Already fits: the widest word lands inside the gap, so the floor stands untouched.
+assert(
+  clampFitToWidestWord({
+    floorFit: 0.72,
+    fitScale: 1,
+    widestWordWidth: 180,
+    availableWidth: 320,
+  }) === 0.72,
+  "a page whose widest word already fits keeps its floor-governed size (no over-shrink)",
+);
+// (b) Overflows: shrink exactly enough that widestWord * (fit / fitScale) == available.
+{
+  const fit = clampFitToWidestWord({
+    floorFit: 0.72,
+    fitScale: 1,
+    widestWordWidth: 500,
+    availableWidth: 320,
+  });
+  assert(fit < 0.72, "an overlong word is pulled below the floor");
+  assert(
+    500 * (fit / 1) <= 320 + 0.001,
+    `the widest word is brought inside the safe width (${fit})`,
+  );
+}
+// (c) Never grows past the floor, and never collapses to nothing.
+assert(
+  clampFitToWidestWord({ floorFit: 0.9, fitScale: 1, widestWordWidth: 40, availableWidth: 320 }) <=
+    0.9,
+  "containment only shrinks, it never enlarges a page past its floor",
+);
+assert(
+  clampFitToWidestWord({
+    floorFit: 0.72,
+    fitScale: 1,
+    widestWordWidth: 100000,
+    availableWidth: 320,
+    absoluteMin: 0.05,
+  }) === 0.05,
+  "a pathological word is floored at the absolute minimum, never 0",
+);
+// (d) Degenerate measurements fall back to the floor rather than dividing by zero.
+assert(
+  clampFitToWidestWord({ floorFit: 0.72, fitScale: 1, widestWordWidth: 0, availableWidth: 320 }) ===
+    0.72,
+  "a missing measurement leaves the floor in place",
+);
+
 console.log(
   "OK — intrinsic phrase spacing, untransformed measurement, viewport-safe reveal fitting, per-caller line spacing, and joined compound underlines",
 );
