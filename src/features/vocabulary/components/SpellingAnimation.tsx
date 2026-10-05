@@ -127,7 +127,13 @@ export function SpellingAnimation({
       // The row is nowrap by contract, so this size is the only thing keeping ten
       // letters (or forty) on one line: it is solved from the width actually needed
       // and never lifted off a minimum, which is what used to spill long answers.
-      setFontSize(getSpellingFitFontSize(natural, available));
+      const fitted = getSpellingFitFontSize(natural, available);
+      // Written straight back to the element as well as to state. Measuring had to
+      // set the nominal size by hand, and when a later pass solves the SAME size
+      // React sees no state change and repaints nothing — which left the row stuck
+      // at nominal, wider than it had just been fitted to.
+      row.style.fontSize = `${fitted}px`;
+      setFontSize(fitted);
     };
     measure();
     const observer = new ResizeObserver(measure);

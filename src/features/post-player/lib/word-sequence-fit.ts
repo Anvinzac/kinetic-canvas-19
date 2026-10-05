@@ -5,7 +5,11 @@
  * Depends on: kinetic-text getMeasuredTextWidth, playback-timing + solo-text-fit helpers
  */
 
-import { getMeasuredTextWidth, getWidestWordWidth } from "@/features/kinetic-text";
+import {
+  getMeasuredTextWidth,
+  getWidestLineWidth,
+  getWidestWordWidth,
+} from "@/features/kinetic-text";
 import {
   MIN_ENGLISH_TEXT_FIT_SCALE,
   MIN_FONT_SIZE,
@@ -145,7 +149,18 @@ export function computeWordSequenceFit(input: WordSequenceFitInput): WordSequenc
     : clampFitToWidestWord({
         floorFit: Math.max(floor, Math.min(1, widthFit, heightFit)),
         fitScale,
-        widestWordWidth: getWidestWordWidth(text),
+        // The widest thing that cannot break. On a wrapping page that is a word; on a
+        // Vietnamese page the lines are packed ahead of time and never wrap, so it is
+        // a whole line. Without this a line holding an enlarged emphasised phrase ran
+        // off the right edge whenever the legibility floor refused to shrink the page.
+        // A line already includes its own indent, so it is expressed in the same
+        // gutter-reserved terms as a word by adding the two edge gaps back.
+        widestWordWidth: isVietnamese
+          ? Math.max(
+              getWidestWordWidth(text),
+              getWidestLineWidth(text) - TEXT_SAFE_MIN_EDGE_GAP_PX * 2,
+            )
+          : getWidestWordWidth(text),
         // Reserve the minimum leading/trailing gap on top of the safe-width wrapper.
         availableWidth: Math.max(1, wrapperWidth - TEXT_SAFE_MIN_EDGE_GAP_PX * 2),
       });

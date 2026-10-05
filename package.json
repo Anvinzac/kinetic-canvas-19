@@ -12,6 +12,7 @@
     "typecheck": "tsc --noEmit",
     "vocab:import": "node --experimental-strip-types scripts/import-vocabulary.ts",
     "check:gradients": "node scripts/check-canvas-gradients.ts",
+    "check:ambient": "node scripts/check-ambient-single-stream.ts",
     "check:palettes": "node scripts/check-palette-contrast.ts",
     "format": "prettier --write ."
   },

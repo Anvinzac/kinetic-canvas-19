@@ -77,20 +77,19 @@ export function getEntranceHidden(
         scale: important ? 1.08 : 1.03,
         filter: "blur(16px)",
       };
+    // The five styles below are deliberately crisp: only the two poetic reveals and
+    // `focus` animate blur. A per-word `filter: blur()` is the most expensive thing a
+    // page of text can animate, and when every style uses it they all read as the same
+    // soft fade — the transform is what gives each entrance its own character.
     case "fall":
       // Drop down from above and settle.
-      return {
-        opacity: 0,
-        y: important ? -38 : -26,
-        scale: important ? 0.72 : 0.9,
-        filter: "blur(8px)",
-      };
+      return { opacity: 0, y: important ? -38 : -26, scale: important ? 0.72 : 0.9 };
     case "pop":
       // Punch up from tiny with a spring overshoot.
-      return { opacity: 0, scale: important ? 0.24 : 0.42, filter: "blur(4px)" };
+      return { opacity: 0, scale: important ? 0.24 : 0.42 };
     case "drift":
       // Fan in from alternating sides.
-      return { opacity: 0, x: dir * (important ? 54 : 40), y: 6, filter: "blur(8px)" };
+      return { opacity: 0, x: dir * (important ? 54 : 40), y: 6 };
     case "tilt":
       // Swing into place with a small rotation.
       return {
@@ -98,20 +97,14 @@ export function getEntranceHidden(
         y: important ? 22 : 15,
         rotate: dir * 9,
         scale: important ? 0.74 : 0.9,
-        filter: "blur(7px)",
       };
     case "focus":
       // Cinematic rack-focus: bloom in from slightly oversized + heavy blur.
       return { opacity: 0, scale: important ? 1.5 : 1.2, filter: "blur(16px)" };
     case "rise":
     default:
-      // The original: float up from below with a soft blur.
-      return {
-        opacity: 0,
-        y: important ? 34 : 22,
-        scale: important ? 0.66 : 0.88,
-        filter: "blur(10px)",
-      };
+      // The original: float up from below.
+      return { opacity: 0, y: important ? 34 : 22, scale: important ? 0.66 : 0.88 };
   }
 }
 
@@ -136,7 +129,15 @@ export function getEntranceTransition(
   if (style === "tilt") {
     return { delay, type: "spring", stiffness: 300, damping: 19, mass: 0.8 };
   }
-  // Slower, softer easing for the blur-heavy reveals so they breathe rather than snap.
+  // Rise and fall land on a lightly under-damped spring: now that they no longer
+  // hide behind a blur, a small settle is what keeps them from stopping dead.
+  if (style === "rise") {
+    return { delay, type: "spring", stiffness: 260, damping: 22, mass: 0.9 };
+  }
+  if (style === "fall") {
+    return { delay, type: "spring", stiffness: 320, damping: 20, mass: 0.9 };
+  }
+  // Slower, softer easing for the blur-heavy focus reveal so it breathes rather than snaps.
   const stretch = style === "focus" ? 1.12 : style === "drift" ? 1.05 : 1;
   return { delay, duration: duration * stretch, ease: [0.22, 1, 0.36, 1] };
 }

@@ -1,5 +1,5 @@
 /** Bounded, full-screen vocabulary stream and network states. Exports: VocabularyStream. Depends on: feed/window hooks, backfill bounds, VocabularyCard. */
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, lazy, useEffect, useMemo, useRef, useState } from "react";
 import { useVocabularyFeed } from "../hooks/useVocabularyFeed";
 import { useVocabularyWindow } from "../hooks/useVocabularyWindow";
 import { useFeedPagination } from "../hooks/useFeedPagination";
@@ -7,6 +7,11 @@ import { canWalkFurther, getWalkedPositions } from "../lib/backfill";
 import { formatCountdown, isWordAllowed, nextAvailableAt, type ViewHistory } from "../lib/history";
 import type { FeedPage, Presentation, VocabularyFilters } from "../types";
 import { VocabularyCard } from "./VocabularyCard";
+
+// Admin-only, and only on demand: readers never download the export studio.
+const ExportStudio = lazy(() =>
+  import("./ExportStudio").then((module) => ({ default: module.ExportStudio })),
+);
 
 /** Render a single mounted session; remount on shuffle/filter changes. @param props Session and UI choices. @returns Virtualized feed. */
 export function VocabularyStream({
@@ -17,10 +22,14 @@ export function VocabularyStream({
   suspended,
   history,
   onRecordView,
+  onWordEnding,
+  exportOpen = false,
+  onCloseExport,
   onClearHistory,
   onMetadata,
   onRestart,
   onClearFilters,
+  revealButtonLabel,
 }: {
   seed: string;
   filters: VocabularyFilters;
@@ -29,10 +38,17 @@ export function VocabularyStream({
   suspended: boolean;
   history: ViewHistory;
   onRecordView: (wordId: string) => void;
+  /** The on-screen word reached its final page; ms left before the stream moves on. */
+  onWordEnding?: (remainingMs: number) => void;
+  /** Show the video-export studio for the on-screen word (the caller gates this to admins). */
+  exportOpen?: boolean;
+  onCloseExport?: () => void;
   onClearHistory: () => void;
   onMetadata: (page: FeedPage) => void;
   onRestart: () => void;
   onClearFilters: () => void;
+  /** Custom label for the reveal button, from admin wording presets. */
+  revealButtonLabel?: string;
 }) {
   const query = useVocabularyFeed(seed, filters);
   // Tick so day-window expiries re-evaluate without a reload.
@@ -95,6 +111,39 @@ export function VocabularyStream({
     recorded.current.add(activeEntry.occurrenceId);
     onRecordView(activeEntry.word.id);
   }, [activeEntry, suspended, onRecordView]);
+
+  // The export studio needs a word. Opened with none on screen (empty stream, every
+  // word blocked) it would render nothing while still holding the feed suspended, so
+  // hand the request straight back.
+  useEffect(() => {
+    if (exportOpen && !activeEntry) onCloseExport?.();
+  }, [exportOpen, activeEntry, onCloseExport]);
+
+  // Lift the on-screen card's palette accent onto the shared .vocabulary-shell so the
+  // difficulty popover — a sibling of the stream, not a descendant of the card — can
+  // paint its glass highlight and "Xong" button with the SAME accent as the card behind
+  // it. Custom properties only inherit downward, so the card's inline --vocab-accent
+  // can't reach the toolbar on its own; we copy the computed values up to the ancestor
+  // both the stream and the toolbar sit under.
+  useEffect(() => {
+    const shell = viewport.current?.closest(".vocabulary-shell") as HTMLElement | null;
+    if (!shell) return;
+    const card = viewport.current?.querySelector<HTMLElement>(
+      ".vocab-slot[data-current] .vocab-card",
+    );
+    if (!card) {
+      // No card on screen: drop the lifted values so the popover falls back to the
+      // shell mint instead of sticking on a stale palette.
+      shell.style.removeProperty("--popup-accent");
+      shell.style.removeProperty("--popup-accent-ink");
+      return;
+    }
+    const computed = getComputedStyle(card);
+    const accent = computed.getPropertyValue("--vocab-accent").trim();
+    const accentInk = computed.getPropertyValue("--vocab-button-ink").trim();
+    if (accent) shell.style.setProperty("--popup-accent", accent);
+    if (accentInk) shell.style.setProperty("--popup-accent-ink", accentInk);
+  }, [activeIndex, activeEntry, presentation, suspended, viewport]);
 
   // Backfill: blocked words shrink the visible list, so pull more server
   // positions until enough showable words are buffered (bounded by maxPages and by
@@ -245,6 +294,10 @@ export function VocabularyStream({
               <div
                 key={item.key}
                 className="vocab-slot"
+                // Marks the on-screen word even while the stream is suspended (every
+                // card is inert then), so the floating chrome can keep following its
+                // tone from CSS.
+                data-current={item.index === activeIndex || undefined}
                 style={{ height, transform: `translateY(${item.start}px)` }}
               >
                 <VocabularyCard
@@ -256,12 +309,19 @@ export function VocabularyStream({
                   matching={query.metadata?.matching ?? 0}
                   canAdvance={activeIndex < visibleEntries.length - 1}
                   onAdvance={() => move(1)}
+                  onWordEnding={onWordEnding}
+                  revealButtonLabel={revealButtonLabel}
                 />
               </div>
             );
           })}
         </div>
       </div>
+      {exportOpen && activeEntry && onCloseExport && (
+        <Suspense fallback={null}>
+          <ExportStudio entry={activeEntry} presentation={presentation} onClose={onCloseExport} />
+        </Suspense>
+      )}
       {visibleEntries.length > 0 && (
         <>
           {(query.error || query.isPaused || exhausted) && (

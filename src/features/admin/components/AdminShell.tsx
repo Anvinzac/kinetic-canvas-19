@@ -11,7 +11,11 @@ import { useMemo, useState } from "react";
 import { DateRangeBar } from "./DateRangeBar";
 import { LiveIndicator } from "./LiveIndicator";
 import { useAdminMode, useAdminSearchRange } from "../hooks/useAdminMode";
-import { adminErrorsQueryOptions, adminHealthQueryOptions } from "../api/queries";
+import {
+  adminErrorsQueryOptions,
+  adminHealthQueryOptions,
+  adminWordReportsQueryOptions,
+} from "../api/queries";
 import type { AdminRangePreset } from "../lib/date-range";
 import { useAdminSse } from "../hooks/useAdminSse";
 
@@ -20,6 +24,8 @@ const NAV: { to: string; label: string; exact?: boolean }[] = [
   { to: "/admin/users", label: "Users" },
   { to: "/admin/content", label: "Content" },
   { to: "/admin/vocabulary", label: "Vocabulary" },
+  { to: "/admin/wordings", label: "Câu chữ" },
+  { to: "/admin/reports", label: "Word reports" },
   { to: "/admin/templates", label: "Templates" },
   { to: "/admin/palettes", label: "Palettes" },
   { to: "/admin/model", label: "Model" },
@@ -49,6 +55,9 @@ export function AdminShell(): React.ReactElement {
   const { from, to, preset } = useAdminSearchRange(search);
   const healthQuery = useQuery(adminHealthQueryOptions(mode));
   const errorsQuery = useQuery(adminErrorsQueryOptions(from, to, mode, "new"));
+  // Open word reports from readers, so new ones are visible from any admin page.
+  const wordReportsQuery = useQuery(adminWordReportsQueryOptions());
+  const openWordReports = wordReportsQuery.data?.openTotal ?? 0;
   const sse = useAdminSse(mode);
   const [lastUpdatedAt] = useState(() => Date.now());
   const updatedAt = healthQuery.dataUpdatedAt || lastUpdatedAt;
@@ -85,6 +94,11 @@ export function AdminShell(): React.ReactElement {
                 {item.to === "/admin/errors" && criticalCount > 0 ? (
                   <span className="ml-2 rounded-full bg-red-600 px-1.5 py-0.5 text-[10px] text-white">
                     {criticalCount}
+                  </span>
+                ) : null}
+                {item.to === "/admin/reports" && openWordReports > 0 ? (
+                  <span className="ml-2 rounded-full bg-amber-500 px-1.5 py-0.5 text-[10px] text-black">
+                    {openWordReports}
                   </span>
                 ) : null}
               </Link>

@@ -99,8 +99,15 @@ export function getEmphasisTextShadow(variant: EmphasisVariant | null): string {
  */
 export function getEmphasisInnerAnimation(variant: EmphasisVariant | null): string | undefined {
   if (variant === "jiggle") return "kinetic-emphasis-jiggle 0.58s ease-in-out 0.08s 2";
-  if (variant === "pulse") return "kinetic-emphasis-pulse 1.35s ease-in-out infinite";
-  if (variant === "glow") return "kinetic-emphasis-glow 1.6s ease-in-out infinite";
+  // Looping variants are whole multiples of `--kinetic-beat` when a surface sets one,
+  // so every mark on a page pulses to the same tempo. The fallbacks reproduce the
+  // original free-running periods (1.35s and 1.6s) for surfaces that do not.
+  if (variant === "pulse") {
+    return "kinetic-emphasis-pulse calc(var(--kinetic-beat, 0.675s) * 2) ease-in-out infinite";
+  }
+  if (variant === "glow") {
+    return "kinetic-emphasis-glow calc(var(--kinetic-beat, 0.8s) * 2) ease-in-out infinite";
+  }
   return undefined;
 }
 

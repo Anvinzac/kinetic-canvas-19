@@ -153,3 +153,34 @@ export function formatLevelBand(levels: readonly VocabularyLevel[]): string {
   const last = ordered[ordered.length - 1];
   return first && last && first !== last ? `${first}–${last}` : (first ?? "");
 }
+
+/**
+ * A stable, illustrative word count for each difficulty track, shown at the row's
+ * right. These are MOCK curated-pack sizes, not the live catalog count: the dropdown
+ * renders before the feed resolves and must not imply a real total. Each number is a
+ * specific value under 100 (bigger for broad everyday tracks, smaller for narrow or
+ * advanced ones) so a track reads as a bite-size pack, not a vague estimate.
+ */
+const TRACK_WORD_COUNTS: Record<string, number> = {
+  "vo-long": 84,
+  "co-ban": 62,
+  "du-lich": 47,
+  "doc-hieu": 58,
+  "giao-tiep": 91,
+  "chuyen-sau": 39,
+  "nang-cao": 55,
+  "viet-lach": 43,
+  "du-hoc": 68,
+  "van-chuong": 36,
+};
+
+/** Illustrative word count for one track (falls back to 0 for an unknown id). @pure true */
+export function mockTrackWordCount(id: string): number {
+  return TRACK_WORD_COUNTS[id] ?? 0;
+}
+
+/** Illustrative total across every track, shown on the "tất cả" row. */
+export const MOCK_TOTAL_WORDS: number = Object.values(TRACK_WORD_COUNTS).reduce(
+  (total, count) => total + count,
+  0,
+);

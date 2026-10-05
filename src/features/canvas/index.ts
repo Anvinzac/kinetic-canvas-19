@@ -70,6 +70,8 @@ export {
   resolveTextColorOnPhotoBackdrop,
 } from "./contrast";
 
+export { blendOklch, vividGradient } from "./contrast/oklch-blend";
+
 export type { CanvasPatternTheme } from "./patterns";
 export {
   CANVAS_PATTERN_THEMES,

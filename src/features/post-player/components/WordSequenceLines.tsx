@@ -7,8 +7,15 @@
 
 import type { ReactElement } from "react";
 import { motion } from "framer-motion";
+import type { CSSProperties, ReactNode } from "react";
 import type { CanvasSpec } from "@/features/canvas";
-import type { EmphasisVariant, getVietnameseLayoutMetrics } from "@/features/kinetic-text";
+import {
+  getAuraColor,
+  getEmphasisInnerAnimation,
+  type EmphasisVariant,
+  type getVietnameseLayoutMetrics,
+} from "@/features/kinetic-text";
+import { getRunEmphasisVariant } from "../lib/emphasis-variant";
 import type { ResolvedEntranceStyle } from "../lib/entrances";
 import { getEntranceTransition } from "../lib/entrances";
 import { getWordDelay, tempoConfig } from "../lib/playback-timing";
@@ -107,6 +114,7 @@ export function WordSequenceLines({
     index: number,
     suppressSpotlight = false,
     skipFrame = false,
+    runEffect = false,
   ) => (
     <WordSequenceWord
       key={`${word}-${index}`}
@@ -129,6 +137,7 @@ export function WordSequenceLines({
       emphasisColor={emphasisColor}
       entranceStyle={entranceStyle}
       skipFrame={skipFrame}
+      runEffect={runEffect}
     />
   );
 
@@ -141,6 +150,86 @@ export function WordSequenceLines({
       ? 0.01
       : tempoConfig[spec.tempo].wordDuration * 1.22 * rhythmDurationMultiplier;
     return { delay, duration };
+  };
+
+  /**
+   * One run of consecutive emphasised words. The wrapper fades in with its first
+   * word; when every word shares a moving effect, that effect is drawn ONCE on an
+   * inner span covering the whole run — a spotlight that glides from the first
+   * syllable to the last instead of one small spotlight per syllable — and the words
+   * inside are told not to draw their own.
+   */
+  const renderRun = (run: { text: string; index: number }[], key: string): ReactNode => {
+    const first = run[0]!;
+    const last = run[run.length - 1]!;
+    const { delay: frameDelay, duration: frameDuration } = frameEntrance(first.index);
+    const runVariant = getRunEmphasisVariant(
+      run.map((item) => item.index),
+      {
+        words,
+        text: spec.text,
+        emphasized,
+        phraseKeys,
+        secondaryEmphasized,
+        secondaryVariant,
+        emphasisColor,
+      },
+    );
+    const children = run.map((item) =>
+      renderWord(item.text, item.index, true, true, runVariant !== null),
+    );
+    // The effect waits for the LAST word of the run to land, so it never starts
+    // across a syllable that is still flying in.
+    const effectDelay = frameEntrance(last.index);
+    const runAnimation =
+      runVariant && !staticRender ? getEmphasisInnerAnimation(runVariant) : undefined;
+    return (
+      <motion.span
+        key={key}
+        className="inline-flex relative"
+        initial={staticRender ? false : { opacity: 0, filter: "blur(6px)" }}
+        animate={{ opacity: 1, filter: "blur(0px)" }}
+        transition={getEntranceTransition(entranceStyle, frameDelay, frameDuration)}
+        style={{
+          display: "inline-flex",
+          flex: "0 0 auto",
+          alignItems: "baseline",
+          columnGap: "0.24em",
+          padding: "0.05em 0.3em 0.1em",
+          borderRadius: "0.28em",
+          border: "0.05em solid transparent",
+          isolation: "isolate",
+        }}
+      >
+        {runVariant ? (
+          <span
+            data-kinetic-run={runVariant}
+            className={`kinetic-emphasis-mark kinetic-emphasis-run${
+              runVariant === "halo"
+                ? " kinetic-emph-halo"
+                : runVariant === "sweep"
+                  ? " kinetic-emph-sweep"
+                  : ""
+            }${staticRender ? "" : " is-animated"}`}
+            style={
+              {
+                "--kinetic-emphasis-delay": `${effectDelay.delay + effectDelay.duration + 0.18}s`,
+                ...(runVariant === "halo" || runVariant === "glow"
+                  ? { "--kinetic-aura-color": getAuraColor(textColor) }
+                  : {}),
+                animation: runAnimation
+                  ? `${runAnimation} ${paused ? "paused" : "running"}`
+                  : undefined,
+              } as CSSProperties
+            }
+          >
+            {children}
+          </span>
+        ) : (
+          children
+        )}
+      </motion.span>
+    );
   };
 
   if (!isVietnamese) {
@@ -158,30 +247,12 @@ export function WordSequenceLines({
           const group = groups.find((g) => index >= g.start && index < g.end);
           if (!group || group.start !== index) return null;
 
-          const { delay: frameDelay, duration: frameDuration } = frameEntrance(group.start);
-
-          return (
-            <motion.span
-              key={`frame-group-${index}`}
-              className="inline-flex relative"
-              initial={staticRender ? false : { opacity: 0, filter: "blur(6px)" }}
-              animate={{ opacity: 1, filter: "blur(0px)" }}
-              transition={getEntranceTransition(entranceStyle, frameDelay, frameDuration)}
-              style={{
-                display: "inline-flex",
-                flex: "0 0 auto",
-                alignItems: "baseline",
-                columnGap: "0.24em",
-                padding: "0.05em 0.3em 0.1em",
-                borderRadius: "0.28em",
-                border: "0.05em solid transparent",
-                isolation: "isolate",
-              }}
-            >
-              {words
-                .slice(group.start, group.end)
-                .map((w, wi) => renderWord(w, group.start + wi, true, true))}
-            </motion.span>
+          return renderRun(
+            words.slice(group.start, group.end).map((text, offset) => ({
+              text,
+              index: group.start + offset,
+            })),
+            `frame-group-${index}`,
           );
         })}
       </>
@@ -193,6 +264,9 @@ export function WordSequenceLines({
       {vietnameseLines.map((line, lineIndex) => (
         <div
           key={`${lineIndex}-${line.indentEm}`}
+          // Hook for the fit solver: a packed line is unbreakable, so its full width
+          // (not just its widest word) has to fit the safe area.
+          data-kinetic-line=""
           className="flex flex-nowrap items-baseline justify-start"
           style={{
             alignSelf: "stretch",
@@ -234,31 +308,7 @@ export function WordSequenceLines({
                   const grp = segGroups.find((g) => wi >= g.start && wi < g.end);
                   if (!grp || grp.start !== wi) return null;
 
-                  const { delay: frameDelay, duration: frameDuration } = frameEntrance(grp.start);
-
-                  return (
-                    <motion.span
-                      key={`v-frame-group-${index}`}
-                      className="inline-flex relative"
-                      initial={staticRender ? false : { opacity: 0, filter: "blur(6px)" }}
-                      animate={{ opacity: 1, filter: "blur(0px)" }}
-                      transition={getEntranceTransition(entranceStyle, frameDelay, frameDuration)}
-                      style={{
-                        display: "inline-flex",
-                        flex: "0 0 auto",
-                        alignItems: "baseline",
-                        columnGap: "0.24em",
-                        padding: "0.05em 0.3em 0.1em",
-                        borderRadius: "0.28em",
-                        border: "0.05em solid transparent",
-                        isolation: "isolate",
-                      }}
-                    >
-                      {flatWords
-                        .slice(grp.start, grp.end)
-                        .map((w, innerWi) => renderWord(w.text, w.index, true, true))}
-                    </motion.span>
-                  );
+                  return renderRun(flatWords.slice(grp.start, grp.end), `v-frame-group-${index}`);
                 })}
               </span>
             );

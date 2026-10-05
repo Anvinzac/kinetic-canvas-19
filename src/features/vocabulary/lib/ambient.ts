@@ -2,9 +2,10 @@
  * Ambient background music player for the vocabulary feed.
  * Streams energetic tracks from free CDN sources (no self-hosting).
  * Two-tier source pool: DB tracks (primary) with hardcoded fallback.
- * Guarantees only one stream plays at a time.
+ * Guarantees only one stream plays at a time, and that a track change always lands on
+ * a DIFFERENT track from the one that was just playing.
  *
- * Exports: AmbientPlayer, AMBIENT_SOURCES, FALLBACK_SOURCES
+ * Exports: AmbientPlayer, AMBIENT_SOURCES, FALLBACK_SOURCES, WORDS_PER_TRACK, FADE_OUT_MS
  * Depends on: none (pure browser Audio API)
  */
 
@@ -60,6 +61,27 @@ export const FALLBACK_SOURCES: AudioSource[] = [
 /** Active source pool — starts as fallback, replaced by DB tracks when loaded. */
 export const AMBIENT_SOURCES: AudioSource[] = [...FALLBACK_SOURCES];
 
+/** The feed rotates to a new track after this many words. */
+export const WORDS_PER_TRACK = 5;
+
+/** A track change eases the old track out, then the new one in — never a hard cut. */
+export const FADE_OUT_MS = 1400;
+/** A change that could not be prepared ahead of the word fades out faster, so the new track is not kept waiting. */
+const QUICK_FADE_OUT_MS = 800;
+const FADE_IN_MS = 1800;
+const FADE_TICK_MS = 40;
+/** Slack on top of the fade when a track is running out: `timeupdate` only fires a few times a second. */
+const ENDING_SLACK_SECONDS = 0.35;
+
+/**
+ * Where the player is in a hand-over.
+ * - `playing`: a track is audible.
+ * - `leaving`: the current track is fading out.
+ * - `held`: silent on purpose, waiting for the next word to begin before anything
+ *   new starts. A track never starts in the middle of a word.
+ */
+type PlayerMode = "playing" | "leaving" | "held";
+
 const STORAGE_KEY = "kinetic.vocab.ambient";
 const AMBIENT_EVENT = "kinetic:vocab-ambient";
 
@@ -88,19 +110,62 @@ export function setAmbientEnabled(enabled: boolean): void {
 /** Event name dispatched when the ambient preference changes. */
 export { AMBIENT_EVENT };
 
+/** How many AmbientPlayer instances this module has constructed — powers the dev guard. */
+let constructedCount = 0;
+
+/**
+ * True under Vite dev. Optional-chained so this module also imports cleanly under bare
+ * Node (the regression scripts), where `import.meta.env` does not exist.
+ */
+function isDev(): boolean {
+  return (import.meta as { env?: { DEV?: boolean } }).env?.DEV === true;
+}
+
 /**
  * Singleton audio player that streams background music from a two-tier pool:
  * primary (DB tracks) and fallback (hardcoded AMBIENT_SOURCES).
  * - Only ONE Audio element ever exists; previous stream is always flushed first.
  * - On error, exhausts the current pool then falls back to the other tier.
- * - Smooth fade-in on play, instant stop on pause.
+ * - Smooth fade-in on play, fade-out/fade-in on a track change, instant stop on pause.
+ * - Rotation is sequential and compares track URLs, so no change — whether asked for,
+ *   caused by a track ending, or by a pool swap — can replay the track just heard.
+ * - A new track only ever starts when the feed says a word is beginning. A track that
+ *   is about to run out is faded before its last note and the player then waits,
+ *   silent, for that word rather than starting something mid-word.
  */
 export class AmbientPlayer {
   private audio: HTMLAudioElement | null = null;
   private sourceIndex = -1;
   private consecutiveErrors = 0;
   private fadeTimer: ReturnType<typeof setInterval> | null = null;
+  /** The pending "skip to next source after an error" timer, kept so teardown can cancel it. */
+  private retryTimer: ReturnType<typeof setTimeout> | null = null;
+  // Named listener references so `destroy()` can actually remove them — anonymous
+  // arrows could never be unhooked, leaving an orphaned element self-perpetuating.
+  private timeUpdateHandler: (() => void) | null = null;
+  private endedHandler: (() => void) | null = null;
+  private errorHandler: (() => void) | null = null;
+  /** Set once `destroy()` has run, so a re-created element is fully rebuilt. */
   private stopped = true;
+
+  constructor() {
+    constructedCount += 1;
+    if (isDev() && constructedCount > 1) {
+      // The only way to a second instance is bypassing getAmbientPlayer(). Loud in dev
+      // so a future refactor that reintroduces per-instance players (and thus overlap)
+      // fails visibly instead of silently producing two streams.
+      console.warn(
+        "[ambient] a second AmbientPlayer instance was constructed — playback can overlap. Always use getAmbientPlayer().",
+      );
+    }
+  }
+  /** URL of the track most recently started; the one a change must move away from. */
+  private lastUrl: string | null = null;
+  private mode: PlayerMode = "playing";
+  /** What happens once a fade-out finishes: start the next track, or wait for a word. */
+  private afterLeave: "start" | "hold" = "start";
+  /** Bumped every time a track starts, so callers can tell a change happened. */
+  trackSerial = 0;
   /** Whether we are currently drawing from the fallback pool. */
   private usingFallback = false;
 
@@ -118,28 +183,126 @@ export class AmbientPlayer {
     return this.pool[this.sourceIndex]?.name ?? null;
   }
 
-  /** Start or resume playback. Picks a random source on first call. */
+  /**
+   * Start or resume playback. The first track of a session is picked at random, but
+   * never the one that was playing when the music was last switched off.
+   */
   play(): void {
     this.stopped = false;
     if (!this.audio) {
       this.audio = new Audio();
-      this.audio.addEventListener("ended", () => {
-        if (!this.stopped) this.next();
-      });
-      this.audio.addEventListener("error", () => {
+      // A track that runs out is anticipated: it is faded before its last note and the
+      // player then waits for the next word. `ended` only gets here un-faded when the
+      // length was unknown (a live stream) — and then, too, the next track waits.
+      // Handlers are stored as fields so destroy() can remove them.
+      this.timeUpdateHandler = () => this.fadeBeforeEnd();
+      this.endedHandler = () => {
+        if (this.stopped || this.mode !== "playing") return;
+        this.clearFade();
+        this.mode = "held";
+      };
+      this.errorHandler = () => {
         if (!this.stopped) this.onError();
-      });
+      };
+      this.audio.addEventListener("timeupdate", this.timeUpdateHandler);
+      this.audio.addEventListener("ended", this.endedHandler);
+      this.audio.addEventListener("error", this.errorHandler);
     }
-    if (this.sourceIndex < 0) {
-      this.sourceIndex = Math.floor(Math.random() * this.pool.length);
+    if (this.sourceIndex < 0) this.sourceIndex = this.randomFreshIndex();
+    this.loadAndPlay();
+  }
+
+  /** True when the player is silent (or going silent) until the next word begins. */
+  get awaitingWord(): boolean {
+    return !this.stopped && (this.mode === "held" || this.afterLeave === "hold");
+  }
+
+  /** Whether the pool holds a track other than the one playing to move on to. */
+  get canChange(): boolean {
+    return !this.stopped && this.nextFreshIndex() >= 0;
+  }
+
+  /**
+   * Move to another track. Call this when a word BEGINS, so the new track starts with
+   * the word. If the old track has already been faded out and is waiting, the next
+   * one starts at once; otherwise the old one is eased out first and the next follows.
+   * @returns The `trackSerial` the new track will carry, or null when no change was
+   *   started (nothing playing, or no other track to move to)
+   */
+  changeTrack(): number | null {
+    if (this.stopped || !this.audio) return null;
+    if (this.mode === "held") {
+      this.startNext();
+      return this.trackSerial;
     }
+    if (this.mode === "leaving") {
+      // Already fading towards a hold: let the fade finish, then start instead of wait.
+      this.afterLeave = "start";
+      return this.trackSerial + 1;
+    }
+    if (this.nextFreshIndex() < 0) return null;
+    this.leave("start", QUICK_FADE_OUT_MS);
+    return this.trackSerial + 1;
+  }
+
+  /**
+   * Ease the current track out and go silent until the next word. Call it shortly
+   * before a word ends when its track's run is over, so the hand-over lands on the
+   * word boundary instead of inside the next word.
+   */
+  fadeOutAndHold(): void {
+    if (this.stopped || !this.audio || this.mode !== "playing") return;
+    this.leave("hold", FADE_OUT_MS);
+  }
+
+  private leave(then: "start" | "hold", durationMs: number): void {
+    this.mode = "leaving";
+    this.afterLeave = then;
+    this.fade(0, durationMs, () => {
+      if (this.stopped) return;
+      if (this.afterLeave === "start") {
+        this.startNext();
+        return;
+      }
+      this.audio?.pause();
+      this.mode = "held";
+    });
+  }
+
+  /** Fade a track that is about to run out, so it never ends on a hard stop. */
+  private fadeBeforeEnd(): void {
+    const audio = this.audio;
+    if (!audio || this.stopped || this.mode !== "playing") return;
+    const remaining = audio.duration - audio.currentTime;
+    if (!Number.isFinite(remaining)) return;
+    if (remaining > FADE_OUT_MS / 1000 + ENDING_SLACK_SECONDS) return;
+    // Fade over what is actually left, in case the tab was throttled past the mark.
+    this.leave("hold", Math.max(200, Math.min(FADE_OUT_MS, remaining * 1000 - 100)));
+  }
+
+  /** Start the next track in rotation; a pool of one has only itself to play again. */
+  private startNext(): void {
+    const pool = this.pool;
+    if (pool.length === 0) {
+      this.switchPool();
+      return;
+    }
+    const fresh = this.nextFreshIndex();
+    this.sourceIndex = fresh >= 0 ? fresh : (this.sourceIndex + 1) % pool.length;
+    this.consecutiveErrors = 0;
     this.loadAndPlay();
   }
 
   /** Stop playback completely. Guarantees silence — no stream left running. */
   stop(): void {
     this.stopped = true;
+    this.mode = "playing";
+    this.afterLeave = "start";
     this.clearFade();
+    if (this.retryTimer !== null) {
+      clearTimeout(this.retryTimer);
+      this.retryTimer = null;
+    }
     if (this.audio) {
       this.audio.pause();
       this.audio.removeAttribute("src");
@@ -149,16 +312,80 @@ export class AmbientPlayer {
     this.consecutiveErrors = 0;
   }
 
-  /** Advance to the next source in the current pool. */
-  next(): void {
-    const pool = this.pool;
-    if (pool.length === 0) {
-      this.switchPool();
-      return;
+  /**
+   * Fully release the media element: pause, unload, detach every listener, and cancel
+   * the fade and retry timers. After this the instance holds no `Audio`, so NOTHING it
+   * once scheduled can keep emitting sound — the guarantee a hot-reload or teardown
+   * needs so an orphaned element can never play alongside the next module instance.
+   */
+  private destroy(): void {
+    this.stopped = true;
+    this.mode = "playing";
+    this.afterLeave = "start";
+    this.clearFade();
+    if (this.retryTimer !== null) {
+      clearTimeout(this.retryTimer);
+      this.retryTimer = null;
     }
-    this.sourceIndex = (this.sourceIndex + 1) % pool.length;
+    const audio = this.audio;
+    if (audio) {
+      audio.pause();
+      if (this.timeUpdateHandler) audio.removeEventListener("timeupdate", this.timeUpdateHandler);
+      if (this.endedHandler) audio.removeEventListener("ended", this.endedHandler);
+      if (this.errorHandler) audio.removeEventListener("error", this.errorHandler);
+      audio.removeAttribute("src");
+      audio.load();
+    }
+    this.audio = null;
+    this.timeUpdateHandler = null;
+    this.endedHandler = null;
+    this.errorHandler = null;
+    this.sourceIndex = -1;
     this.consecutiveErrors = 0;
-    this.loadAndPlay();
+    this.lastUrl = null;
+  }
+
+  /**
+   * Called on hot-reload teardown (Vite `dispose`): release the element and mark this
+   * instance permanently stopped so no in-flight timer can resurrect playback. The next
+   * module instance builds a fresh player via the global registry.
+   */
+  forceReleaseForReload(): void {
+    this.destroy();
+  }
+
+  /**
+   * Cut straight to the next source in the current pool. Used when a source FAILS —
+   * there is nothing to fade and nothing was heard, so there is no reason to wait.
+   * Skips the track just tried; only a pool of one can repeat.
+   */
+  next(): void {
+    this.startNext();
+  }
+
+  /**
+   * The next index in rotation order whose track is not the one just heard, or -1
+   * when the pool has no such track. Walks forward from the current position rather
+   * than drawing at random: a random draw can land on the same track again, and the
+   * whole point of a change is that the listener hears something else.
+   */
+  private nextFreshIndex(): number {
+    const pool = this.pool;
+    for (let step = 1; step <= pool.length; step += 1) {
+      const index = (Math.max(this.sourceIndex, -1) + step) % pool.length;
+      if (pool[index]!.url !== this.lastUrl) return index;
+    }
+    return -1;
+  }
+
+  /** A random starting index that avoids the track just heard whenever it can. */
+  private randomFreshIndex(): number {
+    const pool = this.pool;
+    const fresh = pool
+      .map((_, index) => index)
+      .filter((index) => pool[index]!.url !== this.lastUrl);
+    const candidates = fresh.length ? fresh : pool.map((_, index) => index);
+    return candidates[Math.floor(Math.random() * candidates.length)] ?? 0;
   }
 
   /** Replace the primary source pool (used when DB tracks are loaded). */
@@ -178,14 +405,18 @@ export class AmbientPlayer {
     // CRITICAL: flush any previous stream before starting a new one.
     // This guarantees never two streams play simultaneously.
     this.clearFade();
+    this.mode = "playing";
+    this.afterLeave = "start";
     this.audio.pause();
     this.audio.volume = 0;
     this.audio.src = source.url;
+    this.lastUrl = source.url;
+    this.trackSerial += 1;
     const playPromise = this.audio.play();
     if (playPromise) {
       playPromise
         .then(() => {
-          if (!this.stopped) this.fadeIn();
+          if (!this.stopped) this.fade(this.volume, FADE_IN_MS);
         })
         .catch(() => {
           // Autoplay blocked or source failed to decode.
@@ -194,17 +425,28 @@ export class AmbientPlayer {
     }
   }
 
-  private fadeIn(): void {
+  /**
+   * Ease the volume from wherever it is to `target`. Timed against the clock, not a
+   * step count, so a throttled background tab still finishes on schedule, and shaped
+   * with a smoothstep curve so neither end of the fade starts or stops abruptly.
+   */
+  private fade(target: number, durationMs: number, onDone?: () => void): void {
     if (!this.audio) return;
-    const step = this.volume / 20;
+    this.clearFade();
+    const from = this.audio.volume;
+    const startedAt = Date.now();
     this.fadeTimer = setInterval(() => {
       if (!this.audio || this.stopped) {
         this.clearFade();
         return;
       }
-      this.audio.volume = Math.min(this.volume, this.audio.volume + step);
-      if (this.audio.volume >= this.volume) this.clearFade();
-    }, 50);
+      const progress = Math.min(1, (Date.now() - startedAt) / durationMs);
+      const eased = progress * progress * (3 - 2 * progress);
+      this.audio.volume = Math.min(1, Math.max(0, from + (target - from) * eased));
+      if (progress < 1) return;
+      this.clearFade();
+      onDone?.();
+    }, FADE_TICK_MS);
   }
 
   private clearFade(): void {
@@ -222,8 +464,11 @@ export class AmbientPlayer {
       this.switchPool();
       return;
     }
-    // Skip to next source after a short delay.
-    setTimeout(() => {
+    // Skip to next source after a short delay. The timer is stored so destroy()/stop()
+    // can cancel it, and the callback re-checks `stopped` before doing anything.
+    if (this.retryTimer !== null) clearTimeout(this.retryTimer);
+    this.retryTimer = setTimeout(() => {
+      this.retryTimer = null;
       if (!this.stopped) this.next();
     }, 300);
   }
@@ -238,18 +483,36 @@ export class AmbientPlayer {
       this.stop();
       return;
     }
-    this.sourceIndex = Math.floor(Math.random() * pool.length);
+    this.sourceIndex = this.randomFreshIndex();
     this.loadAndPlay();
   }
 }
 
-/** Shared singleton — one player instance per page. */
-let sharedPlayer: AmbientPlayer | null = null;
+/**
+ * Shared singleton. Held on a global slot rather than only a module-scoped `let`, so a
+ * hot-reload that re-evaluates this module returns the SAME player instead of building
+ * a second `Audio` next to the one still playing. The old module-scoped variable was
+ * per-instance and got reset on re-import, which is how two streams could overlap.
+ */
+const GLOBAL_PLAYER_KEY = "__kineticAmbientPlayer";
 
-/** Get or create the shared ambient player singleton. */
+/** Get or create the single shared ambient player for this browsing context. */
 export function getAmbientPlayer(): AmbientPlayer {
-  if (!sharedPlayer) sharedPlayer = new AmbientPlayer();
-  return sharedPlayer;
+  const registry = globalThis as unknown as Record<string, AmbientPlayer | undefined>;
+  if (!registry[GLOBAL_PLAYER_KEY]) registry[GLOBAL_PLAYER_KEY] = new AmbientPlayer();
+  return registry[GLOBAL_PLAYER_KEY]!;
+}
+
+// On hot reload, release the outgoing instance's media element BEFORE the new module
+// evaluates, so no orphaned `Audio` survives into the reloaded app alongside the fresh
+// one. Guarded so it is a no-op under production builds and bare Node.
+const hot = (import.meta as { hot?: { dispose(cb: () => void): void } }).hot;
+if (hot) {
+  hot.dispose(() => {
+    const registry = globalThis as unknown as Record<string, AmbientPlayer | undefined>;
+    registry[GLOBAL_PLAYER_KEY]?.forceReleaseForReload();
+    delete registry[GLOBAL_PLAYER_KEY];
+  });
 }
 
 // ---------------------------------------------------------------------------

@@ -17,6 +17,9 @@ dist-ssr
 src/features/vocabulary/data/catalog.json.*.tmp
 # Runtime-written feed reaction totals (created on first tap)
 src/features/vocabulary/data/engagement.json
+# Anonymous word reports filed in local development (deployed builds use Supabase)
+src/features/vocabulary/data/word-reports.json
+src/features/vocabulary/data/word-reports.json.*.tmp
 # Local LLM credentials configured via /admin/model
 src/features/admin/data/llm-config.json
 .nitro

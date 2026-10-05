@@ -24,6 +24,8 @@ export type { PostCardProps } from "../types";
 
 /**
  * Full-screen kinetic status player for a single post.
+ * Renders only the inner article content; the outer snap section is handled
+ * by PostCardShell (or the caller) to enable viewport-windowed mounting.
  * @param props - props argument
  * @returns Interactive feed/profile card with paginated kinetic text
  */
@@ -32,18 +34,14 @@ export function PostCard(props: PostCardProps): ReactElement {
   const { commentFlow: cf, commentStory: cs, textFit: tf } = p;
 
   return (
-    <section
-      data-status-snap-item="true"
-      className="relative flex h-[100dvh] w-full snap-start snap-always items-center justify-center overflow-hidden bg-background"
+    <article
+      ref={(el) => {
+        p.canvasRef.current = el;
+        p.setCanvasEl(el);
+      }}
+      className="relative h-full w-full overflow-hidden bg-[url('/canvas-fallback.svg')] bg-cover bg-center sm:aspect-[9/16] sm:h-[min(90dvh,764px)] sm:w-auto sm:shadow-[0_24px_90px_rgba(0,0,0,0.45)] sm:ring-1 sm:ring-white/10"
+      onClick={p.handleCanvasTap}
     >
-      <article
-        ref={(el) => {
-          p.canvasRef.current = el;
-          p.setCanvasEl(el);
-        }}
-        className="relative h-full w-full overflow-hidden bg-[url('/canvas-fallback.svg')] bg-cover bg-center sm:aspect-[9/16] sm:h-[min(90dvh,764px)] sm:w-auto sm:shadow-[0_24px_90px_rgba(0,0,0,0.45)] sm:ring-1 sm:ring-white/10"
-        onClick={p.handleCanvasTap}
-      >
         <PostCanvasBackdrop
           postId={p.post.id}
           backgroundShiftPage={p.backgroundShiftPage}
@@ -190,6 +188,5 @@ export function PostCard(props: PostCardProps): ReactElement {
           submitComment={cf.submitComment}
         />
       </article>
-    </section>
   );
 }

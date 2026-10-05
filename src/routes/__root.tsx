@@ -33,9 +33,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "stylesheet", href: appCss },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "" },
+      // Weight RANGES, not a list of static cuts: the canvas paints body text at 800
+      // and emphasis at 900, and with only 700/900 on offer both resolved to the same
+      // face (or to a lighter one), so emphasis carried no weight contrast. A range is
+      // also one variable file per subset instead of one per weight.
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=Space+Grotesk:wght@400;500;700&family=Playfair+Display:ital,wght@0,400;0,700;1,700&family=JetBrains+Mono:wght@400;700&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Inter:wght@400..900&family=Space+Grotesk:wght@400..700&family=Playfair+Display:ital,wght@0,400..900;1,700&family=JetBrains+Mono:wght@400..800&display=swap",
       },
     ],
   }),

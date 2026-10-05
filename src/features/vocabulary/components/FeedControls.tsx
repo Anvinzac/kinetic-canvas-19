@@ -4,6 +4,8 @@ import { useEffect, useId, useMemo, useRef, useState } from "react";
 import {
   Bookmark,
   ChevronDown,
+  Clapperboard,
+  Library,
   Pause,
   Play,
   Settings,
@@ -13,7 +15,13 @@ import {
   X,
 } from "lucide-react";
 import { STYLES, THEMES } from "../lib/presets";
-import { DIFFICULTY_ALL, DIFFICULTY_TRACKS, formatLevelBand } from "../lib/difficulty";
+import {
+  DIFFICULTY_ALL,
+  DIFFICULTY_TRACKS,
+  MOCK_TOTAL_WORDS,
+  formatLevelBand,
+  mockTrackWordCount,
+} from "../lib/difficulty";
 import type { NarrativeStyle } from "../lib/schema";
 import type { HistoryStats } from "../lib/history";
 import { useSavedCount } from "../hooks/useSavedCount";
@@ -25,23 +33,25 @@ type DifficultyOption = {
   label: string;
   hint: string;
   band: string;
-  emoji: string;
+  /** Illustrative word count for this track's band (mock, shown at the row's right). */
+  words: number;
 };
 
 /**
  * The dropdown's rows: an explicit "all" escape hatch ahead of the ten tracks. In the
  * multi-select the "all" row means an EMPTY selection (no restriction), so clearing
- * every track returns to it. Each row carries a difficulty emoji so the ladder reads at
- * a glance. The list is static, so it renders before the first feed page resolves.
+ * every track returns to it. Each row shows its CEFR band as a chip ahead of the name
+ * and a mock total word count at the trailing edge. The list is static, so it renders
+ * before the first feed page resolves.
  */
 const DIFFICULTY_OPTIONS: DifficultyOption[] = [
-  { id: DIFFICULTY_ALL, label: "tất cả", hint: "Mọi trình độ", band: "", emoji: "🤯" },
+  { id: DIFFICULTY_ALL, label: "tất cả", hint: "Mọi trình độ", band: "", words: MOCK_TOTAL_WORDS },
   ...DIFFICULTY_TRACKS.map((track) => ({
     id: track.id,
     label: track.label,
     hint: track.hint,
     band: formatLevelBand(track.levels),
-    emoji: track.emoji,
+    words: mockTrackWordCount(track.id),
   })),
 ];
 
@@ -247,19 +257,29 @@ function DifficultyDropdown({
                     {isSelected ? "✓" : ""}
                   </span>
                   <span className="vocab-difficulty-option-label">
-                    <span className="vocab-difficulty-emoji" aria-hidden="true">
-                      {option.emoji}
-                    </span>
+                    {option.band && <span className="vocab-difficulty-band">{option.band}</span>}
                     {option.label}
                   </span>
-                  {option.band && <span className="vocab-difficulty-band">{option.band}</span>}
+                  <span className="vocab-difficulty-count" aria-hidden="true">
+                    {option.words.toLocaleString()}
+                  </span>
                 </li>
               );
             })}
           </ul>
+          {/* Floating confirm bar: a gradient fade lets the last rows read through it as
+              they scroll beneath, while Library and Done stay clickable above. */}
           <div className="vocab-difficulty-foot">
+            <Link
+              to="/feed/library"
+              className="vocab-difficulty-library"
+              onClick={() => close(false)}
+            >
+              <Library size={16} aria-hidden="true" />
+              Thêm từ mới
+            </Link>
             <button type="button" className="vocab-difficulty-done" onClick={commit}>
-              Done
+              Xong
             </button>
           </div>
         </div>
@@ -281,6 +301,7 @@ export function FeedControls({
   reducedMotion,
   historyStats,
   onClearHistory,
+  onExport,
 }: {
   metadata?: FeedPage;
   filters: VocabularyFilters;
@@ -293,6 +314,8 @@ export function FeedControls({
   reducedMotion: boolean;
   historyStats: HistoryStats;
   onClearHistory: () => void;
+  /** Open the video-export studio. Passed only for admins; absent, the control is not rendered. */
+  onExport?: () => void;
 }) {
   const panelId = useId();
   const toggleButton = useRef<HTMLButtonElement>(null);
@@ -358,6 +381,17 @@ export function FeedControls({
           >
             <Shuffle size={19} />
           </button>
+          {onExport && (
+            <button
+              className="vocab-icon-button vocab-export-open"
+              type="button"
+              onClick={onExport}
+              aria-label="Export this word as a video (admin)"
+              title="Export this word as a video"
+            >
+              <Clapperboard size={19} />
+            </button>
+          )}
         </div>
         {/* Right: the saved-words shortcut, pinned to the top-right corner and kept
             opaque so it is visibly distinct from the frosted player controls. */}

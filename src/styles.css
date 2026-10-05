@@ -86,6 +86,15 @@
     oklch(0.7 0.28 340)
   );
   --shadow-glow: 0 0 60px oklch(0.7 0.28 340 / 0.4);
+
+  /* Motion vocabulary — the CSS twins of SPRING / EASE in src/lib/motion.ts. */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in: cubic-bezier(0.5, 0, 0.75, 0);
+  /* One overshoot, then rest: the closest a cubic-bezier gets to SPRING.bouncy. */
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --dur-press: 110ms;
+  --dur-quick: 180ms;
+  --dur-move: 320ms;
 }
 
 @layer base {
@@ -172,6 +181,18 @@
   position: relative;
 }
 
+/* RUN — several emphasised words (typically the syllables of one Vietnamese word)
+   carrying ONE moving effect between them. The effect classes below (.kinetic-emph-
+   sweep, -halo) and the pulse/jiggle/glow animations are applied to this span instead
+   of to each syllable, so a spotlight glides once from the first syllable to the last
+   and an aura sits behind the whole word, rather than each syllable running its own
+   copy side by side. It lays its words out exactly as the wrapper around it did. */
+.kinetic-emphasis-run {
+  display: inline-flex;
+  align-items: baseline;
+  column-gap: 0.24em;
+}
+
 /* UNDERLINE — drawn on after the word lands, instead of appearing as static text decoration. */
 .kinetic-emph-underline {
   padding-bottom: 0.08em;
@@ -253,7 +274,8 @@
   pointer-events: none;
 }
 .kinetic-emph-halo.is-animated::before {
-  animation: kinetic-emph-halo-breathe 1.9s ease-in-out infinite;
+  /* Four beats when a surface sets --kinetic-beat; 1.9s (the original) otherwise. */
+  animation: kinetic-emph-halo-breathe calc(var(--kinetic-beat, 0.475s) * 4) ease-in-out infinite;
 }
 @keyframes kinetic-emph-halo-breathe {
   0%,
@@ -285,18 +307,43 @@
   box-shadow: 0 0 0.5em color-mix(in srgb, currentColor 42%, transparent);
   clip-path: inset(0 0 0 0 round var(--kinetic-frame-radius));
 }
+/* The outline is DRAWN: a conic mask sweeps once around the box from its left
+   edge, so the stroke travels up, across the top, down the right side and back
+   along the bottom, like a pen circling the word.
+
+   It used to be revealed by a left-to-right clip wipe on a steep ease-out. On a
+   hollow box that shows almost nothing in between — the left edge at once, two thin
+   lines, then the right edge — and the curve spent ~70% of the wipe in its first
+   200ms, so it read as the frame flashing on rather than being drawn.
+
+   The sweep angle is a registered property so it can interpolate. Its initial
+   value is the full turn: with no animation running (static render, reduced
+   motion) the frame is simply complete. */
+@property --kinetic-frame-sweep {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 360deg;
+}
 .kinetic-emph-frame.is-animated::after {
-  animation: kinetic-emph-frame-draw 0.74s cubic-bezier(0.22, 1, 0.36, 1)
+  -webkit-mask-image: conic-gradient(
+    from -90deg,
+    #000 var(--kinetic-frame-sweep),
+    transparent var(--kinetic-frame-sweep)
+  );
+  mask-image: conic-gradient(
+    from -90deg,
+    #000 var(--kinetic-frame-sweep),
+    transparent var(--kinetic-frame-sweep)
+  );
+  animation: kinetic-emph-frame-draw 0.9s cubic-bezier(0.65, 0, 0.35, 1)
     var(--kinetic-emphasis-delay, 0.68s) both;
 }
 @keyframes kinetic-emph-frame-draw {
   from {
-    opacity: 0;
-    clip-path: inset(0 100% 0 0 round var(--kinetic-frame-radius));
+    --kinetic-frame-sweep: 0deg;
   }
   to {
-    opacity: 1;
-    clip-path: inset(0 0 0 0 round var(--kinetic-frame-radius));
+    --kinetic-frame-sweep: 360deg;
   }
 }
 
@@ -332,8 +379,26 @@
   mix-blend-mode: screen;
   opacity: 0;
 }
+/* Across a whole run the spotlight is a narrower beam with nothing on either side of
+   it: a single word's shine is about as wide as the word, but a beam that wide over
+   two or three syllables lights them all at once and stops reading as something that
+   travels. The faint veil the single-word version leaves across its box is dropped
+   too — over a run it would show as a pale rectangle spanning the gap between
+   syllables — and the beam is feathered top and bottom so it has no hard edge. */
+.kinetic-emphasis-run.kinetic-emph-sweep::after {
+  inset: -0.08em -0.1em;
+  background-image: linear-gradient(
+    100deg,
+    transparent 39%,
+    color-mix(in srgb, #ffffff 78%, currentColor 22%) 48%,
+    transparent 57%
+  );
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 24%, #000 76%, transparent);
+  mask-image: linear-gradient(to bottom, transparent, #000 24%, #000 76%, transparent);
+}
 .kinetic-emph-sweep.is-animated::after {
-  animation: kinetic-emph-sweep-glide 2.3s ease-in-out var(--kinetic-emphasis-delay, 0.68s) infinite;
+  animation: kinetic-emph-sweep-glide calc(var(--kinetic-beat, 0.575s) * 4) ease-in-out
+    var(--kinetic-emphasis-delay, 0.68s) infinite;
 }
 @keyframes kinetic-emph-sweep-glide {
   0% {

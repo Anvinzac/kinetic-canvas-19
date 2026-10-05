@@ -1,5 +1,11 @@
 /** Curated vocabulary color/motion presets. Exports: THEMES, STYLES, choosePresentation. Depends on: canvas palettes, stable hash. */
-import { DEFAULT_CANVAS, PALETTES, type CanvasSpec } from "@/features/canvas";
+import {
+  DEFAULT_CANVAS,
+  PALETTES,
+  vividGradient,
+  type CanvasSpec,
+  type PaletteTone,
+} from "@/features/canvas";
 import {
   getVietnameseLayoutMetrics,
   getWords,
@@ -19,6 +25,15 @@ export type VocabularyTheme = {
   id: string;
   label: string;
   background: string;
+  /**
+   * `background` re-expressed as a perceptual blend, for PAINTING only. The stored
+   * two-stop gradient stays the source of truth for every contrast calculation;
+   * this is what the card actually shows, so its middle keeps its color instead of
+   * passing through grey.
+   */
+  paint: string;
+  /** Whether the backdrop is deep or pale; chrome, scrims and shadows follow it. */
+  tone: PaletteTone;
   /** Body text color. */
   ink: string;
   /** Primary highlight: emphasized words, active controls. */
@@ -55,6 +70,8 @@ export const THEMES: VocabularyTheme[] = PALETTES.map((palette) => ({
   id: palette.id,
   label: palette.label,
   background: palette.background,
+  paint: vividGradient(palette.background),
+  tone: palette.tone,
   ink: palette.ink,
   accent: palette.accentA,
   accentAlt: palette.accentB,
@@ -136,15 +153,24 @@ export function buildVocabularyCanvas(theme: VocabularyTheme, style: StylePreset
  */
 export const VOCAB_LINE_SPACING_SCALE = 1.2;
 
-/** Reserve the overlay controls before passing type to the original canvas fitter. */
+/** Height the feed's own overlay controls take out of a card (toolbar above, actions below). */
+const FEED_CHROME_HEIGHT = 320;
+
+/**
+ * Reserve the overlay controls before passing type to the original canvas fitter.
+ * @param reservedHeight - vertical space the text may not use. Defaults to the feed's
+ *   own chrome; a caller that has already carved out its text area (video export)
+ *   passes 0 along with that area's height.
+ */
 export function fitVocabularyTextSize(
   text: string,
   baseSize: number,
   width: number,
   height: number,
+  reservedHeight = FEED_CHROME_HEIGHT,
 ) {
   const words = getWords(text);
-  const availableHeight = Math.max(100, height - 320);
+  const availableHeight = Math.max(100, height - reservedHeight);
   const availableWidth = Math.max(180, width * 0.84);
   const vietnamese = isLikelyVietnameseText(text);
   for (let size = baseSize; size >= 28; size -= 2) {

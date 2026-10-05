@@ -19,6 +19,7 @@ This app is a kinetic status composer + feed. Code is organized by **feature**, 
 | Settings preferences UI | `src/features/settings/` |
 | Text motion / emphasis / VN lines | `src/features/kinetic-text/` |
 | Gradients, serialize, contrast | `src/features/canvas/` |
+| Shared springs / easing / beat | `src/lib/motion.ts` (CSS twins in `src/styles.css`) |
 | Offline demo seed / mock APIs | `src/features/demo/` |
 | Demo vs live session flag | `src/features/session/` |
 | Embedded admin dashboard / telemetry | `src/features/admin/` (+ `/admin` routes, `MAPPING_NOTES.md`) |

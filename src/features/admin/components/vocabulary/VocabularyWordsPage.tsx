@@ -6,6 +6,7 @@
  */
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useRouterState } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import {
   adminVocabularyQueryOptions,
@@ -46,7 +47,11 @@ export function VocabularyWordsPage(): React.ReactElement {
   const queryClient = useQueryClient();
   const words = useQuery(adminVocabularyQueryOptions());
   const completedCount = useQuery(adminVocabularyCompletedQueryOptions());
-  const [search, setSearch] = useState("");
+  // A word report links here with the word already in the search box.
+  const linkedSearch = useRouterState({
+    select: (state) => (state.location.search as { q?: string } | undefined)?.q ?? "",
+  });
+  const [search, setSearch] = useState(linkedSearch);
   const [page, setPage] = useState(0);
   const [status, setStatus] = useState<SaveStatus | null>(null);
 

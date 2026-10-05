@@ -1,4 +1,4 @@
-/** Explicit clue stages and answer masking (never infer pages from line breaks). Exports: buildStages, completeUsage. Depends on: schema, kinetic-text emphasis types. */
+/** Explicit clue stages and answer masking (never infer pages from line breaks). Exports: buildStages, completeUsage, splitEmphasisMarkers. Depends on: schema, kinetic-text emphasis types. */
 import type { EmphasisVariant } from "@/features/kinetic-text";
 import { answerPattern, type NarrativeStyle, type VocabularyWord } from "./schema";
 import { paginateText } from "@/features/post-player";
@@ -35,6 +35,27 @@ function parseEmphasisMarkers(text: string): { clean: string; markers: string[] 
     return word.trim();
   });
   return { clean, markers };
+}
+
+/**
+ * Split a deck text field on its /word/ emphasis markers, for surfaces that render
+ * the sentence as prose rather than as kinetic text. The markers are an authoring
+ * convention and must never reach the screen as literal slashes.
+ * @param text - Source field, possibly carrying /word/ markers
+ * @returns Ordered runs; `marked` is true for a phrase that sat between markers
+ * @pure true
+ */
+export function splitEmphasisMarkers(text: string): { text: string; marked: boolean }[] {
+  const parts: { text: string; marked: boolean }[] = [];
+  let cursor = 0;
+  for (const match of text.matchAll(/\/([^/]+)\//g)) {
+    const start = match.index ?? 0;
+    if (start > cursor) parts.push({ text: text.slice(cursor, start), marked: false });
+    parts.push({ text: match[1]!.trim(), marked: true });
+    cursor = start + match[0].length;
+  }
+  if (cursor < text.length) parts.push({ text: text.slice(cursor), marked: false });
+  return parts;
 }
 
 /** Fill a deck's deliberate answer blank. @param text Example sentence. @param word Target. @returns Completed sentence. */

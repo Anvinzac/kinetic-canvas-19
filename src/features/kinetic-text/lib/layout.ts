@@ -1,7 +1,7 @@
 /**
  * Pure helpers for layout.
  *
- * Exports: KineticTextLayoutMode, getKineticTextLayoutMode, getMeasuredTextWidth, hasVisibleStickerAccent
+ * Exports: KineticTextLayoutMode, getKineticTextLayoutMode, getMeasuredTextWidth, getWidestWordWidth, getWidestLineWidth, hasVisibleStickerAccent
  * Depends on: @/features/canvas
  */
 
@@ -69,6 +69,35 @@ export function getWidestWordWidth(text: HTMLElement): number {
   for (const glyph of text.querySelectorAll("[data-kinetic-glyph]")) {
     const element = glyph as HTMLElement;
     widest = Math.max(widest, element.offsetWidth, element.scrollWidth);
+  }
+  return widest;
+}
+
+/**
+ * Measure the widest pre-packed line the text node holds, ignoring any transforms.
+ *
+ * The Vietnamese layout does not wrap: each line is its own no-wrap row
+ * (`[data-kinetic-line]`) of segments chosen by a character-count estimate. So
+ * there the unbreakable unit is the whole LINE, not the word, and a line carrying
+ * an enlarged emphasised phrase can be wider than the estimate allowed for.
+ *
+ * Built from layout widths (indent + segment widths + gaps) rather than bounding
+ * rects, because words are mid-entrance — translated and scaled — when this runs.
+ * @param text - text node containing the rendered lines
+ * @returns Widest line layout width in CSS pixels (0 when there are no packed lines)
+ */
+export function getWidestLineWidth(text: HTMLElement): number {
+  let widest = 0;
+  for (const node of text.querySelectorAll("[data-kinetic-line]")) {
+    const line = node as HTMLElement;
+    const style = getComputedStyle(line);
+    const gap = Number.parseFloat(style.columnGap) || 0;
+    let width = Number.parseFloat(style.paddingLeft) || 0;
+    const segments = Array.from(line.children) as HTMLElement[];
+    segments.forEach((segment, index) => {
+      width += segment.offsetWidth + (index > 0 ? gap : 0);
+    });
+    widest = Math.max(widest, width);
   }
   return widest;
 }

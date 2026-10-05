@@ -11,7 +11,7 @@ import { Link } from "@tanstack/react-router";
 import { ArrowLeft, Bookmark, Heart } from "lucide-react";
 import { useBookmarks } from "../hooks/useBookmarks";
 import { flipReaction } from "../lib/reactions";
-import { completeUsage } from "../lib/stages";
+import { FilledUsage, MarkedText } from "./MarkedText";
 import "../vocabulary.css";
 
 /** Show every word this device bookmarked. @returns Public saved-words page. */
@@ -65,12 +65,18 @@ export function BookmarksPage() {
                 </p>
               )}
               <p className="vocab-saved-def" lang="vi">
-                {entry.word.defVi}
+                <MarkedText text={entry.word.defVi} />
               </p>
               {entry.word.usage[0] && (
                 <div className="vocab-saved-usage">
-                  <p lang="en">{completeUsage(entry.word.usage[0].en, entry.word.word)}</p>
-                  {entry.word.usage[0].vi && <p lang="vi">{entry.word.usage[0].vi}</p>}
+                  <p lang="en">
+                    <FilledUsage text={entry.word.usage[0].en} word={entry.word.word} />
+                  </p>
+                  {entry.word.usage[0].vi && (
+                    <p lang="vi">
+                      <MarkedText text={entry.word.usage[0].vi} />
+                    </p>
+                  )}
                 </div>
               )}
 

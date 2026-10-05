@@ -20,6 +20,7 @@ import {
   getCompletedWordCount,
   type VocabWordRow,
 } from "./vocabulary.functions";
+import { listWordReportGroups } from "./word-report.functions";
 import { listTemplates, type TemplateData } from "./template.functions";
 import { listPalettes } from "./palette.functions";
 import type { Palette } from "@/features/canvas/palettes";
@@ -132,6 +133,18 @@ export function adminVocabularyCompletedQueryOptions() {
     queryKey: adminKeys.vocabularyCompleted(),
     staleTime: 30_000,
     queryFn: () => getCompletedWordCount() as Promise<number>,
+  });
+}
+
+/**
+ * Anonymous word reports from the feed, grouped by word.
+ */
+export function adminWordReportsQueryOptions() {
+  return queryOptions({
+    queryKey: adminKeys.wordReports(),
+    staleTime: 15_000,
+    refetchInterval: 60_000,
+    queryFn: () => listWordReportGroups(),
   });
 }
 

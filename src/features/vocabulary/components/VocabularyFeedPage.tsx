@@ -1,9 +1,14 @@
-/** Public vocabulary page orchestration. Exports: VocabularyFeedPage. Depends on: controls, stream, reduced-motion preference. */
-import { useState } from "react";
+/** Public vocabulary page orchestration. Exports: VocabularyFeedPage. Depends on: controls, stream, reduced-motion preference, font readiness, track rotation. */
+import { useCallback, useState } from "react";
 import { useReducedMotion } from "framer-motion";
+import { useQuery } from "@tanstack/react-query";
 import type { FeedPage, Presentation, VocabularyFilters } from "../types";
 import { DIFFICULTY_ALL } from "../lib/difficulty";
+import { useIsAdmin } from "@/features/admin/hooks/useIsAdmin";
+import { useFontsReady } from "../hooks/useFontsReady";
+import { useTrackRotation } from "../hooks/useTrackRotation";
 import { useViewHistory } from "../hooks/useViewHistory";
+import { getActiveVocabWording } from "@/features/admin/api/wording.functions";
 import { FeedControls } from "./FeedControls";
 import { VocabularyStream } from "./VocabularyStream";
 import "../vocabulary.css";
@@ -28,8 +33,36 @@ export function VocabularyFeedPage() {
   });
   const [metadata, setMetadata] = useState<FeedPage>();
   const [optionsOpen, setOptionsOpen] = useState(false);
+  // Video export is an admin tool; for everyone else the control is never rendered
+  // and the studio's code is never downloaded.
+  const isAdmin = useIsAdmin();
+  const [exportOpen, setExportOpen] = useState(false);
+  const openExport = useCallback(() => {
+    setOptionsOpen(false);
+    setExportOpen(true);
+  }, []);
+  const closeExport = useCallback(() => setExportOpen(false), []);
   const viewHistory = useViewHistory();
   const reducedMotion = !!useReducedMotion();
+  // The stream still mounts and fetches while fonts load; only the text is held.
+  const fontsReady = useFontsReady();
+  // Each word that comes on screen is logged to the viewing history and counted
+  // towards the current music track's run.
+  const music = useTrackRotation();
+  const recordView = viewHistory.record;
+  // Fetch the active wording preset for the reveal button label
+  const { data: activeWording } = useQuery({
+    queryKey: ["vocab-active-wording"],
+    queryFn: getActiveVocabWording,
+    staleTime: 60_000, // Cache for 1 minute
+  });
+  const handleRecordView = useCallback(
+    (wordId: string) => {
+      recordView(wordId);
+      music.wordStarted();
+    },
+    [recordView, music],
+  );
   const shuffle = () => {
     setSeed(newSeed());
     setOptionsOpen(false);
@@ -51,6 +84,7 @@ export function VocabularyFeedPage() {
         reducedMotion={reducedMotion}
         historyStats={viewHistory.stats}
         onClearHistory={viewHistory.clear}
+        onExport={isAdmin ? openExport : undefined}
       />
       <VocabularyStream
         key={`${seed}:${filters.topic}:${filters.level}:${filters.difficulty}`}
@@ -58,13 +92,17 @@ export function VocabularyFeedPage() {
         filters={filters}
         presentation={presentation}
         reducedMotion={reducedMotion}
-        suspended={optionsOpen}
+        suspended={optionsOpen || !fontsReady || exportOpen}
+        exportOpen={isAdmin && exportOpen}
+        onCloseExport={closeExport}
         history={viewHistory.history}
-        onRecordView={viewHistory.record}
+        onRecordView={handleRecordView}
+        onWordEnding={music.wordEnding}
         onClearHistory={viewHistory.clear}
         onMetadata={setMetadata}
         onRestart={shuffle}
         onClearFilters={() => setFilters(ALL_FILTERS)}
+        revealButtonLabel={activeWording?.reveal_button}
       />
     </main>
   );

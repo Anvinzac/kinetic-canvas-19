@@ -10,7 +10,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState, type ReactElement } from "react";
 import { toast } from "sonner";
-import { PostCard } from "@/components/PostCard";
+import { PostCardShell } from "@/components/PostCard";
 import {
   discoveryKeys,
   getMe,
@@ -165,19 +165,18 @@ export function ProfilePage(): ReactElement {
       </div>
 
       {visiblePosts.map((post) => (
-        <div key={post.id} className="h-[100dvh] snap-start snap-always">
-          <PostCard
-            post={post}
-            author={data.profile}
-            profilesById={profilesById}
-            currentUserId={currentUserId}
-            likes={engagementByPost[post.id]?.likes ?? 0}
-            comments={[]}
-            liked={false}
-            onLike={() => {}}
-            onComment={() => {}}
-          />
-        </div>
+        <PostCardShell
+          key={post.id}
+          post={post}
+          author={data.profile}
+          profilesById={profilesById}
+          currentUserId={currentUserId}
+          likes={engagementByPost[post.id]?.likes ?? 0}
+          comments={[]}
+          liked={false}
+          onLike={() => {}}
+          onComment={() => {}}
+        />
       ))}
 
       {visiblePosts.length === 0 && (

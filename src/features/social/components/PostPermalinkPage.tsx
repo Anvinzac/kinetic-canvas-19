@@ -117,7 +117,7 @@ export function PostPermalinkPage(): ReactElement {
     ? data.likes.some((likeItem) => likeItem.user_id === myProfileId): false;
 
   return (
-    <main className="h-[100dvh] overflow-hidden">
+    <main className="relative flex h-[100dvh] w-full items-center justify-center overflow-hidden bg-background">
       <PostCard
         post={data.post}
         author={profilesById.get(data.post.author_id)}

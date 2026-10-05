@@ -17,10 +17,13 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as FeedIndexRouteImport } from './routes/feed/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as FeedSavedRouteImport } from './routes/feed/saved'
+import { Route as FeedLibraryRouteImport } from './routes/feed/library'
+import { Route as AdminWordingsRouteImport } from './routes/admin/wordings'
 import { Route as AdminVocabularyRouteImport } from './routes/admin/vocabulary'
 import { Route as AdminUsersRouteImport } from './routes/admin/users'
 import { Route as AdminTemplatesRouteImport } from './routes/admin/templates'
 import { Route as AdminSystemRouteImport } from './routes/admin/system'
+import { Route as AdminReportsRouteImport } from './routes/admin/reports'
 import { Route as AdminPalettesRouteImport } from './routes/admin/palettes'
 import { Route as AdminModelRouteImport } from './routes/admin/model'
 import { Route as AdminLinksRouteImport } from './routes/admin/links'
@@ -35,6 +38,7 @@ import { Route as AuthenticatedDiscoverRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedCreateRouteImport } from './routes/_authenticated/create'
 import { Route as AuthenticatedCommunityRouteImport } from './routes/_authenticated/community'
 import { Route as AuthenticatedAboutRouteImport } from './routes/_authenticated/about'
+import { Route as ApiPublicWordReportRouteImport } from './routes/api/public/word-report'
 import { Route as ApiPublicVocabularyRefillRouteImport } from './routes/api/public/vocabulary-refill'
 import { Route as ApiPublicVocabularyRouteImport } from './routes/api/public/vocabulary'
 import { Route as ApiPublicEngagementRouteImport } from './routes/api/public/engagement'
@@ -80,6 +84,16 @@ const FeedSavedRoute = FeedSavedRouteImport.update({
   path: '/feed/saved',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FeedLibraryRoute = FeedLibraryRouteImport.update({
+  id: '/feed/library',
+  path: '/feed/library',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminWordingsRoute = AdminWordingsRouteImport.update({
+  id: '/wordings',
+  path: '/wordings',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
 const AdminVocabularyRoute = AdminVocabularyRouteImport.update({
   id: '/vocabulary',
   path: '/vocabulary',
@@ -98,6 +112,11 @@ const AdminTemplatesRoute = AdminTemplatesRouteImport.update({
 const AdminSystemRoute = AdminSystemRouteImport.update({
   id: '/system',
   path: '/system',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminReportsRoute = AdminReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
   getParentRoute: () => AdminRouteRoute,
 } as any)
 const AdminPalettesRoute = AdminPalettesRouteImport.update({
@@ -172,6 +191,11 @@ const AuthenticatedAboutRoute = AuthenticatedAboutRouteImport.update({
   path: '/about',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ApiPublicWordReportRoute = ApiPublicWordReportRouteImport.update({
+  id: '/api/public/word-report',
+  path: '/api/public/word-report',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicVocabularyRefillRoute =
   ApiPublicVocabularyRefillRouteImport.update({
     id: '/api/public/vocabulary-refill',
@@ -218,10 +242,13 @@ export interface FileRoutesByFullPath {
   '/admin/links': typeof AdminLinksRoute
   '/admin/model': typeof AdminModelRoute
   '/admin/palettes': typeof AdminPalettesRoute
+  '/admin/reports': typeof AdminReportsRoute
   '/admin/system': typeof AdminSystemRoute
   '/admin/templates': typeof AdminTemplatesRoute
   '/admin/users': typeof AdminUsersRoute
   '/admin/vocabulary': typeof AdminVocabularyRoute
+  '/admin/wordings': typeof AdminWordingsRoute
+  '/feed/library': typeof FeedLibraryRoute
   '/feed/saved': typeof FeedSavedRoute
   '/admin/': typeof AdminIndexRoute
   '/feed/': typeof FeedIndexRoute
@@ -230,6 +257,7 @@ export interface FileRoutesByFullPath {
   '/api/public/engagement': typeof ApiPublicEngagementRoute
   '/api/public/vocabulary': typeof ApiPublicVocabularyRoute
   '/api/public/vocabulary-refill': typeof ApiPublicVocabularyRefillRoute
+  '/api/public/word-report': typeof ApiPublicWordReportRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -249,10 +277,13 @@ export interface FileRoutesByTo {
   '/admin/links': typeof AdminLinksRoute
   '/admin/model': typeof AdminModelRoute
   '/admin/palettes': typeof AdminPalettesRoute
+  '/admin/reports': typeof AdminReportsRoute
   '/admin/system': typeof AdminSystemRoute
   '/admin/templates': typeof AdminTemplatesRoute
   '/admin/users': typeof AdminUsersRoute
   '/admin/vocabulary': typeof AdminVocabularyRoute
+  '/admin/wordings': typeof AdminWordingsRoute
+  '/feed/library': typeof FeedLibraryRoute
   '/feed/saved': typeof FeedSavedRoute
   '/admin': typeof AdminIndexRoute
   '/feed': typeof FeedIndexRoute
@@ -261,6 +292,7 @@ export interface FileRoutesByTo {
   '/api/public/engagement': typeof ApiPublicEngagementRoute
   '/api/public/vocabulary': typeof ApiPublicVocabularyRoute
   '/api/public/vocabulary-refill': typeof ApiPublicVocabularyRefillRoute
+  '/api/public/word-report': typeof ApiPublicWordReportRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -283,10 +315,13 @@ export interface FileRoutesById {
   '/admin/links': typeof AdminLinksRoute
   '/admin/model': typeof AdminModelRoute
   '/admin/palettes': typeof AdminPalettesRoute
+  '/admin/reports': typeof AdminReportsRoute
   '/admin/system': typeof AdminSystemRoute
   '/admin/templates': typeof AdminTemplatesRoute
   '/admin/users': typeof AdminUsersRoute
   '/admin/vocabulary': typeof AdminVocabularyRoute
+  '/admin/wordings': typeof AdminWordingsRoute
+  '/feed/library': typeof FeedLibraryRoute
   '/feed/saved': typeof FeedSavedRoute
   '/admin/': typeof AdminIndexRoute
   '/feed/': typeof FeedIndexRoute
@@ -295,6 +330,7 @@ export interface FileRoutesById {
   '/api/public/engagement': typeof ApiPublicEngagementRoute
   '/api/public/vocabulary': typeof ApiPublicVocabularyRoute
   '/api/public/vocabulary-refill': typeof ApiPublicVocabularyRefillRoute
+  '/api/public/word-report': typeof ApiPublicWordReportRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -317,10 +353,13 @@ export interface FileRouteTypes {
     | '/admin/links'
     | '/admin/model'
     | '/admin/palettes'
+    | '/admin/reports'
     | '/admin/system'
     | '/admin/templates'
     | '/admin/users'
     | '/admin/vocabulary'
+    | '/admin/wordings'
+    | '/feed/library'
     | '/feed/saved'
     | '/admin/'
     | '/feed/'
@@ -329,6 +368,7 @@ export interface FileRouteTypes {
     | '/api/public/engagement'
     | '/api/public/vocabulary'
     | '/api/public/vocabulary-refill'
+    | '/api/public/word-report'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -348,10 +388,13 @@ export interface FileRouteTypes {
     | '/admin/links'
     | '/admin/model'
     | '/admin/palettes'
+    | '/admin/reports'
     | '/admin/system'
     | '/admin/templates'
     | '/admin/users'
     | '/admin/vocabulary'
+    | '/admin/wordings'
+    | '/feed/library'
     | '/feed/saved'
     | '/admin'
     | '/feed'
@@ -360,6 +403,7 @@ export interface FileRouteTypes {
     | '/api/public/engagement'
     | '/api/public/vocabulary'
     | '/api/public/vocabulary-refill'
+    | '/api/public/word-report'
   id:
     | '__root__'
     | '/'
@@ -381,10 +425,13 @@ export interface FileRouteTypes {
     | '/admin/links'
     | '/admin/model'
     | '/admin/palettes'
+    | '/admin/reports'
     | '/admin/system'
     | '/admin/templates'
     | '/admin/users'
     | '/admin/vocabulary'
+    | '/admin/wordings'
+    | '/feed/library'
     | '/feed/saved'
     | '/admin/'
     | '/feed/'
@@ -393,6 +440,7 @@ export interface FileRouteTypes {
     | '/api/public/engagement'
     | '/api/public/vocabulary'
     | '/api/public/vocabulary-refill'
+    | '/api/public/word-report'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -401,11 +449,13 @@ export interface RootRouteChildren {
   AdminRouteRoute: typeof AdminRouteRouteWithChildren
   AdminAccessDeniedRoute: typeof AdminAccessDeniedRoute
   AuthRoute: typeof AuthRoute
+  FeedLibraryRoute: typeof FeedLibraryRoute
   FeedSavedRoute: typeof FeedSavedRoute
   FeedIndexRoute: typeof FeedIndexRoute
   ApiPublicEngagementRoute: typeof ApiPublicEngagementRoute
   ApiPublicVocabularyRoute: typeof ApiPublicVocabularyRoute
   ApiPublicVocabularyRefillRoute: typeof ApiPublicVocabularyRefillRoute
+  ApiPublicWordReportRoute: typeof ApiPublicWordReportRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -466,6 +516,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FeedSavedRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/feed/library': {
+      id: '/feed/library'
+      path: '/feed/library'
+      fullPath: '/feed/library'
+      preLoaderRoute: typeof FeedLibraryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/wordings': {
+      id: '/admin/wordings'
+      path: '/wordings'
+      fullPath: '/admin/wordings'
+      preLoaderRoute: typeof AdminWordingsRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
     '/admin/vocabulary': {
       id: '/admin/vocabulary'
       path: '/vocabulary'
@@ -492,6 +556,13 @@ declare module '@tanstack/react-router' {
       path: '/system'
       fullPath: '/admin/system'
       preLoaderRoute: typeof AdminSystemRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/reports': {
+      id: '/admin/reports'
+      path: '/reports'
+      fullPath: '/admin/reports'
+      preLoaderRoute: typeof AdminReportsRouteImport
       parentRoute: typeof AdminRouteRoute
     }
     '/admin/palettes': {
@@ -592,6 +663,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAboutRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/word-report': {
+      id: '/api/public/word-report'
+      path: '/api/public/word-report'
+      fullPath: '/api/public/word-report'
+      preLoaderRoute: typeof ApiPublicWordReportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/vocabulary-refill': {
       id: '/api/public/vocabulary-refill'
       path: '/api/public/vocabulary-refill'
@@ -666,10 +744,12 @@ interface AdminRouteRouteChildren {
   AdminLinksRoute: typeof AdminLinksRoute
   AdminModelRoute: typeof AdminModelRoute
   AdminPalettesRoute: typeof AdminPalettesRoute
+  AdminReportsRoute: typeof AdminReportsRoute
   AdminSystemRoute: typeof AdminSystemRoute
   AdminTemplatesRoute: typeof AdminTemplatesRoute
   AdminUsersRoute: typeof AdminUsersRoute
   AdminVocabularyRoute: typeof AdminVocabularyRoute
+  AdminWordingsRoute: typeof AdminWordingsRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
 
@@ -680,10 +760,12 @@ const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminLinksRoute: AdminLinksRoute,
   AdminModelRoute: AdminModelRoute,
   AdminPalettesRoute: AdminPalettesRoute,
+  AdminReportsRoute: AdminReportsRoute,
   AdminSystemRoute: AdminSystemRoute,
   AdminTemplatesRoute: AdminTemplatesRoute,
   AdminUsersRoute: AdminUsersRoute,
   AdminVocabularyRoute: AdminVocabularyRoute,
+  AdminWordingsRoute: AdminWordingsRoute,
   AdminIndexRoute: AdminIndexRoute,
 }
 
@@ -697,11 +779,13 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRouteRoute: AdminRouteRouteWithChildren,
   AdminAccessDeniedRoute: AdminAccessDeniedRoute,
   AuthRoute: AuthRoute,
+  FeedLibraryRoute: FeedLibraryRoute,
   FeedSavedRoute: FeedSavedRoute,
   FeedIndexRoute: FeedIndexRoute,
   ApiPublicEngagementRoute: ApiPublicEngagementRoute,
   ApiPublicVocabularyRoute: ApiPublicVocabularyRoute,
   ApiPublicVocabularyRefillRoute: ApiPublicVocabularyRefillRoute,
+  ApiPublicWordReportRoute: ApiPublicWordReportRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

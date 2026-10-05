@@ -8,7 +8,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import {type ReactElement, useEffect, useState } from "react";
-import { PostCard } from "@/components/PostCard";
+import { PostCardShell } from "@/components/PostCard";
 import { supabase } from "@/integrations/supabase/client";
 import { resolveDataMode } from "@/features/session";
 import { useStatusScrollSnap } from "@/lib/use-status-scroll-snap";
@@ -114,7 +114,7 @@ export function FeedPage(): ReactElement {
         className="scrollbar-hide h-[100dvh] snap-y snap-mandatory overflow-y-scroll overscroll-contain [touch-action:pan-y]"
       >
         {data.posts.map((p) => (
-          <PostCard
+          <PostCardShell
             key={p.id}
             post={p}
             author={profilesById.get(p.author_id)}

@@ -37,6 +37,7 @@ export { getWordAnchorKey, getWords } from "./lib/words";
 export {
   getKineticTextLayoutMode,
   getMeasuredTextWidth,
+  getWidestLineWidth,
   getWidestWordWidth,
   hasVisibleStickerAccent,
 } from "./lib/layout";

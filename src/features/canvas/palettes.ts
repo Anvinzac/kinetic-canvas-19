@@ -317,14 +317,20 @@ function substituteStops(background: string, tokens: string[], hexes: string[]):
  * Both stops are placed by relative LUMINANCE, not HSL lightness: a violet and a
  * green at the same L are nowhere near equally bright, so a fixed lightness made the
  * green half of the backdrop wash out to a mid-tone the body text could not sit on.
- * Solving in luminance keeps the pair inside the tone's band — deep and quiet for a
- * dark palette, pale for a light one — so adding the second color cannot move the
+ * Solving in luminance keeps the pair inside the tone's band — deep and saturated for
+ * a dark palette, bright for a light one — so adding the second color cannot move the
  * contrast floors the ink and accents are solved against.
+ *
+ * The dark band is kept low on purpose: an accent has to clear 3:1 against the
+ * LIGHTER stop, so a mid-tone second stop forces every accent up into pastel. Holding
+ * that stop near 0.09 lets the accents land around 75% lightness, where magenta,
+ * coral and violet still have their full chroma. The first stop stays just above the
+ * canvas pipeline's too-dark floor (0.05), so nothing here can read as black.
  * @pure true
  */
 function composeBackground(hue: number, dark: boolean, secondOffset: number): string {
-  const stopOne = hslHexAtLuminance(hue, dark ? 0.52 : 0.62, dark ? 0.055 : 0.86);
-  const stopTwo = hslHexAtLuminance(hue + secondOffset, 0.5, dark ? 0.13 : 0.7);
+  const stopOne = hslHexAtLuminance(hue, dark ? 0.72 : 0.9, dark ? 0.055 : 0.8);
+  const stopTwo = hslHexAtLuminance(hue + secondOffset, dark ? 0.7 : 0.82, dark ? 0.09 : 0.66);
   return `linear-gradient(135deg,${stopOne},${stopTwo})`;
 }
 
@@ -466,7 +472,7 @@ export function generatePalette(input: {
 
   const accentA = solveLightness({
     hue: hue + offsetA,
-    saturation: dark ? 0.88 : 0.78,
+    saturation: dark ? 0.96 : 0.86,
     from: accentStart,
     to: accentTarget,
     passes: (hex) =>
@@ -479,7 +485,7 @@ export function generatePalette(input: {
   // converge into two shades of the same color.
   const accentB = solveLightness({
     hue: hue + offsetB,
-    saturation: dark ? 0.88 : 0.78,
+    saturation: dark ? 0.96 : 0.86,
     from: accentStart,
     to: accentTarget,
     passes: (hex) =>

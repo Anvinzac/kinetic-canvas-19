@@ -10,15 +10,13 @@ import type { CSSProperties, ReactElement } from "react";
 import { getCanvasEmphasisWordColor, type CanvasSpec } from "@/features/canvas";
 import {
   getAuraColor,
-  getBoundPhraseEmphasisSeed,
   getBoundPhraseStartIndex,
   getEmphasisInnerAnimation,
   getEmphasisTextShadow,
-  getEmphasisVariant,
   getWordAnchorKey,
-  isDimEmphasisColor,
   type EmphasisVariant,
 } from "@/features/kinetic-text";
+import { resolveWordEmphasisVariant } from "../lib/emphasis-variant";
 import {
   ENTRANCE_REST,
   getEntranceHidden,
@@ -55,6 +53,11 @@ export type WordSequenceWordProps = {
   emphasisColor: string;
   entranceStyle: ResolvedEntranceStyle;
   skipFrame?: boolean;
+  /**
+   * The enclosing run draws this word's moving effect (sweep, halo, glow, pulse,
+   * jiggle) once across all of its syllables, so the word must not draw its own.
+   */
+  runEffect?: boolean;
 };
 
 /**
@@ -82,37 +85,44 @@ export function WordSequenceWord({
   emphasisColor,
   entranceStyle,
   skipFrame = false,
+  runEffect = false,
 }: WordSequenceWordProps): ReactElement {
-  // A token with no letter/number — trailing punctuation, or a masked "_____"
-  // answer blank — can still be handed to us by the emphasis sets. Framing it
-  // would draw an empty highlight box around nothing, so a glyph-less token never
-  // counts as important, no matter which selection path (heuristic, fallback,
-  // data annotation, secondary, poetic) proposed it.
   const hasGlyph = /\p{L}|\p{N}/u.test(word);
-  const primary = hasGlyph && emphasized.has(index);
+  // A masked answer ("_____", possibly with trailing punctuation) is split so the
+  // run of underscores carries its own hook. The glyphs and their width are
+  // untouched — a surface that wants the blank to read as a live slot rather than
+  // five inert underscores styles `[data-kinetic-blank]`; everywhere else it
+  // renders exactly as before.
+  const blank = hasGlyph ? null : /^(_{2,})(.*)$/u.exec(word);
+  // A token with no letter/number — trailing punctuation, or a masked "_____" answer
+  // blank — can still be handed to us by the emphasis sets. Framing it would draw an
+  // empty highlight box around nothing, so the resolver returns null for it whichever
+  // selection path (heuristic, fallback, data annotation, secondary, poetic) proposed
+  // it. A shared multi-syllable run shows a box-drawing `frame` as a continuous
+  // underline; a lone `frame` word keeps its box.
+  const displayVariant = resolveWordEmphasisVariant({
+    word,
+    index,
+    words,
+    text: spec.text,
+    emphasized,
+    phraseKeys,
+    secondaryEmphasized,
+    secondaryVariant,
+    emphasisColor,
+    inRun: skipFrame,
+  });
+  const important = displayVariant !== null;
+  const primary = important && emphasized.has(index);
   // A secondary mark is caller-forced and never drives the spotlight layout, so
   // adding one cannot re-centre the page or claim a full-width line.
-  const secondary = hasGlyph && !primary && (secondaryEmphasized?.has(index) ?? false);
-  const important = primary || secondary;
   const spotlightWord = spotlightEmphasis && primary && !suppressSpotlight;
   const emphasisAnchorIndex = important
     ? getBoundPhraseStartIndex(words, index, phraseKeys)
     : index;
-  const emphasisVariant = important
-    ? secondary && secondaryVariant
-      ? secondaryVariant
-      : getEmphasisVariant(
-          spec.text,
-          getBoundPhraseEmphasisSeed(words, index, phraseKeys),
-          emphasisAnchorIndex,
-          !isDimEmphasisColor(emphasisColor),
-        )
-    : null;
-  // A shared multi-syllable run must not render as a big boxed container: when a
-  // syllable sits inside a group (skipFrame) and the seeded effect is the box-drawing
-  // `frame`, downgrade it to a continuous underline so the phrase reads as highlighted
-  // text instead. A lone `frame` word (skipFrame false) keeps its box.
-  const displayVariant = skipFrame && emphasisVariant === "frame" ? "underline" : emphasisVariant;
+  // When the run this word sits in draws the effect once across all its syllables,
+  // the word keeps its color and weight but adds no moving effect of its own.
+  const ownEffect = runEffect ? null : displayVariant;
   const wordColor = important
     ? getCanvasEmphasisWordColor(displayVariant, textColor, emphasisColor)
     : textColor;
@@ -132,11 +142,8 @@ export function WordSequenceWord({
           : {}),
       } as CSSProperties)
     : undefined;
-  const innerAnimation = important
-    ? staticRender
-      ? undefined
-      : getEmphasisInnerAnimation(displayVariant)
-    : undefined;
+  const innerAnimation =
+    important && !staticRender ? getEmphasisInnerAnimation(ownEffect) : undefined;
   const isSoloRevealWord = isSolo;
   const hidden = getEntranceHidden(entranceStyle, important, index);
   const safeHidden = isSolo
@@ -200,19 +207,19 @@ export function WordSequenceWord({
           className={
             important
               ? `kinetic-emphasis-mark${
-                  displayVariant === "halo"
+                  ownEffect === "halo"
                     ? " kinetic-emph-halo"
-                    : displayVariant === "frame"
+                    : ownEffect === "frame"
                       ? // Only a lone word reaches here — a grouped `frame` was already
                         // downgraded to `underline` via displayVariant above.
                         " kinetic-emph-frame"
-                      : displayVariant === "underline"
+                      : ownEffect === "underline"
                         ? // A syllable inside a shared run joins its bar across the column
                           // gap, so a compound never shows an underline broken mid-word.
                           skipFrame
                           ? " kinetic-emph-underline is-joined"
                           : " kinetic-emph-underline"
-                        : displayVariant === "sweep"
+                        : ownEffect === "sweep"
                           ? " kinetic-emph-sweep"
                           : ""
                 }${staticRender ? "" : " is-animated"}`
@@ -225,7 +232,14 @@ export function WordSequenceWord({
               : undefined,
           }}
         >
-          {word}
+          {blank ? (
+            <>
+              <span data-kinetic-blank="">{blank[1]}</span>
+              {blank[2]}
+            </>
+          ) : (
+            word
+          )}
         </span>
       </span>
     </motion.span>

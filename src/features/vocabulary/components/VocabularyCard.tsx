@@ -8,17 +8,20 @@ import {
   useState,
   type CSSProperties,
 } from "react";
-import { getCanvasPatternTheme, getCanvasSceneTheme } from "@/features/canvas";
+import { blendOklch, getCanvasPatternTheme, getCanvasSceneTheme } from "@/features/canvas";
 import {
   PostCanvasBackdrop,
   getSlidingCanvasBackground,
   getPageDuration,
   getUniformPageTextSize,
 } from "@/features/post-player";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, animate, motion, useMotionValue } from "framer-motion";
+import { SPRING, getBeatSeconds } from "@/lib/motion";
 import { Bookmark, Heart } from "lucide-react";
 import { buildVocabularyCanvas, choosePresentation, fitVocabularyTextSize } from "../lib/presets";
 import { buildStages } from "../lib/stages";
+import { getExportStageBox, type CardExportLayout } from "../lib/export-layout";
+import { hasReportedWord } from "../lib/reported-words";
 import { getSpellingDurationMs, pickSpellingVariant } from "../lib/spelling";
 import {
   REACTIONS_EVENT,
@@ -36,6 +39,12 @@ import type { FeedEntry, Presentation } from "../types";
 import { EmojiBurst } from "./EmojiBurst";
 import { SpellingAnimation } from "./SpellingAnimation";
 import { VocabularyStage } from "./VocabularyStage";
+import { WordReportButton, WordReportPanel } from "./WordReportControl";
+
+/** Horizontal travel before a drag starts moving the page, in px. */
+const DRAG_SLOP_PX = 10;
+/** Share of the finger's travel the page follows — under 1 so it feels held, not loose. */
+const DRAG_FOLLOW = 0.42;
 
 /** Play a single occurrence, keeping answer content hidden until reveal. @param props Entry/display settings. @returns Full-height card. */
 export function VocabularyCard({
@@ -46,6 +55,9 @@ export function VocabularyCard({
   matching,
   canAdvance,
   onAdvance,
+  onWordEnding,
+  exportLayout,
+  revealButtonLabel,
 }: {
   entry: FeedEntry;
   presentation: Presentation;
@@ -54,6 +66,20 @@ export function VocabularyCard({
   matching: number;
   canAdvance: boolean;
   onAdvance: () => void;
+  /**
+   * Called when this card, while on screen, reaches its final page (the spelling
+   * coda), with the milliseconds left before the stream moves on — 0 when pages are
+   * turned by hand and there is no telling. Lets the music bow out with the word.
+   */
+  onWordEnding?: (remainingMs: number) => void;
+  /**
+   * Render for video export instead of for a reader: the text is confined to the
+   * given clear zone, the interactive chrome is hidden and gestures are off. The
+   * animation, timing and palette are exactly the feed's.
+   */
+  exportLayout?: CardExportLayout;
+  /** Custom label for the reveal button, from admin wording presets. */
+  revealButtonLabel?: string;
 }) {
   const { theme, style } = choosePresentation(entry.occurrenceId, presentation);
   const stages = useMemo(() => buildStages(entry.word, style.id), [entry.word, style.id]);
@@ -99,17 +125,38 @@ export function VocabularyCard({
     ],
     [stages, entry.word.defVi, style.tempo, style.rhythm, spellingDuration],
   );
+  // While the report panel is open the card holds still: the reader is describing
+  // THIS page, and the stream must not move on underneath them.
+  const [reportOpen, setReportOpen] = useState(false);
+  const [reported, setReported] = useState(() => hasReportedWord(entry.word.id));
+  const reportButton = useRef<HTMLButtonElement>(null);
+  const closeReport = useCallback(() => {
+    setReportOpen(false);
+    reportButton.current?.focus();
+  }, []);
+  const markReported = useCallback(() => setReported(true), []);
   const playback = useLearningPlayback({
     count: pageCount,
     active,
-    autoplay: presentation.autoplay,
+    autoplay: presentation.autoplay && !reportOpen,
     reducedMotion,
     durations: pageDurations,
     canAdvance,
     revealPage,
     onFinish: onAdvance,
   });
+  // Which way the reader last moved, derived during render so the outgoing page
+  // already knows its exit direction on the same pass that swaps it out.
+  const [nav, setNav] = useState({ page: 0, direction: 1 });
+  if (nav.page !== playback.page) {
+    setNav({ page: playback.page, direction: playback.page > nav.page ? 1 : -1 });
+  }
   const isSpelling = playback.page > revealPage;
+  const autoAdvancing = playback.playing && canAdvance;
+  useEffect(() => {
+    if (!active || !isSpelling) return;
+    onWordEnding?.(autoAdvancing ? spellingDuration : 0);
+  }, [active, isSpelling, autoAdvancing, spellingDuration, onWordEnding]);
   // The reveal page and the spelling coda both belong to the answer, so the emoji
   // burst stays mounted across the flip instead of remounting and restarting.
   const isRevealed = playback.page >= revealPage;
@@ -161,21 +208,33 @@ export function VocabularyCard({
   const sliding =
     sceneTheme || patternTheme
       ? null
-      : getSlidingCanvasBackground(canvas, theme.background, reducedMotion ? 0 : playback.page);
+      : getSlidingCanvasBackground(
+          canvas,
+          theme.background,
+          reducedMotion ? 0 : playback.page,
+          // Blend each step perceptually so the strip keeps its color through the
+          // middle of the card, matching the static `theme.paint` on idle cards.
+          blendOklch,
+        );
   // Only the single active card animates the sweeping transition backdrop. Inactive
   // neighbours keep a static gradient, so a transient active-index flip can never make
   // every visible background strobe at once.
   const sweep = !!sliding && !reducedMotion && active;
   const cluePages = stages.filter((item) => !item.reveal).map((item) => item.text);
+  // In an export the text lives in the frame's clear zone, so that zone — not the
+  // whole card — is the width and height everything is fitted to.
+  const exportBox = exportLayout ? getExportStageBox(width, height, exportLayout) : null;
+  const textWidth = exportBox?.textWidth ?? width;
   const textSize = fitVocabularyTextSize(
     stage.text,
     getUniformPageTextSize(
-      Math.max(96, Math.min(160, width * 0.13)),
+      Math.max(96, Math.min(160, textWidth * 0.13)),
       cluePages,
       cluePages.join(" "),
     ),
-    width,
-    height,
+    textWidth,
+    exportBox?.textHeight ?? height,
+    exportBox ? 0 : undefined,
   );
   // Every role comes from one validated palette. `--vocab-button-ink` is the
   // palette's on-accent color, which the audit already proved clears 4.5:1 against
@@ -185,13 +244,47 @@ export function VocabularyCard({
     "--vocab-accent": theme.accent,
     "--vocab-accent-alt": theme.accentAlt,
     "--vocab-button-ink": theme.onAccent,
-    background: theme.background,
+    // One pulse per card: emphasis loops, the backdrop drift and the blank slot are
+    // all whole multiples of this, so the page moves to the style's tempo.
+    "--kinetic-beat": `${getBeatSeconds(style.tempo)}s`,
+    background: theme.paint,
     color: theme.ink,
     fontFamily: `${theme.font}, sans-serif`,
+    ...(exportLayout && exportBox
+      ? {
+          "--safe-top": `${exportLayout.safe.top * 100}%`,
+          "--safe-right": `${exportLayout.safe.right * 100}%`,
+          "--safe-bottom": `${exportLayout.safe.bottom * 100}%`,
+          "--safe-left": `${exportLayout.safe.left * 100}%`,
+          "--export-stage-top": `${exportBox.top}px`,
+          "--export-stage-bottom": `${exportBox.bottom}px`,
+          "--export-stage-bottom-band": `${exportBox.bottomBand}px`,
+        }
+      : {}),
   } as CSSProperties;
 
   // Gesture handling: tap left/right + horizontal swipe for clue navigation.
   const gestureStart = useRef<{ x: number; y: number; t: number } | null>(null);
+  // The page follows the finger while it is dragged sideways and springs back on
+  // release, so a swipe is felt before it commits rather than jumping at a threshold.
+  const dragX = useMotionValue(0);
+  const handlePointerMove = useCallback(
+    (clientX: number, clientY: number) => {
+      const start = gestureStart.current;
+      if (!start || reducedMotion) return;
+      const dx = clientX - start.x;
+      const dy = clientY - start.y;
+      // Only a clearly horizontal drag moves the page; vertical travel belongs to the
+      // stream's own scroll and must not wobble the text.
+      if (Math.abs(dx) > DRAG_SLOP_PX && Math.abs(dx) > Math.abs(dy) * 1.2) {
+        dragX.set(dx * DRAG_FOLLOW);
+      }
+    },
+    [dragX, reducedMotion],
+  );
+  const releaseDrag = useCallback(() => {
+    if (dragX.get() !== 0) animate(dragX, 0, SPRING.snappy);
+  }, [dragX]);
   const handlePointerStart = useCallback(
     (clientX: number, clientY: number, target: EventTarget | null) => {
       if (
@@ -211,6 +304,7 @@ export function VocabularyCard({
     (clientX: number, clientY: number) => {
       const start = gestureStart.current;
       gestureStart.current = null;
+      releaseDrag();
       if (!start) return;
       const dx = clientX - start.x;
       const dy = clientY - start.y;
@@ -253,7 +347,7 @@ export function VocabularyCard({
         }
       }
     },
-    [playback, stage.reveal, isSpelling, onAdvance],
+    [playback, stage.reveal, isSpelling, onAdvance, releaseDrag],
   );
 
   void matching;
@@ -301,14 +395,29 @@ export function VocabularyCard({
       window.removeEventListener(REACTIONS_EVENT, readLocalReactions);
     };
   }, [readLocalReactions]);
+  // Bumped each time a reaction is switched ON, and used as a React key on the icon:
+  // a fresh key remounts it, which replays the pop. Starting at 0 means an already
+  // saved word does not celebrate itself every time its card scrolls into view.
+  // `onStrip` records which row the tap happened in: the action row and the emoji
+  // strip each render their own heart/bookmark, and the strip mounting at the reveal
+  // must not replay a pop that was earned on the other row.
+  const [pops, setPops] = useState({ heart: 0, bookmark: 0, onStrip: false });
   const toggleReaction = useCallback(
     (kind: ReactionKind) => {
       // Reactions are always live — no pre-reveal lock. flipReaction bumps the tap
       // counter itself when the reaction turns on.
+      const turningOn = !hasReaction(wordId, kind);
       flipReaction(wordId, kind);
       readLocalReactions();
+      if (turningOn) {
+        setPops((current) => ({
+          ...current,
+          [kind]: current[kind] + 1,
+          onStrip: showEmojiStrip,
+        }));
+      }
     },
-    [wordId, readLocalReactions],
+    [wordId, readLocalReactions, showEmojiStrip],
   );
   const heartsLabel = formatReactionCount(taps.heart);
   const bookmarksLabel = formatReactionCount(taps.bookmark);
@@ -324,10 +433,14 @@ export function VocabularyCard({
     () => withLocalEmojis(emojiTotals, emojiComments).counts,
     [emojiTotals, emojiComments],
   );
+  // The last emoji tapped and how many taps there have been, so that emoji alone
+  // replays its bounce and floats a "+1" — feedback the strip never gave before.
+  const [emojiTap, setEmojiTap] = useState<{ emoji: string; count: number }>();
   const handleEmojiTap = useCallback(
     (emoji: string) => {
       addEmojiComment(wordId, emoji);
       setEmojiComments(getEmojiComments(wordId));
+      setEmojiTap((current) => ({ emoji, count: (current?.count ?? 0) + 1 }));
     },
     [wordId],
   );
@@ -338,6 +451,9 @@ export function VocabularyCard({
       className="vocab-card"
       style={colors}
       data-theme={theme.id}
+      data-tone={theme.tone}
+      data-export={exportLayout ? "" : undefined}
+      data-export-progress={exportLayout?.showProgress || undefined}
       data-stage={isSpelling ? "spelling" : stage.id}
       inert={!active}
       aria-hidden={!active}
@@ -348,9 +464,17 @@ export function VocabularyCard({
         const t = e.touches[0];
         if (t) handlePointerStart(t.clientX, t.clientY, e.target);
       }}
+      onTouchMove={(e) => {
+        const t = e.touches[0];
+        if (t) handlePointerMove(t.clientX, t.clientY);
+      }}
       onTouchEnd={(e) => {
         const t = e.changedTouches[0];
         if (t) handlePointerEnd(t.clientX, t.clientY);
+      }}
+      onTouchCancel={() => {
+        gestureStart.current = null;
+        releaseDrag();
       }}
       onMouseDown={(e) => {
         // Only for desktop click preview; store for mouse up
@@ -360,15 +484,20 @@ export function VocabularyCard({
       onMouseUp={(e) => handlePointerEnd(e.clientX, e.clientY)}
     >
       <div className="vocab-backdrop" aria-hidden="true">
-        <PostCanvasBackdrop
-          postId={entry.occurrenceId}
-          backgroundShiftPage={reducedMotion ? 0 : playback.page}
-          sceneTheme={sceneTheme}
-          patternTheme={patternTheme}
-          slidingCanvasBackground={sliding}
-          staticCanvasBackground={theme.background}
-          hasTransitionBackground={sweep}
-        />
+        {/* The backdrop, not the text, carries the idle motion: a slow sideways
+            drift of the gradient itself. It only moves colors that are already in
+            the palette, so the audited contrast floors hold wherever it drifts. */}
+        <div className="vocab-backdrop-drift" data-drift={sweep || undefined}>
+          <PostCanvasBackdrop
+            postId={entry.occurrenceId}
+            backgroundShiftPage={reducedMotion ? 0 : playback.page}
+            sceneTheme={sceneTheme}
+            patternTheme={patternTheme}
+            slidingCanvasBackground={sliding}
+            staticCanvasBackground={theme.paint}
+            hasTransitionBackground={sweep}
+          />
+        </div>
       </div>
       {isSpelling ? (
         <SpellingAnimation
@@ -382,11 +511,13 @@ export function VocabularyCard({
           word={entry.word}
           spec={{ ...canvas, text: stage.text, size: stage.reveal ? 128 : textSize }}
           background={theme.background}
-          canvasWidth={width}
+          canvasWidth={textWidth}
           active={active}
           playing={playback.playing}
           reducedMotion={reducedMotion}
           playKey={playKey}
+          direction={nav.direction}
+          dragX={dragX}
         />
       )}
       {isRevealed && (
@@ -401,6 +532,11 @@ export function VocabularyCard({
           spanSeconds={burstSpanSeconds}
           reducedMotion={reducedMotion}
         />
+      )}
+      {exportLayout?.showBrand && (
+        <p className="vocab-export-brand" aria-hidden="true">
+          anh.chay<span>Lá</span>
+        </p>
       )}
       {!isSpelling && <p className="vocab-stage-label">{stage.label}</p>}
       <div className="vocab-progress" aria-label={`Page ${playback.page + 1} of ${pageCount}`}>
@@ -419,113 +555,185 @@ export function VocabularyCard({
         ))}
       </div>
 
+      {!exportLayout && reportOpen && (
+        <WordReportPanel
+          wordId={wordId}
+          stageId={isSpelling ? "spelling" : stage.id}
+          alreadyReported={reported}
+          onSent={markReported}
+          onClose={closeReport}
+        />
+      )}
       <div
         className="vocab-action-bar"
         ref={actionBarRef}
         data-anticipation={showEmojiStrip || undefined}
         data-no-gesture
       >
-        <AnimatePresence mode="wait">
-          {showEmojiStrip ? (
-            <motion.div
-              key="emoji-strip"
-              ref={emojiStripRef}
-              className="vocab-emoji-strip"
-              initial={{ opacity: 0, scale: 0.85, filter: "blur(4px)" }}
-              animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
-              exit={{ opacity: 0, scale: 0.85, filter: "blur(4px)" }}
-              transition={{ duration: reducedMotion ? 0 : 0.28, ease: [0.22, 1, 0.36, 1] }}
-            >
-              {EMOJI_PALETTE.map((emoji) => {
-                const count = emojiCounts[emoji] ?? 0;
-                return (
-                  <button
-                    key={emoji}
-                    type="button"
-                    className="vocab-emoji-strip-btn"
-                    data-emoji={emoji}
-                    onClick={() => handleEmojiTap(emoji)}
-                    aria-label={`React with ${emoji}${count ? `, ${count} so far` : ""}`}
-                  >
-                    {emoji}
-                    {count > 0 && (
-                      <span className="vocab-emoji-strip-count" aria-hidden="true">
-                        {formatEmojiTotal(count)}
+        {/* The report button keeps the left end of the row to itself and stays put
+            across the reveal; the reveal / heart / bookmark group (and later the emoji
+            strip) is centred in the room beside it. */}
+        <WordReportButton
+          buttonRef={reportButton}
+          open={reportOpen}
+          reported={reported}
+          onToggle={() => (reportOpen ? closeReport() : setReportOpen(true))}
+        />
+        <div className="vocab-action-main">
+          <AnimatePresence mode="wait">
+            {showEmojiStrip ? (
+              <motion.div
+                key="emoji-strip"
+                ref={emojiStripRef}
+                className="vocab-emoji-strip"
+                initial={{ opacity: 0, scale: 0.85, filter: "blur(4px)" }}
+                animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+                exit={{ opacity: 0, scale: 0.85, filter: "blur(4px)" }}
+                transition={{ duration: reducedMotion ? 0 : 0.28, ease: [0.22, 1, 0.36, 1] }}
+              >
+                {EMOJI_PALETTE.map((emoji) => {
+                  const count = emojiCounts[emoji] ?? 0;
+                  const tapped = emojiTap?.emoji === emoji;
+                  return (
+                    <button
+                      key={emoji}
+                      type="button"
+                      className="vocab-emoji-strip-btn"
+                      data-emoji={emoji}
+                      onClick={() => handleEmojiTap(emoji)}
+                      aria-label={`React with ${emoji}${count ? `, ${count} so far` : ""}`}
+                    >
+                      <span
+                        key={`glyph-${tapped ? emojiTap.count : 0}`}
+                        className="vocab-emoji-glyph"
+                        data-pop={tapped || undefined}
+                      >
+                        {emoji}
                       </span>
-                    )}
-                  </button>
-                );
-              })}
-              <div className="vocab-emoji-strip-sep" aria-hidden="true" />
-              <button
-                type="button"
-                className="vocab-emoji-strip-btn vocab-reaction-heart"
-                data-on={reactions.heart || undefined}
-                onClick={() => toggleReaction("heart")}
-                aria-label={
-                  reactions.heart ? "Remove your heart from this word" : "Heart this word"
-                }
-              >
-                <Heart size={16} fill={reactions.heart ? "currentColor" : "none"} />
-              </button>
-              <button
-                type="button"
-                className="vocab-emoji-strip-btn vocab-reaction-bookmark"
-                data-on={reactions.bookmark || undefined}
-                onClick={() => toggleReaction("bookmark")}
-                aria-label={reactions.bookmark ? "Remove this word from saved" : "Save this word"}
-              >
-                <Bookmark size={16} fill={reactions.bookmark ? "currentColor" : "none"} />
-              </button>
-            </motion.div>
-          ) : (
-            <motion.div
-              key="action-bar"
-              className="vocab-action-row"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              transition={{ duration: reducedMotion ? 0 : 0.22 }}
-            >
-              {!stage.reveal && (
+                      {tapped && (
+                        <span
+                          key={`plus-${emojiTap.count}`}
+                          className="vocab-emoji-plus"
+                          aria-hidden="true"
+                        >
+                          +1
+                        </span>
+                      )}
+                      {count > 0 && (
+                        // Keyed on the value so a changed count rolls in instead of
+                        // silently swapping its digits.
+                        <span
+                          key={`count-${count}`}
+                          className="vocab-emoji-strip-count"
+                          aria-hidden="true"
+                        >
+                          {formatEmojiTotal(count)}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+                <div className="vocab-emoji-strip-sep" aria-hidden="true" />
                 <button
                   type="button"
-                  className="vocab-reveal-button vocab-reveal-pill"
-                  onClick={playback.reveal}
-                  aria-label="Reveal word"
-                >
-                  Ê, từ này biết nè
-                </button>
-              )}
-              <div className="vocab-reaction">
-                <button
-                  type="button"
-                  className="vocab-reaction-button vocab-reaction-heart"
+                  className="vocab-emoji-strip-btn vocab-reaction-heart"
                   data-on={reactions.heart || undefined}
                   onClick={() => toggleReaction("heart")}
                   aria-label={
                     reactions.heart ? "Remove your heart from this word" : "Heart this word"
                   }
                 >
-                  <Heart size={17} fill={reactions.heart ? "currentColor" : "none"} />
+                  <span
+                    key={pops.heart}
+                    className="vocab-pop"
+                    data-pop={(pops.onStrip && pops.heart > 0) || undefined}
+                  >
+                    <Heart size={16} fill={reactions.heart ? "currentColor" : "none"} />
+                  </span>
                 </button>
-                <span className="vocab-reaction-count">{heartsLabel}</span>
-              </div>
-              <div className="vocab-reaction">
                 <button
                   type="button"
-                  className="vocab-reaction-button vocab-reaction-bookmark"
+                  className="vocab-emoji-strip-btn vocab-reaction-bookmark"
                   data-on={reactions.bookmark || undefined}
                   onClick={() => toggleReaction("bookmark")}
                   aria-label={reactions.bookmark ? "Remove this word from saved" : "Save this word"}
                 >
-                  <Bookmark size={17} fill={reactions.bookmark ? "currentColor" : "none"} />
+                  <span
+                    key={pops.bookmark}
+                    className="vocab-pop"
+                    data-pop={(pops.onStrip && pops.bookmark > 0) || undefined}
+                  >
+                    <Bookmark size={16} fill={reactions.bookmark ? "currentColor" : "none"} />
+                  </span>
                 </button>
-                <span className="vocab-reaction-count">{bookmarksLabel}</span>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="action-bar"
+                className="vocab-action-row"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{ duration: reducedMotion ? 0 : 0.22 }}
+              >
+                {!stage.reveal && (
+                  <button
+                    type="button"
+                    className="vocab-reveal-button vocab-reveal-pill"
+                    onClick={playback.reveal}
+                    aria-label="Reveal word"
+                  >
+                    {revealButtonLabel || "Ê, từ này biết nè"}
+                  </button>
+                )}
+                <div className="vocab-reaction">
+                  <button
+                    type="button"
+                    className="vocab-reaction-button vocab-reaction-heart"
+                    data-on={reactions.heart || undefined}
+                    onClick={() => toggleReaction("heart")}
+                    aria-label={
+                      reactions.heart ? "Remove your heart from this word" : "Heart this word"
+                    }
+                  >
+                    <span
+                      key={pops.heart}
+                      className="vocab-pop"
+                      data-pop={(!pops.onStrip && pops.heart > 0) || undefined}
+                    >
+                      <Heart size={17} fill={reactions.heart ? "currentColor" : "none"} />
+                    </span>
+                  </button>
+                  <span key={heartsLabel} className="vocab-reaction-count">
+                    {heartsLabel}
+                  </span>
+                </div>
+                <div className="vocab-reaction">
+                  <button
+                    type="button"
+                    className="vocab-reaction-button vocab-reaction-bookmark"
+                    data-on={reactions.bookmark || undefined}
+                    onClick={() => toggleReaction("bookmark")}
+                    aria-label={
+                      reactions.bookmark ? "Remove this word from saved" : "Save this word"
+                    }
+                  >
+                    <span
+                      key={pops.bookmark}
+                      className="vocab-pop"
+                      data-pop={(!pops.onStrip && pops.bookmark > 0) || undefined}
+                    >
+                      <Bookmark size={17} fill={reactions.bookmark ? "currentColor" : "none"} />
+                    </span>
+                  </button>
+                  <span key={bookmarksLabel} className="vocab-reaction-count">
+                    {bookmarksLabel}
+                  </span>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </div>
     </article>
   );
