@@ -1076,31 +1076,58 @@
     text-shadow: 0 0 0 transparent;
   }
 }
-/* Mobile toolbar compaction.
-   The row is `1fr auto 1fr`, so the centred cluster only stays clear of the title
-   while BOTH 1fr side columns can hold their own content. The left column carries
-   the title *and* the settings gear, so it is much wider than the right column's
-   single bookmark — the equal split lets the left side spill into the centre. The
-   answer is to shrink the transport buttons, the gaps and the brand footprint
-   together (proportionately, so the cluster keeps its rhythm) until the whole row
-   fits its tracks. The breakpoint is 430px, not 380px, because 390–430px covers the
-   common modern phones (iPhone 12/13/14/Pro Max and most Androids) that previously
-   got no compaction at all and overlapped on the first render. */
+/* Mobile toolbar layout.
+   The row is `1fr auto 1fr`, so the centred transport cluster only stays clear of the
+   title while BOTH 1fr side columns can hold their own content. The left column
+   carries the title *and* the settings gear *and* (under the title) the difficulty
+   label — three things far wider than the right column's single bookmark, so on a
+   phone the equal split spills the left side into the centre and clips the difficulty
+   text. Clamping the brand to a tiny max-width was the wrong lever: it made the title
+   overflow onto the gear and ellipsised the difficulty label every time. Instead, on
+   narrow screens we STACK the left cell — the title + difficulty line takes the whole
+   1fr column and the gear drops beneath it — so (a) the gear can never sit on the
+   title's line, (b) the difficulty label uses the full column width and wraps onto as
+   many lines as it needs (always fully visible), and (c) the controls stay centred
+   because the row is still `1fr auto 1fr`, with the row gap keeping them clear of the
+   left block. Breakpoint is 430px (not 380px) because 390–430px covers the common
+   modern phones (iPhone 12/13/14/Pro Max and most Androids) that got no help before. */
 @media (max-width: 430px) {
   .vocab-toolbar-row {
-    gap: 8px;
+    gap: 10px;
+    /* Pin the chrome to the top edge; the left cell is now taller (stacked). */
+    align-items: start;
   }
-  /* Budget for a 361px-wide phone (row = 329px): centre = 3×34 + 2×6 = 108, two
-     side gaps = 16, leaving 102px per 1fr column. Left = title(60) + gap(6) +
-     gear(30) = 96 ≤ 102; right = one 34px bookmark ≤ 102. Everything fits. */
+  .vocab-toolbar-left {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 4px;
+  }
+  .vocab-difficulty {
+    width: 100%;
+  }
   .vocab-brand {
+    /* Fill the column instead of a cramped fixed width: the title keeps its line and
+       the difficulty line below it gets room to wrap. */
+    width: 100%;
+    max-width: 100%;
     font-size: 15px;
     letter-spacing: -0.5px;
-    max-width: 60px;
   }
+  /* Wrap the difficulty label onto as many lines as it needs instead of ellipsising a
+     narrow sliver, so the active track is always fully readable. */
+  .vocab-brand small {
+    align-items: flex-start;
+  }
+  .vocab-difficulty-current {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+  }
+  /* Gear sits below the title block, left-aligned, with its own tap size. */
   .vocab-settings-button {
     width: 30px;
     height: 30px;
+    align-self: flex-start;
   }
   .vocab-icon-button {
     width: 34px;
@@ -1111,24 +1138,22 @@
     width: 17px;
     height: 17px;
   }
-  .vocab-player-controls,
-  .vocab-toolbar-left {
-    gap: 6px;
+  .vocab-player-controls {
+    gap: 7px;
   }
   .vocab-select-grid {
     grid-template-columns: 1fr;
   }
 }
-/* Very small phones (≤360px, down to a 320px row): shave the same dimensions one
-   more step so the tightest budget (320px) still leaves each 1fr column enough for
-   title + gear without touching the centre. */
+/* Very small phones (≤360px, down to a 320px row): shave the same dimensions one more
+   step. The column-stack layout and full-width wrapping difficulty label above still
+   apply; only the control sizes tighten. */
 @media (max-width: 360px) {
   .vocab-toolbar-row {
-    gap: 6px;
+    gap: 8px;
   }
   .vocab-brand {
     font-size: 14px;
-    max-width: 54px;
   }
   .vocab-settings-button {
     width: 28px;
@@ -1142,9 +1167,8 @@
     width: 16px;
     height: 16px;
   }
-  .vocab-player-controls,
-  .vocab-toolbar-left {
-    gap: 5px;
+  .vocab-player-controls {
+    gap: 6px;
   }
 }
 @media (max-height: 620px) {
