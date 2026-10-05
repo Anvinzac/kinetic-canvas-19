@@ -163,7 +163,7 @@ export function WordSequenceLines({
           return (
             <motion.span
               key={`frame-group-${index}`}
-              className="kinetic-emphasis-mark kinetic-emph-frame inline-flex relative"
+              className="inline-flex relative"
               initial={staticRender ? false : { opacity: 0, filter: "blur(6px)" }}
               animate={{ opacity: 1, filter: "blur(0px)" }}
               transition={getEntranceTransition(entranceStyle, frameDelay, frameDuration)}
@@ -239,7 +239,7 @@ export function WordSequenceLines({
                   return (
                     <motion.span
                       key={`v-frame-group-${index}`}
-                      className="kinetic-emphasis-mark kinetic-emph-frame inline-flex relative"
+                      className="inline-flex relative"
                       initial={staticRender ? false : { opacity: 0, filter: "blur(6px)" }}
                       animate={{ opacity: 1, filter: "blur(0px)" }}
                       transition={getEntranceTransition(entranceStyle, frameDelay, frameDuration)}

@@ -139,12 +139,16 @@ for (const markup of [feedMarkup, previewMarkup]) {
   );
   assert(markup.includes("flex:0 0 auto"), "Phrase widths must stay intrinsic");
   assert(
-    markup.includes('class="kinetic-emphasis-mark kinetic-emph-frame inline-flex relative"'),
-    "Nonzero-index emphasis must share a frame",
+    markup.includes('class="inline-flex relative"'),
+    "Nonzero-index emphasis must share a grouping wrapper",
+  );
+  assert(
+    !markup.includes("kinetic-emph-frame"),
+    "A multi-word emphasis run reads as highlighted text, never a boxed frame",
   );
   assert(
     markup.includes("display:inline-flex;flex:0 0 auto;align-items:baseline;column-gap:0.24em"),
-    "Shared frames need explicit flex layout and word spacing",
+    "Shared runs need explicit flex layout and word spacing",
   );
   assert.equal((markup.match(/data-kinetic-word-index=/g) ?? []).length, phraseWords.length);
 }
@@ -265,9 +269,10 @@ assert(
 // ── Underlines across a multi-syllable run must join, not break mid-word ─────
 
 // A Vietnamese compound is written as separate syllables. When both are
-// emphasized they are grouped into one shared frame, each word in its own box
-// with a 0.24em gap, so a per-syllable underline bar reads as one line cut in
-// half. Every bar drawn inside a group must therefore carry the join class.
+// emphasized they are grouped into one shared wrapper (no box — a multi-word run
+// now reads as highlighted text, not a framed container), each word in its own
+// flex item with a 0.24em gap, so a per-syllable underline bar reads as one line
+// cut in half. Every bar drawn inside a group must therefore carry the join class.
 const COMPOUNDS = [
   "im lặng",
   "khoảng cách",

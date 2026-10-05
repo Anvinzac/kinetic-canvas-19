@@ -74,8 +74,13 @@ export function AnimatedWord({
         !isDimEmphasisColor(emphasisColor),
       )
     : null;
+  // A shared multi-syllable run must not render as a big boxed container: when a
+  // syllable sits inside a group (skipFrame) and the seeded effect is the box-drawing
+  // `frame`, downgrade it to a continuous underline so the phrase reads as highlighted
+  // text instead. A lone `frame` word (skipFrame false) keeps its box.
+  const displayVariant = skipFrame && emphasisVariant === "frame" ? "underline" : emphasisVariant;
   const wordColor = important
-    ? getCanvasEmphasisWordColor(emphasisVariant, textColor, emphasisColor)
+    ? getCanvasEmphasisWordColor(displayVariant, textColor, emphasisColor)
     : textColor;
   const entranceDelay = getRhythmDelay(
     important ? emphasisAnchorIndex : index,
@@ -87,13 +92,13 @@ export function AnimatedWord({
   const emphasisStyle = important
     ? ({
         "--kinetic-emphasis-delay": `${entranceDelay + entranceDuration + 0.18}s`,
-        ...(emphasisVariant === "halo" || emphasisVariant === "glow"
+        ...(displayVariant === "halo" || displayVariant === "glow"
           ? { "--kinetic-aura-color": getAuraColor(textColor) }
           : {}),
       } as CSSProperties)
     : undefined;
   const innerAnimation =
-    important && !staticLayout ? getEmphasisInnerAnimation(emphasisVariant) : undefined;
+    important && !staticLayout ? getEmphasisInnerAnimation(displayVariant) : undefined;
   return (
     <motion.span
       key={`${playKey}-${word}-${index}`}
@@ -126,7 +131,7 @@ export function AnimatedWord({
         overflowWrap: "normal",
         whiteSpace: "nowrap",
         wordBreak: "normal",
-        textShadow: important ? getEmphasisTextShadow(emphasisVariant) : undefined,
+        textShadow: important ? getEmphasisTextShadow(displayVariant) : undefined,
         transformOrigin: anchorFromStart && !spotlightWord ? "left center" : "center",
       }}
     >
@@ -134,19 +139,19 @@ export function AnimatedWord({
         className={
           important
             ? `kinetic-emphasis-mark${
-                emphasisVariant === "halo"
+                displayVariant === "halo"
                   ? " kinetic-emph-halo"
-                  : emphasisVariant === "frame"
-                    ? skipFrame
-                      ? ""
-                      : " kinetic-emph-frame"
-                    : emphasisVariant === "underline"
+                  : displayVariant === "frame"
+                    ? // Only a lone word reaches here — a grouped `frame` was already
+                      // downgraded to `underline` via displayVariant above.
+                      " kinetic-emph-frame"
+                    : displayVariant === "underline"
                       ? // A syllable inside a shared run joins its bar across the column
                         // gap, so a compound never shows an underline broken mid-word.
                         skipFrame
                         ? " kinetic-emph-underline is-joined"
                         : " kinetic-emph-underline"
-                      : emphasisVariant === "sweep"
+                      : displayVariant === "sweep"
                         ? " kinetic-emph-sweep"
                         : ""
               }${paused || staticLayout ? "" : " is-animated"}`

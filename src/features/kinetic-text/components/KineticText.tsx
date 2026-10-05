@@ -192,7 +192,7 @@ export function KineticText({
               return (
                 <span
                   key={`frame-group-${i}`}
-                  className="kinetic-emphasis-mark kinetic-emph-frame inline-flex relative"
+                  className="inline-flex relative"
                   style={{
                     display: "inline-flex",
                     flex: "0 0 auto",

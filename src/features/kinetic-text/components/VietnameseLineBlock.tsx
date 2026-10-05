@@ -146,7 +146,7 @@ export function VietnameseLineBlock({
                   return (
                     <span
                       key={`v-frame-group-${index}`}
-                      className="kinetic-emphasis-mark kinetic-emph-frame inline-flex relative"
+                      className="inline-flex relative"
                       style={{
                         display: "inline-flex",
                         flex: "0 0 auto",

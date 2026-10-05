@@ -108,8 +108,13 @@ export function WordSequenceWord({
           !isDimEmphasisColor(emphasisColor),
         )
     : null;
+  // A shared multi-syllable run must not render as a big boxed container: when a
+  // syllable sits inside a group (skipFrame) and the seeded effect is the box-drawing
+  // `frame`, downgrade it to a continuous underline so the phrase reads as highlighted
+  // text instead. A lone `frame` word (skipFrame false) keeps its box.
+  const displayVariant = skipFrame && emphasisVariant === "frame" ? "underline" : emphasisVariant;
   const wordColor = important
-    ? getCanvasEmphasisWordColor(emphasisVariant, textColor, emphasisColor)
+    ? getCanvasEmphasisWordColor(displayVariant, textColor, emphasisColor)
     : textColor;
   const entranceDelay = staticRender
     ? 0
@@ -122,7 +127,7 @@ export function WordSequenceWord({
   const emphasisStyle = important
     ? ({
         "--kinetic-emphasis-delay": `${entranceDelay + entranceDuration + 0.18}s`,
-        ...(emphasisVariant === "halo" || emphasisVariant === "glow"
+        ...(displayVariant === "halo" || displayVariant === "glow"
           ? { "--kinetic-aura-color": getAuraColor(textColor) }
           : {}),
       } as CSSProperties)
@@ -130,7 +135,7 @@ export function WordSequenceWord({
   const innerAnimation = important
     ? staticRender
       ? undefined
-      : getEmphasisInnerAnimation(emphasisVariant)
+      : getEmphasisInnerAnimation(displayVariant)
     : undefined;
   const isSoloRevealWord = isSolo;
   const hidden = getEntranceHidden(entranceStyle, important, index);
@@ -171,7 +176,7 @@ export function WordSequenceWord({
         whiteSpace: "nowrap",
         wordBreak: "normal",
         textShadow: important
-          ? getEmphasisTextShadow(emphasisVariant)
+          ? getEmphasisTextShadow(displayVariant)
           : "0 4px 40px rgba(0,0,0,0.45)",
         animationPlayState: paused ? "paused" : "running",
         transformOrigin: leftAnchoredText && !spotlightWord ? "left center" : "center",
@@ -195,19 +200,19 @@ export function WordSequenceWord({
           className={
             important
               ? `kinetic-emphasis-mark${
-                  emphasisVariant === "halo"
+                  displayVariant === "halo"
                     ? " kinetic-emph-halo"
-                    : emphasisVariant === "frame"
-                      ? skipFrame
-                        ? ""
-                        : " kinetic-emph-frame"
-                      : emphasisVariant === "underline"
+                    : displayVariant === "frame"
+                      ? // Only a lone word reaches here — a grouped `frame` was already
+                        // downgraded to `underline` via displayVariant above.
+                        " kinetic-emph-frame"
+                      : displayVariant === "underline"
                         ? // A syllable inside a shared run joins its bar across the column
                           // gap, so a compound never shows an underline broken mid-word.
                           skipFrame
                           ? " kinetic-emph-underline is-joined"
                           : " kinetic-emph-underline"
-                        : emphasisVariant === "sweep"
+                        : displayVariant === "sweep"
                           ? " kinetic-emph-sweep"
                           : ""
                 }${staticRender ? "" : " is-animated"}`
