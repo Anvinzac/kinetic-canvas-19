@@ -5,7 +5,7 @@
  * localStorage record as heart/bookmark reactions.
  *
  * Exports: EmojiReactions, EMOJI_PALETTE
- * Depends on: framer-motion, React, ../lib/reactions
+ * Depends on: framer-motion, React, ../lib/reactions, ../lib/emoji
  */
 
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -18,8 +18,13 @@ import {
   getEmojiComments,
 } from "../lib/reactions";
 
-/** The eight emojis the reader can leave on any word. */
-export const EMOJI_PALETTE = ["🔥", "💡", "🤔", "❤️", "😂", "👏", "🎉", "💪"] as const;
+import { EMOJI_PALETTE } from "../lib/emoji";
+
+/**
+ * The eight emojis the reader can leave on any word. Defined once in ../lib/emoji
+ * and re-exported here so both the strip and the reveal burst draw from one list.
+ */
+export { EMOJI_PALETTE };
 
 /**
  * Right-edge overlay: reacted emoji bubbles stacked vertically with a "+"

@@ -1,12 +1,5 @@
-/** Curated vocabulary color/motion presets. Exports: THEMES, STYLES, choosePresentation. Depends on: canvas types, stable hash. */
-import {
-  CANVAS_PATTERN_THEMES,
-  CANVAS_SCENE_THEMES,
-  DEFAULT_CANVAS,
-  GRADIENTS,
-  TRANSITION_GRADIENT_PATHS,
-  type CanvasSpec,
-} from "@/features/canvas";
+/** Curated vocabulary color/motion presets. Exports: THEMES, STYLES, choosePresentation. Depends on: canvas palettes, stable hash. */
+import { DEFAULT_CANVAS, PALETTES, type CanvasSpec } from "@/features/canvas";
 import {
   getVietnameseLayoutMetrics,
   getWords,
@@ -16,94 +9,62 @@ import type { NarrativeStyle } from "./schema";
 import { hash } from "./random";
 import type { Presentation } from "../types";
 
+/**
+ * One selectable appearance for a card. Every color role comes from a single
+ * validated palette, so the body text, the two highlights and the label color
+ * used on an accent fill are guaranteed legible together rather than picked
+ * independently per theme.
+ */
 export type VocabularyTheme = {
   id: string;
   label: string;
   background: string;
+  /** Body text color. */
   ink: string;
+  /** Primary highlight: emphasized words, active controls. */
   accent: string;
+  /** Secondary highlight: progress, dividers, secondary emphasis. */
+  accentAlt: string;
+  /** Text color that sits on an accent fill. */
+  onAccent: string;
   font: string;
   canvas?: Pick<
     CanvasSpec,
     "backgroundStyle" | "gradientPath" | "backgroundPattern" | "backgroundScene"
   >;
 };
-const typography = (index: number) => ({
-  ink: "#ffffff",
-  font: ["Space Grotesk", "Inter", "Playfair Display"][index % 3],
-});
-
-/** Bright accents used only when a theme's own palette yields no usable highlight. */
-const ACCENT_FALLBACKS = ["#FFD60A", "#06FFA5", "#00E5FF", "#FF7AC6", "#B6FF3D", "#FFB703"];
-
-/** Relative luminance of a #rgb/#rrggbb color for contrast-aware accent selection. @pure true */
-function luminance(hex: string): number {
-  const raw = hex.replace("#", "");
-  const full = raw.length === 3 ? raw.replace(/(.)/g, "$1$1") : raw.slice(0, 6);
-  const channel = (offset: number) => {
-    const value = parseInt(full.slice(offset, offset + 2), 16) / 255;
-    return value <= 0.03928 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
-  };
-  return 0.2126 * channel(0) + 0.7152 * channel(2) + 0.0722 * channel(4);
-}
 
 /**
- * Derive a per-theme accent from the theme's own background so highlights harmonize
- * and stay legible against white ink, instead of shipping one fixed accent for all.
- * @param background - the theme gradient/base color
- * @param index - theme index, used only for the fallback palette
- * @returns A bright accent color drawn from the theme palette
+ * Swap a two-stop gradient's stops so the per-page transition sweep has somewhere
+ * to travel while staying inside the same palette. Falls back to the input for
+ * any background that is not a plain two-stop linear gradient.
+ * @param background CSS gradient from a palette
+ * @returns The same gradient with its stops reversed
  * @pure true
  */
-function accentFor(background: string, index: number): string {
-  const colors = background.match(/#[0-9a-fA-F]{3,8}\b/g) ?? [];
-  if (colors.length) {
-    const brightest = colors.reduce((best, color) =>
-      luminance(color) > luminance(best) ? color : best,
-    );
-    const light = luminance(brightest);
-    // Only reuse a palette color when it is bright enough to read as a highlight on the
-    // (usually dark) card yet distinct from the white ink. Dark or near-white stops — e.g.
-    // solid scene/pattern bases — fall back to a guaranteed-bright accent instead.
-    if (light >= 0.3 && light < 0.92) return brightest;
-  }
-  return ACCENT_FALLBACKS[index % ACCENT_FALLBACKS.length];
+function reversedGradient(background: string): string {
+  const match = /^linear-gradient\(([^,]+),([^,]+),([^)]+)\)$/.exec(background.trim());
+  if (!match) return background;
+  return `linear-gradient(${match[1]},${match[3]},${match[2]})`;
 }
 
-// Use the original player/studio catalogs, keeping every design selectable.
-export const THEMES: VocabularyTheme[] = [
-  ...TRANSITION_GRADIENT_PATHS.map((path, index) => ({
-    ...typography(index),
-    id: path.id,
-    label: path.label,
-    background: path.gradients[0],
-    accent: accentFor(path.gradients[0], index),
-    canvas: { backgroundStyle: "transition" as const, gradientPath: [...path.gradients] },
-  })),
-  ...Array.from(new Set(GRADIENTS)).map((background, index) => ({
-    ...typography(index),
-    id: `gradient-${index}`,
-    label: `Original gradient ${index + 1}`,
-    background,
-    accent: accentFor(background, index),
-  })),
-  ...CANVAS_SCENE_THEMES.map((scene, index) => ({
-    ...typography(index),
-    id: scene.id,
-    label: scene.label,
-    background: scene.base,
-    accent: accentFor(scene.base, index),
-    canvas: { backgroundScene: scene.id },
-  })),
-  ...CANVAS_PATTERN_THEMES.map((pattern, index) => ({
-    ...typography(index),
-    id: pattern.id,
-    label: pattern.label,
-    background: pattern.base,
-    accent: accentFor(pattern.base, index),
-    canvas: { backgroundPattern: pattern.id },
-  })),
-];
+// The theme list IS the palette collection: no accent is derived at runtime from
+// whatever stop happens to be brightest, which is what used to pair a pale
+// background with white ink and an unrelated fallback highlight.
+export const THEMES: VocabularyTheme[] = PALETTES.map((palette) => ({
+  id: palette.id,
+  label: palette.label,
+  background: palette.background,
+  ink: palette.ink,
+  accent: palette.accentA,
+  accentAlt: palette.accentB,
+  onAccent: palette.onAccent,
+  font: palette.font,
+  canvas: {
+    backgroundStyle: "transition" as const,
+    gradientPath: [palette.background, reversedGradient(palette.background)],
+  },
+}));
 export type StylePreset = {
   id: NarrativeStyle;
   label: string;
@@ -165,6 +126,15 @@ export function buildVocabularyCanvas(theme: VocabularyTheme, style: StylePreset
     rhythm: style.rhythm,
   };
 }
+
+/**
+ * Reading air for the card's kinetic lines. The shared feed renderer sets display
+ * typography deliberately tight (1.04 for Vietnamese, 0.9 for Latin) because it owns
+ * multi-page posts; a riddle card is read once, standing still, so it gets 20% more
+ * line-to-line advance than that default. Applied to both halves of the line pitch
+ * (line height and the explicit per-line margin), so 1.2 is what the reader measures.
+ */
+export const VOCAB_LINE_SPACING_SCALE = 1.2;
 
 /** Reserve the overlay controls before passing type to the original canvas fitter. */
 export function fitVocabularyTextSize(

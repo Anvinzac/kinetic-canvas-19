@@ -10,12 +10,16 @@
  * Depends on: ../src/features/vocabulary/lib/spelling, ../src/features/vocabulary/data/catalog.json
  */
 
+import { readFileSync } from "node:fs";
 import rawCatalog from "../src/features/vocabulary/data/catalog.json";
 import {
+  SPELLING_FIT_GUARD,
   SPELLING_HOLD_SECONDS,
+  SPELLING_NOMINAL_FONT_SIZE,
   SPELLING_STAGGER,
   SPELLING_VARIANTS,
   getSpellingDurationMs,
+  getSpellingFitFontSize,
   pickSpellingVariant,
   type SpellingVariant,
 } from "../src/features/vocabulary/lib/spelling";
@@ -139,6 +143,66 @@ const threeLetters = getSpellingDurationMs("abc", "wave", false);
 check(
   surrogateMs === threeLetters,
   `surrogate pairs count as one letter (emoji word ${surrogateMs}ms vs abc ${threeLetters}ms)`,
+);
+
+// ── 5. Every answer must fit on ONE line ─────────────────────────────────
+
+// The letter row is nowrap, so its font size is the only thing that can absorb a
+// long answer. Natural width is modelled from the live measurement (a 10-letter
+// answer measured 604px at the nominal 96px, i.e. ~0.63em per letter), then the
+// solved size is applied back to see whether the row still fits the card.
+const PER_LETTER_EM = 0.63;
+const CARD_WIDTHS = [631, 430, 390, 360, 320, 240, 180];
+const overWide: string[] = [];
+for (const entry of catalog.words) {
+  const letters = Array.from(entry.word).length;
+  for (const cardWidth of CARD_WIDTHS) {
+    const available = cardWidth * SPELLING_FIT_GUARD;
+    const natural = letters * PER_LETTER_EM * SPELLING_NOMINAL_FONT_SIZE;
+    const size = getSpellingFitFontSize(natural, available);
+    const rendered = (natural * size) / SPELLING_NOMINAL_FONT_SIZE;
+    if (rendered > available + 0.01) {
+      overWide.push(`${entry.word}@${cardWidth}px (${rendered.toFixed(1)} > ${available})`);
+    }
+  }
+}
+check(
+  overWide.length === 0,
+  `every catalog word at every card width fits one row (${overWide.length} over: ${overWide
+    .slice(0, 3)
+    .join(", ")})`,
+);
+
+// The mechanism only works if nothing lifts the result off the floor it replaced.
+const compromiseNatural = 10 * PER_LETTER_EM * SPELLING_NOMINAL_FONT_SIZE;
+const cramped = getSpellingFitFontSize(compromiseNatural, 120 * SPELLING_FIT_GUARD);
+check(
+  cramped < 18,
+  `a ten-letter answer on a 120px card shrinks past the old 18px floor (got ${cramped.toFixed(1)}px)`,
+);
+check(
+  getSpellingFitFontSize(
+    6 * PER_LETTER_EM * SPELLING_NOMINAL_FONT_SIZE,
+    631 * SPELLING_FIT_GUARD,
+  ) === SPELLING_NOMINAL_FONT_SIZE,
+  "short answers keep the full hero size (fit only ever shrinks)",
+);
+check(
+  getSpellingFitFontSize(0, 500) === SPELLING_NOMINAL_FONT_SIZE &&
+    getSpellingFitFontSize(600, 0) === SPELLING_NOMINAL_FONT_SIZE &&
+    Number.isFinite(getSpellingFitFontSize(600, Number.NaN)),
+  "a failed measurement falls back to the nominal size instead of collapsing to 0",
+);
+
+// ...and the other half of the guarantee is the CSS that forbids the wrap.
+const spellingCss = readFileSync(
+  new URL("../src/features/vocabulary/vocabulary.css", import.meta.url),
+  "utf8",
+);
+const wordRule = spellingCss.match(/\.vocab-spelling-word\s*\{([^}]*)\}/)?.[1] ?? "";
+check(
+  /flex-wrap:\s*nowrap/.test(wordRule),
+  ".vocab-spelling-word is declared nowrap (the row cannot break onto a second line)",
 );
 
 if (failures > 0) {

@@ -7,16 +7,20 @@
  * duplicates, answer leaks, field lengths).
  *
  * The level shown in every deck word always comes from the corpus — never
- * from the model.
+ * from the model. Emphasis is written twice on purpose: as an inline
+ * `/phrase/` marker inside the Vietnamese field it belongs to (the format the
+ * feed's `parseEmphasisMarkers` reads) and as the `emphasis` array (the format
+ * the content-hub deck reader sanitizes against).
  *
  * Exports: Deck, DeckMeta, DeckWord, DeckUsage, DECK_DISCOVER_PAGES,
  *          DECK_REVERSE_PAGES, slugifyWord, buildDeckWord, buildDeck,
  *          validateDeck, toDeckWord
- * Depends on: ./corpus.ts, ./annotate/contract.ts
+ * Depends on: ./corpus.ts, ./emphasis.ts, ./annotate/contract.ts
  */
 import type { CefrLevel, CorpusWord } from "./corpus.ts";
 import { CEFR_LEVELS } from "./corpus.ts";
 import { containsTargetWord, type CrawlerAnnotation } from "./annotate/contract.ts";
+import { injectEmphasisMarkers, stripEmphasisMarkers } from "./emphasis.ts";
 
 /** One English/Vietnamese example pair, exactly as the app imports it. */
 export interface DeckUsage {
@@ -30,7 +34,9 @@ export interface DeckWord {
   word: string;
   pos: string;
   ipa: string;
+  /** Vietnamese definition; may carry one inline `/phrase/` emphasis marker. */
   defVi: string;
+  /** Vietnamese teaser; may carry one inline `/phrase/` emphasis marker. */
   leadVi: string;
   anticipateVi: string;
   topic: string;
@@ -155,14 +161,23 @@ export function buildDeckWord(input: {
     warnings.push(`${word}: no usable example sentence; usage will be empty`);
   }
 
+  // The feed highlights the phrases marked inside each field, so the validated
+  // emphasis list is injected as inline `/phrase/` markers before writing.
+  const markers = injectEmphasisMarkers({
+    defVi: annotation.defVi,
+    leadVi: annotation.leadVi,
+    emphasis: input.emphasis,
+  });
+  warnings.push(...markers.warnings);
+
   const letters = word.match(/\p{L}/gu) ?? [];
   const deckWord: DeckWord = {
     id,
     word,
     pos: annotation.pos,
     ipa: annotation.ipa,
-    defVi: annotation.defVi,
-    leadVi: annotation.leadVi,
+    defVi: markers.defVi,
+    leadVi: markers.leadVi,
     anticipateVi,
     topic: annotation.topic.length > 0 ? annotation.topic : "general",
     level: input.corpusWord.level,
@@ -219,6 +234,8 @@ export interface DeckValidationReport {
     byLevel: Record<string, number>;
     topics: string[];
     withEmphasis: number;
+    /** Words whose Vietnamese text carries at least one inline `/phrase/` marker. */
+    withMarkers: number;
     withUsage: number;
     withIpa: number;
   };
@@ -247,6 +264,7 @@ export function validateDeck(input: unknown): DeckValidationReport {
   const byLevel: Record<string, number> = {};
   const topics = new Set<string>();
   let withEmphasis = 0;
+  let withMarkers = 0;
   let withUsage = 0;
   let withIpa = 0;
 
@@ -256,7 +274,7 @@ export function validateDeck(input: unknown): DeckValidationReport {
       ok: false,
       errors: ["deck must be a JSON object with meta and words"],
       warnings,
-      stats: { words: 0, byLevel, topics: [], withEmphasis, withUsage, withIpa },
+      stats: { words: 0, byLevel, topics: [], withEmphasis, withMarkers, withUsage, withIpa },
     };
   }
   if (asRecord(root.meta) === null) warnings.push("meta is missing or not an object");
@@ -266,7 +284,7 @@ export function validateDeck(input: unknown): DeckValidationReport {
       ok: false,
       errors: ["words must be a non-empty array"],
       warnings,
-      stats: { words: 0, byLevel, topics: [], withEmphasis, withUsage, withIpa },
+      stats: { words: 0, byLevel, topics: [], withEmphasis, withMarkers, withUsage, withIpa },
     };
   }
 
@@ -295,11 +313,34 @@ export function validateDeck(input: unknown): DeckValidationReport {
     if (id.length > 0 && ids.has(id)) errors.push(`${where}.id: duplicate id "${id}"`);
     ids.add(id);
 
-    const defVi = typeof entry.defVi === "string" ? entry.defVi.trim() : "";
+    const defViRaw = typeof entry.defVi === "string" ? entry.defVi.trim() : "";
+    const leadViRaw = typeof entry.leadVi === "string" ? entry.leadVi.trim() : "";
+    // Inline `/phrase/` markers are what the feed renders; a stray delimiter
+    // would be shown to the user, so it fails the deck.
+    const defViParts = stripEmphasisMarkers(defViRaw);
+    const leadViParts = stripEmphasisMarkers(leadViRaw);
+    for (const [field, parts] of [
+      ["defVi", defViParts],
+      ["leadVi", leadViParts],
+    ] as const) {
+      if (parts.clean.includes("/")) {
+        errors.push(`${where}.${field}: unpaired "/" delimiter — emphasis markers must be /phrase/ pairs`);
+      }
+      for (const marker of parts.markers) {
+        if (marker.trim().length === 0) errors.push(`${where}.${field}: empty / / emphasis marker`);
+        else if (marker.length > 80) errors.push(`${where}.${field}: emphasis marker "${marker}" is too long`);
+      }
+      if (parts.markers.length > 1) {
+        warnings.push(`${where}.${field}: ${parts.markers.length} emphasis markers; the feed highlights one per page`);
+      }
+    }
+    if (defViParts.markers.length > 0 || leadViParts.markers.length > 0) withMarkers += 1;
+
+    const defVi = defViParts.clean;
+    const leadVi = leadViParts.clean;
     if (defVi.length < 2 || defVi.length > 400) {
       errors.push(`${where}.defVi: must be 2-400 characters`);
     }
-    const leadVi = typeof entry.leadVi === "string" ? entry.leadVi.trim() : "";
     if (leadVi.length > 240) errors.push(`${where}.leadVi: must be at most 240 characters`);
     const anticipateVi = typeof entry.anticipateVi === "string" ? entry.anticipateVi.trim() : "";
     if (anticipateVi.length > 180) {
@@ -376,6 +417,13 @@ export function validateDeck(input: unknown): DeckValidationReport {
           }
         }
         if (emphasis.length > 0) withEmphasis += 1;
+        // Every marker must be backed by the annotated list, otherwise the two
+        // representations of the same decision have already drifted apart.
+        for (const marker of [...defViParts.markers, ...leadViParts.markers]) {
+          if (!seenEmphasis.has(marker.normalize("NFC").trim().toLowerCase())) {
+            warnings.push(`${where}.emphasis: marker "${marker}" is missing from the emphasis array`);
+          }
+        }
       }
     } else {
       warnings.push(`${where}.emphasis: missing (older decks do not carry emphasis)`);
@@ -391,6 +439,7 @@ export function validateDeck(input: unknown): DeckValidationReport {
       byLevel,
       topics: [...topics].sort(),
       withEmphasis,
+      withMarkers,
       withUsage,
       withIpa,
     },

@@ -25,15 +25,17 @@ import {
   REACTIONS_KEY,
   addEmojiComment,
   flipReaction,
+  getEmojiComments,
   getTapCount,
   hasReaction,
   type ReactionKind,
 } from "../lib/reactions";
+import { EMOJI_PALETTE, formatEmojiTotal, mockEmojiTotals, withLocalEmojis } from "../lib/emoji";
 import { useLearningPlayback } from "../hooks/useLearningPlayback";
 import type { FeedEntry, Presentation } from "../types";
+import { EmojiBurst } from "./EmojiBurst";
 import { SpellingAnimation } from "./SpellingAnimation";
 import { VocabularyStage } from "./VocabularyStage";
-import { EMOJI_PALETTE } from "./EmojiReactions";
 
 /** Play a single occurrence, keeping answer content hidden until reveal. @param props Entry/display settings. @returns Full-height card. */
 export function VocabularyCard({
@@ -71,6 +73,8 @@ export function VocabularyCard({
   /** Progress-bar keys: one per clue stage plus the trailing spelling coda. */
   const pageKeys = useMemo(() => [...stages.map((item) => item.id), "spelling"], [stages]);
   const cardRef = useRef<HTMLElement>(null);
+  const actionBarRef = useRef<HTMLDivElement>(null);
+  const emojiStripRef = useRef<HTMLDivElement>(null);
   const [{ width, height }, setSize] = useState({ width: 390, height: 844 });
   useLayoutEffect(() => {
     const element = cardRef.current;
@@ -81,12 +85,9 @@ export function VocabularyCard({
     observer.observe(element);
     return () => observer.disconnect();
   }, []);
-  const playback = useLearningPlayback({
-    count: pageCount,
-    active,
-    autoplay: presentation.autoplay,
-    reducedMotion,
-    durations: [
+  /** One duration per page: every clue stage plus the trailing spelling coda. */
+  const pageDurations = useMemo(
+    () => [
       ...stages.map((stage) =>
         getPageDuration(
           [stage.text, stage.reveal ? entry.word.defVi : ""].filter(Boolean).join(" "),
@@ -96,11 +97,24 @@ export function VocabularyCard({
       ),
       spellingDuration,
     ],
+    [stages, entry.word.defVi, style.tempo, style.rhythm, spellingDuration],
+  );
+  const playback = useLearningPlayback({
+    count: pageCount,
+    active,
+    autoplay: presentation.autoplay,
+    reducedMotion,
+    durations: pageDurations,
     canAdvance,
     revealPage,
     onFinish: onAdvance,
   });
   const isSpelling = playback.page > revealPage;
+  // The reveal page and the spelling coda both belong to the answer, so the emoji
+  // burst stays mounted across the flip instead of remounting and restarting.
+  const isRevealed = playback.page >= revealPage;
+  // The burst fills both pages and fades out as the spelled word leaves.
+  const burstSpanSeconds = ((pageDurations[revealPage] ?? 0) + spellingDuration) / 1000;
   // During the coda there is no matching stage; the answer stage stays mounted
   // underneath so its reveal details and unlocked reactions persist.
   const stage = stages[Math.min(playback.page, revealPage)]!;
@@ -108,6 +122,38 @@ export function VocabularyCard({
   // comments and advances to the spelling coda.
   const isAnticipation = !isSpelling && playback.page === revealPage;
   const playKey = playback.replay * pageCount + playback.page;
+  // The burst billows out of each emoji's OWN button instead of out of the card's
+  // corners, so every button's launch point is measured from the strip. It is sampled
+  // only while the strip is on screen: re-measuring when the spelling coda swaps the
+  // bar's contents would move the base position of glyphs already in mid-flight.
+  const [burstOrigin, setBurstOrigin] = useState({ x: 195, y: 702 });
+  const [emojiOrigins, setEmojiOrigins] = useState<Record<string, { x: number; y: number }>>({});
+  useLayoutEffect(() => {
+    const card = cardRef.current;
+    const bar = actionBarRef.current;
+    if (!card || !bar || !isAnticipation) return;
+    const cardRect = card.getBoundingClientRect();
+    const barRect = bar.getBoundingClientRect();
+    setBurstOrigin({
+      x: barRect.left - cardRect.left + barRect.width / 2,
+      y: barRect.top - cardRect.top,
+    });
+    const strip = emojiStripRef.current;
+    if (!strip) return;
+    const next: Record<string, { x: number; y: number }> = {};
+    strip
+      .querySelectorAll<HTMLButtonElement>(".vocab-emoji-strip-btn[data-emoji]")
+      .forEach((button) => {
+        const emoji = button.dataset.emoji;
+        if (!emoji) return;
+        const rect = button.getBoundingClientRect();
+        next[emoji] = {
+          x: rect.left - cardRect.left + rect.width / 2,
+          y: rect.top - cardRect.top + rect.height / 2,
+        };
+      });
+    setEmojiOrigins(next);
+  }, [isAnticipation, width, height]);
   const sceneTheme = getCanvasSceneTheme(canvas.backgroundScene);
   const patternTheme = getCanvasPatternTheme(canvas.backgroundPattern);
   const sliding =
@@ -129,10 +175,14 @@ export function VocabularyCard({
     width,
     height,
   );
+  // Every role comes from one validated palette. `--vocab-button-ink` is the
+  // palette's on-accent color, which the audit already proved clears 4.5:1 against
+  // both accents, so a label painted on an accent fill can never go unreadable.
   const colors = {
     "--vocab-ink": theme.ink,
     "--vocab-accent": theme.accent,
-    "--vocab-button-ink": theme.ink === "#ffffff" ? "#252136" : "#ffffff",
+    "--vocab-accent-alt": theme.accentAlt,
+    "--vocab-button-ink": theme.onAccent,
     background: theme.background,
     color: theme.ink,
     fontFamily: `${theme.font}, sans-serif`,
@@ -218,6 +268,10 @@ export function VocabularyCard({
     heart: getTapCount(wordId, "heart"),
     bookmark: getTapCount(wordId, "bookmark"),
   }));
+  // This device's own emoji taps, folded on top of the mocked aggregate so a tap
+  // visibly adds to the crowd. Held in state (not read during render) so its
+  // identity is stable and the burst cannot restart on an unrelated re-render.
+  const [emojiComments, setEmojiComments] = useState(() => getEmojiComments(wordId));
   const readLocalReactions = useCallback(() => {
     setReactions({
       heart: hasReaction(wordId, "heart"),
@@ -227,6 +281,7 @@ export function VocabularyCard({
       heart: getTapCount(wordId, "heart"),
       bookmark: getTapCount(wordId, "bookmark"),
     });
+    setEmojiComments(getEmojiComments(wordId));
   }, [wordId]);
   useEffect(() => {
     readLocalReactions();
@@ -257,6 +312,25 @@ export function VocabularyCard({
   const reactionLocked = !stage.reveal;
   const heartsLabel = formatReactionCount(taps.heart);
   const bookmarksLabel = formatReactionCount(taps.bookmark);
+
+  // The reveal page billows the word's mocked emoji aggregate out of the reaction
+  // button. The aggregate is deterministic per word id, so a replay looks the
+  // same and neighbouring cards differ.
+  const emojiTotals = useMemo(() => mockEmojiTotals(wordId), [wordId]);
+  // The badges show the mocked crowd plus this device's taps per emoji; the flying
+  // glyphs stay keyed to the mocked aggregate alone so a tap cannot restart the long
+  // flight.
+  const emojiCounts = useMemo(
+    () => withLocalEmojis(emojiTotals, emojiComments).counts,
+    [emojiTotals, emojiComments],
+  );
+  const handleEmojiTap = useCallback(
+    (emoji: string) => {
+      addEmojiComment(wordId, emoji);
+      setEmojiComments(getEmojiComments(wordId));
+    },
+    [wordId],
+  );
 
   return (
     <article
@@ -315,6 +389,19 @@ export function VocabularyCard({
           playKey={playKey}
         />
       )}
+      {isRevealed && (
+        <EmojiBurst
+          wordId={wordId}
+          totals={emojiTotals}
+          width={width}
+          height={height}
+          origins={emojiOrigins}
+          originX={burstOrigin.x}
+          originY={burstOrigin.y}
+          spanSeconds={burstSpanSeconds}
+          reducedMotion={reducedMotion}
+        />
+      )}
       {!isSpelling && <p className="vocab-stage-label">{stage.label}</p>}
       <div className="vocab-progress" aria-label={`Page ${playback.page + 1} of ${pageCount}`}>
         {pageKeys.map((key, index) => (
@@ -334,6 +421,7 @@ export function VocabularyCard({
 
       <div
         className="vocab-action-bar"
+        ref={actionBarRef}
         data-anticipation={isAnticipation || undefined}
         data-no-gesture
       >
@@ -341,22 +429,33 @@ export function VocabularyCard({
           {isAnticipation ? (
             <motion.div
               key="emoji-strip"
+              ref={emojiStripRef}
               className="vocab-emoji-strip"
               initial={{ opacity: 0, scale: 0.85, filter: "blur(4px)" }}
               animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
               exit={{ opacity: 0, scale: 0.85, filter: "blur(4px)" }}
               transition={{ duration: reducedMotion ? 0 : 0.28, ease: [0.22, 1, 0.36, 1] }}
             >
-              {EMOJI_PALETTE.map((emoji) => (
-                <button
-                  key={emoji}
-                  type="button"
-                  className="vocab-emoji-strip-btn"
-                  onClick={() => addEmojiComment(wordId, emoji)}
-                >
-                  {emoji}
-                </button>
-              ))}
+              {EMOJI_PALETTE.map((emoji) => {
+                const count = emojiCounts[emoji] ?? 0;
+                return (
+                  <button
+                    key={emoji}
+                    type="button"
+                    className="vocab-emoji-strip-btn"
+                    data-emoji={emoji}
+                    onClick={() => handleEmojiTap(emoji)}
+                    aria-label={`React with ${emoji}${count ? `, ${count} so far` : ""}`}
+                  >
+                    {emoji}
+                    {count > 0 && (
+                      <span className="vocab-emoji-strip-count" aria-hidden="true">
+                        {formatEmojiTotal(count)}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
               <div className="vocab-emoji-strip-sep" aria-hidden="true" />
               <button
                 type="button"

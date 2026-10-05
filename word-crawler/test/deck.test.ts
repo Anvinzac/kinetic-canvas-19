@@ -100,6 +100,36 @@ describe("buildDeckWord", () => {
     assert.deepEqual(built.errors, []);
   });
 
+  test("writes the emphasis as an inline marker in the field that hosts it", () => {
+    const built = buildDeckWord({
+      corpusWord: corpusWord("water"),
+      annotation: annotationFor("water"),
+      emphasis: ["uống mỗi ngày", "nguồn sống"],
+      usedIds: new Set<string>(),
+    });
+    assert.ok(built.deckWord);
+    assert.equal(built.deckWord.defVi, "Chất lỏng trong suốt mà ta /uống mỗi ngày/.");
+    assert.equal(built.deckWord.leadVi, "Nước là /nguồn sống/.");
+    // The array stays for the content-hub deck reader, markers for the feed.
+    assert.deepEqual(built.deckWord.emphasis, ["uống mỗi ngày", "nguồn sống"]);
+    assert.deepEqual(built.warnings, []);
+  });
+
+  test("never marks text that lost the phrase, and reports it", () => {
+    const built = buildDeckWord({
+      corpusWord: corpusWord("water"),
+      annotation: annotationFor("water"),
+      emphasis: ["chạy bộ mỗi sáng"],
+      usedIds: new Set<string>(),
+    });
+    assert.ok(built.deckWord);
+    assert.equal(built.deckWord.defVi, "Chất lỏng trong suốt mà ta uống mỗi ngày.");
+    assert.ok(
+      built.warnings.some((warning) => /does not occur in defVi or leadVi/.test(warning)),
+      built.warnings.join(" | "),
+    );
+  });
+
   test("fails cleanly without an annotation or with an unusable defVi", () => {
     const missing = buildDeckWord({
       corpusWord: corpusWord("water"),
@@ -170,6 +200,7 @@ describe("buildDeck and validateDeck", () => {
     assert.equal(report.stats.words, 2);
     assert.deepEqual(report.stats.byLevel, { A2: 1, A1: 1 });
     assert.equal(report.stats.withEmphasis, 2);
+    assert.equal(report.stats.withMarkers, 2);
     assert.equal(report.stats.withUsage, 2);
     assert.equal(report.stats.withIpa, 2);
     assert.deepEqual(report.stats.topics, ["health"]);
@@ -202,6 +233,24 @@ describe("buildDeck and validateDeck", () => {
     deck.words[0] = { ...deck.words[0], emphasis: ["không hề xuất hiện"] };
     const report = validateDeck(deck);
     assert.ok(report.errors.some((error) => /does not occur/.test(error)));
+  });
+
+  test("rejects a stray emphasis delimiter that the feed would render as text", () => {
+    const deck = makeDeck();
+    deck.words[0] = { ...deck.words[0], defVi: "Chất lỏng /trong suốt mà ta uống." };
+    const report = validateDeck(deck);
+    assert.ok(report.errors.some((error) => /unpaired/.test(error)));
+  });
+
+  test("warns when a marker and the emphasis array disagree", () => {
+    const deck = makeDeck();
+    deck.words[0] = { ...deck.words[0], emphasis: [] };
+    const report = validateDeck(deck);
+    assert.ok(report.ok, report.errors.join("; "));
+    assert.ok(
+      report.warnings.some((warning) => /marker .uống mỗi ngày. is missing/.test(warning)),
+      report.warnings.join(" | "),
+    );
   });
 
   test("rejects chars and initial mismatches", () => {

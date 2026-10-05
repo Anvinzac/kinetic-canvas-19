@@ -22,6 +22,7 @@ export async function fetchVocabularyPage(input: {
     seed: input.seed,
     topic: input.filters.topic,
     level: input.filters.level,
+    difficulty: input.filters.difficulty,
     position: String(input.cursor.position),
     limit: String(VOCAB_PAGE_LIMIT),
     ...(input.cursor.revision ? { revision: input.cursor.revision } : {}),

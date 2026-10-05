@@ -1,6 +1,12 @@
 /* Vocabulary-only layout. Virtual rows keep viewport-sized snap targets and bounded coordinates. */
 .vocabulary-shell {
+  /* Shell-level defaults for chrome that floats above the cards (toolbar, options
+     panel, empty state). Each card overrides all four from its own validated
+     palette, so a role is never undefined wherever it is consumed. */
   --vocab-ink: #f5f2ff;
+  --vocab-accent: #bbf7d0;
+  --vocab-accent-alt: #f5ce5c;
+  --vocab-button-ink: #14101f;
   background: #151224;
   color: #f5f2ff;
   height: 100dvh;
@@ -26,32 +32,127 @@
   right: max(16px, env(safe-area-inset-right));
   color: #fff;
 }
-.vocab-toolbar-row,
-.vocab-toolbar-actions {
+/* The toolbar floats over whichever card is active. A light palette would put pale
+   pixels behind this fixed white chrome, so it carries its own scrim instead of
+   inheriting the card's ink — the chrome stays readable over every palette. */
+.vocab-toolbar::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: -14px -18px -26px;
+  border-radius: 24px;
+  background: linear-gradient(180deg, #090712a8, #09071252 58%, transparent);
+  pointer-events: none;
+}
+.vocab-toolbar-row {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 12px;
+}
+/* Equal 1fr side columns keep the three transport controls genuinely centred on the
+   top edge, regardless of how wide the title or the saved badge get. */
+.vocab-toolbar-left,
+.vocab-player-controls {
   display: flex;
   align-items: center;
   gap: 12px;
 }
-.vocab-toolbar-row {
-  justify-content: space-between;
+.vocab-toolbar-left {
+  justify-self: start;
+  min-width: 0;
 }
+.vocab-player-controls {
+  justify-self: center;
+}
+/* Settings gear beside the title: a bare icon — no circle, no fill, no border — so it
+   reads as part of the header rather than as another rounded control. */
+.vocab-settings-button {
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: #ffffffcc;
+  transition:
+    color 0.15s ease,
+    background 0.15s ease;
+}
+.vocab-settings-button:hover {
+  color: #fff;
+  background: color-mix(in srgb, currentColor 12%, transparent);
+}
+/* The brand is the difficulty trigger, so it is a real button reset to look like
+   the old link: no chrome, left-aligned, title stacked over the tagline slot. */
 .vocab-brand {
-  text-shadow: 0 2px 14px #0009;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font-family: inherit;
   font-size: 22px;
   font-weight: 800;
   letter-spacing: -1px;
   line-height: 1.2;
+  text-align: left;
+  text-shadow: 0 2px 14px #0009;
 }
-.vocab-brand > span {
-  color: #bbf7d0;
-}
-.vocab-brand small {
+/* One flex row holding the whole title, so "anh.chay" and the accented "Lá" stay
+   on a single line instead of becoming two stacked flex items. */
+.vocab-brand-name {
   display: block;
+  max-width: 100%;
+}
+.vocab-brand-name > span {
+  color: var(--vocab-accent);
+}
+/* The tagline slot now reports the active difficulty track, so it is styled as a
+   control (heavier, brighter on hover) rather than as muted decoration. */
+.vocab-brand small {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  max-width: 100%;
   color: #ffffffb3;
-  font-size: 10px;
-  font-weight: 400;
-  letter-spacing: 0.04em;
-  margin-top: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  line-height: 1.3;
+  transition: color 0.15s ease;
+}
+/* The brand title keeps its full width (it is the row's automatic minimum size) and
+   the track name gives way first, so a long label like "văn chương · B2–C2"
+   ellipsises instead of pushing into the action buttons. */
+.vocab-difficulty-current {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+/* The trigger reports the whole selection, so the leading difficulty emoji gets a hair
+   of separation from the label it denotes. */
+.vocab-difficulty-current-emoji {
+  margin-right: 4px;
+}
+.vocab-brand:hover small {
+  color: #fff;
+}
+.vocab-brand small svg {
+  flex-shrink: 0;
+  transition: transform 0.18s ease;
+}
+.vocab-brand small svg[data-open] {
+  transform: rotate(180deg);
 }
 .vocab-icon-button {
   display: inline-grid;
@@ -69,11 +170,24 @@
   background: color-mix(in srgb, currentColor 10%, transparent);
 }
 .vocab-icon-button[data-active] {
-  background: #bbf7d022;
-  border-color: #bbf7d0;
-  color: #bbf7d0;
+  background: color-mix(in srgb, var(--vocab-accent) 16%, transparent);
+  border-color: var(--vocab-accent);
+  color: var(--vocab-accent);
 }
-/* Saved-words shortcut: the badge sits on the button's top-right corner. */
+/* Saved-words shortcut: the badge sits on the button's top-right corner. It is pinned
+   to the row's right edge and kept OPAQUE (solid fill, no frost) so it reads as a
+   distinct destination rather than one more frosted transport control. */
+.vocab-bookmark-button {
+  justify-self: end;
+  background: #f5f2ff;
+  border-color: transparent;
+  color: #1a1626;
+  backdrop-filter: none;
+}
+.vocab-icon-button.vocab-bookmark-button:hover:not(:disabled) {
+  background: #fff;
+  color: #000;
+}
 .vocab-saved-link {
   position: relative;
 }
@@ -87,8 +201,8 @@
   display: grid;
   place-items: center;
   border-radius: 999px;
-  background: #ffb020;
-  color: #2a1d02;
+  background: var(--vocab-accent);
+  color: var(--vocab-button-ink);
   font-size: 10px;
   font-weight: 800;
   line-height: 1;
@@ -97,7 +211,10 @@
 }
 .vocab-options {
   width: min(100%, 520px);
-  margin-left: auto;
+  /* The settings gear now sits beside the title at the top-LEFT, so the panel opens
+     under it instead of docking to the opposite (top-right) corner. */
+  margin-left: 0;
+  margin-right: auto;
   margin-top: 14px;
   padding: 22px;
   background: #252136;
@@ -147,36 +264,127 @@
   text-transform: uppercase;
   color: #a79fc0;
 }
-/* Difficulty is the default control, so it gets the loudest, fastest-to-tap treatment. */
-.vocab-level-switch {
+/* ── Difficulty dropdown: the page title (.vocab-brand) is the trigger ── */
+.vocab-difficulty {
+  position: relative;
+  flex: 0 1 auto;
+  max-width: 100%;
+}
+.vocab-difficulty-band {
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: #ffffff29;
+  color: #ffffffd9;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+.vocab-difficulty-pop {
+  position: absolute;
+  z-index: 60;
+  top: calc(100% + 8px);
+  left: 0;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  width: min(330px, calc(100vw - 40px));
+  max-height: min(60dvh, 430px);
+  padding: 6px;
+  border: 1px solid #58506e;
+  border-radius: 18px;
+  background: #252136;
+  box-shadow: 0 20px 60px #0009;
 }
-.vocab-level-chips {
+/* The scrollable option column; the Done footer sits outside it so it stays pinned.
+   min-height:0 lets the flex child actually scroll instead of growing the panel. */
+.vocab-difficulty-options {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+  flex-direction: column;
+  gap: 2px;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  list-style: none;
 }
-.vocab-level-chips button {
-  min-width: 58px;
+.vocab-difficulty-option {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  grid-template-areas: "check label band";
+  align-items: center;
+  gap: 2px 10px;
   min-height: 46px;
-  padding: 0 15px;
-  border-radius: 999px;
-  border: 1px solid #665d7a;
-  background: #181426;
-  color: var(--vocab-ink);
+  padding: 7px 12px;
+  border-radius: 12px;
+  cursor: pointer;
+}
+.vocab-difficulty-option[data-cursor] {
+  background: #322c47;
+}
+.vocab-difficulty-option[data-active] {
+  background: color-mix(in srgb, var(--vocab-accent) 20%, transparent);
+}
+/* Multi-select checkbox: an empty rounded box that fills and ticks when chosen. */
+.vocab-difficulty-check {
+  grid-area: check;
+  align-self: center;
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border: 1.5px solid #ffffff40;
+  border-radius: 6px;
+  color: transparent;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1;
+}
+.vocab-difficulty-option[data-active] .vocab-difficulty-check {
+  background: #f5f2ff;
+  border-color: #f5f2ff;
+  color: #1a1626;
+}
+.vocab-difficulty-option-label {
+  grid-area: label;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #f5f2ff;
+  /* Bumped 20% (was 15px) so the difficulty names read clearly. */
+  font-size: 18px;
+  font-weight: 700;
+}
+.vocab-difficulty-emoji {
+  flex-shrink: 0;
+  font-size: 18px;
+  line-height: 1;
+}
+.vocab-difficulty-option .vocab-difficulty-band {
+  grid-area: band;
+  align-self: center;
+}
+/* Confirm row: the reader edits a draft, then commits with Done (bottom-right). */
+.vocab-difficulty-foot {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 6px;
+  padding: 8px 6px 2px;
+  border-top: 1px solid #3b3550;
+}
+.vocab-difficulty-done {
+  min-height: 38px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: 10px;
+  background: #f5f2ff;
+  color: #1a1626;
+  font-family: "Inter", sans-serif;
   font-size: 15px;
   font-weight: 700;
-  letter-spacing: 0.02em;
+  cursor: pointer;
 }
-.vocab-level-chips button:hover {
-  border-color: #bbf7d0;
-}
-.vocab-level-chips button[data-active] {
-  background: #bbf7d0;
-  border-color: #bbf7d0;
-  color: #17231b;
+.vocab-difficulty-done:hover {
+  background: #fff;
 }
 .vocab-options-secondary {
   display: flex;
@@ -197,7 +405,7 @@
 .vocab-autoplay input {
   width: 20px;
   height: 20px;
-  accent-color: #bbf7d0;
+  accent-color: var(--vocab-accent);
 }
 .vocab-site-links {
   display: flex;
@@ -303,7 +511,9 @@
   font-size: 10px;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--vocab-accent, #bbf7d0);
+  /* 10px uppercase is body text, so it takes the palette's ink (audited at 4.5:1)
+     rather than an accent, which is only held to the 3:1 large-text/graphical floor. */
+  color: var(--vocab-ink);
   text-shadow: 0 1px 6px #0006;
   pointer-events: none;
   white-space: nowrap;
@@ -333,18 +543,24 @@
   overscroll-behavior-y: contain;
   scrollbar-width: thin;
   font-family: "Inter", sans-serif;
-  font-size: clamp(14px, 1.6vw, 18px);
+  /* Definition + examples were reading too small next to the large kinetic stage
+     text, so the panel baseline is lifted a step; the pronunciation tracks it in em
+     rather than a fixed px so the whole panel grows together. */
+  font-size: clamp(16px, 1.9vw, 21px);
   line-height: 1.6;
   padding: 14px 18px;
   border-radius: 16px;
-  background: #12101d66;
+  /* The veil uses the palette's contrasting neutral, so it deepens behind light ink
+     and lightens behind dark ink — either way it raises the text contrast instead of
+     eating into it. */
+  background: color-mix(in srgb, var(--vocab-button-ink) 42%, transparent);
   backdrop-filter: blur(16px);
-  color: #fff;
+  color: var(--vocab-ink);
 }
 .vocab-pronunciation {
   margin-bottom: 18px;
-  font-size: 14px;
-  color: #fff;
+  font-size: 0.82em;
+  color: var(--vocab-ink);
 }
 .vocab-example {
   margin-top: 18px;
@@ -371,17 +587,17 @@
   height: 3px;
   flex: 1;
   border-radius: 4px;
-  background: #ffffff40;
+  background: color-mix(in srgb, var(--vocab-ink) 26%, transparent);
   overflow: hidden;
 }
 .vocab-progress span[data-complete="true"] {
-  background: #fff;
+  background: var(--vocab-accent-alt);
 }
 .vocab-progress i {
   display: block;
   width: 100%;
   height: 100%;
-  background: #fff;
+  background: var(--vocab-accent);
   transform: scaleX(0);
   transform-origin: left;
   animation: vocab-page-progress linear forwards;
@@ -418,15 +634,17 @@
   display: inline-flex;
   justify-content: center;
   align-items: center;
-  background: var(--vocab-ink);
-  color: var(--vocab-button-ink, #252136);
+  /* Accent fill with the palette's on-accent label: that pair is audited at 4.5:1,
+     so the call to action reads on every palette. */
+  background: var(--vocab-accent);
+  color: var(--vocab-button-ink);
   border-radius: 30px;
   font-family: "Inter", sans-serif;
   font-size: 13px;
   font-weight: 700;
   white-space: nowrap;
   box-shadow: 0 8px 24px #0005;
-  border: 1px solid color-mix(in srgb, var(--vocab-ink) 18%, transparent);
+  border: 1px solid color-mix(in srgb, var(--vocab-button-ink) 22%, transparent);
 }
 .vocab-card .vocab-reveal-pill:focus-visible {
   outline-color: var(--vocab-ink);
@@ -440,6 +658,7 @@
   flex-wrap: nowrap;
 }
 .vocab-emoji-strip-btn {
+  position: relative;
   width: 32px;
   height: 32px;
   display: inline-flex;
@@ -454,10 +673,36 @@
   box-shadow: 0 4px 12px #0003;
   padding: 0;
   flex-shrink: 0;
-  transition: transform 0.12s ease, border-color 0.15s ease, color 0.15s ease;
+  transition:
+    transform 0.12s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
 }
 .vocab-emoji-strip-btn:not(:disabled):active {
   transform: scale(0.88);
+}
+/* Each emoji's crowd total lives as a badge on the corner of its own button, so the
+   count and the reaction are one tap target — no separate chip strip below. Audited
+   accent/on-accent pair, so the number stays legible on every palette. */
+.vocab-emoji-strip-count {
+  position: absolute;
+  top: -7px;
+  right: -7px;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--vocab-accent);
+  color: var(--vocab-button-ink);
+  font-family: "Inter", sans-serif;
+  font-size: 9px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0;
+  box-shadow: 0 2px 6px #0008;
+  pointer-events: none;
 }
 .vocab-emoji-strip-sep {
   width: 1px;
@@ -471,12 +716,41 @@
   font-size: 15px;
 }
 .vocab-emoji-strip-btn.vocab-reaction-heart[data-on] {
-  color: #ff4d6d;
-  border-color: #ff4d6d88;
+  color: var(--vocab-accent);
+  border-color: color-mix(in srgb, var(--vocab-accent) 55%, transparent);
 }
 .vocab-emoji-strip-btn.vocab-reaction-bookmark[data-on] {
-  color: #ffb020;
-  border-color: #ffb02088;
+  color: var(--vocab-accent-alt);
+  border-color: color-mix(in srgb, var(--vocab-accent-alt) 55%, transparent);
+}
+/* ── Reveal-page emoji burst ── */
+/* Overlay only: it must never intercept the tap/swipe gestures or the emoji strip,
+   both of which sit above or below it and stay fully interactive during the flight.
+   Glyphs launch from the measured centre of the reaction button and billow outward
+   to both sides, so the layer is anchored to the card, not to its corners. */
+.vocab-emoji-burst {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  overflow: hidden;
+  pointer-events: none;
+  /* Em-sizing root so each glyph's inline `font-size: <n>em` has a base to scale. */
+  font-size: 24px;
+}
+.vocab-emoji-burst-field {
+  position: absolute;
+  inset: 0;
+}
+.vocab-emoji-burst-glyph {
+  position: absolute;
+  line-height: 1;
+  /* Centred on the measured launch point. `translate` is its own property, so it
+     survives framer-motion writing `transform` for the flight itself. */
+  translate: -50% -50%;
+  /* Softened edges read as a puff of smoke; a crisp emoji reads as confetti. */
+  filter: blur(0.4px);
+  text-shadow: 0 6px 18px #0005;
+  will-change: transform, opacity;
 }
 .vocab-reaction {
   display: flex;
@@ -495,7 +769,10 @@
   background: color-mix(in srgb, var(--vocab-ink) 10%, transparent);
   color: var(--vocab-ink);
   box-shadow: 0 8px 24px #0005;
-  transition: color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+  transition:
+    color 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.15s ease;
 }
 .vocab-reaction-button:disabled {
   opacity: 0.4;
@@ -507,12 +784,12 @@
   outline-color: var(--vocab-ink);
 }
 .vocab-reaction-heart[data-on] {
-  color: #ff4d6d;
-  border-color: #ff4d6d88;
+  color: var(--vocab-accent);
+  border-color: color-mix(in srgb, var(--vocab-accent) 55%, transparent);
 }
 .vocab-reaction-bookmark[data-on] {
-  color: #ffb020;
-  border-color: #ffb02088;
+  color: var(--vocab-accent-alt);
+  border-color: color-mix(in srgb, var(--vocab-accent-alt) 55%, transparent);
 }
 .vocab-reaction-count {
   font-family: "Inter", sans-serif;
@@ -520,7 +797,7 @@
   font-weight: 600;
   line-height: 14px;
   min-height: 14px;
-  color: color-mix(in srgb, var(--vocab-ink) 72%, transparent);
+  color: color-mix(in srgb, var(--vocab-ink) 88%, transparent);
 }
 .vocab-tap-zones {
   position: absolute;
@@ -761,7 +1038,9 @@
 }
 .vocab-spelling-word {
   display: flex;
-  flex-wrap: wrap;
+  /* One row, always: SpellingAnimation solves the font size down to whatever the
+     card can hold instead of letting a long answer break onto a second line. */
+  flex-wrap: nowrap;
   justify-content: center;
   align-items: baseline;
   gap: 0.02em;
@@ -795,16 +1074,26 @@
   }
 }
 @media (max-width: 380px) {
-  .vocab-brand small {
-    display: none;
+  /* The tagline slot is the difficulty control now, so it must never be hidden the
+     way the old decorative tagline was; shrink the brand instead to leave the
+     toolbar row room for the action buttons. */
+  .vocab-brand {
+    font-size: 19px;
+    letter-spacing: -0.8px;
+    /* Capped so a long track name truncates instead of widening the brand: at
+       360px the row is only 328px wide and five action buttons already claim most
+       of it. 92px still shows the whole title (its min-content is ~84px). */
+    max-width: 92px;
   }
-  .vocab-toolbar-actions {
+  /* 40px buttons and a 4px gap bring the action row to 216px, so brand + gap +
+     actions fit inside 328px with slack. 44px targets are kept above 380px. */
+  .vocab-icon-button {
+    width: 40px;
+    height: 40px;
+  }
+  .vocab-player-controls,
+  .vocab-toolbar-left {
     gap: 6px;
-  }
-  .vocab-level-chips button {
-    min-width: 50px;
-    padding: 0 12px;
-    font-size: 14px;
   }
   .vocab-select-grid {
     grid-template-columns: 1fr;

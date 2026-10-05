@@ -15,8 +15,14 @@ import {
   getAdminHealthHistory,
   getAdminRollups,
 } from "./telemetry.functions";
-import { listVocabularyWords, getCompletedWordCount, type VocabWordRow } from "./vocabulary.functions";
+import {
+  listVocabularyWords,
+  getCompletedWordCount,
+  type VocabWordRow,
+} from "./vocabulary.functions";
 import { listTemplates, type TemplateData } from "./template.functions";
+import { listPalettes } from "./palette.functions";
+import type { Palette } from "@/features/canvas/palettes";
 import { ensureDemoSeeded, listDailyRollups, listErrorReports, listEvents } from "./telemetry.core";
 import { buildHealthSnapshot } from "../lib/health";
 import { readDemoTelemetry } from "../lib/demo-store";
@@ -137,6 +143,17 @@ export function adminTemplatesQueryOptions() {
     queryKey: adminKeys.templates(),
     staleTime: 30_000,
     queryFn: () => listTemplates() as Promise<TemplateData>,
+  });
+}
+
+/**
+ * Palette collection. File-backed like templates, so it does not branch on mode.
+ */
+export function adminPalettesQueryOptions() {
+  return queryOptions({
+    queryKey: adminKeys.palettes(),
+    staleTime: 30_000,
+    queryFn: () => listPalettes() as Promise<Palette[]>,
   });
 }
 

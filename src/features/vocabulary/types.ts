@@ -1,7 +1,12 @@
 /** Public vocabulary transport/UI types; contains no catalog data. Exports: feed contracts. Depends on: schema types. */
 import type { NarrativeStyle, VocabularyLevel, VocabularyWord } from "./lib/schema";
 
-export type VocabularyFilters = { topic: string; level: VocabularyLevel | "" };
+export type VocabularyFilters = {
+  topic: string;
+  level: VocabularyLevel | "";
+  /** Difficulty track id, or "" for every level. Resolved to a CEFR band server-side. */
+  difficulty: string;
+};
 export type FeedRequest = VocabularyFilters & {
   seed: string;
   position: number;

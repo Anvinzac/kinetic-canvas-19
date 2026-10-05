@@ -15,6 +15,7 @@ import {
   type CanvasSpec,
 } from "@/features/canvas";
 import {
+  getDataEmphasisWordSpans,
   getEmphasisPhraseKeysForLayout,
   getKineticTextLayoutMode,
   getLoopAnimation,
@@ -22,6 +23,7 @@ import {
   getWords,
   hasVisibleStickerAccent,
   isLikelyVietnameseText,
+  type EmphasisVariant,
 } from "@/features/kinetic-text";
 import { getEmphasizedWordIndexes } from "../lib/feed-emphasis";
 import { getEntranceStyle } from "../lib/entrances";
@@ -48,8 +50,23 @@ export type WordSequenceTextProps = {
   photoBackdrop?: boolean;
   entranceSeed?: string;
   fitAsUnit?: boolean;
+  /**
+   * Multiplier on the line-to-line advance. 1 keeps the renderer's own compact
+   * display rhythm; a caller that needs reading air (the vocabulary card) passes
+   * 1.2. Line pitch is made of two parts — `lineHeight` plus the explicit
+   * per-line margin/gap — so both are scaled together and the requested factor is
+   * the factor the reader actually gets. Never touches glyph width.
+   */
+  lineSpacingScale?: number;
   /** Optional upstream emphasis annotations; only phrases occurring in this page's text match. */
   dataEmphasis?: string[];
+  /**
+   * Optional second highlight drawn with its own effect. It bypasses both the
+   * annotation budget and the per-language one-word cap, so a page can carry two
+   * marks that read differently — the vocabulary letter-count clue boxes its
+   * starting initial while the count keeps the primary mark.
+   */
+  secondaryEmphasis?: { phrase: string; variant: EmphasisVariant };
 };
 
 /**
@@ -70,7 +87,9 @@ export function WordSequenceText({
   photoBackdrop = false,
   entranceSeed,
   fitAsUnit = false,
+  lineSpacingScale = 1,
   dataEmphasis,
+  secondaryEmphasis,
 }: WordSequenceTextProps): ReactElement {
   const words = useMemo(
     () => (fitAsUnit ? [spec.text.trim()] : getWords(spec.text)),
@@ -78,12 +97,27 @@ export function WordSequenceText({
   );
   const isVietnamese = words.length > 1 && isLikelyVietnameseText(spec.text);
   const emphasized = getEmphasizedWordIndexes(words, dataEmphasis);
+  // Read the primitives, not the object, so a caller re-creating the literal each
+  // render cannot churn the memo and rebuild the index set every frame.
+  const secondaryPhrase = secondaryEmphasis?.phrase;
+  const secondaryVariant = secondaryEmphasis?.variant;
+  // Resolved against this page's own tokens, so a phrase pagination moved onto
+  // another page simply matches nothing here.
+  const secondaryEmphasized = useMemo(() => {
+    if (!secondaryPhrase) return undefined;
+    const indexes = new Set<number>();
+    for (const span of getDataEmphasisWordSpans(words, [secondaryPhrase])) {
+      for (let offset = 0; offset < span.length; offset += 1) indexes.add(span.start + offset);
+    }
+    return indexes.size > 0 ? indexes : undefined;
+  }, [words, secondaryPhrase]);
+  const hasEmphasis = emphasized.size > 0 || !!secondaryEmphasized?.size;
   // Annotated compounds act as bound phrases everywhere below: unbreakable line
   // segments plus one shared emphasis variant across all their syllables.
   const phraseKeys = useMemo(() => getEmphasisPhraseKeysForLayout(dataEmphasis), [dataEmphasis]);
   const isSolo = words.length <= 1;
   const visualScaleGuard = Math.max(
-    emphasized.size > 0 && !isSolo ? EMPHASIS_SCALE_FIT_GUARD : 1,
+    hasEmphasis && !isSolo ? EMPHASIS_SCALE_FIT_GUARD : 1,
     isVietnamese ? VIETNAMESE_SCALE_FIT_GUARD : 1,
   );
   const vietnameseLayout = useMemo(
@@ -104,8 +138,8 @@ export function WordSequenceText({
         canvasWidth,
         visualScaleGuard,
         spec.font,
-        emphasized.size > 0 ? 900 : spec.weight,
-        emphasized.size > 0 ? EMPHASIS_FONT_SCALE : 1,
+        hasEmphasis ? 900 : spec.weight,
+        hasEmphasis ? EMPHASIS_FONT_SCALE : 1,
       )
     : 1;
   const initialFit = isSolo
@@ -169,14 +203,17 @@ export function WordSequenceText({
         animate="show"
         style={{
           width: "100%",
+          // A solo page is one unbreakable span, so it cannot wrap anyway; naming the
+          // intent keeps the single-line answer from depending on that accident.
+          flexWrap: isSolo ? "nowrap" : undefined,
           columnGap: isVietnamese ? undefined : "0.34em",
-          rowGap: isVietnamese ? undefined : "0.08em",
+          rowGap: isVietnamese ? undefined : `${0.08 * lineSpacingScale}em`,
           fontFamily: spec.font,
           fontSize,
           color: textColor,
           fontWeight: spec.weight,
           letterSpacing: `${spec.letterSpacing}em`,
-          lineHeight: isVietnamese ? 1.04 : 0.9,
+          lineHeight: (isVietnamese ? 1.04 : 0.9) * lineSpacingScale,
           textAlign: leftAnchoredText ? "left" : "center",
           textShadow: photoTextShadow ?? "0 4px 40px rgba(0,0,0,0.45)",
           transform: `rotate(${spec.rotation}deg)`,
@@ -187,10 +224,13 @@ export function WordSequenceText({
       >
         <WordSequenceLines
           isVietnamese={isVietnamese}
+          lineSpacingScale={lineSpacingScale}
           vietnameseLines={vietnameseLayout.lines}
           words={words}
           emphasized={emphasized}
           phraseKeys={phraseKeys}
+          secondaryEmphasized={secondaryEmphasized}
+          secondaryVariant={secondaryVariant}
           spotlightEmphasis={spotlightEmphasis}
           spec={spec}
           staticRender={staticRender}

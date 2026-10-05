@@ -26,6 +26,12 @@ export const CRAWL_DEFAULT_BATCH_SIZE = 20;
 /** Maximum words per request; larger batches raise the truncation risk. */
 export const CRAWL_MAX_BATCH_SIZE = 50;
 
+/** Annotation providers accepted by `--provider`. */
+export const CRAWL_PROVIDERS = ["anthropic", "together", "openrouter", "openai"] as const;
+
+/** Provider used when neither `--provider` nor `$LLM_PROVIDER` is set. */
+export const CRAWL_DEFAULT_PROVIDER = "anthropic";
+
 /** `crawl` command options. */
 export interface CrawlCommand {
   command: "crawl";
@@ -35,8 +41,12 @@ export interface CrawlCommand {
   outputPath: string | null;
   resumePath: string | null;
   corpusPath: string | null;
+  /** Null when the flag was omitted, so `$LLM_PROVIDER` can still decide. */
+  provider: string | null;
+  baseUrl: string | null;
   model: string | null;
   maxTokens: number | null;
+  temperature: number | null;
   deckName: string | null;
   deckVersion: string | null;
   dryRun: boolean;
@@ -98,8 +108,11 @@ function parseCrawl(argv: readonly string[]): CliCommand {
     outputPath: null,
     resumePath: null,
     corpusPath: null,
+    provider: null,
+    baseUrl: null,
     model: null,
     maxTokens: null,
+    temperature: null,
     deckName: null,
     deckVersion: null,
     dryRun: false,
@@ -144,6 +157,31 @@ function parseCrawl(argv: readonly string[]): CliCommand {
         crawl.corpusPath = readValue(argv, index, flag);
         index += 1;
         break;
+      case "--provider": {
+        const value = readValue(argv, index, flag).toLowerCase();
+        index += 1;
+        if (!CRAWL_PROVIDERS.includes(value as (typeof CRAWL_PROVIDERS)[number])) {
+          throw new CliUsageError(
+            `--provider must be one of ${CRAWL_PROVIDERS.join(", ")}, got "${value}"`,
+          );
+        }
+        crawl.provider = value;
+        break;
+      }
+      case "--base-url":
+        crawl.baseUrl = readValue(argv, index, flag);
+        index += 1;
+        break;
+      case "--temperature": {
+        const value = readValue(argv, index, flag);
+        index += 1;
+        const parsed = Number(value);
+        if (!Number.isFinite(parsed) || parsed < 0 || parsed > 2) {
+          throw new CliUsageError(`--temperature must be a number between 0 and 2, got "${value}"`);
+        }
+        crawl.temperature = parsed;
+        break;
+      }
       case "--model":
         crawl.model = readValue(argv, index, flag);
         index += 1;
@@ -306,7 +344,10 @@ export function formatHelp(): string {
     "  --output out.json   Deck file to write; required unless --resume is given",
     "  --resume deck.json  Keep and skip words from an existing deck",
     "  --corpus file.json  Corpus file (default: bundled NGSL/NAWL starter subset)",
-    "  --model name        Anthropic model (default: $ANTHROPIC_MODEL or claude-haiku-4-5-20251001)",
+    "  --provider name     anthropic (default) | together | openrouter | openai",
+    "  --base-url url      Override the provider root (required for --provider openai)",
+    "  --model name        Model id (default: $LLM_MODEL, the provider's own env var, or its preset default)",
+    "  --temperature 0.4   Sampling temperature, 0-2 (OpenAI-compatible providers only)",
     "  --max-tokens 4000   Response token budget per batch",
     '  --name "Deck name"  Deck meta name',
     "  --deck-version v1   Deck meta version",
@@ -326,6 +367,8 @@ export function formatHelp(): string {
     "",
     "Examples:",
     "  npm run crawl -- --levels A1,A2 --batch 20 --output out/deck-a1a2.json",
+    "  npm run crawl -- --provider together --limit 20 --output out/deck.json",
+    "  npm run crawl -- --provider openrouter --model meta-llama/llama-3.3-70b-instruct --output out/deck.json",
     "  npm run crawl -- --resume out/deck-a1a2.json --limit 40",
     "  npm run crawl -- --dry-run --levels A1",
     "  npm run validate -- out/deck-a1a2.json",

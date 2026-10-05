@@ -33,6 +33,31 @@ export {
 
 export { parseCanvas, serializeCanvas } from "./serialize";
 
+export type {
+  Palette,
+  PaletteAudit,
+  PaletteCheck,
+  PaletteCheckUnit,
+  PaletteScheme,
+  PaletteTone,
+} from "./palettes";
+export {
+  auditPalette,
+  describePaletteCheck,
+  ensureReadablePalette,
+  generatePalette,
+  hslHex,
+  liftBackgroundUntilPaintable,
+  normalizePalette,
+  PALETTE_SCHEMES,
+  PALETTE_THRESHOLDS,
+  paletteBackgroundStops,
+  paletteBackdropColors,
+  paletteSwatches,
+  rgbToHex,
+} from "./palettes";
+export { getPalette, PALETTES, PALETTE_SWATCHES } from "./palette-collection";
+
 export {
   getCanvasEmphasisColor,
   getCanvasEmphasisWordColor,
@@ -53,10 +78,6 @@ export {
 } from "./patterns";
 
 export type { CanvasSceneTheme } from "./scenes";
-export {
-  CANVAS_SCENE_THEMES,
-  getCanvasSceneTheme,
-  getSceneBackgroundStyle,
-} from "./scenes";
+export { CANVAS_SCENE_THEMES, getCanvasSceneTheme, getSceneBackgroundStyle } from "./scenes";
 
 export { CanvasStickerLayer } from "./components/CanvasStickerLayer";

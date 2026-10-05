@@ -8,7 +8,7 @@
 import type { ReactElement } from "react";
 import { motion } from "framer-motion";
 import type { CanvasSpec } from "@/features/canvas";
-import type { getVietnameseLayoutMetrics } from "@/features/kinetic-text";
+import type { EmphasisVariant, getVietnameseLayoutMetrics } from "@/features/kinetic-text";
 import type { ResolvedEntranceStyle } from "../lib/entrances";
 import { getEntranceTransition } from "../lib/entrances";
 import { getWordDelay, tempoConfig } from "../lib/playback-timing";
@@ -18,11 +18,16 @@ type VietnameseLines = ReturnType<typeof getVietnameseLayoutMetrics>["lines"];
 
 export type WordSequenceLinesProps = {
   isVietnamese: boolean;
+  /** Multiplier on the inter-line advance, forwarded from WordSequenceText. */
+  lineSpacingScale?: number;
   vietnameseLines: VietnameseLines;
   words: string[];
   emphasized: Set<number>;
   /** Data-annotated phrase keys treated as bound phrases for shared emphasis styling. */
   phraseKeys?: readonly (readonly string[])[];
+  /** Caller-forced second highlight and the effect it is drawn with. */
+  secondaryEmphasized?: Set<number>;
+  secondaryVariant?: EmphasisVariant;
   spotlightEmphasis: boolean;
   spec: CanvasSpec;
   staticRender: boolean;
@@ -75,10 +80,13 @@ function getEmphasisGroups(
  */
 export function WordSequenceLines({
   isVietnamese,
+  lineSpacingScale = 1,
   vietnameseLines,
   words,
   emphasized,
   phraseKeys,
+  secondaryEmphasized,
+  secondaryVariant,
   spotlightEmphasis,
   spec,
   staticRender,
@@ -104,6 +112,8 @@ export function WordSequenceLines({
       spec={spec}
       emphasized={emphasized}
       phraseKeys={phraseKeys}
+      secondaryEmphasized={secondaryEmphasized}
+      secondaryVariant={secondaryVariant}
       spotlightEmphasis={spotlightEmphasis}
       suppressSpotlight={suppressSpotlight}
       staticRender={staticRender}
@@ -184,8 +194,8 @@ export function WordSequenceLines({
             alignSelf: "stretch",
             boxSizing: "border-box",
             columnGap: "0.24em",
-            rowGap: "0.08em",
-            marginTop: lineIndex === 0 ? 0 : "0.06em",
+            rowGap: `${0.08 * lineSpacingScale}em`,
+            marginTop: lineIndex === 0 ? 0 : `${0.06 * lineSpacingScale}em`,
             minWidth: 0,
             paddingLeft: `${line.indentEm}em`,
             paddingRight: "2%",

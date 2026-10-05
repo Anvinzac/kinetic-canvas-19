@@ -5,7 +5,7 @@ export const Route = createFileRoute("/feed/")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "WordCrawler — A little English, endlessly" },
+      { title: "anh.chayLá — A little English, endlessly" },
       {
         name: "description",
         content:

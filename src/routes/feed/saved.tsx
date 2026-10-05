@@ -7,7 +7,7 @@ export const Route = createFileRoute("/feed/saved")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "Saved words — WordCrawler" },
+      { title: "Saved words — anh.chayLá" },
       {
         name: "description",
         content: "Every vocabulary word you bookmarked, stored on this device only.",

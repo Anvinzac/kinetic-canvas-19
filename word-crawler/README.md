@@ -10,15 +10,21 @@ produces a deck **file**, and another agent/step copies that file downstream.
 ## Requirements
 
 - Node.js >= 22.18.0 (runs TypeScript directly; no build step)
-- An Anthropic API key only for live crawls (tests and `--dry-run` need none)
+- An API key for one annotation provider, only for live crawls (tests and
+  `--dry-run` need none): Anthropic, Together AI, OpenRouter, or any
+  OpenAI-compatible endpoint
 
 ## Setup
 
 ```bash
 cd word-crawler
 npm install
-cp .env.example .env   # fill in ANTHROPIC_API_KEY for live runs
+cp .env.example .env   # fill in the key of the provider you crawl with
 ```
+
+The admin Model page of the main app normally keeps Together/OpenRouter active
+with `meta-llama/Llama-3.3-70B-Instruct-Turbo`; that is the profile the crawler
+is usually pointed at (`--provider together`).
 
 ## Commands
 
@@ -39,7 +45,7 @@ npm run corpus:import -- --input ngsl.csv --output data/ngsl-full.json \
   --license-url "https://creativecommons.org/licenses/by-sa/4.0/" \
   --attribution "Browne, C., Culligan, B., & Phillips, J. (2013). The New General Service List."
 
-npm test         # 100 tests, mocked fetch, no network
+npm test         # 140 tests, mocked fetch, no network
 npm run typecheck
 ```
 
@@ -53,7 +59,10 @@ npm run typecheck
 | `--output out.json` | Deck file to write; required unless `--resume` is given |
 | `--resume deck.json` | Keep + skip words from an existing deck |
 | `--corpus file.json` | Corpus file (default: bundled starter subset) |
-| `--model name` | Anthropic model (default `$ANTHROPIC_MODEL` or `claude-haiku-4-5-20251001`) |
+| `--provider name` | `anthropic` (default) \| `together` \| `openrouter` \| `openai`; `$LLM_PROVIDER` decides when the flag is omitted |
+| `--base-url url` | Provider root; required for `--provider openai` (e.g. a local llama.cpp server) |
+| `--model name` | Model id (default: `$LLM_MODEL`, the provider's own env var, or the preset default — `claude-haiku-4-5-20251001`, `meta-llama/Llama-3.3-70B-Instruct-Turbo`, `meta-llama/llama-3.3-70b-instruct`) |
+| `--temperature 0.4` | Sampling temperature 0–2, forwarded only to OpenAI-compatible providers |
 | `--max-tokens 4000` | Response token budget per batch |
 | `--name`, `--deck-version` | Deck meta fields |
 | `--dry-run` | Plan batches only: no API calls, no files written |
@@ -83,9 +92,13 @@ Exactly these ten fields — the model never assigns the CEFR level:
 word, pos, ipa, defVi, leadVi, anticipateVi, usageEn, usageVi, topic, emphasisVi
 ```
 
-The parser repairs the two leaks that break the feed: an English target inside
-`usageEn` is blanked to `_____`, an `anticipateVi` containing the answer is
-emptied. A model-echoed `level` is stripped with a warning.
+The parser repairs what breaks the feed: an English target inside `usageEn` is
+blanked to `_____`, an `anticipateVi` containing the answer is emptied, and a
+`leadVi` whose noun was dropped ("những này") is emptied rather than published as
+broken Vietnamese. A model-echoed `level` is stripped with a warning.
+`checkVietnameseProse` additionally reports the rules the prompt asks for but a
+model routinely misses (`defVi`/`leadVi` outside 8–11 words) — reported, never
+silently rewritten.
 
 ### Deck output (what downstream imports)
 
@@ -100,17 +113,36 @@ id, word, pos, ipa, defVi, leadVi, anticipateVi, topic, level,
 chars, initial, usage: [{ en, vi }], emphasis: string[]
 ```
 
-`level` always comes from the corpus. `chars`/`initial` are derived. `emphasis`
-phrases are guaranteed (by `validateEmphasis` and re-checked by `validate`) to
-occur character-for-character in `defVi`/`leadVi` with diacritics preserved.
+`level` always comes from the corpus. `chars`/`initial` are derived.
+
+Emphasis is written **twice on purpose**:
+
+- inline `/phrase/` markers inside `defVi`/`leadVi` — the only format the feed
+  reads (`parseEmphasisMarkers` in `src/features/vocabulary/lib/stages.ts` turns
+  them into `stage.dataEmphasis`). The Vietnamese page highlights one phrase, so
+  a field carries at most one marker;
+- the `emphasis` array — the same validated phrases, which is what content-hub's
+  deck reader sanitizes against (it strips the markers again when it loads a deck).
+
+Both are guaranteed (by `validateEmphasis`, `injectEmphasisMarkers` and re-checked
+by `validate`) to occur character-for-character in `defVi`/`leadVi` with
+diacritics preserved. `validate` reports how many words carry a marker.
 
 ### Vietnamese emphasis rules
 
 A phrase is kept only when it occurs exactly (diacritics included) in `defVi` or
-`leadVi`, is not made only of function words, and is not a single syllable that
-sits tight against a content syllable (half of a compound like `học sinh`).
-Ambiguous single syllables are removed rather than trusted; every change is
-reported as a warning. Matching never accent-strips (`nhưng` ≠ `những`).
+`leadVi`, is not made only of function words, is not a single syllable that
+sits tight against a content syllable (half of a compound like `học sinh`), and
+does not overlap a longer phrase already kept — the longer run wins, because the
+model answers both `Khoảng thời gian` and `thời gian`. Ambiguous single syllables
+are removed rather than trusted; every change is reported as a warning. Matching
+never accent-strips (`nhưng` ≠ `những`).
+
+What cannot be decided without a Vietnamese dictionary is **not** repaired here:
+the feed's `repairSplitCompoundEmphasis` only heals an *orphan* syllable, so a
+two-syllable fragment of a three-syllable compound (`người đàn` out of
+`người đàn ông`) would glow broken. The prompt therefore demands whole vocabulary
+units and the live runs are checked against that.
 
 ## Corpus provenance
 
@@ -128,10 +160,11 @@ redistribution).
 ## Tests
 
 Node's built-in test runner (`node --test`), no test framework dependency and no
-network: the Anthropic client is exercised against a mocked `fetch` with
-injected `sleep`/`random`, and crawl runs use a fake annotator plus temp
-directories inside the package. Coverage: bundled corpus integrity and
-provenance, importer (headers, duplicates, band/level mapping), deterministic
-dedupe/sort/filters, emphasis validator cases, annotation contract repair, JSON
-extraction, retry/backoff/fatal policy, deck build/validate/round-trip, crawl
-resume/checkpoint/failure handling, CLI parsing.
+network: both the Anthropic and the OpenAI-compatible clients are exercised
+against a mocked `fetch` with injected `sleep`/`random`, and crawl runs use a
+fake annotator plus temp directories inside the package. Coverage: bundled
+corpus integrity and provenance, importer (headers, duplicates, band/level
+mapping), deterministic dedupe/sort/filters, emphasis validation and marker
+injection, annotation contract repair and Vietnamese prose checks, JSON
+extraction, retry/backoff/fatal policy, provider resolution, deck
+build/validate/round-trip, crawl resume/checkpoint/failure handling, CLI parsing.

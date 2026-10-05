@@ -1,6 +1,7 @@
-/** Public vocabulary HTTP boundary. Exports: vocabularyResponse. Depends on: zod, server catalog. */
+/** Public vocabulary HTTP boundary. Exports: vocabularyResponse. Depends on: zod, server catalog, difficulty bands. */
 import { z } from "zod";
 import { LEVELS } from "../lib/schema";
+import { DIFFICULTY_IDS } from "../lib/difficulty";
 import { catalog, MAX_POSITION, readVocabularyPage } from "./catalog.server";
 
 const unsigned = (fallback: string, max: number) =>
@@ -25,6 +26,25 @@ const requestSchema = z
       .regex(/^[a-z0-9-]*$/)
       .default(""),
     level: z.union([z.enum(LEVELS), z.literal("")]).default(""),
+    // Difficulty is multi-select: a comma-joined list of track ids, or "" for all.
+    // Every segment is validated against the declared list, so an unknown id is a 400
+    // rather than a silently empty stream.
+    difficulty: z
+      .string()
+      .default("")
+      .transform((value) =>
+        value
+          .split(",")
+          .map((id) => id.trim())
+          .filter(Boolean)
+          .join(","),
+      )
+      .refine(
+        (value) =>
+          value === "" ||
+          value.split(",").every((id) => (DIFFICULTY_IDS as readonly string[]).includes(id)),
+        { message: "Unknown difficulty track" },
+      ),
   })
   .strict()
   .refine((input) => input.position % input.limit === 0, {

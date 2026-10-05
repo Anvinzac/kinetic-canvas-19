@@ -14,9 +14,9 @@
  *
  * Exports: CrawlOptions, CrawlReport, BatchAnnotator, CrawlDeps, chunkWords, runCrawl
  * Depends on: ./corpus.ts, ./emphasis.ts, ./deck.ts, ./checkpoint.ts,
- *             ./json-file.ts, ./annotate/anthropic.ts
+ *             ./json-file.ts, ./annotate/transport.ts
  */
-import { AnthropicRequestError, type BatchAnnotationResult } from "./annotate/anthropic.ts";
+import { LlmRequestError, type BatchAnnotationResult } from "./annotate/transport.ts";
 import { appendCheckpointWords, checkpointPathFor, readCheckpointWords } from "./checkpoint.ts";
 import {
   filterByLevels,
@@ -205,7 +205,10 @@ export async function runCrawl(options: CrawlOptions, deps: CrawlDeps = {}): Pro
   for (const [index, batch] of batches.entries()) {
     try {
       const result = await deps.annotator.annotateBatch(batch);
-      for (const issue of result.issues) log(`note: ${issue}`);
+      for (const issue of result.issues) {
+        log(`note: ${issue}`);
+        warnings.push(issue);
+      }
 
       const finished: DeckWord[] = [];
       for (const annotation of result.annotations) {
@@ -217,7 +220,10 @@ export async function runCrawl(options: CrawlOptions, deps: CrawlDeps = {}): Pro
           leadVi: annotation.leadVi,
           emphasisVi: annotation.emphasisVi,
         });
-        for (const warning of emphasis.warnings) log(`note: ${annotation.word}: ${warning}`);
+        for (const warning of emphasis.warnings) {
+          log(`note: ${annotation.word}: ${warning}`);
+          warnings.push(`${annotation.word}: ${warning}`);
+        }
 
         const built = buildDeckWord({
           corpusWord,
@@ -240,7 +246,7 @@ export async function runCrawl(options: CrawlOptions, deps: CrawlDeps = {}): Pro
           (result.usage === null ? "" : ` (${result.usage.inputTokens}/${result.usage.outputTokens} tokens)`),
       );
     } catch (error) {
-      if (error instanceof AnthropicRequestError && error.fatal) {
+      if (error instanceof LlmRequestError && error.fatal) {
         errors.push(`batch ${index + 1} aborted the crawl: ${error.message}`);
         log(`aborting: ${error.message}`);
         break;
@@ -294,6 +300,13 @@ export async function runCrawl(options: CrawlOptions, deps: CrawlDeps = {}): Pro
     await writeJsonAtomic(options.outputPath, deck);
     deckWritten = true;
     await removeFileIfExists(checkpointPath);
+    // The feed only glows from the inline markers; anything unmarked falls back
+    // to heuristics, so coverage belongs in the run output, not just the file.
+    const unmarked = validation.stats.words - validation.stats.withMarkers;
+    log(
+      `coverage: ${validation.stats.withMarkers}/${validation.stats.words} words carry an inline /emphasis/ marker` +
+        (unmarked > 0 ? ` (${unmarked} will glow from heuristics only)` : ""),
+    );
     log(`wrote ${merged.length} words to ${options.outputPath}`);
   }
 

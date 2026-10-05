@@ -37,7 +37,7 @@ export const CREATOR_FEED_POSTS_B: MockPost[] = [
     post_type: "image",
     canvas_html: canvas({
       text: "Make the first frame honest. Let the second frame surprise them. Leave the last frame glowing.",
-      font: "Bebas Neue",
+      font: "Space Grotesk",
       size: 90,
       color: "#ffffff",
       entrance: "slide",
@@ -128,7 +128,7 @@ export const CREATOR_FEED_POSTS_B: MockPost[] = [
     post_type: "text",
     canvas_html: canvas({
       text: "If the line feels flat, change the entrance before you change the thought.",
-      font: "Bebas Neue",
+      font: "Space Grotesk",
       size: 92,
       color: "#ffffff",
       entrance: "slide",

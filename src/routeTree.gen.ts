@@ -21,6 +21,7 @@ import { Route as AdminVocabularyRouteImport } from './routes/admin/vocabulary'
 import { Route as AdminUsersRouteImport } from './routes/admin/users'
 import { Route as AdminTemplatesRouteImport } from './routes/admin/templates'
 import { Route as AdminSystemRouteImport } from './routes/admin/system'
+import { Route as AdminPalettesRouteImport } from './routes/admin/palettes'
 import { Route as AdminModelRouteImport } from './routes/admin/model'
 import { Route as AdminLinksRouteImport } from './routes/admin/links'
 import { Route as AdminErrorsRouteImport } from './routes/admin/errors'
@@ -97,6 +98,11 @@ const AdminTemplatesRoute = AdminTemplatesRouteImport.update({
 const AdminSystemRoute = AdminSystemRouteImport.update({
   id: '/system',
   path: '/system',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminPalettesRoute = AdminPalettesRouteImport.update({
+  id: '/palettes',
+  path: '/palettes',
   getParentRoute: () => AdminRouteRoute,
 } as any)
 const AdminModelRoute = AdminModelRouteImport.update({
@@ -211,6 +217,7 @@ export interface FileRoutesByFullPath {
   '/admin/errors': typeof AdminErrorsRoute
   '/admin/links': typeof AdminLinksRoute
   '/admin/model': typeof AdminModelRoute
+  '/admin/palettes': typeof AdminPalettesRoute
   '/admin/system': typeof AdminSystemRoute
   '/admin/templates': typeof AdminTemplatesRoute
   '/admin/users': typeof AdminUsersRoute
@@ -241,6 +248,7 @@ export interface FileRoutesByTo {
   '/admin/errors': typeof AdminErrorsRoute
   '/admin/links': typeof AdminLinksRoute
   '/admin/model': typeof AdminModelRoute
+  '/admin/palettes': typeof AdminPalettesRoute
   '/admin/system': typeof AdminSystemRoute
   '/admin/templates': typeof AdminTemplatesRoute
   '/admin/users': typeof AdminUsersRoute
@@ -274,6 +282,7 @@ export interface FileRoutesById {
   '/admin/errors': typeof AdminErrorsRoute
   '/admin/links': typeof AdminLinksRoute
   '/admin/model': typeof AdminModelRoute
+  '/admin/palettes': typeof AdminPalettesRoute
   '/admin/system': typeof AdminSystemRoute
   '/admin/templates': typeof AdminTemplatesRoute
   '/admin/users': typeof AdminUsersRoute
@@ -307,6 +316,7 @@ export interface FileRouteTypes {
     | '/admin/errors'
     | '/admin/links'
     | '/admin/model'
+    | '/admin/palettes'
     | '/admin/system'
     | '/admin/templates'
     | '/admin/users'
@@ -337,6 +347,7 @@ export interface FileRouteTypes {
     | '/admin/errors'
     | '/admin/links'
     | '/admin/model'
+    | '/admin/palettes'
     | '/admin/system'
     | '/admin/templates'
     | '/admin/users'
@@ -369,6 +380,7 @@ export interface FileRouteTypes {
     | '/admin/errors'
     | '/admin/links'
     | '/admin/model'
+    | '/admin/palettes'
     | '/admin/system'
     | '/admin/templates'
     | '/admin/users'
@@ -480,6 +492,13 @@ declare module '@tanstack/react-router' {
       path: '/system'
       fullPath: '/admin/system'
       preLoaderRoute: typeof AdminSystemRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/palettes': {
+      id: '/admin/palettes'
+      path: '/palettes'
+      fullPath: '/admin/palettes'
+      preLoaderRoute: typeof AdminPalettesRouteImport
       parentRoute: typeof AdminRouteRoute
     }
     '/admin/model': {
@@ -646,6 +665,7 @@ interface AdminRouteRouteChildren {
   AdminErrorsRoute: typeof AdminErrorsRoute
   AdminLinksRoute: typeof AdminLinksRoute
   AdminModelRoute: typeof AdminModelRoute
+  AdminPalettesRoute: typeof AdminPalettesRoute
   AdminSystemRoute: typeof AdminSystemRoute
   AdminTemplatesRoute: typeof AdminTemplatesRoute
   AdminUsersRoute: typeof AdminUsersRoute
@@ -659,6 +679,7 @@ const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminErrorsRoute: AdminErrorsRoute,
   AdminLinksRoute: AdminLinksRoute,
   AdminModelRoute: AdminModelRoute,
+  AdminPalettesRoute: AdminPalettesRoute,
   AdminSystemRoute: AdminSystemRoute,
   AdminTemplatesRoute: AdminTemplatesRoute,
   AdminUsersRoute: AdminUsersRoute,

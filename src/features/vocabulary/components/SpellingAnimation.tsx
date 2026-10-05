@@ -11,7 +11,13 @@
 import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import type { Transition, Variants } from "framer-motion";
-import { SPELLING_STAGGER, type SpellingVariant } from "../lib/spelling";
+import {
+  SPELLING_FIT_GUARD,
+  SPELLING_NOMINAL_FONT_SIZE,
+  SPELLING_STAGGER,
+  getSpellingFitFontSize,
+  type SpellingVariant,
+} from "../lib/spelling";
 
 /** Per-variant letter motion. Scatter needs the index for its radial offset. */
 function variantMotion(
@@ -79,15 +85,6 @@ function variantMotion(
   }
 }
 
-/** Base font size before the fit pass scales it down for long words. */
-const NOMINAL_FONT_SIZE = 96;
-
-/** Keep the word inside the safe area even at peak animation overshoot. */
-const FIT_GUARD = 0.86;
-
-/** Smallest legible size; long words shrink but never below this. */
-const MIN_FONT_SIZE = 18;
-
 /**
  * Render the answered word letter by letter.
  * @param props Word, chosen variant and motion preference. @returns Centred spelling overlay.
@@ -103,7 +100,7 @@ export function SpellingAnimation({
 }) {
   const hostRef = useRef<HTMLDivElement>(null);
   const wordRef = useRef<HTMLDivElement>(null);
-  const [fontSize, setFontSize] = useState(NOMINAL_FONT_SIZE);
+  const [fontSize, setFontSize] = useState(SPELLING_NOMINAL_FONT_SIZE);
 
   // Array.from keeps surrogate pairs and combining marks together, so an
   // accented letter never animates as two separate glyphs.
@@ -120,15 +117,17 @@ export function SpellingAnimation({
     const row = wordRef.current;
     if (!host || !row) return;
     const measure = () => {
-      const available = host.clientWidth * FIT_GUARD;
-      row.style.fontSize = `${NOMINAL_FONT_SIZE}px`;
+      const available = host.clientWidth * SPELLING_FIT_GUARD;
+      row.style.fontSize = `${SPELLING_NOMINAL_FONT_SIZE}px`;
       const natural = row.offsetWidth;
       if (!natural || !available) {
-        setFontSize(NOMINAL_FONT_SIZE);
+        setFontSize(SPELLING_NOMINAL_FONT_SIZE);
         return;
       }
-      const scaled = (available / natural) * NOMINAL_FONT_SIZE;
-      setFontSize(Math.max(MIN_FONT_SIZE, Math.min(NOMINAL_FONT_SIZE, scaled)));
+      // The row is nowrap by contract, so this size is the only thing keeping ten
+      // letters (or forty) on one line: it is solved from the width actually needed
+      // and never lifted off a minimum, which is what used to spill long answers.
+      setFontSize(getSpellingFitFontSize(natural, available));
     };
     measure();
     const observer = new ResizeObserver(measure);

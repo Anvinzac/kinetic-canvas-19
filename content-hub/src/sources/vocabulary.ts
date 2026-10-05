@@ -222,6 +222,23 @@ function sanitizeEmphasisPhrases(
   return kept.length ? kept : undefined;
 }
 
+/**
+ * Strip inline `/phrase/` emphasis markers from one text field.
+ * Unpaired slashes are left untouched — a half marker is content, not markup.
+ * @param text deck field, possibly carrying markers
+ * @returns marker-free text plus the phrases that were wrapped
+ */
+function stripEmphasisMarkers(text: string | undefined): { clean: string; markers: string[] } {
+  if (!text) return { clean: "", markers: [] };
+  const markers: string[] = [];
+  const clean = text.replace(/\/([^/]+)\//g, (_match, phrase: string) => {
+    const trimmed = phrase.trim();
+    if (trimmed) markers.push(trimmed);
+    return trimmed;
+  });
+  return { clean, markers };
+}
+
 function countLetters(word: string): number {
   return (word.match(/\p{L}/gu) ?? []).length;
 }
@@ -259,23 +276,34 @@ function loadDeck(): DeckWord[] {
 
 function deckToVocabularyWord(d: DeckWord): VocabularyWord {
   const levelToDiff: Record<string, Difficulty> = { A2: "easy", B1: "medium", B2: "hard" };
+  // A crawler deck marks emphasis inline ("/người đàn ông/") because that is the
+  // format the feed's own stage parser reads. Bot posts are plain text, so the
+  // markers are stripped here and the marked phrases are folded into `emphasis`.
+  const defVi = stripEmphasisMarkers(d.defVi);
+  const leadVi = stripEmphasisMarkers(d.leadVi);
+  const usageEn = stripEmphasisMarkers(d.usage[0]?.en);
+  const usageVi = stripEmphasisMarkers(d.usage[0]?.vi);
+  const anticipateVi = stripEmphasisMarkers(d.anticipateVi);
+  const emphasis = [
+    ...new Set([...defVi.markers, ...leadVi.markers, ...usageEn.markers, ...(d.emphasis ?? [])]),
+  ];
   return {
     word: d.word,
-    viDefinition: d.defVi,
+    viDefinition: defVi.clean,
     difficulty: levelToDiff[d.level] ?? "medium",
-    leadVi: d.leadVi,
-    usageEn: d.usage[0]?.en,
-    usageVi: d.usage[0]?.vi,
+    leadVi: leadVi.clean,
+    usageEn: usageEn.clean || undefined,
+    usageVi: usageVi.clean || undefined,
     ipa: d.ipa,
     pos: d.pos,
     topic: d.topic,
     chars: d.chars,
     initial: d.initial,
-    anticipateVi: d.anticipateVi,
+    anticipateVi: anticipateVi.clean,
     level: d.level,
     style: styleForTopic(d.topic),
-    nudge: d.anticipateVi,
-    emphasis: d.emphasis,
+    nudge: anticipateVi.clean,
+    emphasis: emphasis.length ? emphasis : undefined,
   };
 }
 

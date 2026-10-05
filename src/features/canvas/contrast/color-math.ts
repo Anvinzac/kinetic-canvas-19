@@ -12,6 +12,29 @@ const GREEN_BACKGROUND_MIN_HUE = 78;
 const GREEN_BACKGROUND_MAX_HUE = 190;
 const YELLOW_MIN_HUE = 35;
 const YELLOW_MAX_HUE = 68;
+/** Below this relative luminance every stop counts as near-black. */
+const TOO_DARK_EVERY_STOP = 0.035;
+/** A single very dark stop only condemns the backdrop when the average is dim too. */
+const TOO_DARK_MIN_STOP = 0.05;
+const TOO_DARK_AVERAGE = 0.34;
+
+/**
+ * Decide whether already-parsed backdrop colors are too dark to carry light
+ * kinetic captions. Lives here rather than in ./background so palette generation
+ * can honor the same rule without importing the catalog (which would cycle).
+ * @param colors - parsed backdrop stops
+ * @returns true when the backdrop is effectively black
+ * @pure true
+ */
+export function isTooDarkBackground(colors: RgbColor[]): boolean {
+  if (colors.length === 0) return false;
+  const luminance = colors.map(getRelativeLuminance);
+  const average = luminance.reduce((sum, value) => sum + value, 0) / luminance.length;
+  return (
+    luminance.every((value) => value < TOO_DARK_EVERY_STOP) ||
+    (Math.min(...luminance) < TOO_DARK_MIN_STOP && average < TOO_DARK_AVERAGE)
+  );
+}
 
 /**
  * extractCssColors helper

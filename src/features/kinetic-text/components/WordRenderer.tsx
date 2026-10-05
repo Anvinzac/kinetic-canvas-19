@@ -133,7 +133,11 @@ export function AnimatedWord({
                       ? ""
                       : " kinetic-emph-frame"
                     : emphasisVariant === "underline"
-                      ? " kinetic-emph-underline"
+                      ? // A syllable inside a shared run joins its bar across the column
+                        // gap, so a compound never shows an underline broken mid-word.
+                        skipFrame
+                        ? " kinetic-emph-underline is-joined"
+                        : " kinetic-emph-underline"
                       : emphasisVariant === "sweep"
                         ? " kinetic-emph-sweep"
                         : ""

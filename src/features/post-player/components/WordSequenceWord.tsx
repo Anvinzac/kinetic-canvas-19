@@ -17,6 +17,7 @@ import {
   getEmphasisVariant,
   getWordAnchorKey,
   isDimEmphasisColor,
+  type EmphasisVariant,
 } from "@/features/kinetic-text";
 import {
   ENTRANCE_REST,
@@ -34,6 +35,15 @@ export type WordSequenceWordProps = {
   emphasized: Set<number>;
   /** Data-annotated phrase keys treated as bound phrases for shared emphasis styling. */
   phraseKeys?: readonly (readonly string[])[];
+  /**
+   * Caller-forced second highlight, rendered with its own variant instead of the
+   * seeded pick. Lets one page carry two marks that read as different effects —
+   * the vocabulary letter-count clue boxes its initial while the count keeps the
+   * usual treatment. Single-token by design: multi-token runs are not grouped
+   * into a shared frame wrapper.
+   */
+  secondaryEmphasized?: Set<number>;
+  secondaryVariant?: EmphasisVariant;
   spotlightEmphasis: boolean;
   suppressSpotlight?: boolean;
   staticRender: boolean;
@@ -59,6 +69,8 @@ export function WordSequenceWord({
   spec,
   emphasized,
   phraseKeys,
+  secondaryEmphasized,
+  secondaryVariant,
   spotlightEmphasis,
   suppressSpotlight = false,
   staticRender,
@@ -71,18 +83,24 @@ export function WordSequenceWord({
   entranceStyle,
   skipFrame = false,
 }: WordSequenceWordProps): ReactElement {
-  const important = emphasized.has(index);
-  const spotlightWord = spotlightEmphasis && important && !suppressSpotlight;
+  const primary = emphasized.has(index);
+  // A secondary mark is caller-forced and never drives the spotlight layout, so
+  // adding one cannot re-centre the page or claim a full-width line.
+  const secondary = !primary && (secondaryEmphasized?.has(index) ?? false);
+  const important = primary || secondary;
+  const spotlightWord = spotlightEmphasis && primary && !suppressSpotlight;
   const emphasisAnchorIndex = important
     ? getBoundPhraseStartIndex(words, index, phraseKeys)
     : index;
   const emphasisVariant = important
-    ? getEmphasisVariant(
-        spec.text,
-        getBoundPhraseEmphasisSeed(words, index, phraseKeys),
-        emphasisAnchorIndex,
-        !isDimEmphasisColor(emphasisColor),
-      )
+    ? secondary && secondaryVariant
+      ? secondaryVariant
+      : getEmphasisVariant(
+          spec.text,
+          getBoundPhraseEmphasisSeed(words, index, phraseKeys),
+          emphasisAnchorIndex,
+          !isDimEmphasisColor(emphasisColor),
+        )
     : null;
   const wordColor = important
     ? getCanvasEmphasisWordColor(emphasisVariant, textColor, emphasisColor)
@@ -178,7 +196,11 @@ export function WordSequenceWord({
                         ? ""
                         : " kinetic-emph-frame"
                       : emphasisVariant === "underline"
-                        ? " kinetic-emph-underline"
+                        ? // A syllable inside a shared run joins its bar across the column
+                          // gap, so a compound never shows an underline broken mid-word.
+                          skipFrame
+                          ? " kinetic-emph-underline is-joined"
+                          : " kinetic-emph-underline"
                         : emphasisVariant === "sweep"
                           ? " kinetic-emph-sweep"
                           : ""

@@ -82,7 +82,8 @@ export function nextAvailableAt(
   const day = times.filter((t) => t > now - DAY_MS);
   if (day.length >= 1) blocked.push(Math.min(...day) + DAY_MS);
   const three = times.filter((t) => t > now - THREE_DAYS_MS);
-  if (three.length >= 2) blocked.push(three.sort((a, b) => a - b)[three.length - 2] + THREE_DAYS_MS);
+  if (three.length >= 2)
+    blocked.push(three.sort((a, b) => a - b)[three.length - 2] + THREE_DAYS_MS);
   const week = times.filter((t) => t > now - WEEK_MS);
   if (week.length >= 3) blocked.push(week.sort((a, b) => a - b)[week.length - 3] + WEEK_MS);
   return blocked.length ? Math.max(...blocked) : now;

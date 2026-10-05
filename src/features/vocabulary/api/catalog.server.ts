@@ -1,6 +1,7 @@
-/** Server-only bundled catalog and bounded permutation caches. Exports: catalog, readVocabularyPage. Depends on: compiled JSON, PRNG. */
+/** Server-only bundled catalog and bounded permutation caches. Exports: catalog, readVocabularyPage. Depends on: compiled JSON, PRNG, difficulty bands. */
 import rawCatalog from "../data/catalog.json";
-import type { Catalog } from "../lib/schema";
+import type { Catalog, VocabularyLevel } from "../lib/schema";
+import { difficultyLevels } from "../lib/difficulty";
 import { randomGenerator } from "../lib/random";
 import type { FeedPage, FeedRequest } from "../types";
 
@@ -16,13 +17,34 @@ function remember(cache: Map<string, Uint32Array>, key: string, value: Uint32Arr
   return value;
 }
 
-function matchingPool(topic: string, level: string): Uint32Array {
-  const key = `${topic}:${level}`;
+/**
+ * Resolve the level filters into one admitted set.
+ * @param level Exact CEFR level, or "" for any
+ * @param difficulty Difficulty track id, or "" for any
+ * @returns The admitted levels, or null when no level filter applies
+ * @pure true
+ */
+function allowedLevels(level: string, difficulty: string): Set<string> | null {
+  const band = difficultyLevels(difficulty);
+  if (!level) return band ? new Set<string>(band) : null;
+  if (!band) return new Set<string>([level]);
+  // Both given: intersect, so an exact level outside the chosen track's band
+  // admits nothing rather than silently ignoring one of the two filters.
+  return band.includes(level as VocabularyLevel) ? new Set<string>([level]) : new Set<string>();
+}
+
+function matchingPool(topic: string, level: string, difficulty: string): Uint32Array {
+  const key = `${topic}:${level}:${difficulty}`;
   const existing = pools.get(key);
   if (existing) return remember(pools, key, existing, 16);
+  const allowed = allowedLevels(level, difficulty);
   const matches: number[] = [];
   catalog.words.forEach((word, index) => {
-    if ((!topic || word.topic === topic) && (!level || word.level === level)) matches.push(index);
+    if (topic && word.topic !== topic) return;
+    // A word with no CEFR level cannot belong to any band, so a filtered stream
+    // excludes it while an unfiltered one still offers it.
+    if (allowed && !(word.level && allowed.has(word.level))) return;
+    matches.push(index);
   });
   return remember(pools, key, Uint32Array.from(matches), 16);
 }
@@ -57,9 +79,9 @@ function indexAt(size: number, seed: string, position: number): number {
 
 /** Read a deterministic page without writes or external services. @param input Validated cursor/filters. @returns Page plus catalog metadata. */
 export function readVocabularyPage(input: FeedRequest): FeedPage {
-  const { seed, position, topic, level, limit } = input;
-  const pool = matchingPool(topic, level);
-  const streamKey = `${catalog.revision}:${seed}:${topic}:${level}`;
+  const { seed, position, topic, level, difficulty, limit } = input;
+  const pool = matchingPool(topic, level, difficulty);
+  const streamKey = `${catalog.revision}:${seed}:${topic}:${level}:${difficulty}`;
   const entries = pool.length
     ? Array.from({ length: limit }, (_, offset) => {
         const absolute = position + offset;

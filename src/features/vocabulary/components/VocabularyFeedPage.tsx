@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useReducedMotion } from "framer-motion";
 import type { FeedPage, Presentation, VocabularyFilters } from "../types";
+import { DIFFICULTY_ALL } from "../lib/difficulty";
 import { useViewHistory } from "../hooks/useViewHistory";
 import { FeedControls } from "./FeedControls";
 import { VocabularyStream } from "./VocabularyStream";
@@ -13,10 +14,13 @@ function newSeed(): string {
   return Array.from(values, (value) => value.toString(16).padStart(8, "0")).join("");
 }
 
+/** Every word, no category and no difficulty track. */
+const ALL_FILTERS: VocabularyFilters = { topic: "", level: "", difficulty: DIFFICULTY_ALL };
+
 /** Open the word stream without authentication or persistent storage. @returns Public feed and preferences. */
 export function VocabularyFeedPage() {
   const [seed, setSeed] = useState(newSeed);
-  const [filters, setFilters] = useState<VocabularyFilters>({ topic: "", level: "" });
+  const [filters, setFilters] = useState<VocabularyFilters>(ALL_FILTERS);
   const [presentation, setPresentation] = useState<Presentation>({
     theme: "mix",
     style: "mix",
@@ -49,7 +53,7 @@ export function VocabularyFeedPage() {
         onClearHistory={viewHistory.clear}
       />
       <VocabularyStream
-        key={`${seed}:${filters.topic}:${filters.level}`}
+        key={`${seed}:${filters.topic}:${filters.level}:${filters.difficulty}`}
         seed={seed}
         filters={filters}
         presentation={presentation}
@@ -60,7 +64,7 @@ export function VocabularyFeedPage() {
         onClearHistory={viewHistory.clear}
         onMetadata={setMetadata}
         onRestart={shuffle}
-        onClearFilters={() => setFilters({ topic: "", level: "" })}
+        onClearFilters={() => setFilters(ALL_FILTERS)}
       />
     </main>
   );

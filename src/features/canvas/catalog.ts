@@ -2,17 +2,12 @@
  * Module providing SAFE_CANVAS_BACKGROUND, DEFAULT_CANVAS, FONTS, ENTRANCES.
  *
  * Exports: SAFE_CANVAS_BACKGROUND, DEFAULT_CANVAS, FONTS, ENTRANCES, LOOPS, TEMPOS, RHYTHMS, PALETTE, GRADIENTS, TRANSITION_GRADIENT_PATHS, COMMENT_CHIPS
- * Depends on: ./types
+ * Depends on: ./types, ./palette-collection
  */
 
-import type {
-  CanvasSpec,
-  Entrance,
-  GradientTransitionPath,
-  Loop,
-  Rhythm,
-  Tempo,
-} from "./types";
+import type { CanvasSpec, Entrance, GradientTransitionPath, Loop, Rhythm, Tempo } from "./types";
+import { PALETTE_SWATCHES } from "./palette-collection";
+import { VIETNAMESE_SAFE_FONTS } from "./palettes";
 
 export const SAFE_CANVAS_BACKGROUND = "linear-gradient(135deg,#00B4D8,#FF006E)";
 
@@ -40,27 +35,24 @@ export const DEFAULT_CANVAS: CanvasSpec = {
   gradientPath: [],
 };
 
-export const FONTS = [
-  "Inter",
-  "Space Grotesk",
-  "Bebas Neue",
-  "Playfair Display",
-  "JetBrains Mono",
-] as const;
+/**
+ * Fonts offered to every picker, sourced from the palette module's Vietnamese-capable
+ * allowlist so a family without diacritics support can never be selected. The feed
+ * renders Vietnamese clue text in the theme font, so an accent-less face (previously
+ * Bebas Neue) broke accented characters.
+ */
+export const FONTS: readonly string[] = VIETNAMESE_SAFE_FONTS;
 export const ENTRANCES: Entrance[] = ["fade", "slide", "scale", "blur", "split"];
 export const LOOPS: Loop[] = ["pulse", "float", "shake", "none"];
 export const TEMPOS: Tempo[] = ["slow", "steady", "snappy"];
 export const RHYTHMS: Rhythm[] = ["smooth", "stagger", "burst", "poetic"];
 
-export const PALETTE = [
-  "#ffffff",
-  "#FF006E",
-  "#06FFA5",
-  "#FFBE0B",
-  "#3A86FF",
-  "#8338EC",
-  "#000000",
-];
+/**
+ * Single-color swatches offered to pickers. Derived from the validated palette
+ * collection rather than a hand-listed set, so every color here already cleared
+ * the contrast and separation floors against the background it was generated for.
+ */
+export const PALETTE: string[] = PALETTE_SWATCHES;
 
 export const GRADIENTS = [
   "linear-gradient(135deg,#FF006E,#8338EC)",

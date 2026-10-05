@@ -11,7 +11,9 @@ import {
   VIETNAMESE_STOP_WORDS,
   countSyllables,
   emphasisTokenKey,
+  injectEmphasisMarkers,
   isVietnameseStopWord,
+  stripEmphasisMarkers,
   validateEmphasis,
 } from "../src/emphasis.ts";
 
@@ -117,5 +119,124 @@ describe("validateEmphasis", () => {
     const result = validateEmphasis({ defVi: DEF_VI, emphasisVi: [] });
     assert.deepEqual(result.emphasis, []);
     assert.deepEqual(result.warnings, []);
+  });
+
+  test("drops a phrase that overlaps a longer one already kept", () => {
+    const result = validateEmphasis({
+      defVi: "Khoảng thời gian trôi qua rất nhanh.",
+      emphasisVi: ["Khoảng thời gian", "thời gian"],
+    });
+    assert.deepEqual(result.emphasis, ["Khoảng thời gian"]);
+    assert.ok(
+      result.warnings.some((warning) => /overlaps the longer/.test(warning)),
+      result.warnings.join(" | "),
+    );
+  });
+
+  test("a longer phrase replaces the shorter one it overlaps, whatever the order", () => {
+    const result = validateEmphasis({
+      defVi: "Người đàn ông trưởng thành.",
+      emphasisVi: ["Người đàn", "Người đàn ông"],
+    });
+    assert.deepEqual(result.emphasis, ["Người đàn ông"]);
+    assert.ok(
+      result.warnings.some((warning) => /replaces the shorter overlapping/.test(warning)),
+      result.warnings.join(" | "),
+    );
+  });
+
+  test("phrases in different fields never collide", () => {
+    const result = validateEmphasis({
+      defVi: DEF_VI,
+      leadVi: "Nước là nguồn sống của mọi sinh vật.",
+      emphasisVi: ["uống mỗi ngày", "nguồn sống"],
+    });
+    assert.deepEqual(result.emphasis, ["uống mỗi ngày", "nguồn sống"]);
+    assert.deepEqual(result.warnings, []);
+  });
+});
+
+describe("injectEmphasisMarkers", () => {
+  test("wraps the phrase in the field where it occurs, keeping punctuation outside", () => {
+    const result = injectEmphasisMarkers({ defVi: DEF_VI, leadVi: LEAD_VI, emphasis: ["uống mỗi ngày"] });
+    assert.equal(result.defVi, "Chất lỏng trong suốt mà ta /uống mỗi ngày/.");
+    assert.equal(result.leadVi, LEAD_VI);
+    assert.deepEqual(result.marked, ["uống mỗi ngày"]);
+    assert.deepEqual(result.warnings, []);
+  });
+
+  test("falls through to leadVi when the phrase only lives there", () => {
+    const result = injectEmphasisMarkers({ defVi: DEF_VI, leadVi: LEAD_VI, emphasis: ["nguồn sống"] });
+    assert.equal(result.defVi, DEF_VI);
+    assert.equal(result.leadVi, "Nước là /nguồn sống/ của mọi sinh vật.");
+  });
+
+  test("prefers defVi when both fields contain the phrase", () => {
+    const shared = { defVi: "Người bạn tốt luôn lắng nghe.", leadVi: "Một người bạn thật sự." };
+    const result = injectEmphasisMarkers({ ...shared, emphasis: ["người bạn"] });
+    assert.equal(result.defVi, "/Người bạn/ tốt luôn lắng nghe.");
+    assert.equal(result.leadVi, shared.leadVi);
+  });
+
+  test("one marker per field: the second phrase of the same field stays unmarked", () => {
+    const result = injectEmphasisMarkers({
+      defVi: DEF_VI,
+      leadVi: LEAD_VI,
+      emphasis: ["Chất lỏng", "uống mỗi ngày", "nguồn sống"],
+    });
+    assert.equal(result.defVi, "/Chất lỏng/ trong suốt mà ta uống mỗi ngày.");
+    assert.equal(result.leadVi, "Nước là /nguồn sống/ của mọi sinh vật.");
+    assert.deepEqual(result.marked, ["Chất lỏng", "nguồn sống"]);
+    assert.ok(
+      result.warnings.some((warning) => /already carries a marker/.test(warning) && /uống mỗi ngày/.test(warning)),
+      result.warnings.join(" | "),
+    );
+  });
+
+  test("a shared phrase moves to leadVi once defVi is taken", () => {
+    const shared = {
+      defVi: "Người bạn tốt luôn lắng nghe.",
+      leadVi: "Một người bạn thật sự quý giá.",
+    };
+    const result = injectEmphasisMarkers({ ...shared, emphasis: ["lắng nghe", "người bạn"] });
+    assert.equal(result.defVi, "Người bạn tốt luôn /lắng nghe/.");
+    assert.equal(result.leadVi, "Một /người bạn/ thật sự quý giá.");
+    assert.deepEqual(result.marked, ["lắng nghe", "người bạn"]);
+    assert.deepEqual(result.warnings, []);
+  });
+
+  test("keeps the casing written in the source text", () => {
+    const result = injectEmphasisMarkers({ defVi: DEF_VI, leadVi: LEAD_VI, emphasis: ["chất LỎNG"] });
+    assert.equal(result.defVi, "/Chất lỏng/ trong suốt mà ta uống mỗi ngày.");
+  });
+
+  test("skips a phrase that contains the delimiter", () => {
+    const result = injectEmphasisMarkers({ defVi: DEF_VI, leadVi: LEAD_VI, emphasis: ["a/b"] });
+    assert.equal(result.defVi, DEF_VI);
+    assert.deepEqual(result.marked, []);
+    assert.ok(result.warnings.some((warning) => /delimiter/.test(warning)));
+  });
+
+  test("reports a phrase that occurs in neither field instead of inventing a marker", () => {
+    const result = injectEmphasisMarkers({ defVi: DEF_VI, leadVi: LEAD_VI, emphasis: ["khơng ở đâu cả"] });
+    assert.equal(result.defVi, DEF_VI);
+    assert.ok(result.warnings.some((warning) => /does not occur/.test(warning)));
+  });
+
+  test("stripEmphasisMarkers is the exact inverse", () => {
+    const injected = injectEmphasisMarkers({
+      defVi: DEF_VI,
+      leadVi: LEAD_VI,
+      emphasis: ["Chất lỏng", "nguồn sống"],
+    });
+    assert.equal(stripEmphasisMarkers(injected.defVi).clean, DEF_VI);
+    assert.equal(stripEmphasisMarkers(injected.leadVi).clean, LEAD_VI);
+    assert.deepEqual(stripEmphasisMarkers(injected.defVi).markers, ["Chất lỏng"]);
+  });
+
+  test("an unpaired delimiter survives stripping so validators can flag it", () => {
+    const stripped = stripEmphasisMarkers("Một nửa /câu bị lệch.");
+    assert.equal(stripped.clean, "Một nửa /câu bị lệch.");
+    assert.deepEqual(stripped.markers, []);
   });
 });

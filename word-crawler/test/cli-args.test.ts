@@ -30,8 +30,11 @@ function crawlCommand(overrides: Partial<CrawlCommand>): CrawlCommand {
     outputPath: null,
     resumePath: null,
     corpusPath: null,
+    provider: null,
+    baseUrl: null,
     model: null,
     maxTokens: null,
+    temperature: null,
     deckName: null,
     deckVersion: null,
     dryRun: false,
@@ -64,8 +67,11 @@ describe("crawl parsing", () => {
       outputPath: "out/deck.json",
       resumePath: null,
       corpusPath: null,
+      provider: null,
+      baseUrl: null,
       model: null,
       maxTokens: null,
+      temperature: null,
       deckName: null,
       deckVersion: null,
       dryRun: false,
@@ -83,6 +89,12 @@ describe("crawl parsing", () => {
       "5",
       "--corpus",
       "my-corpus.json",
+      "--provider",
+      "together",
+      "--base-url",
+      "https://api.together.xyz/v1",
+      "--temperature",
+      "0.4",
       "--model",
       "claude-test",
       "--max-tokens",
@@ -103,8 +115,11 @@ describe("crawl parsing", () => {
       outputPath: "out/deck.json",
       resumePath: null,
       corpusPath: "my-corpus.json",
+      provider: "together",
+      baseUrl: "https://api.together.xyz/v1",
       model: "claude-test",
       maxTokens: 2000,
+      temperature: 0.4,
       deckName: "My Deck",
       deckVersion: "v2",
       dryRun: true,
@@ -113,6 +128,33 @@ describe("crawl parsing", () => {
 
   test("crawl needs an output or a resume deck", () => {
     assert.throws(() => parseCliArgs(["crawl"]), usageError(/--output/));
+  });
+
+  test("rejects an unknown provider and an out-of-range temperature", () => {
+    assert.throws(
+      () => parseCliArgs(["crawl", "--output", "o.json", "--provider", "gemini"]),
+      usageError(/--provider must be one of/),
+    );
+    assert.throws(
+      () => parseCliArgs(["crawl", "--output", "o.json", "--temperature", "3"]),
+      usageError(/--temperature must be a number between 0 and 2/),
+    );
+    assert.throws(
+      () => parseCliArgs(["crawl", "--output", "o.json", "--temperature", "abc"]),
+      usageError(/--temperature must be a number between 0 and 2/),
+    );
+  });
+
+  test("an omitted --provider leaves the decision to LLM_PROVIDER", () => {
+    const command = parseCliArgs(["crawl", "--output", "o.json"]);
+    assert.ok(command.command === "crawl");
+    assert.equal(command.provider, null);
+  });
+
+  test("provider spelling is normalized to lowercase", () => {
+    const command = parseCliArgs(["crawl", "--output", "o.json", "--provider", "OpenRouter"]);
+    assert.ok(command.command === "crawl");
+    assert.equal(command.provider, "openrouter");
   });
 
   test("rejects missing values, bad numbers and unknown flags", () => {

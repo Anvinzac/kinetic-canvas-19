@@ -4,12 +4,7 @@ import { useVocabularyFeed } from "../hooks/useVocabularyFeed";
 import { useVocabularyWindow } from "../hooks/useVocabularyWindow";
 import { useFeedPagination } from "../hooks/useFeedPagination";
 import { canWalkFurther, getWalkedPositions } from "../lib/backfill";
-import {
-  formatCountdown,
-  isWordAllowed,
-  nextAvailableAt,
-  type ViewHistory,
-} from "../lib/history";
+import { formatCountdown, isWordAllowed, nextAvailableAt, type ViewHistory } from "../lib/history";
 import type { FeedPage, Presentation, VocabularyFilters } from "../types";
 import { VocabularyCard } from "./VocabularyCard";
 
@@ -215,7 +210,9 @@ export function VocabularyStream({
                   ? "Try a different difficulty or category."
                   : allBlocked
                     ? `On-device memory holds each word to once a day, twice in 3 days, three times a week.${
-                        nextUnlock ? ` Next word unlocks in ${formatCountdown(nextUnlock, now)}.` : ""
+                        nextUnlock
+                          ? ` Next word unlocks in ${formatCountdown(nextUnlock, now)}.`
+                          : ""
                       }`
                     : "Vietnamese clues. English discoveries. No sign-in needed."}
             </p>

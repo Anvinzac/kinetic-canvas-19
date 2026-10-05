@@ -6,12 +6,7 @@
  */
 
 import { SAFE_CANVAS_BACKGROUND } from "../catalog";
-import {
-  extractCssColors,
-  getRelativeLuminance,
-  parseCssColor,
-  type RgbColor,
-} from "./color-math";
+import { extractCssColors, isTooDarkBackground, parseCssColor, type RgbColor } from "./color-math";
 
 type CanvasBackgroundSeed = string | number | null | undefined;
 
@@ -82,12 +77,7 @@ export function isTooDarkCanvasBackground(background: string): boolean {
   const tokens = extractCssColors(background);
   const colors = tokens.map(parseCssColor).filter(Boolean) as RgbColor[];
   if (colors.length === 0) return tokens.length === 0;
-
-  const luminance = colors.map(getRelativeLuminance);
-  const average = luminance.reduce((sum, value) => sum + value, 0) / luminance.length;
-  return (
-    luminance.every((value) => value < 0.035) || (Math.min(...luminance) < 0.05 && average < 0.34)
-  );
+  return isTooDarkBackground(colors);
 }
 
 function isRenderableCanvasBackground(value: string) {
@@ -118,4 +108,3 @@ function getStableCanvasNumber(value: string) {
   }
   return hash >>> 0;
 }
-

@@ -14,6 +14,7 @@ export { ErrorsPage } from "./components/errors/ErrorsPage";
 export { SystemPage } from "./components/system/SystemPage";
 export { VocabularyWordsPage } from "./components/vocabulary/VocabularyWordsPage";
 export { TemplateManagerPage } from "./components/templates/TemplateManagerPage";
+export { PaletteManagerPage } from "./components/palettes/PaletteManagerPage";
 export { LlmSettingsPage } from "./components/llm/LlmSettingsPage";
 export { AmbientMusicPage } from "./components/ambient/AmbientMusicPage";
 export { APP_ID } from "./types/telemetry";

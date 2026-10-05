@@ -3,7 +3,8 @@
  * component, the card and any regression script share one source of truth.
  *
  * Exports: SPELLING_VARIANTS, SpellingVariant, SPELLING_STAGGER,
- *   SPELLING_HOLD_SECONDS, pickSpellingVariant, getSpellingDurationMs
+ *   SPELLING_HOLD_SECONDS, pickSpellingVariant, getSpellingDurationMs,
+ *   SPELLING_NOMINAL_FONT_SIZE, SPELLING_FIT_GUARD, getSpellingFitFontSize
  * Depends on: none (leaf module)
  */
 
@@ -41,6 +42,32 @@ export const SPELLING_HOLD_SECONDS = 3;
 
 /** Reduced-motion readers get a static word plus a short reading beat. */
 export const SPELLING_REDUCED_MOTION_MS = 3000;
+
+/** Letter-row size before the fit pass scales it down for long answers. */
+export const SPELLING_NOMINAL_FONT_SIZE = 96;
+
+/** Keep the row inside the safe area even at peak animation overshoot. */
+export const SPELLING_FIT_GUARD = 0.86;
+
+/**
+ * Solve the letter-row font size that keeps the whole answer on ONE line.
+ *
+ * The row cannot wrap (`.vocab-spelling-word` is `flex-wrap: nowrap`), so the size
+ * is the only degree of freedom left and it has to absorb any length. There is
+ * deliberately no lower clamp: a minimum is what used to pin a long answer at an
+ * unshrinkable size and let it spill past the card, which is the failure this
+ * function exists to make impossible.
+ * @param naturalWidth Letter-row width measured at SPELLING_NOMINAL_FONT_SIZE.
+ * @param availableWidth Card width already discounted by SPELLING_FIT_GUARD.
+ * @returns Font size in px; never above nominal, and never clamped from below.
+ */
+export function getSpellingFitFontSize(naturalWidth: number, availableWidth: number): number {
+  if (!(naturalWidth > 0) || !(availableWidth > 0)) return SPELLING_NOMINAL_FONT_SIZE;
+  const scaled = (availableWidth / naturalWidth) * SPELLING_NOMINAL_FONT_SIZE;
+  return scaled > 0 && Number.isFinite(scaled)
+    ? Math.min(SPELLING_NOMINAL_FONT_SIZE, scaled)
+    : SPELLING_NOMINAL_FONT_SIZE;
+}
 
 /**
  * Deterministic variant choice so a card replays the same motion on re-render

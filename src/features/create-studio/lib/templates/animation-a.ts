@@ -14,7 +14,7 @@ export const ANIMATION_TEMPLATES_A: AnimationTemplate[] = [
     mood: "scene · editorial",
     backdrop: { mode: "scene", sceneId: "paper-cut-sunrise" },
     spec: {
-      font: "Bebas Neue",
+      font: "Space Grotesk",
       size: 112,
       color: "#ffffff",
       weight: 900,
@@ -118,7 +118,7 @@ export const ANIMATION_TEMPLATES_A: AnimationTemplate[] = [
     mood: "snappy · burst",
     backdrop: { mode: "gradient", gradient: "linear-gradient(135deg,#FF006E,#8338EC)" },
     spec: {
-      font: "Bebas Neue",
+      font: "Space Grotesk",
       size: 114,
       color: "#ffffff",
       weight: 900,

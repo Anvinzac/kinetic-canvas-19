@@ -67,7 +67,7 @@ export interface CanvasSticker {
  */
 export interface CanvasSpec {
   text: string;
-  font: string; // "Inter" | "Space Grotesk" | "Bebas Neue" | "Playfair Display" | "JetBrains Mono"
+  font: string; // Vietnamese-capable family from VIETNAMESE_SAFE_FONTS: "Inter" | "Space Grotesk" | "Playfair Display" | "JetBrains Mono"
   size: number; // px
   color: string; // hex/oklch
   weight: number; // 100-900

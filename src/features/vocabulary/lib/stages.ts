@@ -1,6 +1,15 @@
-/** Explicit clue stages and answer masking (never infer pages from line breaks). Exports: buildStages, completeUsage. Depends on: schema. */
+/** Explicit clue stages and answer masking (never infer pages from line breaks). Exports: buildStages, completeUsage. Depends on: schema, kinetic-text emphasis types. */
+import type { EmphasisVariant } from "@/features/kinetic-text";
 import { answerPattern, type NarrativeStyle, type VocabularyWord } from "./schema";
 import { paginateText } from "@/features/post-player";
+
+/**
+ * Effect used for the starting initial on the letter-count clue. `frame` draws a
+ * box around the glyph, which is the one variant that reads as a container for a
+ * single letter rather than as a recolor, so it stays visibly distinct from the
+ * mark the letter count already carries.
+ */
+const INITIAL_EMPHASIS_VARIANT: EmphasisVariant = "frame";
 
 export type LearningStage = {
   id: string;
@@ -11,6 +20,8 @@ export type LearningStage = {
   reveal?: boolean;
   /** Emphasis phrases extracted from /word/ markers in the source text field. */
   dataEmphasis?: string[];
+  /** Second highlight drawn with its own effect, independent of `dataEmphasis`. */
+  secondaryEmphasis?: { phrase: string; variant: EmphasisVariant };
 };
 
 /**
@@ -62,11 +73,17 @@ export function buildStages(word: VocabularyWord, style: NarrativeStyle): Learni
     });
   }
   const count = (word.word.match(/\p{L}/gu) ?? []).length;
+  const initial = word.word[0].toUpperCase();
   stages.push({
     id: "letters",
     label: "Đếm chữ cái",
-    text: `Gồm ${count} chữ cái, bắt đầu bằng ${word.word[0].toUpperCase()}`,
+    text: `Gồm ${count} chữ cái, bắt đầu bằng ${initial}`,
     lang: "vi",
+    // The count keeps the primary mark on purpose — getWordImportance scores a
+    // standalone number above everything so the digits always win this sentence.
+    // The initial is added as a second, differently-drawn mark rather than
+    // replacing it, so one page carries both facts.
+    secondaryEmphasis: { phrase: initial, variant: INITIAL_EMPHASIS_VARIANT },
   });
   const example = word.usage[0];
   if (example) {

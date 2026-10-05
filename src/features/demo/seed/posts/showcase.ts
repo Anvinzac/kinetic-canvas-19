@@ -55,7 +55,7 @@ export const PATTERN_SHOWCASE_POSTS: MockPost[] = [
     canvas_html: canvas({
       text: ["Print is dead.", "Long live", "the dot."].join("\n"),
       backgroundPattern: "halftone",
-      font: "Bebas Neue",
+      font: "Space Grotesk",
       size: 96,
       entrance: "scale",
       loop: "pulse",
@@ -146,7 +146,7 @@ export const PATTERN_SHOWCASE_POSTS: MockPost[] = [
     canvas_html: canvas({
       text: ["Build it tall,", "make it", "golden."].join("\n"),
       backgroundScene: "deco",
-      font: "Bebas Neue",
+      font: "Space Grotesk",
       size: 96,
       color: "#f6e6c2",
       entrance: "slide",

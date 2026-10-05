@@ -9,8 +9,8 @@ import type { FeedCursor, VocabularyFilters } from "../types";
 export function useVocabularyFeed(seed: string, filters: VocabularyFilters) {
   const client = useQueryClient();
   const queryKey = useMemo(
-    () => ["vocabulary", seed, filters.topic, filters.level],
-    [seed, filters.topic, filters.level],
+    () => ["vocabulary", seed, filters.topic, filters.level, filters.difficulty],
+    [seed, filters.topic, filters.level, filters.difficulty],
   );
   const query = useInfiniteQuery({
     queryKey,

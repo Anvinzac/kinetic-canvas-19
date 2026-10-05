@@ -7,14 +7,23 @@
  *      (diacritics preserved — "mơ hồ" never matches "mo ho"),
  *   2. is not a function-word phrase,
  *   3. is not a single syllable that reads as half of a compound word
- *      ("sinh" inside "học sinh" is removed, "học sinh" is kept).
+ *      ("sinh" inside "học sinh" is removed, "học sinh" is kept),
+ *   4. does not overlap a phrase that was already kept in the same field — the
+ *      longer run wins, because one field highlights one phrase.
  *
  * The rule for single syllables is deliberately conservative: an ambiguous
  * syllable is removed rather than trusted. Survivors are rewritten with the
  * source text's own casing so downstream consumers can match them verbatim.
  *
+ * `injectEmphasisMarkers` then turns the survivors into the format the feed
+ * actually reads: the phrase is wrapped in forward slashes inside the one field
+ * where it occurs, because the app parses those markers per text field
+ * (`parseEmphasisMarkers` in src/features/vocabulary/lib/stages.ts) and
+ * highlights a single Vietnamese word per page.
+ *
  * Exports: VIETNAMESE_STOP_WORDS, isVietnameseStopWord, emphasisTokenKey,
- *          countSyllables, validateEmphasis, EmphasisInput, EmphasisResult
+ *          countSyllables, validateEmphasis, injectEmphasisMarkers,
+ *          stripEmphasisMarkers, EmphasisInput, EmphasisResult
  * Depends on: none
  */
 
@@ -244,8 +253,20 @@ function validateCandidate(
   return { phrase: occurrence.text, warnings };
 }
 
+/** Where a kept phrase sits in the Vietnamese source text. */
+interface KeptPhrase {
+  phrase: string;
+  haystack: string;
+  start: number;
+  end: number;
+}
+
 /**
  * Validate every emphasis candidate for one word.
+ *
+ * Overlapping candidates describe the same glow slot, so only the longer run
+ * survives — the model answers both "Khoảng thời gian" and "thời gian", and the
+ * feed can highlight one phrase per field at most.
  *
  * @param input - Vietnamese texts plus the proposed emphasis phrases
  * @returns deduplicated phrases (source casing) and the warnings explaining every change
@@ -255,7 +276,7 @@ export function validateEmphasis(input: EmphasisInput): EmphasisResult {
     .map((value) => value.normalize("NFC"))
     .filter((value) => value.trim().length > 0);
 
-  const emphasis: string[] = [];
+  const kept: KeptPhrase[] = [];
   const warnings: string[] = [];
   const seen = new Set<string>();
 
@@ -270,8 +291,145 @@ export function validateEmphasis(input: EmphasisInput): EmphasisResult {
       continue;
     }
     seen.add(key);
-    emphasis.push(result.phrase);
+
+    const placed = findOccurrence(haystacks, result.phrase);
+    if (placed === null) continue;
+    const current: KeptPhrase = {
+      phrase: result.phrase,
+      haystack: placed.haystack,
+      start: placed.start,
+      end: placed.end,
+    };
+
+    const clashIndex = kept.findIndex(
+      (entry) => entry.haystack === current.haystack && entry.start < current.end && current.start < entry.end,
+    );
+    if (clashIndex !== -1) {
+      const clash = kept[clashIndex];
+      if (current.end - current.start > clash.end - clash.start) {
+        warnings.push(
+          `emphasisVi: "${current.phrase}" replaces the shorter overlapping "${clash.phrase}"`,
+        );
+        seen.delete(clash.phrase.toLowerCase());
+        kept.splice(clashIndex, 1);
+      } else {
+        warnings.push(
+          `emphasisVi: dropped "${current.phrase}" — it overlaps the longer "${clash.phrase}"`,
+        );
+        continue;
+      }
+    }
+    kept.push(current);
   }
 
-  return { emphasis, warnings };
+  return { emphasis: kept.map((entry) => entry.phrase), warnings };
+}
+
+/** Fields that may carry an inline `/phrase/` marker, in injection order. */
+const MARKABLE_FIELDS = ["defVi", "leadVi"] as const;
+
+/** Marker delimiter the app's `parseEmphasisMarkers` looks for. */
+const MARKER_DELIMITER = "/";
+
+/** Input for {@link injectEmphasisMarkers}. */
+export interface MarkerInput {
+  defVi: string;
+  leadVi: string;
+  emphasis: readonly string[];
+}
+
+/** Outcome of {@link injectEmphasisMarkers}: the text fields carrying markers. */
+export interface MarkerResult {
+  defVi: string;
+  leadVi: string;
+  /** Phrases that ended up marked, in field order. */
+  marked: string[];
+  warnings: string[];
+}
+
+/**
+ * Strip every `/phrase/` marker and return the display text plus the phrases.
+ * The inverse of {@link injectEmphasisMarkers}; unpaired slashes are left alone.
+ *
+ * @param text - field text, possibly carrying markers
+ * @returns clean text and the phrases that were wrapped
+ */
+export function stripEmphasisMarkers(text: string): { clean: string; markers: string[] } {
+  const markers: string[] = [];
+  const clean = text.replace(/\/([^/]+)\//gu, (_match, phrase: string) => {
+    markers.push(phrase.trim());
+    return phrase.trim();
+  });
+  return { clean, markers };
+}
+
+/**
+ * Wrap validated emphasis phrases in the field where they actually occur.
+ *
+ * One marker per field: the feed renders `leadVi` and `defVi` as separate pages
+ * and highlights exactly one Vietnamese word per page, so a second marker in the
+ * same field would be dead text. A phrase is placed in `defVi` first, then
+ * `leadVi`. A phrase found in neither field is reported and left unmarked, and a
+ * phrase whose every host field is already marked is reported too — the deck must
+ * never carry a marker attached to text that lacks the phrase.
+ *
+ * @param input - the two Vietnamese fields plus the validated phrases
+ * @returns fields with markers injected, the marked phrases, and warnings
+ */
+export function injectEmphasisMarkers(input: MarkerInput): MarkerResult {
+  const warnings: string[] = [];
+  const marked: string[] = [];
+  const fields: Record<(typeof MARKABLE_FIELDS)[number], string> = {
+    defVi: input.defVi,
+    leadVi: input.leadVi,
+  };
+
+  for (const phrase of input.emphasis) {
+    const candidate = phrase.normalize("NFC").trim().replace(/\s+/gu, " ");
+    if (candidate.length === 0) continue;
+    if (candidate.includes(MARKER_DELIMITER)) {
+      warnings.push(`emphasis: skipped "${candidate}" because it contains a "/" delimiter`);
+      continue;
+    }
+
+    const hosts = MARKABLE_FIELDS.filter((field) => occursIn(fields[field], candidate) !== null);
+    if (hosts.length === 0) {
+      warnings.push(`emphasis: left unmarked — "${candidate}" does not occur in defVi or leadVi`);
+      continue;
+    }
+    // One marker per field, but a phrase shared by both fields may still move to
+    // the field that is free.
+    const hosted = hosts.find((field) => !fields[field].includes(MARKER_DELIMITER));
+    if (hosted === undefined) {
+      warnings.push(`emphasis: left unmarked — ${hosts.join(" and ")} already carries a marker ("${candidate}")`);
+      continue;
+    }
+
+    const occurrence = occursIn(fields[hosted], candidate) as {
+      text: string;
+      start: number;
+      end: number;
+    };
+    const source = fields[hosted];
+    fields[hosted] =
+      source.slice(0, occurrence.start) +
+      MARKER_DELIMITER +
+      occurrence.text +
+      MARKER_DELIMITER +
+      source.slice(occurrence.end);
+    marked.push(occurrence.text);
+  }
+
+  return { defVi: fields.defVi, leadVi: fields.leadVi, marked, warnings };
+}
+
+/** First whole-token occurrence of a phrase in a field, keeping the field's casing. */
+function occursIn(
+  haystack: string,
+  phrase: string,
+): { text: string; start: number; end: number } | null {
+  const pattern = new RegExp(`(?<![\\p{L}\\p{N}])${escapeRegExp(phrase)}(?![\\p{L}\\p{N}])`, "iu");
+  const match = pattern.exec(haystack);
+  if (match === null || match.index === undefined) return null;
+  return { text: match[0], start: match.index, end: match.index + match[0].length };
 }

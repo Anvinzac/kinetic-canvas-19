@@ -355,6 +355,25 @@ export function getCompoundTokenKey(token: string): string {
 }
 
 /**
+ * True when a token can be one syllable of a Vietnamese compound: at least two
+ * LETTERS and outside the stop-word set.
+ *
+ * The letter count must exclude digits on purpose. `getCompoundTokenKey` keeps
+ * `\p{N}` as well as `\p{L}`, so measuring the raw key let a bare count such as
+ * "10" pass as a two-character syllable and be treated as half of a compound —
+ * which made the repair drag both neighbours in, highlighting "Gồm 10 chữ" on the
+ * vocabulary letter-count clue instead of just the number.
+ * @param token - candidate syllable
+ * @returns Whether the token is a content syllable
+ * @pure true
+ */
+function isCompoundSyllable(token: string): boolean {
+  const key = getCompoundTokenKey(token);
+  if (VIETNAMESE_STOP_WORDS.has(key)) return false;
+  return key.replace(/\p{N}/gu, "").length >= 2;
+}
+
+/**
  * True when two adjacent syllables plausibly form one Vietnamese compound
  * word: both are content syllables (at least 2 letters, outside the stop-word
  * set) and no clause punctuation separates them.
@@ -363,12 +382,7 @@ export function getCompoundTokenKey(token: string): string {
  * @returns Whether the pair looks like one compound word
  */
 function isLikelyCompoundPair(left: string, right: string): boolean {
-  const leftKey = getCompoundTokenKey(left);
-  if (leftKey.length < 2 || VIETNAMESE_STOP_WORDS.has(leftKey)) return false;
-
-  const rightKey = getCompoundTokenKey(right);
-  if (rightKey.length < 2 || VIETNAMESE_STOP_WORDS.has(rightKey)) return false;
-
+  if (!isCompoundSyllable(left) || !isCompoundSyllable(right)) return false;
   return !COMPOUND_JOIN_BREAKER.test(left);
 }
 

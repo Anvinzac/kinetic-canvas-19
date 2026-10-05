@@ -7,7 +7,9 @@ import { describe, test } from "node:test";
 import {
   CRAWLER_ANNOTATION_FIELDS,
   blankOutTarget,
+  checkVietnameseProse,
   containsTargetWord,
+  countVietnameseWords,
   parseAnnotation,
   parseAnnotationList,
 } from "../src/annotate/contract.ts";
@@ -32,7 +34,7 @@ function annotationItem(word: string, overrides: Record<string, unknown> = {}): 
     pos: "noun",
     ipa: "/ˈwɔːtər/",
     defVi: "Chất lỏng trong suốt mà ta uống mỗi ngày.",
-    leadVi: "Nước là nguồn sống.",
+    leadVi: "Nước là thứ mà mọi người cần uống mỗi ngày.",
     anticipateVi: "Thứ bạn uống khi khát.",
     usageEn: "Please drink more _____ before running.",
     usageVi: "Hãy uống thêm nước trước khi chạy.",
@@ -65,6 +67,36 @@ function okResponse(
   );
 }
 
+describe("Vietnamese prose checks", () => {
+  test("counts Vietnamese syllables as words, ignoring markers and punctuation", () => {
+    assert.equal(countVietnameseWords("Chất lỏng trong suốt mà ta uống mỗi ngày."), 9);
+    assert.equal(countVietnameseWords("Chất lỏng /trong suốt/ mà ta uống mỗi ngày."), 9);
+    assert.equal(countVietnameseWords(""), 0);
+  });
+
+  test("reports a definition that came in shorter than the prompt asked", () => {
+    const issues = checkVietnameseProse("defVi", "Chất lỏng để uống.");
+    assert.equal(issues.length, 1);
+    assert.match(issues[0], /defVi: 4 words, the prompt asks for 8-11/);
+  });
+
+  test("accepts a sentence inside the 8-11 word window", () => {
+    assert.deepEqual(checkVietnameseProse("defVi", "Chất lỏng trong suốt mà ta uống mỗi ngày."), []);
+  });
+
+  test("reports a teaser that dropped its noun, and passes a legal one", () => {
+    const broken = checkVietnameseProse("leadVi", "Chúng ta đều cần những này mỗi ngày rất nhiều.");
+    assert.ok(broken.some((issue) => /without a noun/.test(issue)), broken.join(" | "));
+
+    const legal = checkVietnameseProse("leadVi", "Thứ này làm cây cối xanh tươi mỗi buổi sáng.");
+    assert.deepEqual(legal, []);
+  });
+
+  test("an empty optional leadVi is not a prose problem", () => {
+    assert.deepEqual(checkVietnameseProse("leadVi", ""), []);
+  });
+});
+
 describe("annotation contract", () => {
   test("the contract is exactly the ten required fields", () => {
     assert.deepEqual([...CRAWLER_ANNOTATION_FIELDS], [
@@ -88,6 +120,16 @@ describe("annotation contract", () => {
     assert.equal(annotation.topic, "health");
     assert.deepEqual(annotation.emphasisVi, ["uống mỗi ngày"]);
     assert.deepEqual(issues, []);
+  });
+
+  test("empties a teaser that lost its noun instead of shipping broken Vietnamese", () => {
+    const { annotation, issues } = parseAnnotation(
+      annotationItem("water", { leadVi: "Chúng ta đều cần những này mỗi ngày rất nhiều." }),
+      "water",
+    );
+    assert.ok(annotation);
+    assert.equal(annotation.leadVi, "");
+    assert.ok(issues.some((issue) => /^leadVi: emptied/.test(issue)), issues.join(" | "));
   });
 
   test("strips a model-echoed level with a warning and keeps the annotation", () => {

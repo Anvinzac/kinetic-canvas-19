@@ -3,12 +3,14 @@
  * BEFORE deck conversion.
  *
  * Responsibility: define the ten contract fields, validate untrusted model
- * output with Zod, and repair the two leaks that would break the feed:
- * the English target appearing in Vietnamese text, and example sentences
- * missing their `_____` blank. Levels are NEVER taken from the model.
+ * output with Zod, and repair the leaks that would break the feed: the English
+ * target appearing in Vietnamese text, example sentences missing their `_____`
+ * blank, and a teaser whose noun was dropped. Levels are NEVER taken from the
+ * model.
  *
  * Exports: CRAWLER_ANNOTATION_FIELDS, CrawlerAnnotation, crawlerAnnotationSchema,
  *          annotationWordPattern, containsTargetWord, blankOutTarget,
+ *          countVietnameseWords, checkVietnameseProse, findDanglingDemonstrative,
  *          parseAnnotation, parseAnnotationList
  * Depends on: zod
  */
@@ -112,6 +114,72 @@ export function blankOutTarget(
 /** The five-underscore blank the feed renders as the missing answer. */
 const BLANK = "_____";
 
+/** Word count the prompt demands for `defVi` and `leadVi`. */
+const VI_PROSE_WORD_RANGE = [8, 11] as const;
+
+/**
+ * A quantifier glued straight to a demonstrative ("những này", "mỗi này") is a
+ * sentence whose noun is missing — the model does this to dodge naming the
+ * answer. "thứ này" and "người này" stay legal because a real noun sits between
+ * the quantifier and the demonstrative.
+ */
+const DANGLING_DEMONSTRATIVE = /\b(những|các|mỗi|từng|nhiều|vài|bao nhiêu)\s+này\b/iu;
+
+/**
+ * Find the first quantifier that lost its noun.
+ *
+ * @param textValue - Vietnamese text, with or without emphasis markers
+ * @returns the offending phrase, or null when the text is grammatical
+ */
+export function findDanglingDemonstrative(textValue: string): string | null {
+  const match = DANGLING_DEMONSTRATIVE.exec(textValue);
+  return match === null ? null : match[0];
+}
+
+/**
+ * Count the Vietnamese words of a field. Vietnamese syllables are one token
+ * each, so space-splitting is the count the prompt and the feed both mean;
+ * emphasis markers and punctuation do not add tokens.
+ *
+ * @param textValue - defVi or leadVi, possibly carrying `/marker/` pairs
+ * @returns number of letter/digit tokens
+ */
+export function countVietnameseWords(textValue: string): number {
+  return textValue
+    .replaceAll("/", " ")
+    .split(/\s+/u)
+    .filter((token) => /[\p{L}\p{N}]/u.test(token)).length;
+}
+
+/**
+ * Advisory Vietnamese prose checks the Zod schema cannot express.
+ *
+ * These never reject an annotation — a six-word definition still renders — but
+ * they must be reported: the deck page looks thin, and a teaser with a dangling
+ * quantifier reads as broken Vietnamese to the learner.
+ *
+ * @param field - field name used to prefix each issue
+ * @param textValue - the Vietnamese text as written by the model
+ * @returns human-readable issues (empty when the text is clean)
+ */
+export function checkVietnameseProse(field: string, textValue: string): string[] {
+  if (textValue.trim().length === 0) return [];
+  const issues: string[] = [];
+  const words = countVietnameseWords(textValue);
+  if (words < VI_PROSE_WORD_RANGE[0] || words > VI_PROSE_WORD_RANGE[1]) {
+    issues.push(
+      `${field}: ${words} words, the prompt asks for ${VI_PROSE_WORD_RANGE[0]}-${VI_PROSE_WORD_RANGE[1]}`,
+    );
+  }
+  const dangling = findDanglingDemonstrative(textValue);
+  if (dangling !== null) {
+    issues.push(
+      `${field}: "${dangling}" leaves a quantifier without a noun — not a complete Vietnamese sentence`,
+    );
+  }
+  return issues;
+}
+
 /**
  * Validate and repair one raw annotation object.
  *
@@ -186,13 +254,30 @@ export function parseAnnotation(
     issues.push("anticipateVi: leaked the English answer and was emptied");
   }
 
+  issues.push(...checkVietnameseProse("defVi", data.defVi));
+
+  // A teaser that lost its noun is broken Vietnamese in front of a learner, and
+  // nothing here can invent the noun back. `leadVi` is optional all the way to
+  // the feed (buildStages skips an empty one), so drop the page instead of
+  // showing the mistake — same repair style as an answer-leaking anticipateVi.
+  let leadVi = data.leadVi;
+  const danglingLead = findDanglingDemonstrative(leadVi);
+  if (danglingLead !== null) {
+    leadVi = "";
+    issues.push(
+      `leadVi: emptied — "${danglingLead}" leaves a quantifier without a noun, and a broken teaser is worse than no teaser`,
+    );
+  } else {
+    issues.push(...checkVietnameseProse("leadVi", leadVi));
+  }
+
   return {
     annotation: {
       word,
       pos: data.pos,
       ipa: data.ipa,
       defVi: data.defVi,
-      leadVi: data.leadVi,
+      leadVi,
       anticipateVi,
       usageEn,
       usageVi: data.usageVi,

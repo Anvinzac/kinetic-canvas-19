@@ -5,6 +5,7 @@ import type { CanvasSpec } from "@/features/canvas";
 import { WordSequenceText } from "@/features/post-player";
 import type { VocabularyWord } from "../lib/schema";
 import { completeUsage, type LearningStage } from "../lib/stages";
+import { VOCAB_LINE_SPACING_SCALE } from "../lib/presets";
 
 /** Render only the current clue; answer details mount only on reveal. @param props Stage and presentation. @returns Accessible text. */
 export function VocabularyStage({
@@ -51,7 +52,8 @@ export function VocabularyStage({
           >
             {/* Deck emphasis annotations for the whole word are passed every stage;
                 exact phrase matching keeps only the ones occurring in this stage's
-                text, so unrelated annotations never glow. */}
+                text, so unrelated annotations never glow. The letter-count clue also
+                sends a second mark (its starting initial) drawn with its own effect. */}
             <WordSequenceText
               spec={{
                 ...spec,
@@ -65,7 +67,9 @@ export function VocabularyStage({
               background={background}
               entranceSeed={word.id}
               fitAsUnit={stage.reveal}
+              lineSpacingScale={VOCAB_LINE_SPACING_SCALE}
               dataEmphasis={stage.dataEmphasis}
+              secondaryEmphasis={stage.secondaryEmphasis}
             />
           </motion.div>
         )}
