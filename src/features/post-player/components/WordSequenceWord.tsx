@@ -166,6 +166,14 @@ export function WordSequenceWord({
       key={`${word}-${index}`}
       data-kinetic-word={getWordAnchorKey(word)}
       data-kinetic-word-index={index}
+      // Inside a shared run (`skipFrame`), the run wrapper already fades the whole
+      // compound in as one unit and owns the moving effect. This syllable span also
+      // carries `variants` yet inherits the wrapper's OBJECT animation, and that mix
+      // can strand it at its `hidden` opacity:0 when a resume remount (rotate-back,
+      // staticRender flip) keeps restarting its delayed entrance — leaving the frame/
+      // halo effect on the wrapper visible while the glyph itself is invisible. Skip
+      // the per-syllable opacity entrance and let the wrapper's group fade carry it.
+      initial={skipFrame ? false : undefined}
       variants={{
         // The starting pose comes from the post's auto-picked entrance style;
         // every style settles to the shared neutral rest below. Emphasis size
