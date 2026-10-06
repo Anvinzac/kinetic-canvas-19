@@ -2,7 +2,7 @@
  * Authenticated app shell: outlet + floating nav menu.
  *
  * Exports: AuthedShell
- * Depends on: tanstack router/query, supabase, demo-session, lucide-react
+ * Depends on: tanstack router/query, supabase, demo-session, lucide-react, feature-flags
  */
 
 import { useQueryClient } from "@tanstack/react-query";
@@ -22,6 +22,7 @@ import {
   Users,
 } from "lucide-react";
 import { endDemoSession, isDemoSession } from "../demo-session";
+import { COMMUNITY_AVAILABLE } from "@/lib/feature-flags";
 
 /**
  * @responsibility Wrap authenticated routes with Outlet and a contextual shell menu.
@@ -72,7 +73,10 @@ export function AuthedShell(): ReactElement {
             <div className="w-48 overflow-hidden rounded-2xl bg-black/70 p-1.5 text-white shadow-[0_18px_55px_rgba(0,0,0,0.42)] ring-1 ring-white/10 backdrop-blur-xl">
               <MenuLink to="/create" icon={<Plus className="size-4" />} label="Create" />
               <MenuLink to="/feed" icon={<Home className="size-4" />} label="Vocabulary" />
-              <MenuLink to="/community" icon={<Users className="size-4" />} label="Community" />
+              {/* Hidden until the community feed is ready; see COMMUNITY_AVAILABLE. */}
+              {COMMUNITY_AVAILABLE && (
+                <MenuLink to="/community" icon={<Users className="size-4" />} label="Community" />
+              )}
               <MenuLink to="/discover" icon={<Search className="size-4" />} label="Discover" />
               <MenuLink to="/notifications" icon={<Bell className="size-4" />} label="Activity" />
               <MenuLink to="/me" icon={<User className="size-4" />} label="Profile" />

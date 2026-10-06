@@ -23,3 +23,16 @@ export function isVocabularyPost(post: { author_id: string; canvas_html: string 
   const html = post.canvas_html ?? "";
   return html.includes("Từ này bắt đầu bằng chữ") && html.includes("Cả từ gồm");
 }
+
+/**
+ * The social community feed is not open to readers yet, so its two entry points are
+ * hidden: the shell menu item in `features/session/components/AuthedShell.tsx` and the
+ * "Cộng đồng" link in the vocabulary option sheet (`FeedControls.tsx`).
+ *
+ * Only the buttons are gated. The `/community` route stays mounted so an old shared
+ * link or a bookmark still resolves, and `useStudioPublish` still lands on it after a
+ * post is published.
+ *
+ * To bring the buttons back: set COMMUNITY_AVAILABLE = true.
+ */
+export const COMMUNITY_AVAILABLE = false;

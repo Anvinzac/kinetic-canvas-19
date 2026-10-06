@@ -14,6 +14,7 @@ import {
   VolumeX,
   X,
 } from "lucide-react";
+import { COMMUNITY_AVAILABLE } from "@/lib/feature-flags";
 import { STYLES, THEMES } from "../lib/presets";
 import {
   DIFFICULTY_ALL,
@@ -24,6 +25,7 @@ import {
 } from "../lib/difficulty";
 import type { NarrativeStyle } from "../lib/schema";
 import type { HistoryStats } from "../lib/history";
+import { styleLabelVi, themeLabelVi, topicLabelVi } from "../lib/i18n";
 import { useSavedCount } from "../hooks/useSavedCount";
 import { useAmbientSound } from "../hooks/useAmbientSound";
 import type { FeedPage, Presentation, VocabularyFilters } from "../types";
@@ -272,7 +274,16 @@ function DifficultyDropdown({
                     {isSelected ? "✓" : ""}
                   </span>
                   <span className="vocab-difficulty-option-label">
-                    {option.band && <span className="vocab-difficulty-band">{option.band}</span>}
+                    {/* The chip slot always renders, and every chip carries the same width
+                        whether it holds "A2" or "A1–A2", so all the level names after it
+                        begin on one vertical line. */}
+                    <span
+                      className="vocab-difficulty-band"
+                      data-empty={option.band ? undefined : true}
+                      aria-hidden={option.band ? undefined : true}
+                    >
+                      {option.band}
+                    </span>
                     {option.label}
                   </span>
                   <span className="vocab-difficulty-count" aria-hidden="true">
@@ -343,6 +354,8 @@ export function FeedControls({
     toggleButton.current?.focus();
   };
   const options = usePresence(open, POPUP_EXIT_MS);
+  /** The stream is only really playing while autoplay is on AND motion is allowed. */
+  const playing = presentation.autoplay && !reducedMotion;
   return (
     <header className="vocab-toolbar">
       <div className="vocab-toolbar-row">
@@ -362,8 +375,11 @@ export function FeedControls({
             aria-expanded={open}
             aria-controls={panelId}
             aria-label={open ? "Close feed options" : "Open feed options"}
+            data-active={open || undefined}
           >
-            {open ? <X size={20} /> : <Settings size={20} />}
+            {/* Open sheet = engaged control, so the glyph is drawn solid instead of
+                outlined; the resting gear stays an outline. */}
+            {open ? <X size={20} fill="currentColor" /> : <Settings size={20} />}
           </button>
         </div>
         {/* Centre: the three transport controls as bare icons split by two hairlines,
@@ -374,10 +390,11 @@ export function FeedControls({
             type="button"
             disabled={reducedMotion}
             onClick={() => onPresentation({ ...presentation, autoplay: !presentation.autoplay })}
-            aria-label={presentation.autoplay && !reducedMotion ? "Pause stream" : "Play stream"}
-            aria-pressed={presentation.autoplay && !reducedMotion}
+            aria-label={playing ? "Pause stream" : "Play stream"}
+            aria-pressed={playing}
+            data-active={playing || undefined}
           >
-            {presentation.autoplay && !reducedMotion ? <Pause size={19} /> : <Play size={19} />}
+            {playing ? <Pause size={19} fill="currentColor" /> : <Play size={19} />}
           </button>
           <span className="vocab-control-sep" aria-hidden="true" />
           <button
@@ -388,7 +405,7 @@ export function FeedControls({
             aria-pressed={ambient.enabled}
             data-active={ambient.enabled || undefined}
           >
-            {ambient.enabled ? <Volume2 size={19} /> : <VolumeX size={19} />}
+            {ambient.enabled ? <Volume2 size={19} fill="currentColor" /> : <VolumeX size={19} />}
           </button>
           <span className="vocab-control-sep" aria-hidden="true" />
           <button
@@ -440,52 +457,52 @@ export function FeedControls({
           className="vocab-options"
           data-closing={options.closing || undefined}
           inert={options.closing || undefined}
-          aria-label="Feed options"
+          aria-label="Tùy chọn luồng từ vựng"
           onKeyDown={(event) => {
             if (event.key === "Escape") close();
           }}
         >
           <p className="vocab-options-summary">
             {metadata
-              ? `${metadata.total.toLocaleString()} distinct words in this catalog.`
-              : "Your word stream is loading."}{" "}
-            Every completed deck reshuffles.
+              ? `Danh mục này có ${metadata.total.toLocaleString("vi-VN")} từ khác nhau.`
+              : "Luồng từ vựng của bạn đang tải."}{" "}
+            Hết một vòng là xáo trộn lại từ đầu.
           </p>
           <div className="vocab-options-secondary">
-            <span className="vocab-group-label">Category, theme and reveal</span>
+            <span className="vocab-group-label">Chủ đề, giao diện và cách hiện đáp án</span>
             <div className="vocab-select-grid">
               <label>
-                Category
+                Chủ đề
                 <select
                   value={filters.topic}
                   onChange={(event) => onFilters({ ...filters, topic: event.target.value })}
                 >
-                  <option value="">All categories</option>
+                  <option value="">Mọi chủ đề</option>
                   {metadata?.topics.map((topic) => (
                     <option key={topic} value={topic}>
-                      {topic}
+                      {topicLabelVi(topic)}
                     </option>
                   ))}
                 </select>
               </label>
               <label>
-                Theme
+                Giao diện
                 <select
                   value={presentation.theme}
                   onChange={(event) =>
                     onPresentation({ ...presentation, theme: event.target.value })
                   }
                 >
-                  <option value="mix">Mix themes</option>
+                  <option value="mix">Trộn giao diện</option>
                   {THEMES.map((theme) => (
                     <option key={theme.id} value={theme.id}>
-                      {theme.label}
+                      {themeLabelVi(theme.id, theme.label)}
                     </option>
                   ))}
                 </select>
               </label>
               <label>
-                Reveal
+                Cách hiện
                 <select
                   value={presentation.style}
                   onChange={(event) =>
@@ -495,10 +512,10 @@ export function FeedControls({
                     })
                   }
                 >
-                  <option value="mix">Mix reveals</option>
+                  <option value="mix">Trộn cách hiện</option>
                   {STYLES.map((style) => (
                     <option key={style.id} value={style.id}>
-                      {style.label}
+                      {styleLabelVi(style.id, style.label)}
                     </option>
                   ))}
                 </select>
@@ -514,29 +531,31 @@ export function FeedControls({
                 onPresentation({ ...presentation, autoplay: event.target.checked })
               }
             />{" "}
-            Autoplay the stream
+            Tự động phát luồng
           </label>
           <p className="vocab-options-summary">
             {reducedMotion
-              ? "Reduced motion is on. Clues advance manually."
-              : "Clues and words play automatically for a full-screen stream. Turn off to pause."}
+              ? "Bạn đang bật chế độ giảm chuyển động, nên gợi ý lật thủ công."
+              : "Gợi ý và từ ngữ tự động chạy hết màn hình. Tắt đi để tạm dừng."}
           </p>
-          <div className="vocab-memory" aria-label="On-device viewing memory">
-            <span className="vocab-group-label">On-device memory</span>
+          <div className="vocab-memory" aria-label="Bộ nhớ lượt xem trên thiết bị">
+            <span className="vocab-group-label">Bộ nhớ trên thiết bị</span>
             <p className="vocab-options-summary">
-              {historyStats.distinctToday} seen today · {historyStats.distinct3d} in 3 days ·{" "}
-              {historyStats.distinct7d} this week. Each word returns at most once a day, twice in 3
-              days, three times a week. Stored only in this browser.
+              Hôm nay đã xem {historyStats.distinctToday} từ · 3 ngày qua {historyStats.distinct3d}{" "}
+              · tuần này {historyStats.distinct7d}. Mỗi từ chỉ quay lại tối đa một lần mỗi ngày, hai
+              lần trong ba ngày và ba lần mỗi tuần. Tất cả chỉ lưu trong trình duyệt này.
             </p>
             <button type="button" className="vocab-memory-clear" onClick={onClearHistory}>
-              Forget viewing history
+              Quên lịch sử đã xem
             </button>
           </div>
-          <nav aria-label="Site navigation" className="vocab-site-links">
-            <Link to="/community">Community</Link>
-            <Link to="/auth">Sign in</Link>
+          <nav aria-label="Điều hướng trang" className="vocab-site-links">
+            {/* Community is not open to readers yet; only the button is hidden, the
+                /community route still resolves. Flip COMMUNITY_AVAILABLE to bring it back. */}
+            {COMMUNITY_AVAILABLE && <Link to="/community">Cộng đồng</Link>}
+            <Link to="/auth">Đăng nhập</Link>
             <button type="button" onClick={close}>
-              Back to words
+              Về với từ vựng
             </button>
           </nav>
         </section>
