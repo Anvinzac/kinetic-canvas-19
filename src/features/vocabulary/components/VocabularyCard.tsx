@@ -15,7 +15,14 @@ import {
   getPageDuration,
   getUniformPageTextSize,
 } from "@/features/post-player";
-import { AnimatePresence, animate, motion, useMotionValue } from "framer-motion";
+import {
+  AnimatePresence,
+  MotionConfig,
+  animate,
+  motion,
+  useMotionValue,
+  type Variants,
+} from "framer-motion";
 import { SPRING, getBeatSeconds } from "@/lib/motion";
 import { Bookmark, Heart } from "lucide-react";
 import { buildVocabularyCanvas, choosePresentation, fitVocabularyTextSize } from "../lib/presets";
@@ -45,6 +52,78 @@ import { WordReportButton, WordReportPanel } from "./WordReportControl";
 
 /** Matches the report panel's exit keyframes (--dur-quick) in vocabulary.css. */
 const REPORT_EXIT_MS = 180;
+
+const EASE_OUT = [0.22, 1, 0.36, 1] as const;
+const EASE_IN = [0.5, 0, 0.75, 0] as const;
+const STRIP_STAGGER_S = 0.026;
+const STRIP_DROP_S = 0.3;
+/**
+ * How long the stream waits before moving on so the strip can finish leaving: the
+ * last of nine pieces starts 8 staggers in and drops for STRIP_DROP_S.
+ */
+const STRIP_EXIT_MS = Math.round((8 * STRIP_STAGGER_S + STRIP_DROP_S) * 1000) + 20;
+
+/**
+ * The answer strip. It fades in as one piece on reveal; when the word ends each
+ * button hops, then drops off the bottom edge in a left-to-right wave. "leave" waits
+ * for its children so AnimatePresence holds the strip until the wave has passed.
+ */
+const stripVariants: Variants = {
+  hidden: { opacity: 0, scale: 0.85, filter: "blur(4px)" },
+  shown: {
+    opacity: 1,
+    scale: 1,
+    filter: "blur(0px)",
+    transition: { duration: 0.28, ease: EASE_OUT },
+  },
+  leave: {
+    opacity: 0,
+    transition: { when: "afterChildren", staggerChildren: STRIP_STAGGER_S, duration: 0.01 },
+  },
+};
+const stripItemVariants: Variants = {
+  hidden: { opacity: 1, y: 0, scale: 1, rotate: 0, filter: "blur(0px)" },
+  shown: { opacity: 1, y: 0, scale: 1, rotate: 0, filter: "blur(0px)" },
+  leave: (index: number) => ({
+    opacity: [1, 1, 0],
+    y: [0, -7, 46],
+    scale: [1, 1.08, 0.55],
+    rotate: [0, 0, index % 2 ? 9 : -9],
+    filter: ["blur(0px)", "blur(0px)", "blur(3px)"],
+    transition: { duration: STRIP_DROP_S, times: [0, 0.28, 1], ease: EASE_IN },
+  }),
+};
+
+/**
+ * The default row (reveal pill, heart, bookmark): each piece springs up from below
+ * with a small overshoot, one after another, the first time the card is the word on
+ * screen — and again after the strip leaves on a replay.
+ */
+const rowVariants: Variants = {
+  hidden: { transition: { when: "afterChildren", staggerChildren: 0.03, staggerDirection: -1 } },
+  shown: { transition: { staggerChildren: 0.075, delayChildren: 0.05 } },
+};
+const rowItemVariants: Variants = {
+  hidden: {
+    opacity: 0,
+    y: 30,
+    scale: 0.6,
+    filter: "blur(6px)",
+    transition: { duration: 0.16, ease: EASE_IN },
+  },
+  shown: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    filter: "blur(0px)",
+    transition: {
+      y: { type: "spring", stiffness: 520, damping: 22, mass: 0.7 },
+      scale: { type: "spring", stiffness: 480, damping: 16, mass: 0.7 },
+      opacity: { duration: 0.18, ease: EASE_OUT },
+      filter: { duration: 0.26, ease: EASE_OUT },
+    },
+  },
+};
 /** Horizontal travel before a drag starts moving the page, in px. */
 const DRAG_SLOP_PX = 10;
 /** Share of the finger's travel the page follows — under 1 so it feels held, not loose. */
@@ -140,6 +219,30 @@ export function VocabularyCard({
   }, []);
   const report = usePresence(reportOpen, REPORT_EXIT_MS);
   const markReported = useCallback(() => setReported(true), []);
+  // Ending a word plays the strip's exit first, then moves on. Advances only come from
+  // the answer (auto-finish or a coda tap), so the strip is always what is showing.
+  const [leaving, setLeaving] = useState(false);
+  const leaveTimer = useRef<number | undefined>(undefined);
+  const advanceWithExit = useCallback(() => {
+    if (leaveTimer.current !== undefined) return;
+    if (reducedMotion || !canAdvance || exportLayout) {
+      onAdvance();
+      return;
+    }
+    setLeaving(true);
+    leaveTimer.current = window.setTimeout(() => {
+      leaveTimer.current = undefined;
+      onAdvance();
+      setLeaving(false);
+    }, STRIP_EXIT_MS);
+  }, [reducedMotion, canAdvance, exportLayout, onAdvance]);
+  useEffect(() => () => window.clearTimeout(leaveTimer.current), []);
+  // The default row makes its entrance the first time this card is the word on screen,
+  // not on mount: neighbours are pre-rendered off screen, where it would go unseen.
+  const [entered, setEntered] = useState(active);
+  useEffect(() => {
+    if (active) setEntered(true);
+  }, [active]);
   const playback = useLearningPlayback({
     count: pageCount,
     active,
@@ -148,7 +251,7 @@ export function VocabularyCard({
     durations: pageDurations,
     canAdvance,
     revealPage,
-    onFinish: onAdvance,
+    onFinish: advanceWithExit,
   });
   // Which way the reader last moved, derived during render so the outgoing page
   // already knows its exit direction on the same pass that swaps it out.
@@ -322,7 +425,7 @@ export function VocabularyCard({
       if ((ax > 44 || ay > 44) && ax > ay) {
         if (dx < -44) {
           if (isSpelling) {
-            if (canSkip()) onAdvance();
+            if (canSkip()) advanceWithExit();
           } else if (!stage.reveal && canSkip()) playback.next();
         } else if (dx > 44) {
           playback.previous();
@@ -335,7 +438,7 @@ export function VocabularyCard({
       if (dt < 600 && ax < 16 && ay < 16) {
         // During the spelling coda a tap means "I have it" — skip to the next word.
         if (isSpelling) {
-          if (canSkip()) onAdvance();
+          if (canSkip()) advanceWithExit();
           return;
         }
         const rect = cardRef.current?.getBoundingClientRect();
@@ -355,7 +458,7 @@ export function VocabularyCard({
         }
       }
     },
-    [playback, stage.reveal, isSpelling, onAdvance, releaseDrag],
+    [playback, stage.reveal, isSpelling, advanceWithExit, releaseDrag],
   );
 
   void matching;
@@ -588,161 +691,193 @@ export function VocabularyCard({
           reported={reported}
           onToggle={() => (reportOpen ? closeReport() : setReportOpen(true))}
         />
-        <div className="vocab-action-main">
-          <AnimatePresence mode="wait">
-            {showEmojiStrip ? (
-              <motion.div
-                key="emoji-strip"
-                ref={emojiStripRef}
-                className="vocab-emoji-strip"
-                initial={{ opacity: 0, scale: 0.85, filter: "blur(4px)" }}
-                animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
-                exit={{ opacity: 0, scale: 0.85, filter: "blur(4px)" }}
-                transition={{ duration: reducedMotion ? 0 : 0.28, ease: [0.22, 1, 0.36, 1] }}
-              >
-                {EMOJI_PALETTE.map((emoji) => {
-                  const count = emojiCounts[emoji] ?? 0;
-                  const tapped = emojiTap?.emoji === emoji;
-                  return (
+        <MotionConfig reducedMotion={reducedMotion ? "always" : "never"}>
+          <div className="vocab-action-main">
+            <AnimatePresence mode="wait">
+              {showEmojiStrip ? (
+                <motion.div
+                  key="emoji-strip"
+                  ref={emojiStripRef}
+                  className="vocab-emoji-strip"
+                  variants={stripVariants}
+                  initial="hidden"
+                  animate={leaving ? "leave" : "shown"}
+                  exit="leave"
+                  inert={leaving || undefined}
+                >
+                  {EMOJI_PALETTE.map((emoji, index) => {
+                    const count = emojiCounts[emoji] ?? 0;
+                    const tapped = emojiTap?.emoji === emoji;
+                    return (
+                      // The wrapper carries the motion so the button's own :active
+                      // press scale is never overwritten by an inline transform.
+                      <motion.span
+                        key={emoji}
+                        className="vocab-motion-item"
+                        variants={stripItemVariants}
+                        custom={index}
+                      >
+                        <button
+                          type="button"
+                          className="vocab-emoji-strip-btn"
+                          data-emoji={emoji}
+                          onClick={() => handleEmojiTap(emoji)}
+                          aria-label={`React with ${emoji}${count ? `, ${count} so far` : ""}`}
+                        >
+                          <span
+                            key={`glyph-${tapped ? emojiTap.count : 0}`}
+                            className="vocab-emoji-glyph"
+                            data-pop={tapped || undefined}
+                          >
+                            {emoji}
+                          </span>
+                          {tapped && (
+                            <span
+                              key={`plus-${emojiTap.count}`}
+                              className="vocab-emoji-plus"
+                              aria-hidden="true"
+                            >
+                              +1
+                            </span>
+                          )}
+                          {count > 0 && (
+                            // Keyed on the value so a changed count rolls in instead of
+                            // silently swapping its digits.
+                            <span
+                              key={`count-${count}`}
+                              className="vocab-emoji-strip-count"
+                              aria-hidden="true"
+                            >
+                              {formatEmojiTotal(count)}
+                            </span>
+                          )}
+                        </button>
+                      </motion.span>
+                    );
+                  })}
+                  <motion.div
+                    className="vocab-emoji-strip-sep"
+                    aria-hidden="true"
+                    variants={stripItemVariants}
+                    custom={EMOJI_PALETTE.length}
+                  />
+                  <motion.span
+                    className="vocab-motion-item"
+                    variants={stripItemVariants}
+                    custom={EMOJI_PALETTE.length + 1}
+                  >
                     <button
-                      key={emoji}
                       type="button"
-                      className="vocab-emoji-strip-btn"
-                      data-emoji={emoji}
-                      onClick={() => handleEmojiTap(emoji)}
-                      aria-label={`React with ${emoji}${count ? `, ${count} so far` : ""}`}
+                      className="vocab-emoji-strip-btn vocab-reaction-heart"
+                      data-on={reactions.heart || undefined}
+                      onClick={() => toggleReaction("heart")}
+                      aria-label={
+                        reactions.heart ? "Remove your heart from this word" : "Heart this word"
+                      }
                     >
                       <span
-                        key={`glyph-${tapped ? emojiTap.count : 0}`}
-                        className="vocab-emoji-glyph"
-                        data-pop={tapped || undefined}
+                        key={pops.heart}
+                        className="vocab-pop"
+                        data-pop={(pops.onStrip && pops.heart > 0) || undefined}
                       >
-                        {emoji}
+                        <Heart size={16} fill={reactions.heart ? "currentColor" : "none"} />
                       </span>
-                      {tapped && (
-                        <span
-                          key={`plus-${emojiTap.count}`}
-                          className="vocab-emoji-plus"
-                          aria-hidden="true"
-                        >
-                          +1
-                        </span>
-                      )}
-                      {count > 0 && (
-                        // Keyed on the value so a changed count rolls in instead of
-                        // silently swapping its digits.
-                        <span
-                          key={`count-${count}`}
-                          className="vocab-emoji-strip-count"
-                          aria-hidden="true"
-                        >
-                          {formatEmojiTotal(count)}
-                        </span>
-                      )}
                     </button>
-                  );
-                })}
-                <div className="vocab-emoji-strip-sep" aria-hidden="true" />
-                <button
-                  type="button"
-                  className="vocab-emoji-strip-btn vocab-reaction-heart"
-                  data-on={reactions.heart || undefined}
-                  onClick={() => toggleReaction("heart")}
-                  aria-label={
-                    reactions.heart ? "Remove your heart from this word" : "Heart this word"
-                  }
-                >
-                  <span
-                    key={pops.heart}
-                    className="vocab-pop"
-                    data-pop={(pops.onStrip && pops.heart > 0) || undefined}
+                  </motion.span>
+                  <motion.span
+                    className="vocab-motion-item"
+                    variants={stripItemVariants}
+                    custom={EMOJI_PALETTE.length + 2}
                   >
-                    <Heart size={16} fill={reactions.heart ? "currentColor" : "none"} />
-                  </span>
-                </button>
-                <button
-                  type="button"
-                  className="vocab-emoji-strip-btn vocab-reaction-bookmark"
-                  data-on={reactions.bookmark || undefined}
-                  onClick={() => toggleReaction("bookmark")}
-                  aria-label={reactions.bookmark ? "Remove this word from saved" : "Save this word"}
-                >
-                  <span
-                    key={pops.bookmark}
-                    className="vocab-pop"
-                    data-pop={(pops.onStrip && pops.bookmark > 0) || undefined}
-                  >
-                    <Bookmark size={16} fill={reactions.bookmark ? "currentColor" : "none"} />
-                  </span>
-                </button>
-              </motion.div>
-            ) : (
-              <motion.div
-                key="action-bar"
-                className="vocab-action-row"
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ duration: reducedMotion ? 0 : 0.22 }}
-              >
-                {!stage.reveal && (
-                  <button
-                    type="button"
-                    className="vocab-reveal-button vocab-reveal-pill"
-                    onClick={playback.reveal}
-                    aria-label="Reveal word"
-                  >
-                    {revealButtonLabel || "Ê, từ này biết nè"}
-                  </button>
-                )}
-                <div className="vocab-reaction">
-                  <button
-                    type="button"
-                    className="vocab-reaction-button vocab-reaction-heart"
-                    data-on={reactions.heart || undefined}
-                    onClick={() => toggleReaction("heart")}
-                    aria-label={
-                      reactions.heart ? "Remove your heart from this word" : "Heart this word"
-                    }
-                  >
-                    <span
-                      key={pops.heart}
-                      className="vocab-pop"
-                      data-pop={(!pops.onStrip && pops.heart > 0) || undefined}
+                    <button
+                      type="button"
+                      className="vocab-emoji-strip-btn vocab-reaction-bookmark"
+                      data-on={reactions.bookmark || undefined}
+                      onClick={() => toggleReaction("bookmark")}
+                      aria-label={
+                        reactions.bookmark ? "Remove this word from saved" : "Save this word"
+                      }
                     >
-                      <Heart size={17} fill={reactions.heart ? "currentColor" : "none"} />
-                    </span>
-                  </button>
-                  <span key={heartsLabel} className="vocab-reaction-count">
-                    {heartsLabel}
-                  </span>
-                </div>
-                <div className="vocab-reaction">
-                  <button
-                    type="button"
-                    className="vocab-reaction-button vocab-reaction-bookmark"
-                    data-on={reactions.bookmark || undefined}
-                    onClick={() => toggleReaction("bookmark")}
-                    aria-label={
-                      reactions.bookmark ? "Remove this word from saved" : "Save this word"
-                    }
-                  >
-                    <span
-                      key={pops.bookmark}
-                      className="vocab-pop"
-                      data-pop={(!pops.onStrip && pops.bookmark > 0) || undefined}
+                      <span
+                        key={pops.bookmark}
+                        className="vocab-pop"
+                        data-pop={(pops.onStrip && pops.bookmark > 0) || undefined}
+                      >
+                        <Bookmark size={16} fill={reactions.bookmark ? "currentColor" : "none"} />
+                      </span>
+                    </button>
+                  </motion.span>
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="action-bar"
+                  className="vocab-action-row"
+                  variants={rowVariants}
+                  initial="hidden"
+                  animate={entered || exportLayout ? "shown" : "hidden"}
+                  exit="hidden"
+                >
+                  {!stage.reveal && (
+                    <motion.span className="vocab-motion-item" variants={rowItemVariants}>
+                      <button
+                        type="button"
+                        className="vocab-reveal-button vocab-reveal-pill"
+                        onClick={playback.reveal}
+                        aria-label="Reveal word"
+                      >
+                        {revealButtonLabel || "Ê, từ này biết nè"}
+                      </button>
+                    </motion.span>
+                  )}
+                  <motion.div className="vocab-reaction" variants={rowItemVariants}>
+                    <button
+                      type="button"
+                      className="vocab-reaction-button vocab-reaction-heart"
+                      data-on={reactions.heart || undefined}
+                      onClick={() => toggleReaction("heart")}
+                      aria-label={
+                        reactions.heart ? "Remove your heart from this word" : "Heart this word"
+                      }
                     >
-                      <Bookmark size={17} fill={reactions.bookmark ? "currentColor" : "none"} />
+                      <span
+                        key={pops.heart}
+                        className="vocab-pop"
+                        data-pop={(!pops.onStrip && pops.heart > 0) || undefined}
+                      >
+                        <Heart size={17} fill={reactions.heart ? "currentColor" : "none"} />
+                      </span>
+                    </button>
+                    <span key={heartsLabel} className="vocab-reaction-count">
+                      {heartsLabel}
                     </span>
-                  </button>
-                  <span key={bookmarksLabel} className="vocab-reaction-count">
-                    {bookmarksLabel}
-                  </span>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
+                  </motion.div>
+                  <motion.div className="vocab-reaction" variants={rowItemVariants}>
+                    <button
+                      type="button"
+                      className="vocab-reaction-button vocab-reaction-bookmark"
+                      data-on={reactions.bookmark || undefined}
+                      onClick={() => toggleReaction("bookmark")}
+                      aria-label={
+                        reactions.bookmark ? "Remove this word from saved" : "Save this word"
+                      }
+                    >
+                      <span
+                        key={pops.bookmark}
+                        className="vocab-pop"
+                        data-pop={(!pops.onStrip && pops.bookmark > 0) || undefined}
+                      >
+                        <Bookmark size={17} fill={reactions.bookmark ? "currentColor" : "none"} />
+                      </span>
+                    </button>
+                    <span key={bookmarksLabel} className="vocab-reaction-count">
+                      {bookmarksLabel}
+                    </span>
+                  </motion.div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </MotionConfig>
       </div>
     </article>
   );

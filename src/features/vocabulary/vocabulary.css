@@ -28,6 +28,7 @@
   --chrome-fill: #12101d40;
   --chrome-scrim: linear-gradient(180deg, #090712a8, #09071252 58%, transparent);
   --chrome-shadow: 0 2px 14px #0009;
+  --chrome-icon-shadow: 0 1px 5px #0009;
   --chrome-accent: var(--vocab-accent);
   background: var(--shell-bg);
   color: var(--shell-text);
@@ -44,6 +45,7 @@
   --chrome-fill: #ffffff66;
   --chrome-scrim: linear-gradient(180deg, #ffffff8c, #ffffff3d 58%, transparent);
   --chrome-shadow: none;
+  --chrome-icon-shadow: 0 0 0 transparent;
   --chrome-accent: oklch(0.45 0.16 150);
 }
 .vocabulary-shell :is(button, a, select, input):focus-visible {
@@ -190,7 +192,7 @@
 /* The trigger reports the whole selection, so the leading difficulty emoji gets a hair
    of separation from the label it denotes. */
 .vocab-difficulty-current-emoji {
-  margin-right: 4px;
+  margin-right: 7px;
 }
 .vocab-brand:hover small {
   color: var(--chrome-ink);
@@ -230,6 +232,42 @@
   background: color-mix(in srgb, var(--chrome-accent) 16%, transparent);
   border-color: var(--chrome-accent);
   color: var(--chrome-accent);
+}
+/* Transport controls: bare icons on the toolbar's own scrim — no circle, fill, border
+   or frost — read as one group, split by two hairline separators. The admin export
+   button is not part of the group and keeps its round chrome. */
+.vocab-toolbar-row .vocab-player-controls {
+  gap: 4px;
+}
+.vocab-player-controls .vocab-icon-button:not(.vocab-export-open) {
+  border-color: transparent;
+  border-radius: 12px;
+  background: none;
+  backdrop-filter: none;
+}
+.vocab-player-controls .vocab-icon-button:not(.vocab-export-open) svg {
+  filter: drop-shadow(var(--chrome-icon-shadow));
+}
+.vocab-player-controls .vocab-icon-button:not(.vocab-export-open):hover:not(:disabled) {
+  background: color-mix(in srgb, currentColor 12%, transparent);
+}
+.vocab-player-controls .vocab-icon-button[data-active]:not(.vocab-export-open) {
+  background: none;
+  color: var(--chrome-accent);
+}
+.vocab-player-controls .vocab-icon-button:disabled {
+  opacity: 0.45;
+}
+.vocab-control-sep {
+  flex-shrink: 0;
+  width: 1px;
+  height: 18px;
+  border-radius: 1px;
+  background: color-mix(in srgb, var(--chrome-ink) 38%, transparent);
+  transition: background var(--dur-move) var(--ease-out);
+}
+.vocab-player-controls .vocab-export-open {
+  margin-left: 8px;
 }
 /* Saved-words shortcut: the badge sits on the button's top-right corner. It is pinned
    to the row's right edge and kept OPAQUE (solid fill, no frost) so it reads as a
@@ -1129,6 +1167,12 @@
   outline-color: var(--vocab-ink);
 }
 /* ── Anticipation emoji strip ── */
+/* Motion wrapper around a strip or row button: it takes the entrance/exit transforms
+   so the button keeps its own :active press scale. Sized exactly to its button. */
+.vocab-motion-item {
+  display: inline-flex;
+  flex-shrink: 0;
+}
 .vocab-emoji-strip {
   display: flex;
   align-items: center;

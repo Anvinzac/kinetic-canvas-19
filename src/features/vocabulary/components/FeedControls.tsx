@@ -366,7 +366,8 @@ export function FeedControls({
             {open ? <X size={20} /> : <Settings size={20} />}
           </button>
         </div>
-        {/* Centre: the three transport controls, centred on the top edge. */}
+        {/* Centre: the three transport controls as bare icons split by two hairlines,
+            centred on the top edge. */}
         <div className="vocab-player-controls">
           <button
             className="vocab-icon-button"
@@ -378,6 +379,7 @@ export function FeedControls({
           >
             {presentation.autoplay && !reducedMotion ? <Pause size={19} /> : <Play size={19} />}
           </button>
+          <span className="vocab-control-sep" aria-hidden="true" />
           <button
             className="vocab-icon-button"
             type="button"
@@ -388,6 +390,7 @@ export function FeedControls({
           >
             {ambient.enabled ? <Volume2 size={19} /> : <VolumeX size={19} />}
           </button>
+          <span className="vocab-control-sep" aria-hidden="true" />
           <button
             className="vocab-icon-button"
             type="button"
