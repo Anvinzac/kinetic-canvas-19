@@ -9,10 +9,11 @@
  * waiting briefly for them, moves that swap to before anything is on screen.
  *
  * Exports: useFontsReady
- * Depends on: React, ../lib/presets THEMES
+ * Depends on: React, canvas HANDWRITING_FONTS, ../lib/presets THEMES
  */
 
 import { useEffect, useState } from "react";
+import { HANDWRITING_FONTS } from "@/features/canvas";
 import { THEMES } from "../lib/presets";
 
 /** A cold network must never hold the feed hostage; after this the text shows regardless. */
@@ -46,6 +47,13 @@ export function useFontsReady(): boolean {
     );
     // allSettled: one family failing to load must not keep the others waiting.
     void Promise.allSettled(loads).then(finish);
+    // Handwriting faces never open the stream, so they warm up without holding it.
+    for (const family of HANDWRITING_FONTS) {
+      if (families.includes(family)) continue;
+      for (const weight of STAGE_WEIGHTS) {
+        void document.fonts.load(`${weight} 64px "${family}"`, VIETNAMESE_SAMPLE).catch(() => {});
+      }
+    }
     const timer = window.setTimeout(finish, FONT_WAIT_MS);
     return () => {
       settled = true;

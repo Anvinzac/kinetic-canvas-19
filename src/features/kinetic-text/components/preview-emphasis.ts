@@ -11,6 +11,7 @@ import {
   getDataEmphasisWordSpans,
   getSpecialPoeticWordIndexes,
   isLikelyVietnameseText,
+  limitShortSentenceEmphasis,
   repairSplitCompoundEmphasis,
 } from "../lib/text-language";
 
@@ -34,7 +35,8 @@ function keepFirstRuns(indexes: Iterable<number>, maxRuns: number): Set<number> 
 }
 
 /**
- * Compute previewemphasizedwordindexes.
+ * Compute previewemphasizedwordindexes. A page of four words or fewer always ends with
+ * a single highlighted word (limitShortSentenceEmphasis), whichever path chose it.
  * @param words - words argument
  * @param dataEmphasis - optional upstream annotation phrases; exact matches win over scoring
  * @returns Computed value
@@ -43,6 +45,14 @@ export function getPreviewEmphasizedWordIndexes(
   words: string[],
   dataEmphasis?: string[],
 ): Set<number> {
+  return limitShortSentenceEmphasis(
+    words,
+    selectPreviewEmphasizedWordIndexes(words, dataEmphasis),
+    getEmphasisPhraseKeysForLayout(dataEmphasis),
+  );
+}
+
+function selectPreviewEmphasizedWordIndexes(words: string[], dataEmphasis?: string[]): Set<number> {
   const isVietnameseText = isLikelyVietnameseText(words.join(" "));
   // Upstream annotations are author intent and outrank every heuristic. At most
   // two highlighted words per page: spans come back in annotation priority, so

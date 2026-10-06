@@ -14,7 +14,7 @@
  * Exports: Palette types, PALETTE_SCHEMES, PALETTE_THRESHOLDS, generatePalette,
  *          auditPalette, ensureReadablePalette, paletteSwatches, rgbToHex, hslHex,
  *          paletteBackgroundStops, paletteBackdropColors, VIETNAMESE_SAFE_FONTS,
- *          DEFAULT_PALETTE_FONT, isVietnameseCapableFont
+ *          HANDWRITING_FONTS, DEFAULT_PALETTE_FONT, isVietnameseCapableFont
  * Depends on: ./contrast/color-math
  *
  * This module is intentionally free of data imports so `scripts/check-palette-contrast.ts`
@@ -128,11 +128,24 @@ export const PALETTE_SCHEMES: readonly PaletteScheme[] = [
  * outside it, and the admin save endpoint rejects it, so an unsupported font can
  * neither be chosen nor reach the screen.
  */
+/**
+ * Handwriting faces, all with a real bold cut so the canvas's 800/900 weights do not
+ * fall back to synthetic bold. Caveat, Kalam and Comic Neue were rejected: no
+ * Vietnamese subset.
+ */
+export const HANDWRITING_FONTS = [
+  "Dancing Script",
+  "Playpen Sans",
+  "Shantell Sans",
+  "Charm",
+] as const;
+
 export const VIETNAMESE_SAFE_FONTS = [
   "Inter",
   "Space Grotesk",
   "Playfair Display",
   "JetBrains Mono",
+  ...HANDWRITING_FONTS,
 ] as const;
 
 /** A palette's default face, used when none is stored or a stored one is unsupported. */

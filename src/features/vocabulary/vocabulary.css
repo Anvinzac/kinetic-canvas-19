@@ -292,6 +292,37 @@
     transform: translateY(-8px) scale(0.97);
   }
 }
+/* Exit mirrors the entrance but quicker and accelerating away, so a dismissal reads as
+   a gentle step back rather than a cut. Duration must match POPUP_EXIT_MS. */
+@keyframes vocab-panel-out {
+  to {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.97);
+  }
+}
+.vocab-options[data-closing],
+.vocab-difficulty-pop[data-closing] {
+  animation: vocab-panel-out var(--dur-quick) var(--ease-in) forwards;
+}
+/* Transparent catcher behind an open popup (see PopupScrim); the popups stack above it. */
+.vocab-popup-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+}
+.vocab-popup-scrim[data-closing] {
+  pointer-events: none;
+}
+.vocab-options {
+  position: relative;
+  z-index: 1;
+}
+/* The feed is a tap surface: long-pressing a card or a panel must not select text. */
+.vocabulary-shell:not(.vocab-saved-shell, .vocab-library-shell) {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
 .vocab-options-summary {
   font-size: 12px;
   line-height: 1.7;
@@ -540,9 +571,26 @@
   font-size: 15px;
   font-weight: 800;
   cursor: pointer;
+  transform-origin: right center;
+  animation: vocab-done-in 420ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
 }
 .vocab-difficulty-done:hover {
   filter: brightness(1.08);
+}
+@keyframes vocab-done-in {
+  from {
+    opacity: 0;
+    filter: blur(6px);
+    transform: translateY(8px) scale(0.92);
+  }
+  60% {
+    filter: blur(0);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: none;
+  }
 }
 /* ── Vocabulary Library page: browsable shelves of curated packs ── */
 .vocab-library-shell {
@@ -1808,11 +1856,12 @@
 }
 /* ── Options as a bottom sheet on phones ─────────────────────────────────────
    Under the gear on wide screens; on a phone it rises from the bottom edge where the
-   thumb already is. The dimmed backdrop is the sheet's own spread shadow, so no extra
-   element (and no change to how the panel opens or closes) is needed. */
+   thumb already is. The dimmed backdrop is the sheet's own spread shadow; taps on it
+   land on the transparent PopupScrim beneath, which closes the sheet. */
 @media (max-width: 640px) {
   .vocab-options {
     position: fixed;
+    z-index: 1;
     left: 0;
     right: 0;
     bottom: 0;
@@ -1842,6 +1891,17 @@
 @keyframes vocab-sheet-up {
   from {
     transform: translateY(100%);
+  }
+}
+@keyframes vocab-sheet-down {
+  to {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+}
+@media (max-width: 640px) {
+  .vocab-options[data-closing] {
+    animation: vocab-sheet-down var(--dur-quick) var(--ease-in) forwards;
   }
 }
 /* ── Card laid out for video export ──────────────────────────────────────────
@@ -2388,6 +2448,24 @@
   from {
     opacity: 0;
   }
+}
+@keyframes vocab-report-out {
+  to {
+    opacity: 0;
+    transform: translateY(8px) scale(0.95);
+  }
+}
+@keyframes vocab-report-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+.vocab-report-panel[data-closing] {
+  animation: vocab-report-out var(--dur-quick) var(--ease-in) forwards;
+}
+.vocab-report-scrim[data-closing] {
+  pointer-events: none;
+  animation: vocab-report-fade-out var(--dur-quick) var(--ease-in) forwards;
 }
 .vocab-report-head {
   display: flex;

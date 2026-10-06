@@ -27,6 +27,25 @@ import type { HistoryStats } from "../lib/history";
 import { useSavedCount } from "../hooks/useSavedCount";
 import { useAmbientSound } from "../hooks/useAmbientSound";
 import type { FeedPage, Presentation, VocabularyFilters } from "../types";
+import { usePresence } from "@/hooks/use-presence";
+
+/** Matches the exit keyframes' duration (--dur-quick) in vocabulary.css. */
+const POPUP_EXIT_MS = 180;
+
+/**
+ * Invisible full-screen catcher behind a popup. A tap on it only dismisses, so it can
+ * never also turn the card page underneath the way a document-level listener let it.
+ */
+function PopupScrim({ closing, onDismiss }: { closing: boolean; onDismiss: () => void }) {
+  return (
+    <div
+      className="vocab-popup-scrim"
+      data-closing={closing || undefined}
+      aria-hidden="true"
+      onClick={onDismiss}
+    />
+  );
+}
 
 type DifficultyOption = {
   id: string;
@@ -104,10 +123,10 @@ function DifficultyDropdown({
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState<Set<string>>(() => new Set(committed));
   const [cursor, setCursor] = useState(0);
+  // "Done" stays hidden until the reader picks a row this session, then fades in.
+  const [touched, setTouched] = useState(false);
   const trigger = useRef<HTMLButtonElement>(null);
   const list = useRef<HTMLUListElement>(null);
-  const panel = useRef<HTMLDivElement>(null);
-
   const close = (restoreFocus: boolean) => {
     setOpen(false);
     if (restoreFocus) trigger.current?.focus();
@@ -122,7 +141,11 @@ function DifficultyDropdown({
       return next;
     });
   const selectAll = () => setDraft(new Set());
-  const pickRow = (id: string) => (id === DIFFICULTY_ALL ? selectAll() : toggle(id));
+  const pickRow = (id: string) => {
+    setTouched(true);
+    if (id === DIFFICULTY_ALL) selectAll();
+    else toggle(id);
+  };
   const commit = () => {
     onChange(
       DIFFICULTY_TRACKS.filter((track) => draft.has(track.id))
@@ -134,6 +157,7 @@ function DifficultyDropdown({
   const openAt = () => {
     setDraft(new Set(committed));
     setCursor(0);
+    setTouched(false);
     setOpen(true);
   };
 
@@ -142,21 +166,7 @@ function DifficultyDropdown({
     if (open) list.current?.focus();
   }, [open]);
 
-  // A tap anywhere outside the popup closes it, matching the options-panel pattern.
-  useEffect(() => {
-    if (!open) return;
-    const onPointerDown = (event: MouseEvent | TouchEvent) => {
-      const target = event.target as Node;
-      if (panel.current?.contains(target) || trigger.current?.contains(target)) return;
-      close(false);
-    };
-    document.addEventListener("mousedown", onPointerDown);
-    document.addEventListener("touchstart", onPointerDown);
-    return () => {
-      document.removeEventListener("mousedown", onPointerDown);
-      document.removeEventListener("touchstart", onPointerDown);
-    };
-  }, [open]);
+  const presence = usePresence(open, POPUP_EXIT_MS);
 
   return (
     <div className="vocab-difficulty" data-no-gesture>
@@ -190,8 +200,13 @@ function DifficultyDropdown({
           <ChevronDown size={12} data-open={open || undefined} aria-hidden="true" />
         </small>
       </button>
-      {open && (
-        <div className="vocab-difficulty-pop" ref={panel}>
+      {presence.mounted && <PopupScrim closing={presence.closing} onDismiss={() => close(false)} />}
+      {presence.mounted && (
+        <div
+          className="vocab-difficulty-pop"
+          data-closing={presence.closing || undefined}
+          inert={presence.closing || undefined}
+        >
           <ul
             ref={list}
             id={listId}
@@ -278,9 +293,11 @@ function DifficultyDropdown({
               <Library size={16} aria-hidden="true" />
               Thêm từ mới
             </Link>
-            <button type="button" className="vocab-difficulty-done" onClick={commit}>
-              Xong
-            </button>
+            {touched && (
+              <button type="button" className="vocab-difficulty-done" onClick={commit}>
+                Xong
+              </button>
+            )}
           </div>
         </div>
       )}
@@ -325,6 +342,7 @@ export function FeedControls({
     onOpen(false);
     toggleButton.current?.focus();
   };
+  const options = usePresence(open, POPUP_EXIT_MS);
   return (
     <header className="vocab-toolbar">
       <div className="vocab-toolbar-row">
@@ -412,10 +430,13 @@ export function FeedControls({
           )}
         </Link>
       </div>
-      {open && (
+      {options.mounted && <PopupScrim closing={options.closing} onDismiss={() => onOpen(false)} />}
+      {options.mounted && (
         <section
           id={panelId}
           className="vocab-options"
+          data-closing={options.closing || undefined}
+          inert={options.closing || undefined}
           aria-label="Feed options"
           onKeyDown={(event) => {
             if (event.key === "Escape") close();

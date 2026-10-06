@@ -77,6 +77,7 @@ export function WordReportButton({
  * @param props.alreadyReported - show the thank-you instead of the choices
  * @param props.onSent - a report was accepted by the server
  * @param props.onClose - dismiss the panel
+ * @param props.closing - fade out and ignore input while the card waits to unmount it
  * @returns Scrim plus dialog, positioned over the card
  */
 export function WordReportPanel({
@@ -85,7 +86,10 @@ export function WordReportPanel({
   alreadyReported,
   onSent,
   onClose,
+  closing = false,
 }: {
+  /** Playing its exit animation; the card unmounts it once that finishes. */
+  closing?: boolean;
   wordId: string;
   stageId: string;
   alreadyReported: boolean;
@@ -151,10 +155,17 @@ export function WordReportPanel({
   return (
     // Opts out of the card's tap-to-turn-page gestures.
     <div data-no-gesture="">
-      <div className="vocab-report-scrim" onClick={onClose} aria-hidden="true" />
+      <div
+        className="vocab-report-scrim"
+        data-closing={closing || undefined}
+        onClick={onClose}
+        aria-hidden="true"
+      />
       <div
         ref={panel}
         className="vocab-report-panel"
+        data-closing={closing || undefined}
+        inert={closing || undefined}
         role="dialog"
         aria-modal="true"
         aria-label="Báo lỗi thẻ này"

@@ -1,0 +1,21 @@
+---
+description: A kinetic page of four words or fewer highlights exactly one word
+globs: src/features/kinetic-text/**/*,src/features/post-player/**/*,src/features/vocabulary/**/*,scripts/check-emphasis*.ts
+alwaysApply: false
+---
+
+# Short-sentence emphasis
+
+**A page of at most 4 words (`SHORT_SENTENCE_MAX_WORDS`) highlights exactly one word.** Two glowing words out of four reads as shouting, not emphasis.
+
+- Words are counted with `countSentenceWords`: punctuation-only tokens (`—`, `…`) do not count.
+- One word means one token, or one whole bound phrase / Vietnamese two-syllable compound (`im lặng`, `học sinh`). The compound rules still hold: never split a compound to meet the cap.
+- Enforcement lives in `limitShortSentenceEmphasis` (`features/kinetic-text/lib/text-language/short-sentence-emphasis.ts`). Both `getEmphasizedWordIndexes` (feed) and `getPreviewEmphasizedWordIndexes` (preview) pass their final result through it, after `repairSplitCompoundEmphasis`, on **every** return path — data annotations, poetic phrases and scoring alike.
+- Any new emphasis selector must end the same way. Do not raise a per-language run limit for short pages; the cap overrides it.
+- Pages with 5+ words are unchanged.
+
+Bad (4 words): `Mưa rơi rất nhẹ` with `Mưa` and `nhẹ` both highlighted; `là học sinh giỏi` with `học sinh giỏi` (3 tokens) glowing.
+
+Good: `Mưa rơi rất nhẹ` → only `nhẹ`; `là học sinh giỏi` → `học sinh` (one compound); `Pause before replay` → one word only.
+
+Verify with `scripts/check-emphasis-short-sentence.ts`.

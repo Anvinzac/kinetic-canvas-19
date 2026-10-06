@@ -35,6 +35,11 @@ export {
   repairSplitCompoundEmphasis,
 } from "./vietnamese-phrases";
 export {
+  SHORT_SENTENCE_MAX_WORDS,
+  countSentenceWords,
+  limitShortSentenceEmphasis,
+} from "./short-sentence-emphasis";
+export {
   getDataEmphasisWordIndexes,
   getDataEmphasisWordSpans,
   getEmphasisPhraseKeysForLayout,

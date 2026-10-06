@@ -12,6 +12,7 @@ import {
   getSpecialPoeticWordIndexes,
   getWords,
   isLikelyVietnameseText,
+  limitShortSentenceEmphasis,
   repairSplitCompoundEmphasis,
 } from "@/features/kinetic-text";
 
@@ -93,12 +94,21 @@ function keepFirstRuns(indexes: Iterable<number>, maxRuns: number): Set<number> 
 }
 
 /**
- * Compute emphasizedwordindexes.
+ * Compute emphasizedwordindexes. A page of four words or fewer always ends with a
+ * single highlighted word (limitShortSentenceEmphasis), whichever path chose it.
  * @param words - words argument
  * @param dataEmphasis - optional upstream annotation phrases; exact matches win over scoring
  * @returns Computed value
  */
 export function getEmphasizedWordIndexes(words: string[], dataEmphasis?: string[]): Set<number> {
+  return limitShortSentenceEmphasis(
+    words,
+    selectEmphasizedWordIndexes(words, dataEmphasis),
+    getEmphasisPhraseKeysForLayout(dataEmphasis),
+  );
+}
+
+function selectEmphasizedWordIndexes(words: string[], dataEmphasis?: string[]): Set<number> {
   const isVietnameseText = isLikelyVietnameseText(words.join(" "));
   // Upstream annotations are author intent and outrank every heuristic. At most
   // two highlighted words per page: spans come back in annotation priority, so

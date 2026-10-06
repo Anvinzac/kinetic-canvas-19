@@ -13,6 +13,7 @@ import {
 } from "@/features/kinetic-text";
 import type { NarrativeStyle } from "./schema";
 import { hash } from "./random";
+import { pickHandwritingFont } from "./handwriting";
 import type { Presentation } from "../types";
 
 /**
@@ -193,12 +194,36 @@ export function fitVocabularyTextSize(
   return 28;
 }
 
-/** Choose appearance independently of word order. @param occurrence Stable occurrence. @param choice Visitor overrides. @returns Theme/style. */
-export function choosePresentation(occurrence: string, choice: Presentation) {
+/** Cached so a handwriting card's theme keeps one identity and its memoised canvas stays put. */
+const handwritingThemes = new Map<string, VocabularyTheme>();
+
+function withFont(theme: VocabularyTheme, font: string | null): VocabularyTheme {
+  if (!font || font === theme.font) return theme;
+  const key = `${theme.id}:${font}`;
+  let next = handwritingThemes.get(key);
+  if (!next) {
+    next = { ...theme, font };
+    handwritingThemes.set(key, next);
+  }
+  return next;
+}
+
+/**
+ * Choose appearance independently of word order. Every 5–7 cards the palette's font
+ * gives way to a handwriting face; colors and motion are untouched.
+ * @param occurrence Stable occurrence. @param choice Visitor overrides.
+ * @param position Absolute stream position; omitted, no handwriting accent is applied.
+ * @returns Theme/style.
+ */
+export function choosePresentation(occurrence: string, choice: Presentation, position?: number) {
+  const theme =
+    THEMES.find((item) => item.id === choice.theme) ??
+    THEMES[hash(`${occurrence}:theme`) % THEMES.length];
   return {
-    theme:
-      THEMES.find((theme) => theme.id === choice.theme) ??
-      THEMES[hash(`${occurrence}:theme`) % THEMES.length],
+    theme: withFont(
+      theme,
+      position === undefined ? null : pickHandwritingFont(occurrence, position),
+    ),
     style:
       STYLES.find((style) => style.id === choice.style) ??
       STYLES[hash(`${occurrence}:style`) % STYLES.length],

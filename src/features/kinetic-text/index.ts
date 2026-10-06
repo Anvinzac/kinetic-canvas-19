@@ -24,6 +24,9 @@ export {
   getVietnameseWordLines,
   isLikelyVietnameseText,
   repairSplitCompoundEmphasis,
+  SHORT_SENTENCE_MAX_WORDS,
+  countSentenceWords,
+  limitShortSentenceEmphasis,
 } from "./lib/text-language";
 export type {
   VietnameseLayoutMetrics,

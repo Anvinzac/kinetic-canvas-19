@@ -22,6 +22,7 @@ import { buildVocabularyCanvas, choosePresentation, fitVocabularyTextSize } from
 import { buildStages } from "../lib/stages";
 import { getExportStageBox, type CardExportLayout } from "../lib/export-layout";
 import { hasReportedWord } from "../lib/reported-words";
+import { sceneSkipLimiter } from "../lib/skip-limiter";
 import { getSpellingDurationMs, pickSpellingVariant } from "../lib/spelling";
 import {
   REACTIONS_EVENT,
@@ -35,12 +36,15 @@ import {
 } from "../lib/reactions";
 import { EMOJI_PALETTE, formatEmojiTotal, mockEmojiTotals, withLocalEmojis } from "../lib/emoji";
 import { useLearningPlayback } from "../hooks/useLearningPlayback";
+import { usePresence } from "@/hooks/use-presence";
 import type { FeedEntry, Presentation } from "../types";
 import { EmojiBurst } from "./EmojiBurst";
 import { SpellingAnimation } from "./SpellingAnimation";
 import { VocabularyStage } from "./VocabularyStage";
 import { WordReportButton, WordReportPanel } from "./WordReportControl";
 
+/** Matches the report panel's exit keyframes (--dur-quick) in vocabulary.css. */
+const REPORT_EXIT_MS = 180;
 /** Horizontal travel before a drag starts moving the page, in px. */
 const DRAG_SLOP_PX = 10;
 /** Share of the finger's travel the page follows — under 1 so it feels held, not loose. */
@@ -81,7 +85,7 @@ export function VocabularyCard({
   /** Custom label for the reveal button, from admin wording presets. */
   revealButtonLabel?: string;
 }) {
-  const { theme, style } = choosePresentation(entry.occurrenceId, presentation);
+  const { theme, style } = choosePresentation(entry.occurrenceId, presentation, entry.position);
   const stages = useMemo(() => buildStages(entry.word, style.id), [entry.word, style.id]);
   const canvas = useMemo(() => buildVocabularyCanvas(theme, style), [theme, style]);
   // The spelling coda is one extra page appended after the reveal stage, so the
@@ -134,6 +138,7 @@ export function VocabularyCard({
     setReportOpen(false);
     reportButton.current?.focus();
   }, []);
+  const report = usePresence(reportOpen, REPORT_EXIT_MS);
   const markReported = useCallback(() => setReported(true), []);
   const playback = useLearningPlayback({
     count: pageCount,
@@ -311,11 +316,14 @@ export function VocabularyCard({
       const dt = Date.now() - start.t;
       const ax = Math.abs(dx);
       const ay = Math.abs(dy);
+      // Forward skips share one limiter; once it trips, the gesture is swallowed silently.
+      const canSkip = () => sceneSkipLimiter.tryConsume();
       // Horizontal swipe
       if ((ax > 44 || ay > 44) && ax > ay) {
         if (dx < -44) {
-          if (isSpelling) onAdvance();
-          else if (!stage.reveal) playback.next();
+          if (isSpelling) {
+            if (canSkip()) onAdvance();
+          } else if (!stage.reveal && canSkip()) playback.next();
         } else if (dx > 44) {
           playback.previous();
         }
@@ -327,7 +335,7 @@ export function VocabularyCard({
       if (dt < 600 && ax < 16 && ay < 16) {
         // During the spelling coda a tap means "I have it" — skip to the next word.
         if (isSpelling) {
-          onAdvance();
+          if (canSkip()) onAdvance();
           return;
         }
         const rect = cardRef.current?.getBoundingClientRect();
@@ -339,11 +347,11 @@ export function VocabularyCard({
           playback.previous();
         } else if (relX > rightZone) {
           if (stage.reveal) playback.restart();
-          else playback.next();
+          else if (canSkip()) playback.next();
         } else {
           // Center tap reveals or restarts
           if (stage.reveal) playback.restart();
-          else playback.reveal();
+          else if (canSkip()) playback.reveal();
         }
       }
     },
@@ -555,8 +563,9 @@ export function VocabularyCard({
         ))}
       </div>
 
-      {!exportLayout && reportOpen && (
+      {!exportLayout && report.mounted && (
         <WordReportPanel
+          closing={report.closing}
           wordId={wordId}
           stageId={isSpelling ? "spelling" : stage.id}
           alreadyReported={reported}

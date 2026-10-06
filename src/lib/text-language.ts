@@ -18,6 +18,9 @@ export {
   getVietnameseWordLines,
   isLikelyVietnameseText,
   repairSplitCompoundEmphasis,
+  SHORT_SENTENCE_MAX_WORDS,
+  countSentenceWords,
+  limitShortSentenceEmphasis,
 } from "@/features/kinetic-text";
 export type {
   VietnameseLayoutMetrics,
