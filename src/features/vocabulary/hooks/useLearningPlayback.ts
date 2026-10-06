@@ -25,6 +25,24 @@ export function useLearningPlayback(options: {
     document.addEventListener("visibilitychange", update);
     return () => document.removeEventListener("visibilitychange", update);
   }, []);
+  // A physical rotation can strand `visible`: the rotate-to-portrait gate releases the
+  // screen wake lock while it is up, so a phone left in landscape may dim or sleep. On
+  // rotate-back the matching `visibilitychange -> visible` can be missed or race this
+  // hook's listeners, leaving `visible` stuck false — which keeps `playing` (and so the
+  // auto-advance timer) permanently off even though the card is active again. Re-read the
+  // authoritative `document.hidden` the moment the card becomes active, plus on focus and
+  // bfcache restore, so playback always resumes without needing a manual tap.
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    if (options.active) setVisible(!document.hidden);
+    const resync = () => setVisible(!document.hidden);
+    window.addEventListener("focus", resync);
+    window.addEventListener("pageshow", resync);
+    return () => {
+      window.removeEventListener("focus", resync);
+      window.removeEventListener("pageshow", resync);
+    };
+  }, [options.active]);
   const playing = options.active && visible && options.autoplay && !options.reducedMotion;
   const isLast = page >= options.count - 1;
   const duration = options.durations[page] ?? 3200;

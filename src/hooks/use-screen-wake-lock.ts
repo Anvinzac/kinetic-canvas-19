@@ -8,7 +8,7 @@
  * IMPORTANT — secure context only: the Screen Wake Lock API is exposed solely on
  * `https://` and `http://localhost`. Over a plain-HTTP LAN origin (e.g. testing on a
  * phone via `http://192.168.x.x:8081`) `navigator.wakeLock` is `undefined` and this is a
- * silent no-op; use HTTPS (or localhost) to exercise it on a device.
+ * silent no-op; the hosted (HTTPS) build keeps the screen lit as intended.
  *
  * Graceful degradation: unsupported browsers (e.g. Firefox, Safari < 16.4) simply get no
  * lock — nothing throws and behaviour is unchanged. The lock is auto-released by the
