@@ -11,6 +11,9 @@ import { useServerFn } from "@tanstack/react-start";
 import { useState, type ReactElement } from "react";
 import { toast } from "sonner";
 import { PostCardShell } from "@/components/PostCard";
+import { OrientationGate } from "@/components/OrientationGate";
+import { useOrientationGate } from "@/hooks/use-orientation-gate";
+import { useScreenWakeLock } from "@/hooks/use-screen-wake-lock";
 import {
   discoveryKeys,
   getMe,
@@ -54,21 +57,27 @@ export function ProfilePage(): ReactElement {
   const demoMode = dataMode === "demo";
 
   const { data, isLoading } = useQuery(
-    profileQueryOptions(username, dataMode, () =>
-      fetchProfile({ data: { username } }) as Promise<SocialProfileData>,
+    profileQueryOptions(
+      username,
+      dataMode,
+      () => fetchProfile({ data: { username } }) as Promise<SocialProfileData>,
     ),
   );
   const { data: me } = useQuery(meQueryOptions(dataMode, () => fetchMe() as Promise<SocialMeData>));
 
   const followMut = useMutation({
     mutationFn: (target_id: string) =>
-      demoMode ? toggleMockFollow(target_id): followFn({ data: { target_id } }),
+      demoMode ? toggleMockFollow(target_id) : followFn({ data: { target_id } }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: discoveryKeys.meRoot });
       qc.invalidateQueries({ queryKey: [...discoveryKeys.profileRoot, username] });
     },
   });
   const scrollRef = useStatusScrollSnap<HTMLDivElement>(data?.posts.length ?? 0);
+  // Rotate-to-portrait gate: the profile is a vertical snap stack of portrait-first cards.
+  const orientationGated = useOrientationGate();
+  // Keep the screen lit while the profile feed is the active, visible scene (secure contexts only).
+  useScreenWakeLock(!orientationGated);
 
   if (isLoading || !data) {
     return (
@@ -82,7 +91,7 @@ export function ProfilePage(): ReactElement {
   const isFollowing = me?.followingIds?.includes(data.profile.id) ?? false;
   const rawPosts = data.posts as MockPost[];
   const posts =
-    data.profile.username === "do_chu_bot" ? prioritizeVietnamYesterdayPosts(rawPosts): rawPosts;
+    data.profile.username === "do_chu_bot" ? prioritizeVietnamYesterdayPosts(rawPosts) : rawPosts;
   const engagementByPost = data.engagementByPost as Record<string, Engagement>;
   const counts = getTypeCounts(posts);
   const profilesById = new Map([[data.profile.id, data.profile]]);
@@ -118,6 +127,7 @@ export function ProfilePage(): ReactElement {
       ref={scrollRef}
       className="h-[100dvh] snap-y snap-mandatory overflow-y-scroll overscroll-contain scrollbar-hide [touch-action:pan-y]"
     >
+      <OrientationGate show={orientationGated} />
       <div
         data-status-snap-item="true"
         className="flex h-[100dvh] min-h-0 snap-start snap-always flex-col overflow-y-auto px-5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-[max(env(safe-area-inset-top),12px)]"

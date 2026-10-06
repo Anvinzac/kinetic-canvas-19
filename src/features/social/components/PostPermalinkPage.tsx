@@ -8,16 +8,14 @@
 import { Link, useParams } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import {type ReactElement, useEffect, useState } from "react";
+import { type ReactElement, useEffect, useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import { PostCard } from "@/components/PostCard";
+import { OrientationGate } from "@/components/OrientationGate";
+import { useOrientationGate } from "@/hooks/use-orientation-gate";
+import { useScreenWakeLock } from "@/hooks/use-screen-wake-lock";
 import { resolveDataMode } from "@/features/session";
-import {
-  addMockComment,
-  getMockPost,
-  MOCK_ME_ID,
-  toggleMockLike,
-} from "@/features/demo";
+import { addMockComment, getMockPost, MOCK_ME_ID, toggleMockLike } from "@/features/demo";
 import { supabase } from "@/integrations/supabase/client";
 import type { SocialPostData } from "@/shared/types";
 import { socialKeys } from "../api/keys";
@@ -39,12 +37,18 @@ export function PostPermalinkPage(): ReactElement {
   const postKey = socialKeys.post(dataMode, postId);
 
   const { data, isLoading, error } = useQuery(
-    postQueryOptions(dataMode, postId, () =>
-      fetchPost({ data: { post_id: postId } }) as Promise<SocialPostData>,
+    postQueryOptions(
+      dataMode,
+      postId,
+      () => fetchPost({ data: { post_id: postId } }) as Promise<SocialPostData>,
     ),
   );
 
   const [myProfileId, setMyProfileId] = useState<string | null>(null);
+  // Rotate-to-portrait gate: the post player is authored portrait-first.
+  const orientationGated = useOrientationGate();
+  // Keep the screen lit while the post is the active, visible scene (secure contexts only).
+  useScreenWakeLock(!orientationGated);
 
   useEffect(() => {
     if (demoMode) {
@@ -66,7 +70,7 @@ export function PostPermalinkPage(): ReactElement {
 
   const likeMut = useMutation({
     mutationFn: (post_id: string) =>
-      demoMode ? toggleMockLike(post_id): likeFn({ data: { post_id } }),
+      demoMode ? toggleMockLike(post_id) : likeFn({ data: { post_id } }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: postKey });
       qc.invalidateQueries({ queryKey: socialKeys.feedRoot });
@@ -76,7 +80,7 @@ export function PostPermalinkPage(): ReactElement {
 
   const commentMut = useMutation({
     mutationFn: ({ post_id, chip_id }: { post_id: string; chip_id: string }) =>
-      demoMode ? addMockComment(post_id, chip_id): commentFn({ data: { post_id, chip_id } }),
+      demoMode ? addMockComment(post_id, chip_id) : commentFn({ data: { post_id, chip_id } }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: postKey });
       qc.invalidateQueries({ queryKey: socialKeys.feedRoot });
@@ -114,10 +118,12 @@ export function PostPermalinkPage(): ReactElement {
 
   const profilesById = new Map(data.profiles.map((profile) => [profile.id, profile]));
   const liked = myProfileId
-    ? data.likes.some((likeItem) => likeItem.user_id === myProfileId): false;
+    ? data.likes.some((likeItem) => likeItem.user_id === myProfileId)
+    : false;
 
   return (
     <main className="relative flex h-[100dvh] w-full items-center justify-center overflow-hidden bg-background">
+      <OrientationGate show={orientationGated} />
       <PostCard
         post={data.post}
         author={profilesById.get(data.post.author_id)}

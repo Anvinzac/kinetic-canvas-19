@@ -2,6 +2,9 @@
 import { useCallback, useState } from "react";
 import { useReducedMotion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
+import { OrientationGate } from "@/components/OrientationGate";
+import { useOrientationGate } from "@/hooks/use-orientation-gate";
+import { useScreenWakeLock } from "@/hooks/use-screen-wake-lock";
 import type { FeedPage, Presentation, VocabularyFilters } from "../types";
 import { DIFFICULTY_ALL } from "../lib/difficulty";
 import { useIsAdmin } from "@/features/admin/hooks/useIsAdmin";
@@ -44,6 +47,10 @@ export function VocabularyFeedPage() {
   const closeExport = useCallback(() => setExportOpen(false), []);
   const viewHistory = useViewHistory();
   const reducedMotion = !!useReducedMotion();
+  // Rotate-to-portrait gate: covers the scene AND suspends playback on a landscape phone.
+  const orientationGated = useOrientationGate();
+  // Keep the screen lit while the feed is the active, visible scene (secure contexts only).
+  useScreenWakeLock(!orientationGated);
   // The stream still mounts and fetches while fonts load; only the text is held.
   const fontsReady = useFontsReady();
   // Each word that comes on screen is logged to the viewing history and counted
@@ -69,6 +76,7 @@ export function VocabularyFeedPage() {
   };
   return (
     <main className="vocabulary-shell">
+      <OrientationGate show={orientationGated} />
       <FeedControls
         metadata={metadata}
         filters={filters}
@@ -92,7 +100,7 @@ export function VocabularyFeedPage() {
         filters={filters}
         presentation={presentation}
         reducedMotion={reducedMotion}
-        suspended={optionsOpen || !fontsReady || exportOpen}
+        suspended={optionsOpen || !fontsReady || exportOpen || orientationGated}
         exportOpen={isAdmin && exportOpen}
         onCloseExport={closeExport}
         history={viewHistory.history}

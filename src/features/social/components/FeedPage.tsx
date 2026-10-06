@@ -7,17 +7,15 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import {type ReactElement, useEffect, useState } from "react";
+import { type ReactElement, useEffect, useState } from "react";
 import { PostCardShell } from "@/components/PostCard";
+import { OrientationGate } from "@/components/OrientationGate";
+import { useOrientationGate } from "@/hooks/use-orientation-gate";
+import { useScreenWakeLock } from "@/hooks/use-screen-wake-lock";
 import { supabase } from "@/integrations/supabase/client";
 import { resolveDataMode } from "@/features/session";
 import { useStatusScrollSnap } from "@/lib/use-status-scroll-snap";
-import {
-  addMockComment,
-  getMockFeed,
-  MOCK_ME_ID,
-  toggleMockLike,
-} from "@/features/demo";
+import { addMockComment, getMockFeed, MOCK_ME_ID, toggleMockLike } from "@/features/demo";
 import type { SocialFeedData } from "@/shared/types";
 import { socialKeys } from "../api/keys";
 import { feedQueryOptions } from "../api/queries";
@@ -40,6 +38,10 @@ export function FeedPage(): ReactElement {
     feedQueryOptions(dataMode, () => fetchFeed() as Promise<SocialFeedData>),
   );
   const scrollRef = useStatusScrollSnap(data?.posts.length ?? 0);
+  // Rotate-to-portrait gate: the post player is authored portrait-first.
+  const orientationGated = useOrientationGate();
+  // Keep the screen lit while the feed is the active, visible scene (secure contexts only).
+  useScreenWakeLock(!orientationGated);
 
   const [myProfileId, setMyProfileId] = useState<string | null>(null);
 
@@ -63,7 +65,7 @@ export function FeedPage(): ReactElement {
 
   const likeMut = useMutation({
     mutationFn: (post_id: string) =>
-      demoMode ? toggleMockLike(post_id): likeFn({ data: { post_id } }),
+      demoMode ? toggleMockLike(post_id) : likeFn({ data: { post_id } }),
     onSuccess: () => {
       if (demoMode) {
         qc.setQueryData(feedKey, getMockFeed());
@@ -75,7 +77,7 @@ export function FeedPage(): ReactElement {
   });
   const commentMut = useMutation({
     mutationFn: ({ post_id, chip_id }: { post_id: string; chip_id: string }) =>
-      demoMode ? addMockComment(post_id, chip_id): commentFn({ data: { post_id, chip_id } }),
+      demoMode ? addMockComment(post_id, chip_id) : commentFn({ data: { post_id, chip_id } }),
     onSuccess: () => {
       if (demoMode) {
         qc.setQueryData(feedKey, getMockFeed());
@@ -109,6 +111,7 @@ export function FeedPage(): ReactElement {
 
   return (
     <div className="relative">
+      <OrientationGate show={orientationGated} />
       <main
         ref={scrollRef}
         className="scrollbar-hide h-[100dvh] snap-y snap-mandatory overflow-y-scroll overscroll-contain [touch-action:pan-y]"
@@ -124,7 +127,8 @@ export function FeedPage(): ReactElement {
             comments={commentsByPost.get(p.id) ?? []}
             liked={
               myProfileId
-                ? (likesByPost.get(p.id) ?? []).some((l) => l.user_id === myProfileId): false
+                ? (likesByPost.get(p.id) ?? []).some((l) => l.user_id === myProfileId)
+                : false
             }
             onLike={() => likeMut.mutate(p.id)}
             onComment={(chip) => commentMut.mutate({ post_id: p.id, chip_id: chip })}
