@@ -40,7 +40,9 @@ function matchingPool(topic: string, level: string, difficulty: string): Uint32A
   const allowed = allowedLevels(level, difficulty);
   const matches: number[] = [];
   catalog.words.forEach((word, index) => {
-    if (topic && word.topic !== topic) return;
+    // A word carries several usage domains; the legacy single `topic` is the fallback
+    // for a deck compiled before the axis became multi-valued.
+    if (topic && !(word.topics?.includes(topic) ?? word.topic === topic)) return;
     // A word with no CEFR level cannot belong to any band, so a filtered stream
     // excludes it while an unfiltered one still offers it.
     if (allowed && !(word.level && allowed.has(word.level))) return;

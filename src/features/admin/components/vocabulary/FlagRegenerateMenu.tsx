@@ -91,9 +91,7 @@ export function FlagRegenerateMenu({ onRegenerate, label }: Props) {
           role="menu"
           className="absolute bottom-full right-0 mb-1 w-56 rounded-lg border border-border bg-background p-2 shadow-lg"
         >
-          <p className="px-1 pb-1.5 text-xs font-medium text-muted-foreground">
-            What's wrong?
-          </p>
+          <p className="px-1 pb-1.5 text-xs font-medium text-muted-foreground">What's wrong?</p>
           <div className="flex flex-wrap gap-1">
             {COMPLAINTS.map((c) => (
               <button

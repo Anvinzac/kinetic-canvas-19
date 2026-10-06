@@ -15,7 +15,8 @@
     "check:ambient": "node scripts/check-ambient-single-stream.ts",
     "check:palettes": "node scripts/check-palette-contrast.ts",
     "check:saved-groups": "npx tsx scripts/check-saved-groups.ts",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "check:workbench": "npx tsx scripts/check-vocabulary-workbench.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

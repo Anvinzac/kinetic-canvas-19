@@ -12,7 +12,7 @@ export { ContentPage } from "./components/content/ContentPage";
 export { LinksPage } from "./components/links/LinksPage";
 export { ErrorsPage } from "./components/errors/ErrorsPage";
 export { SystemPage } from "./components/system/SystemPage";
-export { VocabularyWordsPage } from "./components/vocabulary/VocabularyWordsPage";
+export { VocabularyWorkbenchPage } from "./components/vocabulary/VocabularyWorkbenchPage";
 export { WordReportsPage } from "./components/reports/WordReportsPage";
 export { TemplateManagerPage } from "./components/templates/TemplateManagerPage";
 export { PaletteManagerPage } from "./components/palettes/PaletteManagerPage";

@@ -4,6 +4,14 @@ import { z } from "zod";
 export const LEVELS = ["A1", "A2", "B1", "B2", "C1", "C2"] as const;
 export const STYLE_IDS = ["detective", "speed", "confession", "minimal"] as const;
 const optionalText = (max: number) => z.string().trim().max(max).optional().default("");
+/** A grouping-axis value: lowercase slug, no spaces, so it is safe in a URL filter. */
+const taxonomySlug = (max: number) =>
+  z
+    .string()
+    .trim()
+    .toLowerCase()
+    .max(max)
+    .regex(/^[a-z0-9-]+$/);
 // Crawler-produced Vietnamese emphasis annotations (deck field `emphasis`, converted
 // from the crawler's internal emphasisVi). Meaningful phrases only: trimmed,
 // letter-bearing, short enough to be a compound phrase rather than a sentence.
@@ -44,6 +52,11 @@ const wordSchema = z.object({
     .regex(/^[a-z0-9-]*$/)
     .optional()
     .default("general"),
+  // The canonical usage axis. `topic` above stays as the first of these, so readers and
+  // scripts written against the single-value field keep working.
+  topics: z.array(taxonomySlug(60)).max(6).optional(),
+  /** Exam and competition targets this word is prepared for. */
+  exams: z.array(taxonomySlug(40)).max(8).optional(),
   level: z.enum(LEVELS).optional(),
   style: z.enum(STYLE_IDS).optional(),
   chars: z.number().int().nonnegative().optional(),
@@ -122,11 +135,17 @@ export function normalizeDeck(input: unknown): Omit<Catalog, "revision"> {
     }
     ids.add(id);
     targets.add(word);
+    // The multi-valued axis is canonical. A deck carrying only the legacy single
+    // `topic` is lifted into it, and `topic` is always restated as the first entry so
+    // the two can never disagree.
+    const topics = [...new Set(entry.topics?.length ? entry.topics : [entry.topic || "general"])];
     return {
       ...entry,
       id,
       word,
-      topic: entry.topic || "general",
+      topic: topics[0]!,
+      topics,
+      exams: entry.exams?.length ? [...new Set(entry.exams)] : undefined,
       chars: (word.match(/\p{L}/gu) ?? []).length,
       initial: word[0].toUpperCase(),
       emphasis: normalizeEmphasisPhrases(entry.emphasis),
@@ -136,7 +155,7 @@ export function normalizeDeck(input: unknown): Omit<Catalog, "revision"> {
   return {
     name: parsed.data.meta?.name || "WordCrawler vocabulary",
     count: words.length,
-    topics: [...new Set(words.map((word) => word.topic))].sort(),
+    topics: [...new Set(words.flatMap((word) => word.topics))].sort(),
     levels: LEVELS.filter((level) => words.some((word) => word.level === level)),
     words,
   };

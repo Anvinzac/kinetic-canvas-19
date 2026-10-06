@@ -15,9 +15,9 @@ export const adminKeys = {
   healthHistory: (mode: string) => [...adminKeys.all, "healthHistory", mode] as const,
   errors: (from: string, to: string, mode: string, status?: string) =>
     [...adminKeys.all, "errors", from, to, mode, status ?? "all"] as const,
-  vocabulary: () => [...adminKeys.all, "vocabulary"] as const,
-  vocabularyCompleted: () => [...adminKeys.all, "vocabulary-completed"] as const,
   wordReports: () => [...adminKeys.all, "word-reports"] as const,
+  workbench: (query: string) => [...adminKeys.all, "workbench", query] as const,
+  workbenchViews: () => [...adminKeys.all, "workbench-views"] as const,
   templates: () => [...adminKeys.all, "templates"] as const,
   palettes: () => [...adminKeys.all, "palettes"] as const,
   llmSettings: () => [...adminKeys.all, "llm-settings"] as const,

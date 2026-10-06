@@ -1,5 +1,5 @@
 {
-  "revision": "b1f6e670edc5357ad2420ee8",
+  "revision": "119deb3f20bd2959539f0791",
   "name": "WordCrawler mock deck v1.1",
   "count": 25,
   "topics": [
@@ -27,15 +27,18 @@
       "pos": "adj",
       "ipa": "/rɪˈzɪl.i.ənt/",
       "topic": "character",
+      "topics": [
+        "character"
+      ],
       "level": "B2",
-      "chars": 9,
-      "initial": "R",
       "usage": [
         {
           "en": "She proved more _____ than anyone expected.",
           "vi": "Cô ấy chứng tỏ mình mạnh mẽ hơn người ta tưởng."
         }
-      ]
+      ],
+      "chars": 9,
+      "initial": "R"
     },
     {
       "id": "vague",
@@ -46,15 +49,18 @@
       "pos": "adj",
       "ipa": "/veɪɡ/",
       "topic": "communication",
+      "topics": [
+        "communication"
+      ],
       "level": "B1",
-      "chars": 5,
-      "initial": "V",
       "usage": [
         {
           "en": "His plan was too _____ to follow.",
           "vi": "Kế hoạch của anh ấy quá mơ hồ để thực hiện."
         }
-      ]
+      ],
+      "chars": 5,
+      "initial": "V"
     },
     {
       "id": "negotiate",
@@ -65,15 +71,18 @@
       "pos": "verb",
       "ipa": "/nɪˈɡoʊ.ʃi.eɪt/",
       "topic": "work",
+      "topics": [
+        "work"
+      ],
       "level": "B1",
-      "chars": 9,
-      "initial": "N",
       "usage": [
         {
           "en": "They refused to _____ with the rebels.",
           "vi": "Họ từ chối thảo luận với phe nổi loạn."
         }
-      ]
+      ],
+      "chars": 9,
+      "initial": "N"
     },
     {
       "id": "deadline",
@@ -84,15 +93,18 @@
       "pos": "noun",
       "ipa": "/ˈded.laɪn/",
       "topic": "work",
+      "topics": [
+        "work"
+      ],
       "level": "A2",
-      "chars": 8,
-      "initial": "D",
       "usage": [
         {
           "en": "I missed the _____ by two hours.",
           "vi": "Tôi đã trễ thời hạn hai tiếng."
         }
-      ]
+      ],
+      "chars": 8,
+      "initial": "D"
     },
     {
       "id": "overlook",
@@ -103,15 +115,18 @@
       "pos": "verb",
       "ipa": "/ˌoʊ.vɚˈlʊk/",
       "topic": "attention",
+      "topics": [
+        "attention"
+      ],
       "level": "B2",
-      "chars": 8,
-      "initial": "O",
       "usage": [
         {
           "en": "It's easy to _____ small errors early on.",
           "vi": "Dễ dàng bỏ qua những lỗi nhỏ từ đầu."
         }
-      ]
+      ],
+      "chars": 8,
+      "initial": "O"
     },
     {
       "id": "reluctant",
@@ -122,15 +137,18 @@
       "pos": "adj",
       "ipa": "/rɪˈlʌk.tənt/",
       "topic": "emotion",
+      "topics": [
+        "emotion"
+      ],
       "level": "B2",
-      "chars": 9,
-      "initial": "R",
       "usage": [
         {
           "en": "He was _____ to admit his mistake.",
           "vi": "Anh ấy không muốn thừa nhận sai lầm của mình."
         }
-      ]
+      ],
+      "chars": 9,
+      "initial": "R"
     },
     {
       "id": "genuine",
@@ -141,15 +159,18 @@
       "pos": "adj",
       "ipa": "/ˈdʒen.ju.ɪn/",
       "topic": "character",
+      "topics": [
+        "character"
+      ],
       "level": "B1",
-      "chars": 7,
-      "initial": "G",
       "usage": [
         {
           "en": "Her smile looked completely _____.",
           "vi": "Nụ cười của cô ấy trông rất chân thành."
         }
-      ]
+      ],
+      "chars": 7,
+      "initial": "G"
     },
     {
       "id": "compromise",
@@ -160,15 +181,18 @@
       "pos": "noun",
       "ipa": "/ˈkɑːm.prə.maɪz/",
       "topic": "work",
+      "topics": [
+        "work"
+      ],
       "level": "B2",
-      "chars": 10,
-      "initial": "C",
       "usage": [
         {
           "en": "Marriage requires a lot of _____.",
           "vi": "Hôn nhân cần rất nhiều sự thỏa hiệp giữa hai người."
         }
-      ]
+      ],
+      "chars": 10,
+      "initial": "C"
     },
     {
       "id": "subtle",
@@ -179,15 +203,18 @@
       "pos": "adj",
       "ipa": "/ˈsʌt.əl/",
       "topic": "thinking",
+      "topics": [
+        "thinking"
+      ],
       "level": "B2",
-      "chars": 6,
-      "initial": "S",
       "usage": [
         {
           "en": "There's a _____ change in her tone.",
           "vi": "Giọng cô ấy có chút thay đổi nhỏ mà sâu sắc."
         }
-      ]
+      ],
+      "chars": 6,
+      "initial": "S"
     },
     {
       "id": "postpone",
@@ -198,15 +225,18 @@
       "pos": "verb",
       "ipa": "/poʊstˈpoʊn/",
       "topic": "time",
+      "topics": [
+        "time"
+      ],
       "level": "B1",
-      "chars": 8,
-      "initial": "P",
       "usage": [
         {
           "en": "Rain forced us to _____ the picnic.",
           "vi": "Mưa làm tụi mình phải dời buổi picnic."
         }
-      ]
+      ],
+      "chars": 8,
+      "initial": "P"
     },
     {
       "id": "reliable",
@@ -217,15 +247,18 @@
       "pos": "adj",
       "ipa": "/rɪˈlaɪ.ə.bəl/",
       "topic": "character",
+      "topics": [
+        "character"
+      ],
       "level": "B1",
-      "chars": 8,
-      "initial": "R",
       "usage": [
         {
           "en": "He's the most _____ person I know.",
           "vi": "Anh ấy là người mà tôi tin tưởng nhất."
         }
-      ]
+      ],
+      "chars": 8,
+      "initial": "R"
     },
     {
       "id": "assume",
@@ -236,15 +269,18 @@
       "pos": "verb",
       "ipa": "/əˈsuːm/",
       "topic": "thinking",
+      "topics": [
+        "thinking"
+      ],
       "level": "B1",
-      "chars": 6,
-      "initial": "A",
       "usage": [
         {
           "en": "I _____ you've read the brief.",
           "vi": "Tôi cho rằng bạn đã đọc qua hồ sơ."
         }
-      ]
+      ],
+      "chars": 6,
+      "initial": "A"
     },
     {
       "id": "feedback",
@@ -255,15 +291,18 @@
       "pos": "noun",
       "ipa": "/ˈfiːd.bæk/",
       "topic": "work",
+      "topics": [
+        "work"
+      ],
       "level": "A2",
-      "chars": 8,
-      "initial": "F",
       "usage": [
         {
           "en": "Can I get your _____ on this draft?",
           "vi": "Tôi cần phản hồi của bạn về bản nháp này."
         }
-      ]
+      ],
+      "chars": 8,
+      "initial": "F"
     },
     {
       "id": "anxious",
@@ -274,15 +313,18 @@
       "pos": "adj",
       "ipa": "/ˈæŋk.ʃəs/",
       "topic": "emotion",
+      "topics": [
+        "emotion"
+      ],
       "level": "B1",
-      "chars": 7,
-      "initial": "A",
       "usage": [
         {
           "en": "She felt _____ about the exam results.",
           "vi": "Cô ấy cảm thấy lo lắng về kết quả kỳ thi."
         }
-      ]
+      ],
+      "chars": 7,
+      "initial": "A"
     },
     {
       "id": "clarify",
@@ -293,15 +335,18 @@
       "pos": "verb",
       "ipa": "/ˈkler.ə.faɪ/",
       "topic": "communication",
+      "topics": [
+        "communication"
+      ],
       "level": "B1",
-      "chars": 7,
-      "initial": "C",
       "usage": [
         {
           "en": "Could you _____ the last point?",
           "vi": "Bạn có thể làm rõ ý cuối cùng được không?"
         }
-      ]
+      ],
+      "chars": 7,
+      "initial": "C"
     },
     {
       "id": "priority",
@@ -312,15 +357,18 @@
       "pos": "noun",
       "ipa": "/praɪˈɔːr.ə.ti/",
       "topic": "work",
+      "topics": [
+        "work"
+      ],
       "level": "B1",
-      "chars": 8,
-      "initial": "P",
       "usage": [
         {
           "en": "Health should be your top _____.",
           "vi": "Sức khỏe nên là điều quan trọng nhất của bạn."
         }
-      ]
+      ],
+      "chars": 8,
+      "initial": "P"
     },
     {
       "id": "hesitate",
@@ -331,15 +379,18 @@
       "pos": "verb",
       "ipa": "/ˈhez.ə.teɪt/",
       "topic": "emotion",
+      "topics": [
+        "emotion"
+      ],
       "level": "B1",
-      "chars": 8,
-      "initial": "H",
       "usage": [
         {
           "en": "Don't _____ to call if you need help.",
           "vi": "Đừng ngập ngừng gọi nếu bạn cần giúp đỡ."
         }
-      ]
+      ],
+      "chars": 8,
+      "initial": "H"
     },
     {
       "id": "accurate",
@@ -350,15 +401,18 @@
       "pos": "adj",
       "ipa": "/ˈæk.jɚ.ət/",
       "topic": "thinking",
+      "topics": [
+        "thinking"
+      ],
       "level": "B1",
-      "chars": 8,
-      "initial": "A",
       "usage": [
         {
           "en": "Is this data _____ enough to publish?",
           "vi": "Dữ liệu này có đủ chính xác để công bố không?"
         }
-      ]
+      ],
+      "chars": 8,
+      "initial": "A"
     },
     {
       "id": "outcome",
@@ -369,15 +423,18 @@
       "pos": "noun",
       "ipa": "/ˈaʊt.kʌm/",
       "topic": "thinking",
+      "topics": [
+        "thinking"
+      ],
       "level": "B1",
-      "chars": 7,
-      "initial": "O",
       "usage": [
         {
           "en": "The _____ surprised everyone in the room.",
           "vi": "Kết quả đã làm mọi người trong phòng ngạc nhiên."
         }
-      ]
+      ],
+      "chars": 7,
+      "initial": "O"
     },
     {
       "id": "persuade",
@@ -388,15 +445,18 @@
       "pos": "verb",
       "ipa": "/pɚˈsweɪd/",
       "topic": "communication",
+      "topics": [
+        "communication"
+      ],
       "level": "B1",
-      "chars": 8,
-      "initial": "P",
       "usage": [
         {
           "en": "I couldn't _____ her to change her mind.",
           "vi": "Mình không thể nào thuyết phục cô ấy thay đổi ý kiến."
         }
-      ]
+      ],
+      "chars": 8,
+      "initial": "P"
     },
     {
       "id": "routine",
@@ -407,15 +467,18 @@
       "pos": "noun",
       "ipa": "/ruːˈtiːn/",
       "topic": "daily",
+      "topics": [
+        "daily"
+      ],
       "level": "A2",
-      "chars": 7,
-      "initial": "R",
       "usage": [
         {
           "en": "My morning _____ starts at six.",
           "vi": "Thói quen buổi sáng của tôi bắt đầu lúc sáu giờ."
         }
-      ]
+      ],
+      "chars": 7,
+      "initial": "R"
     },
     {
       "id": "awkward",
@@ -426,15 +489,18 @@
       "pos": "adj",
       "ipa": "/ˈɔː.kwɚd/",
       "topic": "emotion",
+      "topics": [
+        "emotion"
+      ],
       "level": "B1",
-      "chars": 7,
-      "initial": "A",
       "usage": [
         {
           "en": "The silence after his joke was _____.",
           "vi": "Sự im lặng sau câu đùa của anh ấy thật kỳ quặc."
         }
-      ]
+      ],
+      "chars": 7,
+      "initial": "A"
     },
     {
       "id": "benefit",
@@ -445,15 +511,18 @@
       "pos": "noun",
       "ipa": "/ˈben.ə.fɪt/",
       "topic": "daily",
+      "topics": [
+        "daily"
+      ],
       "level": "A2",
-      "chars": 7,
-      "initial": "B",
       "usage": [
         {
           "en": "One _____ of exercise is better sleep.",
           "vi": "Một lợi ích của việc tập thể dục là ngủ ngon hơn."
         }
-      ]
+      ],
+      "chars": 7,
+      "initial": "B"
     },
     {
       "id": "distract",
@@ -464,15 +533,18 @@
       "pos": "verb",
       "ipa": "/dɪˈstrækt/",
       "topic": "attention",
+      "topics": [
+        "attention"
+      ],
       "level": "B1",
-      "chars": 8,
-      "initial": "D",
       "usage": [
         {
           "en": "Loud noises _____ me from reading.",
           "vi": "Tiếng ồn lớn làm tôi mất tập trung khi đang đọc sách."
         }
-      ]
+      ],
+      "chars": 8,
+      "initial": "D"
     },
     {
       "id": "essential",
@@ -483,15 +555,18 @@
       "pos": "adj",
       "ipa": "/ɪˈsen.ʃəl/",
       "topic": "thinking",
+      "topics": [
+        "thinking"
+      ],
       "level": "B1",
-      "chars": 9,
-      "initial": "E",
       "usage": [
         {
           "en": "Water is _____ for all living things.",
           "vi": "Nước là thứ cần thiết cho mọi sinh vật sống."
         }
-      ]
+      ],
+      "chars": 9,
+      "initial": "E"
     }
   ]
 }

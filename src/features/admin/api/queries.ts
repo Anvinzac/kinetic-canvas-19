@@ -15,12 +15,9 @@ import {
   getAdminHealthHistory,
   getAdminRollups,
 } from "./telemetry.functions";
-import {
-  listVocabularyWords,
-  getCompletedWordCount,
-  type VocabWordRow,
-} from "./vocabulary.functions";
 import { listWordReportGroups } from "./word-report.functions";
+import { listWorkbenchWords, type WorkbenchListResult } from "./workbench.functions";
+import { listWorkbenchViews, type WorkbenchView } from "./workbench-views.functions";
 import { listTemplates, type TemplateData } from "./template.functions";
 import { listPalettes } from "./palette.functions";
 import type { Palette } from "@/features/canvas/palettes";
@@ -115,24 +112,30 @@ export function adminHealthHistoryQueryOptions(mode: AdminMode) {
 }
 
 /**
- * Vocabulary words list.
+ * One page of the vocabulary review workbench.
+ *
+ * The query object is the cache key, so changing a filter fetches that page rather
+ * than re-filtering a copy of the whole catalog in the browser.
+ * @param query - filter/sort/page parameters as the page keeps them in its URL
+ * @returns Query options for the workbench page
  */
-export function adminVocabularyQueryOptions() {
+export function adminWorkbenchQueryOptions(query: Record<string, string | number>) {
   return queryOptions({
-    queryKey: adminKeys.vocabulary(),
-    staleTime: 30_000,
-    queryFn: () => listVocabularyWords() as Promise<VocabWordRow[]>,
+    queryKey: adminKeys.workbench(JSON.stringify(query)),
+    staleTime: 10_000,
+    queryFn: () => listWorkbenchWords({ data: query }) as Promise<WorkbenchListResult>,
   });
 }
 
 /**
- * Completed vocabulary word count.
+ * Saved workbench queues.
+ * @returns Query options for the saved-queue list
  */
-export function adminVocabularyCompletedQueryOptions() {
+export function adminWorkbenchViewsQueryOptions() {
   return queryOptions({
-    queryKey: adminKeys.vocabularyCompleted(),
-    staleTime: 30_000,
-    queryFn: () => getCompletedWordCount() as Promise<number>,
+    queryKey: adminKeys.workbenchViews(),
+    staleTime: 60_000,
+    queryFn: () => listWorkbenchViews() as Promise<WorkbenchView[]>,
   });
 }
 
