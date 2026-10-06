@@ -1,29 +1,50 @@
 /**
- * Client-side resolution of this device's bookmarked words against the bundled
- * catalog. Pure lookups over localStorage plus the compiled deck — no server
- * call, no auth, no account.
+ * Client-side resolution of this device's reacted words against the bundled catalog.
+ * Pure lookups over localStorage plus the compiled deck — no server call, no auth,
+ * no account.
  *
- * Exports: SavedWord, getSavedWords, countSavedWords, lookupWord
- * Depends on: ../data/catalog.json, ./schema, ./reactions
+ * Exports: SavedWord, getWordsWithReaction, getSavedWords, getFavoriteWords,
+ *   countWordsWithReaction, lookupWord
+ * Depends on: ../data/catalog.json, ./schema, ./history, ./reactions
  */
 
 import rawCatalog from "../data/catalog.json";
 import type { Catalog, VocabularyWord } from "./schema";
-import { getBookmarkedWordIds, getReactionSnapshot } from "./reactions";
+import { loadHistory } from "./history";
+import { getReactionSnapshot, getReactionWordIds, type ReactionKind } from "./reactions";
 
 const catalog = rawCatalog as Catalog;
 
-/** Stable id → word index so bookmark lookups never rescan the deck. */
+/** Stable id → word index so reaction lookups never rescan the deck. */
 const wordsById = new Map<string, VocabularyWord>(catalog.words.map((word) => [word.id, word]));
 
-/** One bookmarked word plus this device's local reaction state for it. */
+/** One word on a saved page, plus the state that put it there. */
 export type SavedWord = {
   word: VocabularyWord;
   hearted: boolean;
-  heartTaps: number;
-  bookmarkTaps: number;
-  emojis: Record<string, number>;
+  bookmarked: boolean;
+  /**
+   * When the tab's own reaction was turned on, used to group the list by day. Undefined
+   * for words saved before stamps existed and never viewed inside the rolling history
+   * window, which files them under "Chưa xác định".
+   */
+  savedAt?: number;
 };
+
+/**
+ * Pick the day to file a word under: its own stamp when it has one, otherwise the
+ * earliest view time still held by the on-device history (a rolling week), otherwise
+ * nothing. Backfilling from views only ever applies to pre-stamp records, so a word
+ * saved today is never pushed into an older day.
+ */
+function resolveSavedAt(
+  stamp: number | undefined,
+  viewTimes: number[] | undefined,
+): number | undefined {
+  if (stamp) return stamp;
+  if (!viewTimes?.length) return undefined;
+  return Math.min(...viewTimes);
+}
 
 /** Resolve a catalog word by id (undefined when the deck no longer holds it). */
 export function lookupWord(id: string): VocabularyWord | undefined {
@@ -31,28 +52,40 @@ export function lookupWord(id: string): VocabularyWord | undefined {
 }
 
 /**
- * Every word this device bookmarked, with its local tap counters. Words that
- * were removed from the catalog after bookmarking are skipped silently.
- * @returns Saved words in the order the device bookmarked them.
+ * Every word this device has the given reaction on, in the order the reactions were
+ * written. Words removed from the catalog after reacting are skipped silently, so a
+ * stale localStorage id can never render an empty row.
+ * @param kind - Which reaction defines the list membership
+ * @returns Resolved words for that tab
  */
-export function getSavedWords(): SavedWord[] {
-  const saved: SavedWord[] = [];
-  for (const id of getBookmarkedWordIds()) {
+export function getWordsWithReaction(kind: ReactionKind): SavedWord[] {
+  const history = loadHistory();
+  const list: SavedWord[] = [];
+  for (const id of getReactionWordIds(kind)) {
     const word = wordsById.get(id);
     if (!word) continue;
     const entry = getReactionSnapshot(id);
-    saved.push({
+    list.push({
       word,
       hearted: entry.heart === true,
-      heartTaps: entry.heartTaps ?? 0,
-      bookmarkTaps: entry.bookmarkTaps ?? 0,
-      emojis: entry.emojis ?? {},
+      bookmarked: entry.bookmark === true,
+      savedAt: resolveSavedAt(kind === "bookmark" ? entry.savedAt : entry.heartedAt, history[id]),
     });
   }
-  return saved;
+  return list;
 }
 
-/** How many words this device currently has bookmarked (badge count). */
-export function countSavedWords(): number {
-  return getBookmarkedWordIds().filter((id) => wordsById.has(id)).length;
+/** Words this device kept with the bookmark button — the "Đã lưu" tab. */
+export function getSavedWords(): SavedWord[] {
+  return getWordsWithReaction("bookmark");
+}
+
+/** Words this device hearted — the "Yêu thích" tab. */
+export function getFavoriteWords(): SavedWord[] {
+  return getWordsWithReaction("heart");
+}
+
+/** How many catalog words this device currently has on for one reaction. */
+export function countWordsWithReaction(kind: ReactionKind): number {
+  return getReactionWordIds(kind).filter((id) => wordsById.has(id)).length;
 }

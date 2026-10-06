@@ -436,11 +436,7 @@ export function FeedControls({
         <Link
           className="vocab-icon-button vocab-saved-link vocab-bookmark-button"
           to="/feed/saved"
-          aria-label={
-            savedCount
-              ? `View your ${savedCount} saved word${savedCount === 1 ? "" : "s"}`
-              : "View your saved words"
-          }
+          aria-label={savedCount ? `Xem ${savedCount} từ đã lưu` : "Xem từ vựng đã lưu"}
         >
           <Bookmark size={19} fill={savedCount ? "currentColor" : "none"} />
           {savedCount > 0 && (

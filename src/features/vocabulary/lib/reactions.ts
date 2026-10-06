@@ -4,8 +4,8 @@
  * is local and synchronous; there is no server dependency and no account.
  *
  * Exports: ReactionKind, REACTIONS_KEY, REACTIONS_EVENT, hasReaction, flipReaction,
- *   getTapCount, getBookmarkedWordIds, getReactionSnapshot, getEmojiComments,
- *   addEmojiComment
+ *   getTapCount, getReactionWordIds, getBookmarkedWordIds, getReactionSnapshot,
+ *   getEmojiComments, addEmojiComment
  * Depends on: none (leaf module, SSR-safe like demo-session)
  */
 
@@ -25,6 +25,8 @@ export const REACTIONS_EVENT = "kinetic:vocab-reactions";
  * One word's reaction record. `heart`/`bookmark` are the current toggle state;
  * `heartTaps`/`bookmarkTaps` are the reader's running totals — +1 when a reaction
  * turns on and -1 when it turns off, so un-tapping lowers the count (never below 0).
+ * `savedAt`/`heartedAt` mark WHEN the reaction was last turned on, which is what the
+ * saved page groups by day; they are cleared on un-tap so re-saving starts a fresh day.
  * `emojis` maps each emoji character the reader tapped to its cumulative count.
  */
 export type ReactionEntry = {
@@ -32,6 +34,8 @@ export type ReactionEntry = {
   bookmark?: boolean;
   heartTaps?: number;
   bookmarkTaps?: number;
+  heartedAt?: number;
+  savedAt?: number;
   emojis?: Record<string, number>;
 };
 
@@ -41,6 +45,12 @@ type ReactionStore = Record<string, ReactionEntry>;
 const TAP_FIELD: Record<ReactionKind, "heartTaps" | "bookmarkTaps"> = {
   heart: "heartTaps",
   bookmark: "bookmarkTaps",
+};
+
+/** Timestamp field paired with each reaction kind, recording the last time it was turned on. */
+const DATE_FIELD: Record<ReactionKind, "heartedAt" | "savedAt"> = {
+  heart: "heartedAt",
+  bookmark: "savedAt",
 };
 
 function getStorage(): Storage | null {
@@ -71,11 +81,18 @@ export function readReactions(): ReactionStore {
       if (record.bookmark === true) entry.bookmark = true;
       const heartTaps = toCount(record.heartTaps);
       const bookmarkTaps = toCount(record.bookmarkTaps);
+      // Save dates are optional: records written before day grouping simply have none,
+      // and the saved page then backfills or files the word under "Chưa xác định".
+      const heartedAt = toCount(record.heartedAt);
+      const savedAt = toCount(record.savedAt);
       // Legacy entries have an active flag but no counter: seed it at 1.
       if (heartTaps > 0) entry.heartTaps = heartTaps;
       else if (entry.heart) entry.heartTaps = 1;
       if (bookmarkTaps > 0) entry.bookmarkTaps = bookmarkTaps;
       else if (entry.bookmark) entry.bookmarkTaps = 1;
+      // Only trust a date on a reaction that is actually still on.
+      if (heartedAt > 0 && entry.heart) entry.heartedAt = heartedAt;
+      if (savedAt > 0 && entry.bookmark) entry.savedAt = savedAt;
       // Emoji comments: carry over any { emoji: count } map from the raw record.
       if (record.emojis && typeof record.emojis === "object") {
         const emojis: Record<string, number> = {};
@@ -113,17 +130,25 @@ export function hasReaction(wordId: string, kind: ReactionKind): boolean {
  * Toggle this device's reaction, persist it, and move the running total by one: +1
  * when the reaction turns on and -1 (clamped at 0) when it turns off, so the number
  * follows the reader's current reactions instead of only ever climbing.
+ * Turning a reaction on also stamps the date field that the saved page groups by day;
+ * turning it off clears the stamp, so re-saving a word records the new day.
  * @returns The new active state (true = reaction added).
  */
-export function flipReaction(wordId: string, kind: ReactionKind): boolean {
+export function flipReaction(
+  wordId: string,
+  kind: ReactionKind,
+  now: number = Date.now(),
+): boolean {
   const store = readReactions();
   const entry: ReactionEntry = { ...(store[wordId] ?? {}) };
   const nextActive = entry[kind] !== true;
   if (nextActive) {
     entry[kind] = true;
     entry[TAP_FIELD[kind]] = toCount(entry[TAP_FIELD[kind]]) + 1;
+    entry[DATE_FIELD[kind]] = now;
   } else {
     delete entry[kind];
+    delete entry[DATE_FIELD[kind]];
     const remaining = Math.max(0, toCount(entry[TAP_FIELD[kind]]) - 1);
     if (remaining > 0) entry[TAP_FIELD[kind]] = remaining;
     else delete entry[TAP_FIELD[kind]];
@@ -139,11 +164,20 @@ export function getTapCount(wordId: string, kind: ReactionKind): number {
   return toCount(readReactions()[wordId]?.[TAP_FIELD[kind]]);
 }
 
-/** Every word ID this device currently has bookmarked, in storage order. */
-export function getBookmarkedWordIds(): string[] {
+/**
+ * Every word ID this device currently has the given reaction on, in the order the
+ * reactions were written. Drives both saved-page tabs: `"bookmark"` for the words kept,
+ * `"heart"` for the favourites.
+ */
+export function getReactionWordIds(kind: ReactionKind): string[] {
   return Object.entries(readReactions())
-    .filter(([, entry]) => entry.bookmark === true)
+    .filter(([, entry]) => entry[kind] === true)
     .map(([id]) => id);
+}
+
+/** Convenience wrapper for the bookmark list (toolbar badge, saved page). */
+export function getBookmarkedWordIds(): string[] {
+  return getReactionWordIds("bookmark");
 }
 
 /** Full per-word reaction record, for pages that need flags and counts together. */

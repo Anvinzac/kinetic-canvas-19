@@ -1559,21 +1559,245 @@
   line-height: 1.5;
   color: var(--shell-text-mute);
 }
-.vocab-saved-list {
+/* Two tabs over one list. Each tab is named after the reaction that puts a word in it,
+   so the count inside the tab is the size of that list, not of the reader's taps. */
+.vocab-saved-tabs {
   display: flex;
-  flex-direction: column;
-  gap: 14px;
-  padding: 0 max(18px, env(safe-area-inset-right)) calc(env(safe-area-inset-bottom) + 32px)
+  gap: 8px;
+  margin-bottom: 14px;
+  padding: 0 max(18px, env(safe-area-inset-right)) 0 max(18px, env(safe-area-inset-left));
+}
+.vocab-saved-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid var(--shell-line);
+  background: transparent;
+  color: var(--shell-text-mute);
+  font-size: 13px;
+  font-weight: 700;
+  transition:
+    color var(--dur-quick) var(--ease-out),
+    background var(--dur-quick) var(--ease-out),
+    border-color var(--dur-quick) var(--ease-out),
+    transform var(--dur-move) var(--ease-spring);
+}
+.vocab-saved-tab:hover {
+  color: var(--shell-text-soft);
+  background: var(--shell-hover);
+}
+.vocab-saved-tab:active {
+  transform: scale(0.96);
+  transition-duration: var(--dur-press);
+}
+.vocab-saved-tab[data-on] {
+  color: var(--vocab-ink);
+  border-color: color-mix(in srgb, var(--vocab-accent) 45%, transparent);
+  background: color-mix(in srgb, var(--vocab-accent) 14%, transparent);
+}
+.vocab-saved-tab-count {
+  min-width: 20px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--shell-hover);
+  color: var(--shell-text-soft);
+  font-size: 11px;
+  font-weight: 700;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.vocab-saved-tab[data-on] .vocab-saved-tab-count {
+  background: color-mix(in srgb, var(--vocab-accent) 28%, transparent);
+  color: var(--vocab-ink);
+}
+/* The grouping switch sits under the tabs and is deliberately quieter: it only changes
+   how the same words are filed, not which list is open. */
+.vocab-saved-switch {
+  display: flex;
+  width: fit-content;
+  gap: 4px;
+  margin: 0 max(18px, env(safe-area-inset-right)) 0 max(18px, env(safe-area-inset-left));
+  padding: 3px;
+  border: 1px solid var(--shell-line);
+  border-radius: 999px;
+}
+.vocab-saved-switch-button {
+  min-height: 32px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--shell-text-mute);
+  font-size: 12px;
+  font-weight: 700;
+  transition:
+    color var(--dur-quick) var(--ease-out),
+    background var(--dur-quick) var(--ease-out);
+}
+.vocab-saved-switch-button[aria-pressed="true"] {
+  background: var(--shell-hover);
+  color: var(--vocab-ink);
+}
+.vocab-saved-body {
+  padding: 0 max(18px, env(safe-area-inset-right)) calc(env(safe-area-inset-bottom) + 96px)
     max(18px, env(safe-area-inset-left));
 }
-.vocab-saved-item {
-  background: var(--shell-surface);
-  border: 1px solid var(--shell-line);
-  border-radius: 20px;
-  padding: 18px;
+/* One line of gesture teaching, because a swipe has no visible handle to discover. */
+.vocab-saved-hint {
+  margin: 16px 0 0;
+  font-size: 11px;
+  color: var(--shell-text-mute);
+}
+.vocab-saved-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  margin-top: 8px;
+}
+.vocab-saved-group {
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+.vocab-saved-group-title {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--shell-line);
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--shell-text-soft);
+}
+.vocab-saved-group-hint {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--shell-text-mute);
+}
+.vocab-saved-group-count {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--shell-text-mute);
+  font-variant-numeric: tabular-nums;
+}
+.vocab-saved-folder {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.vocab-saved-folder-summary {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-height: 36px;
+  padding: 0 2px;
+  list-style: none;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--shell-text-soft);
+}
+.vocab-saved-folder-summary::-webkit-details-marker {
+  display: none;
+}
+/* Drawn rather than markup so the heading stays one flex row and rotates with the folder. */
+.vocab-saved-folder-summary::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-right: 1.6px solid currentColor;
+  border-bottom: 1.6px solid currentColor;
+  transform: rotate(-45deg);
+  transition: transform var(--dur-quick) var(--ease-out);
+}
+.vocab-saved-folder[open] .vocab-saved-folder-summary::before {
+  transform: rotate(45deg);
+}
+.vocab-saved-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.vocab-saved-item {
+  position: relative;
+  border-radius: 20px;
+  /* Horizontal drags belong to the row, vertical ones to the page. */
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+.vocab-saved-item:focus-visible {
+  outline: 2px solid var(--vocab-accent);
+  outline-offset: 3px;
+}
+/* The removal target is a wash over the card, not a layer underneath it: a long-press
+   never slides the card aside, so anything painted below it could not be seen. It is
+   translucent so the word stays readable while the gesture is still in progress. */
+.vocab-saved-row-flag {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 22px;
+  border-radius: 20px;
+  background: color-mix(in srgb, #ff5f6d 16%, transparent);
+  color: #ff8e97;
+  font-size: 12px;
+  font-weight: 800;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--dur-quick) var(--ease-out);
+}
+/* A swipe uncovers one edge, so the label moves to that edge instead of hiding under the
+   card that is still covering the middle. */
+.vocab-saved-item[data-reveal="right"] .vocab-saved-row-flag {
+  justify-content: flex-end;
+}
+.vocab-saved-item[data-reveal="left"] .vocab-saved-row-flag {
+  justify-content: flex-start;
+}
+.vocab-saved-item[data-shifted] .vocab-saved-row-flag {
+  opacity: 1;
+}
+.vocab-saved-row-body {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 18px;
+  border: 1px solid var(--shell-line);
+  border-radius: 20px;
+  background: var(--shell-surface);
+  transform: translateX(var(--row-shift, 0px));
+  transition: transform var(--dur-move) var(--ease-spring);
+}
+/* While the finger is down the transform must track it exactly, not spring after it. */
+.vocab-saved-item[data-shifted] .vocab-saved-row-body {
+  transition: none;
+}
+/* Long-press countdown: the flag wipes across over exactly the hold window, so the reader
+   can see how much longer the gesture needs before it commits. */
+.vocab-saved-item[data-pressing] .vocab-saved-row-flag {
+  opacity: 1;
+  clip-path: inset(0 100% 0 0);
+  animation: vocab-saved-press 500ms linear forwards;
+}
+@keyframes vocab-saved-press {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
 }
 .vocab-saved-word-row {
   display: flex;
@@ -1603,6 +1827,14 @@
   border-radius: 999px;
   padding: 3px 9px;
 }
+/* The CEFR chip is a code ("B2") and survives being shouted; Vietnamese grammar and topic
+   labels do not, so those two keep sentence casing and a readable tracking. */
+.vocab-saved-badge[data-plain] {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  text-transform: none;
+}
 .vocab-saved-ipa {
   font-size: 13px;
   color: var(--shell-text-mute);
@@ -1615,53 +1847,52 @@
 .vocab-saved-usage {
   border-top: 1px solid var(--shell-line);
   padding-top: 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
   font-size: 13px;
   line-height: 1.6;
   color: var(--shell-text-soft);
 }
-.vocab-saved-actions {
+/* Undo beats a confirmation dialog for a gesture the reader may have mis-timed. */
+.vocab-saved-undo {
+  position: fixed;
+  z-index: 30;
+  bottom: calc(env(safe-area-inset-bottom) + 18px);
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding-top: 4px;
+  gap: 12px;
+  width: min(92vw, 420px);
+  padding: 10px 10px 10px 16px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 999px;
+  background: var(--shell-surface);
+  box-shadow: 0 14px 36px #0006;
+  font-size: 13px;
+  color: var(--shell-text-soft);
 }
-.vocab-saved-taps {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--shell-text-mute);
-  min-width: 14px;
+.vocab-saved-undo strong {
+  color: var(--vocab-ink);
+  font-weight: 700;
 }
-.vocab-saved-remove {
-  color: #ffb020;
-  border-color: #ffb02088;
-  margin-left: auto;
-}
-/* Emoji comments on the saved-words page: inline row of emoji + count pairs. */
-.vocab-saved-emojis {
+.vocab-saved-undo-button {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  margin-left: 8px;
-  flex-wrap: wrap;
-}
-.vocab-saved-emoji {
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
-  font-size: 15px;
-  line-height: 1;
-}
-.vocab-saved-emoji-count {
-  font-family: "Inter", sans-serif;
-  font-size: 10px;
-  font-weight: 600;
-  color: var(--shell-text-mute);
+  min-height: 36px;
+  margin-left: auto;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--vocab-accent);
+  color: var(--vocab-button-ink);
+  font-size: 12px;
+  font-weight: 800;
 }
 .vocab-saved-empty {
-  height: calc(100dvh - 120px);
+  /* Header and tabs sit above this, so the centre has to subtract them or the call to
+     action falls below the fold on short viewports. The grouping switch is hidden while
+     the list is empty, so it is not part of the subtraction. */
+  height: calc(100dvh - 175px);
   display: flex;
   flex-direction: column;
   align-items: center;

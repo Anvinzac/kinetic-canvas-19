@@ -14,6 +14,7 @@
     "check:gradients": "node scripts/check-canvas-gradients.ts",
     "check:ambient": "node scripts/check-ambient-single-stream.ts",
     "check:palettes": "node scripts/check-palette-contrast.ts",
+    "check:saved-groups": "npx tsx scripts/check-saved-groups.ts",
     "format": "prettier --write ."
   },
   "dependencies": {

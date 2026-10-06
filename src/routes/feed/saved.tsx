@@ -7,10 +7,10 @@ export const Route = createFileRoute("/feed/saved")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "Saved words — anh.chayLá" },
+      { title: "Từ vựng của bạn — anh.chayLá" },
       {
         name: "description",
-        content: "Every vocabulary word you bookmarked, stored on this device only.",
+        content: "Những từ vựng bạn đã lưu và yêu thích, giữ ngay trên thiết bị này.",
       },
     ],
   }),

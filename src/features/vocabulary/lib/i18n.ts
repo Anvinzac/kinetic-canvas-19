@@ -8,7 +8,8 @@
  * palette added by an admin has no entry in this map: every lookup takes the source
  * label as a fallback rather than rendering a blank or an id.
  *
- * Exports: TOPIC_LABELS_VI, THEME_LABELS_VI, STYLE_LABELS_VI, topicLabelVi, themeLabelVi, styleLabelVi
+ * Exports: TOPIC_LABELS_VI, THEME_LABELS_VI, STYLE_LABELS_VI, POS_LABELS_VI,
+ *   topicLabelVi, themeLabelVi, styleLabelVi, posLabelVi
  * Depends on: none (leaf module)
  */
 
@@ -63,6 +64,26 @@ export const STYLE_LABELS_VI: Record<string, string> = {
 };
 
 /**
+ * Catalog part-of-speech code → Vietnamese grammar label. The deck stores these as the
+ * English abbreviations ("adj", "verb", "noun"), which read as jargon on a Vietnamese
+ * page, and the admin can add a code this map has never seen — hence the fallback.
+ */
+export const POS_LABELS_VI: Record<string, string> = {
+  adj: "tính từ",
+  adjective: "tính từ",
+  adv: "trạng từ",
+  adverb: "trạng từ",
+  noun: "danh từ",
+  v: "động từ",
+  verb: "động từ",
+  prep: "giới từ",
+  preposition: "giới từ",
+  conj: "liên từ",
+  pron: "đại từ",
+  pronoun: "đại từ",
+};
+
+/**
  * Topic name in Vietnamese, falling back to the slug itself.
  * @param topic - Catalog topic slug
  * @returns Display name
@@ -90,4 +111,14 @@ export function themeLabelVi(id: string, fallback: string): string {
  */
 export function styleLabelVi(id: string, fallback: string): string {
   return STYLE_LABELS_VI[id] ?? fallback;
+}
+
+/**
+ * Part-of-speech label in Vietnamese, falling back to the stored code so an unknown
+ * code still shows something rather than nothing.
+ * @param pos - Catalog part-of-speech code
+ * @returns Display label
+ */
+export function posLabelVi(pos: string): string {
+  return POS_LABELS_VI[pos.toLowerCase()] ?? pos;
 }
