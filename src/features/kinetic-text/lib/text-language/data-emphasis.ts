@@ -1,7 +1,7 @@
 /**
  * Upstream (data-provided) emphasis phrase matching.
  *
- * Exports: getDataEmphasisWordIndexes, getDataEmphasisWordSpans, getEmphasisPhraseKeysForLayout
+ * Exports: getDataEmphasisWordIndexes, getDataEmphasisWordSpans, getEmphasisPhraseKeysForLayout, getEmphasizedRunPhraseKeys
  * Depends on: text-language/vietnamese-phrases (compound token keys)
  */
 
@@ -92,4 +92,40 @@ export function getEmphasisPhraseKeysForLayout(dataEmphasis?: string[]): string[
   return dataEmphasis
     .map((phrase) => getEmphasisPhraseKeys(phrase))
     .filter((keys): keys is string[] => keys !== null);
+}
+
+/**
+ * Token keys for every highlighted run of two or more adjacent tokens.
+ *
+ * The selection layer already decided that a run reads as ONE word — through the
+ * curated bound-phrase list, a compound repair, or two neighbouring picks — but
+ * only the annotated phrases reach the layout and styling helpers as keys. Without
+ * the runs here, a compound can still be packed onto two lines and, once split, each
+ * syllable hashes its own emphasis effect. Registering the run as a bound phrase
+ * makes that decision visible to everything downstream: unbreakable line packing and
+ * one shared effect across all its syllables.
+ * @param words - tokenized page text
+ * @param emphasized - highlighted token indexes
+ * @returns One diacritic-preserving key list per run of two or more tokens
+ * @pure true
+ */
+export function getEmphasizedRunPhraseKeys(words: string[], emphasized: Set<number>): string[][] {
+  // Runs break on a token with no letter or number, exactly like the renderers'
+  // grouping, so trailing punctuation or a masked "_____" blank never joins a phrase.
+  const hasGlyph = (word: string) => /\p{L}|\p{N}/u.test(word);
+  const runs: string[][] = [];
+  let run: string[] = [];
+
+  for (let index = 0; index < words.length; index += 1) {
+    const word = words[index] ?? "";
+    if (emphasized.has(index) && hasGlyph(word)) {
+      run.push(getCompoundTokenKey(word));
+      continue;
+    }
+    if (run.length >= 2) runs.push(run);
+    run = [];
+  }
+  if (run.length >= 2) runs.push(run);
+
+  return runs;
 }

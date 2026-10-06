@@ -7,10 +7,7 @@
 
 import { useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import { getMeasuredTextWidth } from "../lib/layout";
-import {
-  getVietnameseLayoutMetrics,
-  type WordLine,
-} from "../lib/text-language";
+import { getVietnameseLayoutMetrics, type WordLine } from "../lib/text-language";
 import {
   FULL_CANVAS_MAX_HEIGHT,
   FULL_CANVAS_REFERENCE_WIDTH,
@@ -31,12 +28,15 @@ export function useKineticTextFit({
   visualScaleGuard,
   leftAnchoredText,
   spec,
+  phraseKeys,
 }: {
   scaleToCanvas: boolean;
   isVietnamese: boolean;
   words: string[];
   visualScaleGuard: number;
   leftAnchoredText: boolean;
+  /** Bound phrase keys — the curated list plus every highlighted run — kept on one line. */
+  phraseKeys?: readonly (readonly string[])[];
   spec: {
     text: string;
     size: number;
@@ -67,12 +67,12 @@ export function useKineticTextFit({
             canvasWidth,
             spec.size * canvasScale,
             visualScaleGuard,
-          ): { lines: [], suggestedFitScale: 1 },
-    [isVietnamese, words, canvasWidth, spec.size, canvasScale, visualScaleGuard],
+            phraseKeys,
+          )
+        : { lines: [], suggestedFitScale: 1 },
+    [isVietnamese, words, canvasWidth, spec.size, canvasScale, visualScaleGuard, phraseKeys],
   );
-  const [fitScale, setFitScale] = useState(
-    isVietnamese ? vietnameseLayout.suggestedFitScale : 1,
-  );
+  const [fitScale, setFitScale] = useState(isVietnamese ? vietnameseLayout.suggestedFitScale : 1);
   const previewSize = Math.max(10, spec.size * canvasScale * fitScale);
 
   useEffect(() => {

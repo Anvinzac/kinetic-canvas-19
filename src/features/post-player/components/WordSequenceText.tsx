@@ -17,6 +17,7 @@ import {
 import {
   getDataEmphasisWordSpans,
   getEmphasisPhraseKeysForLayout,
+  getEmphasizedRunPhraseKeys,
   getKineticTextLayoutMode,
   getLoopAnimation,
   getVietnameseLayoutMetrics,
@@ -96,7 +97,10 @@ export function WordSequenceText({
     [fitAsUnit, spec.text],
   );
   const isVietnamese = words.length > 1 && isLikelyVietnameseText(spec.text);
-  const emphasized = getEmphasizedWordIndexes(words, dataEmphasis);
+  const emphasized = useMemo(
+    () => getEmphasizedWordIndexes(words, dataEmphasis),
+    [words, dataEmphasis],
+  );
   // Read the primitives, not the object, so a caller re-creating the literal each
   // render cannot churn the memo and rebuild the index set every frame.
   const secondaryPhrase = secondaryEmphasis?.phrase;
@@ -113,8 +117,17 @@ export function WordSequenceText({
   }, [words, secondaryPhrase]);
   const hasEmphasis = emphasized.size > 0 || !!secondaryEmphasized?.size;
   // Annotated compounds act as bound phrases everywhere below: unbreakable line
-  // segments plus one shared emphasis variant across all their syllables.
-  const phraseKeys = useMemo(() => getEmphasisPhraseKeysForLayout(dataEmphasis), [dataEmphasis]);
+  // segments plus one shared emphasis variant across all their syllables. The same
+  // treatment is owed to every highlighted run, which the selection already decided
+  // reads as one word — otherwise an unannotated compound can be packed apart and
+  // each syllable hashes a different effect.
+  const phraseKeys = useMemo(
+    () => [
+      ...getEmphasisPhraseKeysForLayout(dataEmphasis),
+      ...getEmphasizedRunPhraseKeys(words, emphasized),
+    ],
+    [dataEmphasis, words, emphasized],
+  );
   const isSolo = words.length <= 1;
   const visualScaleGuard = Math.max(
     hasEmphasis && !isSolo ? EMPHASIS_SCALE_FIT_GUARD : 1,

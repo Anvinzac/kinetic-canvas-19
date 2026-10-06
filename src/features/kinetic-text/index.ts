@@ -16,6 +16,7 @@ export {
   getDataEmphasisWordIndexes,
   getDataEmphasisWordSpans,
   getEmphasisPhraseKeysForLayout,
+  getEmphasizedRunPhraseKeys,
   getSpecialPoeticWordIndexes,
   getTextPageWordLimit,
   getVietnameseCanvasInnerWidth,
@@ -53,6 +54,7 @@ export {
   getEmphasisInnerAnimation,
   getEmphasisTextShadow,
   getEmphasisVariant,
+  getRunEmphasisStyle,
   isDimEmphasisColor,
   isWhiteLikeColor,
 } from "./lib/emphasis";

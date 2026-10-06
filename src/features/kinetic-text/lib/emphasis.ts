@@ -1,7 +1,7 @@
 /**
  * Pure helpers for emphasis.
  *
- * Exports: EMPHASIS_VARIANTS, NON_LUMINOUS_EMPHASIS_VARIANTS, EmphasisVariant, getEmphasisVariant, isDimEmphasisColor, getEmphasisTextShadow, getEmphasisInnerAnimation, getAuraColor, isWhiteLikeColor
+ * Exports: EMPHASIS_VARIANTS, NON_LUMINOUS_EMPHASIS_VARIANTS, EmphasisVariant, getEmphasisVariant, getRunEmphasisStyle, isDimEmphasisColor, getEmphasisTextShadow, getEmphasisInnerAnimation, getAuraColor, isWhiteLikeColor
  * Depends on: ./stable-hash
  */
 
@@ -60,12 +60,44 @@ export function getEmphasisVariant(
  */
 export function isDimEmphasisColor(color: string): boolean {
   const hex = color.trim().replace(/^#/, "");
-  const full = hex.length === 3 ? hex.replace(/(.)/g, "$1$1"): hex;
+  const full = hex.length === 3 ? hex.replace(/(.)/g, "$1$1") : hex;
   if (full.length !== 6) return false;
   const r = parseInt(full.slice(0, 2), 16);
   const g = parseInt(full.slice(2, 4), 16);
   const b = parseInt(full.slice(4, 6), 16);
   return Math.max(r, g, b) / 255 < 0.42;
+}
+
+/**
+ * The ONE effect a run of syllables is dressed with, hashed from the run itself.
+ *
+ * Seeding per syllable only agrees across a compound when a curated phrase list or an
+ * annotation knows the pair; otherwise each half hashes its own token and a two-syllable
+ * word shows two different effects. Anchoring on the run makes the group the unit. For a
+ * phrase the helpers already recognise, this join is exactly the seed and anchor its
+ * syllables agreed on, so a known compound keeps the effect it already had.
+ * @param text - full page text, part of the stable seed
+ * @param words - page tokens
+ * @param indexes - token indexes of the run, in order
+ * @param emphasisColor - the page's emphasis colour, which gates luminous effects
+ * @returns The variant every syllable of the run is drawn with
+ * @pure true
+ */
+export function getRunEmphasisStyle(
+  text: string,
+  words: readonly string[],
+  indexes: readonly number[],
+  emphasisColor: string,
+): EmphasisVariant {
+  const syllables = indexes.map((index) => words[index] ?? "");
+  const variant = getEmphasisVariant(
+    text,
+    syllables.join(" "),
+    indexes[0] ?? 0,
+    !isDimEmphasisColor(emphasisColor),
+  );
+  // A grouped run shows the box-drawing `frame` as a continuous underline, never a box.
+  return variant === "frame" ? "underline" : variant;
 }
 
 /**

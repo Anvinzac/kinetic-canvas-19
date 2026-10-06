@@ -43,6 +43,7 @@ export {
   getDataEmphasisWordIndexes,
   getDataEmphasisWordSpans,
   getEmphasisPhraseKeysForLayout,
+  getEmphasizedRunPhraseKeys,
 } from "./data-emphasis";
 
 /**

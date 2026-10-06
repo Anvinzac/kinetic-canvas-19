@@ -44,6 +44,7 @@ function getEmphasisGroups(
 import type { ReactElement } from "react";
 import type { CanvasSpec } from "@/features/canvas";
 import type { WordLine } from "../lib/text-language";
+import { getRunEmphasisStyle } from "../lib/emphasis";
 import { AnimatedWord } from "./WordRenderer";
 import { entranceVariants } from "./preview-tempo";
 
@@ -66,6 +67,7 @@ export function VietnameseLineBlock({
   emphasisColor,
   staticLayout,
   words,
+  phraseKeys,
 }: {
   lines: WordLine[];
   playKey: number;
@@ -78,6 +80,8 @@ export function VietnameseLineBlock({
   emphasisColor: string;
   staticLayout: boolean;
   words: string[];
+  /** Bound phrase keys — the curated list plus every highlighted run — for shared styling. */
+  phraseKeys?: readonly (readonly string[])[];
 }): ReactElement {
   return (
     <>
@@ -137,12 +141,21 @@ export function VietnameseLineBlock({
                         emphasisColor={emphasisColor}
                         staticLayout={staticLayout}
                         words={words}
+                        phraseKeys={phraseKeys}
                       />
                     );
 
                   const grp = segGroups.find((g) => wi >= g.start && wi < g.end);
                   if (!grp || grp.start !== wi) return null;
 
+                  // One effect for the whole group, hashed from the group itself: seeding per
+                  // syllable lets a compound the phrase list never heard of split in two.
+                  const sharedVariant = getRunEmphasisStyle(
+                    spec.text,
+                    words,
+                    segment.words.slice(grp.start, grp.end).map((w) => w.index),
+                    emphasisColor,
+                  );
                   return (
                     <span
                       key={`v-frame-group-${index}`}
@@ -176,6 +189,8 @@ export function VietnameseLineBlock({
                           emphasisColor={emphasisColor}
                           staticLayout={staticLayout}
                           words={words}
+                          phraseKeys={phraseKeys}
+                          sharedVariant={sharedVariant}
                         />
                       ))}
                     </span>

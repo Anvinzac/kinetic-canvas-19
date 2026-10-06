@@ -14,6 +14,7 @@ import {
   getEmphasisTextShadow,
   getEmphasisVariant,
   isDimEmphasisColor,
+  type EmphasisVariant,
 } from "../lib/emphasis";
 import { getBoundPhraseEmphasisSeed, getBoundPhraseStartIndex } from "../lib/text-language";
 import { getWordAnchorKey } from "../lib/words";
@@ -40,6 +41,8 @@ export function AnimatedWord({
   staticLayout,
   words,
   skipFrame = false,
+  phraseKeys,
+  sharedVariant,
 }: {
   word: string;
   index: number;
@@ -56,6 +59,14 @@ export function AnimatedWord({
   staticLayout: boolean;
   words: string[];
   skipFrame?: boolean;
+  /** Bound phrase keys — the curated list plus every highlighted run — for shared styling. */
+  phraseKeys?: readonly (readonly string[])[];
+  /**
+   * The effect the group this word belongs in was dressed in. Handed down rather than
+   * re-hashed per syllable, because a syllable seeds only from a phrase list; a compound
+   * missing from it would otherwise give each half a different effect.
+   */
+  sharedVariant?: EmphasisVariant;
 }): ReactElement {
   // Mirror the feed renderer (WordSequenceWord): a token with no letter/number —
   // trailing punctuation, or a masked "_____" answer blank (underscore is \p{Pc},
@@ -65,14 +76,17 @@ export function AnimatedWord({
   const hasGlyph = /\p{L}|\p{N}/u.test(word);
   const important = importantProp && hasGlyph;
   const spotlightWord = spotlightProp && hasGlyph;
-  const emphasisAnchorIndex = important ? getBoundPhraseStartIndex(words, index) : index;
+  const emphasisAnchorIndex = important
+    ? getBoundPhraseStartIndex(words, index, phraseKeys)
+    : index;
   const emphasisVariant = important
-    ? getEmphasisVariant(
+    ? (sharedVariant ??
+      getEmphasisVariant(
         spec.text,
-        getBoundPhraseEmphasisSeed(words, index),
+        getBoundPhraseEmphasisSeed(words, index, phraseKeys),
         emphasisAnchorIndex,
         !isDimEmphasisColor(emphasisColor),
-      )
+      ))
     : null;
   // A shared multi-syllable run must not render as a big boxed container: when a
   // syllable sits inside a group (skipFrame) and the seeded effect is the box-drawing

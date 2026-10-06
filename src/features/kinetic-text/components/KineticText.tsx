@@ -10,7 +10,8 @@ import { motion } from "framer-motion";
 import { getCanvasEmphasisColor, getCanvasTextColor, type CanvasSpec } from "@/features/canvas";
 import { getKineticTextLayoutMode, hasVisibleStickerAccent } from "../lib/layout";
 import { getLoopAnimation } from "../lib/loop";
-import { isLikelyVietnameseText } from "../lib/text-language";
+import { getEmphasizedRunPhraseKeys, isLikelyVietnameseText } from "../lib/text-language";
+import { getRunEmphasisStyle } from "../lib/emphasis";
 import { getWords } from "../lib/words";
 import { VietnameseLineBlock } from "./VietnameseLineBlock";
 import { AnimatedWord } from "./WordRenderer";
@@ -79,6 +80,9 @@ export function KineticText({
   const words = getWords(spec.text);
   const isVietnamese = isLikelyVietnameseText(spec.text);
   const emphasized = getPreviewEmphasizedWordIndexes(words);
+  // A highlighted run reads as one word, so register it as a bound phrase: line packing then
+  // keeps it together and every syllable hashes the same emphasis effect.
+  const phraseKeys = getEmphasizedRunPhraseKeys(words, emphasized);
   const visualScaleGuard = isVietnamese ? VIETNAMESE_SCALE_FIT_GUARD : 1;
   const layoutMode = getKineticTextLayoutMode(spec.text, isVietnamese, words.length, emphasized);
   const leftAnchoredText = layoutMode !== "center";
@@ -91,6 +95,7 @@ export function KineticText({
     visualScaleGuard,
     leftAnchoredText,
     spec,
+    phraseKeys,
   });
   const textColor = getCanvasTextColor(spec, background);
   const emphasisColor = getCanvasEmphasisColor({ ...spec, color: textColor }, background);
@@ -155,6 +160,7 @@ export function KineticText({
             emphasisColor={emphasisColor}
             staticLayout={staticLayout}
             words={words}
+            phraseKeys={phraseKeys}
           />
         ) : (
           (() => {
@@ -183,12 +189,20 @@ export function KineticText({
                     emphasisColor={emphasisColor}
                     staticLayout={staticLayout}
                     words={words}
+                    phraseKeys={phraseKeys}
                   />
                 );
 
               const grp = groups.find((g) => i >= g.start && i < g.end);
               if (!grp || grp.start !== i) return null;
 
+              // One effect for the whole group, hashed from the group rather than a syllable.
+              const sharedVariant = getRunEmphasisStyle(
+                spec.text,
+                words,
+                Array.from({ length: grp.end - grp.start }, (_, offset) => grp.start + offset),
+                emphasisColor,
+              );
               return (
                 <span
                   key={`frame-group-${i}`}
@@ -224,6 +238,8 @@ export function KineticText({
                       emphasisColor={emphasisColor}
                       staticLayout={staticLayout}
                       words={words}
+                      phraseKeys={phraseKeys}
+                      sharedVariant={sharedVariant}
                     />
                   ))}
                 </span>

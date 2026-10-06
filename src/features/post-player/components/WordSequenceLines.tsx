@@ -15,7 +15,7 @@ import {
   type EmphasisVariant,
   type getVietnameseLayoutMetrics,
 } from "@/features/kinetic-text";
-import { getRunEmphasisVariant } from "../lib/emphasis-variant";
+import { getRunEmphasis } from "../lib/emphasis-variant";
 import type { ResolvedEntranceStyle } from "../lib/entrances";
 import { getEntranceTransition } from "../lib/entrances";
 import { getWordDelay, tempoConfig } from "../lib/playback-timing";
@@ -30,7 +30,7 @@ export type WordSequenceLinesProps = {
   vietnameseLines: VietnameseLines;
   words: string[];
   emphasized: Set<number>;
-  /** Data-annotated phrase keys treated as bound phrases for shared emphasis styling. */
+  /** Bound phrase keys — annotations plus every highlighted run — for shared styling. */
   phraseKeys?: readonly (readonly string[])[];
   /** Caller-forced second highlight and the effect it is drawn with. */
   secondaryEmphasized?: Set<number>;
@@ -115,6 +115,7 @@ export function WordSequenceLines({
     suppressSpotlight = false,
     skipFrame = false,
     runEffect = false,
+    sharedVariant?: EmphasisVariant,
   ) => (
     <WordSequenceWord
       key={`${word}-${index}`}
@@ -138,6 +139,7 @@ export function WordSequenceLines({
       entranceStyle={entranceStyle}
       skipFrame={skipFrame}
       runEffect={runEffect}
+      sharedVariant={sharedVariant}
     />
   );
 
@@ -163,7 +165,7 @@ export function WordSequenceLines({
     const first = run[0]!;
     const last = run[run.length - 1]!;
     const { delay: frameDelay, duration: frameDuration } = frameEntrance(first.index);
-    const runVariant = getRunEmphasisVariant(
+    const runEffect = getRunEmphasis(
       run.map((item) => item.index),
       {
         words,
@@ -175,14 +177,16 @@ export function WordSequenceLines({
         emphasisColor,
       },
     );
+    // Every syllable of the run is dressed in the one effect the run settled on; only a
+    // moving effect is lifted onto the wrapper, so the syllables stay silent about it.
     const children = run.map((item) =>
-      renderWord(item.text, item.index, true, true, runVariant !== null),
+      renderWord(item.text, item.index, true, true, runEffect?.lift != null, runEffect?.style),
     );
+    const lift = runEffect?.lift ?? null;
     // The effect waits for the LAST word of the run to land, so it never starts
     // across a syllable that is still flying in.
     const effectDelay = frameEntrance(last.index);
-    const runAnimation =
-      runVariant && !staticRender ? getEmphasisInnerAnimation(runVariant) : undefined;
+    const runAnimation = lift && !staticRender ? getEmphasisInnerAnimation(lift) : undefined;
     return (
       <motion.span
         key={key}
@@ -201,20 +205,16 @@ export function WordSequenceLines({
           isolation: "isolate",
         }}
       >
-        {runVariant ? (
+        {lift ? (
           <span
-            data-kinetic-run={runVariant}
+            data-kinetic-run={lift}
             className={`kinetic-emphasis-mark kinetic-emphasis-run${
-              runVariant === "halo"
-                ? " kinetic-emph-halo"
-                : runVariant === "sweep"
-                  ? " kinetic-emph-sweep"
-                  : ""
+              lift === "halo" ? " kinetic-emph-halo" : lift === "sweep" ? " kinetic-emph-sweep" : ""
             }${staticRender ? "" : " is-animated"}`}
             style={
               {
                 "--kinetic-emphasis-delay": `${effectDelay.delay + effectDelay.duration + 0.18}s`,
-                ...(runVariant === "halo" || runVariant === "glow"
+                ...(lift === "halo" || lift === "glow"
                   ? { "--kinetic-aura-color": getAuraColor(textColor) }
                   : {}),
                 animation: runAnimation

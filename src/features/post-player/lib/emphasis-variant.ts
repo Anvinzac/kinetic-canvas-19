@@ -8,7 +8,7 @@
  * effects running side by side instead of one passing over the word. Those effects
  * are lifted to the run: one sweep from the first syllable to the last.
  *
- * Exports: resolveWordEmphasisVariant, getRunEmphasisVariant, RUN_LEVEL_VARIANTS
+ * Exports: resolveWordEmphasisVariant, getRunEmphasis, RUN_LEVEL_VARIANTS
  * Depends on: kinetic-text emphasis + bound-phrase helpers
  */
 
@@ -16,6 +16,7 @@ import {
   getBoundPhraseEmphasisSeed,
   getBoundPhraseStartIndex,
   getEmphasisVariant,
+  getRunEmphasisStyle,
   isDimEmphasisColor,
   type EmphasisVariant,
 } from "@/features/kinetic-text";
@@ -76,30 +77,71 @@ export function resolveWordEmphasisVariant(input: WordEmphasisInput): EmphasisVa
 }
 
 /**
- * The effect a run of consecutive emphasised words should carry as one, if any.
- * Only when every word in the run resolved to the same moving effect — a run whose
- * words disagree keeps its per-word drawing.
+ * How a whole run draws its emphasis.
+ * `style` is the ONE effect every syllable is dressed in — colour, weight, shadow and
+ * class alike — so a two-syllable word can never show two different effects.
+ * `lift` is the effect promoted onto the run as a single moving overlay, or null when
+ * the style needs no overlay and each syllable simply draws that shared style itself.
+ */
+export type RunEmphasis = {
+  style: EmphasisVariant;
+  lift: EmphasisVariant | null;
+};
+
+/**
+ * The effect a run of consecutive emphasised words should carry as one.
+ *
+ * A run whose syllables already agree keeps exactly that effect, so nothing about a
+ * known compound changes. When they disagree, the seeding helper had never heard of
+ * the pair — the selection glued it as a compound anyway — so the RUN becomes the
+ * anchor: one effect is hashed from the syllables joined together at the run's first
+ * index. Silently falling back to per-word drawing is what let a two-syllable word
+ * render as two different effects.
  * @param indexes - word indexes of the run, in order
  * @param shared - the page-level inputs, without the per-word fields
- * @returns The shared run-level variant, or null to draw each word on its own
+ * @returns The run's shared style and its lifted overlay, or null when nothing is drawn
  * @pure true
  */
-export function getRunEmphasisVariant(
+export function getRunEmphasis(
   indexes: readonly number[],
   shared: Omit<WordEmphasisInput, "word" | "index" | "inRun">,
-): EmphasisVariant | null {
+): RunEmphasis | null {
   if (indexes.length < 2) return null;
-  let common: EmphasisVariant | null = null;
-  for (const index of indexes) {
-    const variant = resolveWordEmphasisVariant({
+  const perWord = indexes.map((index) =>
+    resolveWordEmphasisVariant({
       ...shared,
       word: shared.words[index] ?? "",
       index,
       inRun: true,
-    });
-    if (!variant) return null;
-    if (common && variant !== common) return null;
-    common = variant;
-  }
-  return common && RUN_LEVEL_VARIANTS.includes(common) ? common : null;
+    }),
+  );
+  // A syllable the resolver refuses to dress (no letter or number) ends the run's effect.
+  if (perWord.some((variant) => variant === null)) return null;
+
+  const agreed = perWord.every((variant) => variant === perWord[0]) ? perWord[0] : undefined;
+  const style = agreed ?? getRunAnchoredVariant(indexes, shared);
+  if (!style) return null;
+  return { style, lift: RUN_LEVEL_VARIANTS.includes(style) ? style : null };
+}
+
+/**
+ * Seed one effect for the whole run from the run itself rather than from a syllable.
+ * @param indexes - word indexes of the run, in order
+ * @param shared - the page-level inputs, without the per-word fields
+ * @returns The variant the run is drawn with
+ * @pure true
+ */
+function getRunAnchoredVariant(
+  indexes: readonly number[],
+  shared: Omit<WordEmphasisInput, "word" | "index" | "inRun">,
+): EmphasisVariant | null {
+  const first = indexes[0];
+  if (first === undefined) return null;
+  const isSecondary =
+    shared.secondaryVariant &&
+    !shared.emphasized.has(first) &&
+    (shared.secondaryEmphasized?.has(first) ?? false);
+  // A caller-forced second mark names its own effect; the run simply obeys it.
+  if (isSecondary) return shared.secondaryVariant ?? null;
+  return getRunEmphasisStyle(shared.text, shared.words, indexes, shared.emphasisColor);
 }

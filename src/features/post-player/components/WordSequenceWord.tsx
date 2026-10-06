@@ -58,6 +58,12 @@ export type WordSequenceWordProps = {
    * jiggle) once across all of its syllables, so the word must not draw its own.
    */
   runEffect?: boolean;
+  /**
+   * The effect the whole run this word belongs in was dressed in. Handed down instead of
+   * re-hashed per syllable, because a syllable's own seed only names the compound when the
+   * pair is in the curated list; otherwise two syllables of one word pick two effects.
+   */
+  sharedVariant?: EmphasisVariant;
 };
 
 /**
@@ -86,6 +92,7 @@ export function WordSequenceWord({
   entranceStyle,
   skipFrame = false,
   runEffect = false,
+  sharedVariant,
 }: WordSequenceWordProps): ReactElement {
   const hasGlyph = /\p{L}|\p{N}/u.test(word);
   // A masked answer ("_____", possibly with trailing punctuation) is split so the
@@ -100,18 +107,23 @@ export function WordSequenceWord({
   // selection path (heuristic, fallback, data annotation, secondary, poetic) proposed
   // it. A shared multi-syllable run shows a box-drawing `frame` as a continuous
   // underline; a lone `frame` word keeps its box.
-  const displayVariant = resolveWordEmphasisVariant({
-    word,
-    index,
-    words,
-    text: spec.text,
-    emphasized,
-    phraseKeys,
-    secondaryEmphasized,
-    secondaryVariant,
-    emphasisColor,
-    inRun: skipFrame,
-  });
+  // Inside a run the group's effect is handed down rather than re-hashed from this
+  // syllable: a syllable seeds from the curated phrase list, so a compound missing from
+  // it would give each of its halves a different effect.
+  const displayVariant =
+    (hasGlyph ? sharedVariant : undefined) ??
+    resolveWordEmphasisVariant({
+      word,
+      index,
+      words,
+      text: spec.text,
+      emphasized,
+      phraseKeys,
+      secondaryEmphasized,
+      secondaryVariant,
+      emphasisColor,
+      inRun: skipFrame,
+    });
   const important = displayVariant !== null;
   const primary = important && emphasized.has(index);
   // A secondary mark is caller-forced and never drives the spotlight layout, so
