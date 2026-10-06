@@ -9,54 +9,45 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
-import { Route as AdminRouteRouteImport } from './routes/admin/route'
-import { Route as AdminAccessDeniedRouteImport } from './routes/admin-access-denied'
 import { Route as AuthRouteImport } from './routes/auth'
-import { Route as AuthenticatedAboutRouteImport } from './routes/_authenticated/about'
-import { Route as AuthenticatedCommunityRouteImport } from './routes/_authenticated/community'
-import { Route as AuthenticatedCreateRouteImport } from './routes/_authenticated/create'
-import { Route as AuthenticatedDiscoverRouteImport } from './routes/_authenticated/discover'
-import { Route as AuthenticatedEditProfileRouteImport } from './routes/_authenticated/edit-profile'
-import { Route as AuthenticatedMeRouteImport } from './routes/_authenticated/me'
-import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
-import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
-import { Route as AdminIndexRouteImport } from './routes/admin/index'
-import { Route as AdminAmbientRouteImport } from './routes/admin/ambient'
-import { Route as AdminContentRouteImport } from './routes/admin/content'
-import { Route as AdminErrorsRouteImport } from './routes/admin/errors'
-import { Route as AdminLinksRouteImport } from './routes/admin/links'
-import { Route as AdminModelRouteImport } from './routes/admin/model'
-import { Route as AdminPalettesRouteImport } from './routes/admin/palettes'
-import { Route as AdminReportsRouteImport } from './routes/admin/reports'
-import { Route as AdminSystemRouteImport } from './routes/admin/system'
-import { Route as AdminTemplatesRouteImport } from './routes/admin/templates'
-import { Route as AdminUsersRouteImport } from './routes/admin/users'
-import { Route as AdminVocabularyRouteImport } from './routes/admin/vocabulary'
-import { Route as AdminWordingsRouteImport } from './routes/admin/wordings'
+import { Route as AdminAccessDeniedRouteImport } from './routes/admin-access-denied'
+import { Route as AdminRouteRouteImport } from './routes/admin/route'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as IndexRouteImport } from './routes/index'
 import { Route as FeedIndexRouteImport } from './routes/feed/index'
-import { Route as FeedLibraryRouteImport } from './routes/feed/library'
+import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as FeedSavedRouteImport } from './routes/feed/saved'
-import { Route as AuthenticatedPPostIdRouteImport } from './routes/_authenticated/p.$postId'
-import { Route as AuthenticatedUUsernameRouteImport } from './routes/_authenticated/u.$username'
-import { Route as ApiPublicEngagementRouteImport } from './routes/api/public/engagement'
-import { Route as ApiPublicVocabularyRouteImport } from './routes/api/public/vocabulary'
-import { Route as ApiPublicVocabularyRefillRouteImport } from './routes/api/public/vocabulary-refill'
+import { Route as FeedLibraryRouteImport } from './routes/feed/library'
+import { Route as AdminWordingsRouteImport } from './routes/admin/wordings'
+import { Route as AdminVocabularyRouteImport } from './routes/admin/vocabulary'
+import { Route as AdminUsersRouteImport } from './routes/admin/users'
+import { Route as AdminTemplatesRouteImport } from './routes/admin/templates'
+import { Route as AdminSystemRouteImport } from './routes/admin/system'
+import { Route as AdminReportsRouteImport } from './routes/admin/reports'
+import { Route as AdminPalettesRouteImport } from './routes/admin/palettes'
+import { Route as AdminModelRouteImport } from './routes/admin/model'
+import { Route as AdminLinksRouteImport } from './routes/admin/links'
+import { Route as AdminErrorsRouteImport } from './routes/admin/errors'
+import { Route as AdminContentRouteImport } from './routes/admin/content'
+import { Route as AdminAmbientRouteImport } from './routes/admin/ambient'
+import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
+import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
+import { Route as AuthenticatedMeRouteImport } from './routes/_authenticated/me'
+import { Route as AuthenticatedEditProfileRouteImport } from './routes/_authenticated/edit-profile'
+import { Route as AuthenticatedDiscoverRouteImport } from './routes/_authenticated/discover'
+import { Route as AuthenticatedCreateRouteImport } from './routes/_authenticated/create'
+import { Route as AuthenticatedCommunityRouteImport } from './routes/_authenticated/community'
+import { Route as AuthenticatedAboutRouteImport } from './routes/_authenticated/about'
 import { Route as ApiPublicWordReportRouteImport } from './routes/api/public/word-report'
+import { Route as ApiPublicVocabularyRefillRouteImport } from './routes/api/public/vocabulary-refill'
+import { Route as ApiPublicVocabularyRouteImport } from './routes/api/public/vocabulary'
+import { Route as ApiPublicEngagementRouteImport } from './routes/api/public/engagement'
+import { Route as AuthenticatedUUsernameRouteImport } from './routes/_authenticated/u.$username'
+import { Route as AuthenticatedPPostIdRouteImport } from './routes/_authenticated/p.$postId'
 
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
-  id: '/_authenticated',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AdminRouteRoute = AdminRouteRouteImport.update({
-  id: '/admin',
-  path: '/admin',
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminAccessDeniedRoute = AdminAccessDeniedRouteImport.update({
@@ -64,40 +55,103 @@ const AdminAccessDeniedRoute = AdminAccessDeniedRouteImport.update({
   path: '/admin-access-denied',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthRoute = AuthRouteImport.update({
-  id: '/auth',
-  path: '/auth',
+const AdminRouteRoute = AdminRouteRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedAboutRoute = AuthenticatedAboutRouteImport.update({
-  id: '/about',
-  path: '/about',
-  getParentRoute: () => AuthenticatedRouteRoute,
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedCommunityRoute = AuthenticatedCommunityRouteImport.update({
-  id: '/community',
-  path: '/community',
-  getParentRoute: () => AuthenticatedRouteRoute,
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedCreateRoute = AuthenticatedCreateRouteImport.update({
-  id: '/create',
-  path: '/create',
-  getParentRoute: () => AuthenticatedRouteRoute,
+const FeedIndexRoute = FeedIndexRouteImport.update({
+  id: '/feed/',
+  path: '/feed/',
+  getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedDiscoverRoute = AuthenticatedDiscoverRouteImport.update({
-  id: '/discover',
-  path: '/discover',
-  getParentRoute: () => AuthenticatedRouteRoute,
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRouteRoute,
 } as any)
-const AuthenticatedEditProfileRoute =
-  AuthenticatedEditProfileRouteImport.update({
-    id: '/edit-profile',
-    path: '/edit-profile',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedMeRoute = AuthenticatedMeRouteImport.update({
-  id: '/me',
-  path: '/me',
+const FeedSavedRoute = FeedSavedRouteImport.update({
+  id: '/feed/saved',
+  path: '/feed/saved',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FeedLibraryRoute = FeedLibraryRouteImport.update({
+  id: '/feed/library',
+  path: '/feed/library',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminWordingsRoute = AdminWordingsRouteImport.update({
+  id: '/wordings',
+  path: '/wordings',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminVocabularyRoute = AdminVocabularyRouteImport.update({
+  id: '/vocabulary',
+  path: '/vocabulary',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminUsersRoute = AdminUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminTemplatesRoute = AdminTemplatesRouteImport.update({
+  id: '/templates',
+  path: '/templates',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminSystemRoute = AdminSystemRouteImport.update({
+  id: '/system',
+  path: '/system',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminReportsRoute = AdminReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminPalettesRoute = AdminPalettesRouteImport.update({
+  id: '/palettes',
+  path: '/palettes',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminModelRoute = AdminModelRouteImport.update({
+  id: '/model',
+  path: '/model',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminLinksRoute = AdminLinksRouteImport.update({
+  id: '/links',
+  path: '/links',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminErrorsRoute = AdminErrorsRouteImport.update({
+  id: '/errors',
+  path: '/errors',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminContentRoute = AdminContentRouteImport.update({
+  id: '/content',
+  path: '/content',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminAmbientRoute = AdminAmbientRouteImport.update({
+  id: '/ambient',
+  path: '/ambient',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedNotificationsRoute =
@@ -106,109 +160,40 @@ const AuthenticatedNotificationsRoute =
     path: '/notifications',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
+const AuthenticatedMeRoute = AuthenticatedMeRouteImport.update({
+  id: '/me',
+  path: '/me',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AdminIndexRoute = AdminIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => AdminRouteRoute,
-} as any)
-const AdminAmbientRoute = AdminAmbientRouteImport.update({
-  id: '/ambient',
-  path: '/ambient',
-  getParentRoute: () => AdminRouteRoute,
-} as any)
-const AdminContentRoute = AdminContentRouteImport.update({
-  id: '/content',
-  path: '/content',
-  getParentRoute: () => AdminRouteRoute,
-} as any)
-const AdminErrorsRoute = AdminErrorsRouteImport.update({
-  id: '/errors',
-  path: '/errors',
-  getParentRoute: () => AdminRouteRoute,
-} as any)
-const AdminLinksRoute = AdminLinksRouteImport.update({
-  id: '/links',
-  path: '/links',
-  getParentRoute: () => AdminRouteRoute,
-} as any)
-const AdminModelRoute = AdminModelRouteImport.update({
-  id: '/model',
-  path: '/model',
-  getParentRoute: () => AdminRouteRoute,
-} as any)
-const AdminPalettesRoute = AdminPalettesRouteImport.update({
-  id: '/palettes',
-  path: '/palettes',
-  getParentRoute: () => AdminRouteRoute,
-} as any)
-const AdminReportsRoute = AdminReportsRouteImport.update({
-  id: '/reports',
-  path: '/reports',
-  getParentRoute: () => AdminRouteRoute,
-} as any)
-const AdminSystemRoute = AdminSystemRouteImport.update({
-  id: '/system',
-  path: '/system',
-  getParentRoute: () => AdminRouteRoute,
-} as any)
-const AdminTemplatesRoute = AdminTemplatesRouteImport.update({
-  id: '/templates',
-  path: '/templates',
-  getParentRoute: () => AdminRouteRoute,
-} as any)
-const AdminUsersRoute = AdminUsersRouteImport.update({
-  id: '/users',
-  path: '/users',
-  getParentRoute: () => AdminRouteRoute,
-} as any)
-const AdminVocabularyRoute = AdminVocabularyRouteImport.update({
-  id: '/vocabulary',
-  path: '/vocabulary',
-  getParentRoute: () => AdminRouteRoute,
-} as any)
-const AdminWordingsRoute = AdminWordingsRouteImport.update({
-  id: '/wordings',
-  path: '/wordings',
-  getParentRoute: () => AdminRouteRoute,
-} as any)
-const FeedIndexRoute = FeedIndexRouteImport.update({
-  id: '/feed/',
-  path: '/feed/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const FeedLibraryRoute = FeedLibraryRouteImport.update({
-  id: '/feed/library',
-  path: '/feed/library',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const FeedSavedRoute = FeedSavedRouteImport.update({
-  id: '/feed/saved',
-  path: '/feed/saved',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthenticatedPPostIdRoute = AuthenticatedPPostIdRouteImport.update({
-  id: '/p/$postId',
-  path: '/p/$postId',
+const AuthenticatedEditProfileRoute =
+  AuthenticatedEditProfileRouteImport.update({
+    id: '/edit-profile',
+    path: '/edit-profile',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedDiscoverRoute = AuthenticatedDiscoverRouteImport.update({
+  id: '/discover',
+  path: '/discover',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedUUsernameRoute = AuthenticatedUUsernameRouteImport.update({
-  id: '/u/$username',
-  path: '/u/$username',
+const AuthenticatedCreateRoute = AuthenticatedCreateRouteImport.update({
+  id: '/create',
+  path: '/create',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const ApiPublicEngagementRoute = ApiPublicEngagementRouteImport.update({
-  id: '/api/public/engagement',
-  path: '/api/public/engagement',
-  getParentRoute: () => rootRouteImport,
+const AuthenticatedCommunityRoute = AuthenticatedCommunityRouteImport.update({
+  id: '/community',
+  path: '/community',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const ApiPublicVocabularyRoute = ApiPublicVocabularyRouteImport.update({
-  id: '/api/public/vocabulary',
-  path: '/api/public/vocabulary',
+const AuthenticatedAboutRoute = AuthenticatedAboutRouteImport.update({
+  id: '/about',
+  path: '/about',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const ApiPublicWordReportRoute = ApiPublicWordReportRouteImport.update({
+  id: '/api/public/word-report',
+  path: '/api/public/word-report',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicVocabularyRefillRoute =
@@ -217,10 +202,25 @@ const ApiPublicVocabularyRefillRoute =
     path: '/api/public/vocabulary-refill',
     getParentRoute: () => rootRouteImport,
   } as any)
-const ApiPublicWordReportRoute = ApiPublicWordReportRouteImport.update({
-  id: '/api/public/word-report',
-  path: '/api/public/word-report',
+const ApiPublicVocabularyRoute = ApiPublicVocabularyRouteImport.update({
+  id: '/api/public/vocabulary',
+  path: '/api/public/vocabulary',
   getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicEngagementRoute = ApiPublicEngagementRouteImport.update({
+  id: '/api/public/engagement',
+  path: '/api/public/engagement',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedUUsernameRoute = AuthenticatedUUsernameRouteImport.update({
+  id: '/u/$username',
+  path: '/u/$username',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedPPostIdRoute = AuthenticatedPPostIdRouteImport.update({
+  id: '/p/$postId',
+  path: '/p/$postId',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -460,25 +460,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_authenticated': {
-      id: '/_authenticated'
-      path: ''
-      fullPath: '/'
-      preLoaderRoute: typeof AuthenticatedRouteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin': {
-      id: '/admin'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof AdminRouteRouteImport
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin-access-denied': {
@@ -488,68 +474,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAccessDeniedRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/auth': {
-      id: '/auth'
-      path: '/auth'
-      fullPath: '/auth'
-      preLoaderRoute: typeof AuthRouteImport
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/about': {
-      id: '/_authenticated/about'
-      path: '/about'
-      fullPath: '/about'
-      preLoaderRoute: typeof AuthenticatedAboutRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/community': {
-      id: '/_authenticated/community'
-      path: '/community'
-      fullPath: '/community'
-      preLoaderRoute: typeof AuthenticatedCommunityRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/create': {
-      id: '/_authenticated/create'
-      path: '/create'
-      fullPath: '/create'
-      preLoaderRoute: typeof AuthenticatedCreateRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/discover': {
-      id: '/_authenticated/discover'
-      path: '/discover'
-      fullPath: '/discover'
-      preLoaderRoute: typeof AuthenticatedDiscoverRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/edit-profile': {
-      id: '/_authenticated/edit-profile'
-      path: '/edit-profile'
-      fullPath: '/edit-profile'
-      preLoaderRoute: typeof AuthenticatedEditProfileRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/me': {
-      id: '/_authenticated/me'
-      path: '/me'
-      fullPath: '/me'
-      preLoaderRoute: typeof AuthenticatedMeRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/notifications': {
-      id: '/_authenticated/notifications'
-      path: '/notifications'
-      fullPath: '/notifications'
-      preLoaderRoute: typeof AuthenticatedNotificationsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/settings': {
-      id: '/_authenticated/settings'
-      path: '/settings'
-      fullPath: '/settings'
-      preLoaderRoute: typeof AuthenticatedSettingsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+    '/feed/': {
+      id: '/feed/'
+      path: '/feed'
+      fullPath: '/feed/'
+      preLoaderRoute: typeof FeedIndexRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/admin/': {
       id: '/admin/'
@@ -558,95 +509,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof AdminRouteRoute
     }
-    '/admin/ambient': {
-      id: '/admin/ambient'
-      path: '/ambient'
-      fullPath: '/admin/ambient'
-      preLoaderRoute: typeof AdminAmbientRouteImport
-      parentRoute: typeof AdminRouteRoute
-    }
-    '/admin/content': {
-      id: '/admin/content'
-      path: '/content'
-      fullPath: '/admin/content'
-      preLoaderRoute: typeof AdminContentRouteImport
-      parentRoute: typeof AdminRouteRoute
-    }
-    '/admin/errors': {
-      id: '/admin/errors'
-      path: '/errors'
-      fullPath: '/admin/errors'
-      preLoaderRoute: typeof AdminErrorsRouteImport
-      parentRoute: typeof AdminRouteRoute
-    }
-    '/admin/links': {
-      id: '/admin/links'
-      path: '/links'
-      fullPath: '/admin/links'
-      preLoaderRoute: typeof AdminLinksRouteImport
-      parentRoute: typeof AdminRouteRoute
-    }
-    '/admin/model': {
-      id: '/admin/model'
-      path: '/model'
-      fullPath: '/admin/model'
-      preLoaderRoute: typeof AdminModelRouteImport
-      parentRoute: typeof AdminRouteRoute
-    }
-    '/admin/palettes': {
-      id: '/admin/palettes'
-      path: '/palettes'
-      fullPath: '/admin/palettes'
-      preLoaderRoute: typeof AdminPalettesRouteImport
-      parentRoute: typeof AdminRouteRoute
-    }
-    '/admin/reports': {
-      id: '/admin/reports'
-      path: '/reports'
-      fullPath: '/admin/reports'
-      preLoaderRoute: typeof AdminReportsRouteImport
-      parentRoute: typeof AdminRouteRoute
-    }
-    '/admin/system': {
-      id: '/admin/system'
-      path: '/system'
-      fullPath: '/admin/system'
-      preLoaderRoute: typeof AdminSystemRouteImport
-      parentRoute: typeof AdminRouteRoute
-    }
-    '/admin/templates': {
-      id: '/admin/templates'
-      path: '/templates'
-      fullPath: '/admin/templates'
-      preLoaderRoute: typeof AdminTemplatesRouteImport
-      parentRoute: typeof AdminRouteRoute
-    }
-    '/admin/users': {
-      id: '/admin/users'
-      path: '/users'
-      fullPath: '/admin/users'
-      preLoaderRoute: typeof AdminUsersRouteImport
-      parentRoute: typeof AdminRouteRoute
-    }
-    '/admin/vocabulary': {
-      id: '/admin/vocabulary'
-      path: '/vocabulary'
-      fullPath: '/admin/vocabulary'
-      preLoaderRoute: typeof AdminVocabularyRouteImport
-      parentRoute: typeof AdminRouteRoute
-    }
-    '/admin/wordings': {
-      id: '/admin/wordings'
-      path: '/wordings'
-      fullPath: '/admin/wordings'
-      preLoaderRoute: typeof AdminWordingsRouteImport
-      parentRoute: typeof AdminRouteRoute
-    }
-    '/feed/': {
-      id: '/feed/'
-      path: '/feed'
-      fullPath: '/feed/'
-      preLoaderRoute: typeof FeedIndexRouteImport
+    '/feed/saved': {
+      id: '/feed/saved'
+      path: '/feed/saved'
+      fullPath: '/feed/saved'
+      preLoaderRoute: typeof FeedSavedRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/feed/library': {
@@ -656,39 +523,151 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FeedLibraryRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/feed/saved': {
-      id: '/feed/saved'
-      path: '/feed/saved'
-      fullPath: '/feed/saved'
-      preLoaderRoute: typeof FeedSavedRouteImport
-      parentRoute: typeof rootRouteImport
+    '/admin/wordings': {
+      id: '/admin/wordings'
+      path: '/wordings'
+      fullPath: '/admin/wordings'
+      preLoaderRoute: typeof AdminWordingsRouteImport
+      parentRoute: typeof AdminRouteRoute
     }
-    '/_authenticated/p/$postId': {
-      id: '/_authenticated/p/$postId'
-      path: '/p/$postId'
-      fullPath: '/p/$postId'
-      preLoaderRoute: typeof AuthenticatedPPostIdRouteImport
+    '/admin/vocabulary': {
+      id: '/admin/vocabulary'
+      path: '/vocabulary'
+      fullPath: '/admin/vocabulary'
+      preLoaderRoute: typeof AdminVocabularyRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/users': {
+      id: '/admin/users'
+      path: '/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AdminUsersRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/templates': {
+      id: '/admin/templates'
+      path: '/templates'
+      fullPath: '/admin/templates'
+      preLoaderRoute: typeof AdminTemplatesRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/system': {
+      id: '/admin/system'
+      path: '/system'
+      fullPath: '/admin/system'
+      preLoaderRoute: typeof AdminSystemRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/reports': {
+      id: '/admin/reports'
+      path: '/reports'
+      fullPath: '/admin/reports'
+      preLoaderRoute: typeof AdminReportsRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/palettes': {
+      id: '/admin/palettes'
+      path: '/palettes'
+      fullPath: '/admin/palettes'
+      preLoaderRoute: typeof AdminPalettesRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/model': {
+      id: '/admin/model'
+      path: '/model'
+      fullPath: '/admin/model'
+      preLoaderRoute: typeof AdminModelRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/links': {
+      id: '/admin/links'
+      path: '/links'
+      fullPath: '/admin/links'
+      preLoaderRoute: typeof AdminLinksRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/errors': {
+      id: '/admin/errors'
+      path: '/errors'
+      fullPath: '/admin/errors'
+      preLoaderRoute: typeof AdminErrorsRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/content': {
+      id: '/admin/content'
+      path: '/content'
+      fullPath: '/admin/content'
+      preLoaderRoute: typeof AdminContentRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/ambient': {
+      id: '/admin/ambient'
+      path: '/ambient'
+      fullPath: '/admin/ambient'
+      preLoaderRoute: typeof AdminAmbientRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/_authenticated/settings': {
+      id: '/_authenticated/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AuthenticatedSettingsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/u/$username': {
-      id: '/_authenticated/u/$username'
-      path: '/u/$username'
-      fullPath: '/u/$username'
-      preLoaderRoute: typeof AuthenticatedUUsernameRouteImport
+    '/_authenticated/notifications': {
+      id: '/_authenticated/notifications'
+      path: '/notifications'
+      fullPath: '/notifications'
+      preLoaderRoute: typeof AuthenticatedNotificationsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/api/public/engagement': {
-      id: '/api/public/engagement'
-      path: '/api/public/engagement'
-      fullPath: '/api/public/engagement'
-      preLoaderRoute: typeof ApiPublicEngagementRouteImport
-      parentRoute: typeof rootRouteImport
+    '/_authenticated/me': {
+      id: '/_authenticated/me'
+      path: '/me'
+      fullPath: '/me'
+      preLoaderRoute: typeof AuthenticatedMeRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/api/public/vocabulary': {
-      id: '/api/public/vocabulary'
-      path: '/api/public/vocabulary'
-      fullPath: '/api/public/vocabulary'
-      preLoaderRoute: typeof ApiPublicVocabularyRouteImport
+    '/_authenticated/edit-profile': {
+      id: '/_authenticated/edit-profile'
+      path: '/edit-profile'
+      fullPath: '/edit-profile'
+      preLoaderRoute: typeof AuthenticatedEditProfileRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/discover': {
+      id: '/_authenticated/discover'
+      path: '/discover'
+      fullPath: '/discover'
+      preLoaderRoute: typeof AuthenticatedDiscoverRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/create': {
+      id: '/_authenticated/create'
+      path: '/create'
+      fullPath: '/create'
+      preLoaderRoute: typeof AuthenticatedCreateRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/community': {
+      id: '/_authenticated/community'
+      path: '/community'
+      fullPath: '/community'
+      preLoaderRoute: typeof AuthenticatedCommunityRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/about': {
+      id: '/_authenticated/about'
+      path: '/about'
+      fullPath: '/about'
+      preLoaderRoute: typeof AuthenticatedAboutRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/api/public/word-report': {
+      id: '/api/public/word-report'
+      path: '/api/public/word-report'
+      fullPath: '/api/public/word-report'
+      preLoaderRoute: typeof ApiPublicWordReportRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/vocabulary-refill': {
@@ -698,12 +677,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicVocabularyRefillRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/word-report': {
-      id: '/api/public/word-report'
-      path: '/api/public/word-report'
-      fullPath: '/api/public/word-report'
-      preLoaderRoute: typeof ApiPublicWordReportRouteImport
+    '/api/public/vocabulary': {
+      id: '/api/public/vocabulary'
+      path: '/api/public/vocabulary'
+      fullPath: '/api/public/vocabulary'
+      preLoaderRoute: typeof ApiPublicVocabularyRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/api/public/engagement': {
+      id: '/api/public/engagement'
+      path: '/api/public/engagement'
+      fullPath: '/api/public/engagement'
+      preLoaderRoute: typeof ApiPublicEngagementRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/u/$username': {
+      id: '/_authenticated/u/$username'
+      path: '/u/$username'
+      fullPath: '/u/$username'
+      preLoaderRoute: typeof AuthenticatedUUsernameRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/p/$postId': {
+      id: '/_authenticated/p/$postId'
+      path: '/p/$postId'
+      fullPath: '/p/$postId'
+      preLoaderRoute: typeof AuthenticatedPPostIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
   }
 }
