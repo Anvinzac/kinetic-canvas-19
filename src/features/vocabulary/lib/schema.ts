@@ -160,3 +160,69 @@ export function normalizeDeck(input: unknown): Omit<Catalog, "revision"> {
     words,
   };
 }
+
+/**
+ * Compact, stable FNV-1a hash rendered as hex. Used to derive one revision for a
+ * merged catalog so pagination stays deterministic for a given set of inputs without
+ * pulling in node:crypto on the client.
+ * @param input Any string
+ * @returns 8-char hex digest
+ * @pure true
+ */
+function stableHash(input: string): string {
+  let hash = 0x811c9dc5;
+  for (let index = 0; index < input.length; index += 1) {
+    hash ^= input.charCodeAt(index);
+    hash = Math.imul(hash, 0x01000193) >>> 0;
+  }
+  return hash.toString(16).padStart(8, "0");
+}
+
+/**
+ * Merge compiled catalogs — the admin-editable base plus any number of read-only
+ * third-party packs — into the single catalog the feed serves. Words are de-duplicated
+ * by id and by headword with the FIRST catalog winning, so the base always overrides a
+ * provider pack that ships the same word. `count`, `topics`, `levels`, `revision` and
+ * `name` are recomputed from the merged words so filters and deterministic pagination
+ * reflect the union rather than any one input.
+ * @param catalogs - base catalog first, then packs in a stable (sorted-by-path) order
+ * @returns One merged Catalog
+ * @pure true
+ */
+export function mergeCatalogs(...catalogs: Catalog[]): Catalog {
+  const seenIds = new Set<string>();
+  const seenWords = new Set<string>();
+  const words: VocabularyWord[] = [];
+  for (const source of catalogs) {
+    for (const word of source.words) {
+      const id = word.id.toLowerCase();
+      const head = word.word.toLowerCase();
+      // First pack wins: a duplicate id or headword from a later pack is dropped so the
+      // feed never shows the same word twice and reaction/storage keys stay unambiguous.
+      if (seenIds.has(id) || seenWords.has(head)) continue;
+      seenIds.add(id);
+      seenWords.add(head);
+      words.push(word);
+    }
+  }
+  const base = catalogs[0];
+  const revision = stableHash(
+    catalogs.map((catalog) => `${catalog.revision}:${catalog.count}`).join("|"),
+  );
+  const name =
+    catalogs.length > 1
+      ? `${base?.name ?? "WordCrawler vocabulary"} + ${catalogs.length - 1} pack${
+          catalogs.length > 2 ? "s" : ""
+        }`
+      : (base?.name ?? "WordCrawler vocabulary");
+  return {
+    revision,
+    name,
+    count: words.length,
+    topics: [
+      ...new Set(words.flatMap((word) => (word.topics?.length ? word.topics : [word.topic]))),
+    ].sort(),
+    levels: LEVELS.filter((level) => words.some((word) => word.level === level)),
+    words,
+  };
+}

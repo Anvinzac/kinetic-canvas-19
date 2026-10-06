@@ -1,13 +1,48 @@
-/** Compile a WordCrawler deck into the server catalog. Usage: npm run vocab:import -- <file.json>. */
+/**
+ * Compile a WordCrawler deck into the served vocabulary data.
+ *
+ * Usage:
+ *   npm run vocab:import -- <deck.json>                # rewrite the base catalog.json
+ *   npm run vocab:import -- <deck.json> --pack <name>  # compile a read-only provider pack
+ *                                                      #   → data/packs/<name>.json
+ *
+ * Both modes validate through normalizeDeck (which throws on a duplicate id, a leaked
+ * answer or a malformed field) and write atomically via a temp file + rename, so the
+ * previous file stays intact if anything fails. The feed merges catalog.json with every
+ * data/packs/*.json at load time (lib/catalog-source.ts); packs never overwrite the
+ * admin-editable base — on a shared id/headword the base wins.
+ */
 import { createHash, randomUUID } from "node:crypto";
 import { mkdir, readFile, rename, stat, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { normalizeDeck } from "../src/features/vocabulary/lib/schema.ts";
 
-const source = process.argv[2];
-if (!source || process.argv.length !== 3) {
-  console.error("Usage: npm run vocab:import -- <WordCrawler JSON path>");
+const USAGE = "Usage: npm run vocab:import -- <WordCrawler JSON path> [--pack <name>]";
+
+// Split off an optional `--pack <name>`; what remains must be exactly one deck path.
+const argv = process.argv.slice(2);
+const packAt = argv.indexOf("--pack");
+let packName: string | undefined;
+if (packAt !== -1) {
+  packName = argv[packAt + 1];
+  argv.splice(packAt, packName ? 2 : 1);
+}
+const source = argv[0];
+
+/** Restrict a pack name to a filesystem-safe slug so a provider name can't escape data/packs. */
+function packSlug(name: string): string {
+  const slug = name
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9-_]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  if (!slug) throw new Error(`Invalid pack name "${name}"; use letters, digits, - or _`);
+  return slug;
+}
+
+if (!source || argv.length !== 1 || (packAt !== -1 && !packName)) {
+  console.error(USAGE);
   process.exitCode = 1;
 } else {
   try {
@@ -19,18 +54,26 @@ if (!source || process.argv.length !== 3) {
       .update(JSON.stringify(catalog))
       .digest("hex")
       .slice(0, 24);
+    const slug = packName ? packSlug(packName) : null;
     const output = fileURLToPath(
-      new URL("../src/features/vocabulary/data/catalog.json", import.meta.url),
+      new URL(
+        slug
+          ? `../src/features/vocabulary/data/packs/${slug}.json`
+          : "../src/features/vocabulary/data/catalog.json",
+        import.meta.url,
+      ),
     );
     await mkdir(dirname(output), { recursive: true });
-    // The old catalog remains intact if validation or writing fails. Rename is atomic on this filesystem.
+    // The old file remains intact if validation or writing fails. Rename is atomic here.
     const temporary = `${output}.${randomUUID()}.tmp`;
     await writeFile(temporary, `${JSON.stringify({ revision, ...catalog }, null, 2)}\n`, {
       flag: "wx",
     });
     await rename(temporary, output);
     console.log(
-      `Imported ${catalog.count} distinct words; revision ${revision}. Rebuild/deploy to publish.`,
+      slug
+        ? `Compiled pack "${slug}": ${catalog.count} words; revision ${revision} → data/packs/${slug}.json. Restart dev / rebuild to serve.`
+        : `Imported ${catalog.count} distinct words; revision ${revision}. Rebuild/deploy to publish.`,
     );
   } catch (error) {
     console.error(error instanceof Error ? error.message : "Vocabulary import failed");

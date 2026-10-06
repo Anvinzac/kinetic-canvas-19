@@ -5,15 +5,13 @@
  *
  * Exports: SavedWord, getWordsWithReaction, getSavedWords, getFavoriteWords,
  *   countWordsWithReaction, lookupWord
- * Depends on: ../data/catalog.json, ./schema, ./history, ./reactions
+ * Depends on: ./catalog-source, ./schema, ./history, ./reactions
  */
 
-import rawCatalog from "../data/catalog.json";
-import type { Catalog, VocabularyWord } from "./schema";
+import { catalog } from "./catalog-source";
+import type { VocabularyWord } from "./schema";
 import { loadHistory } from "./history";
 import { getReactionSnapshot, getReactionWordIds, type ReactionKind } from "./reactions";
-
-const catalog = rawCatalog as Catalog;
 
 /** Stable id → word index so reaction lookups never rescan the deck. */
 const wordsById = new Map<string, VocabularyWord>(catalog.words.map((word) => [word.id, word]));

@@ -1,11 +1,11 @@
-/** Server-only bundled catalog and bounded permutation caches. Exports: catalog, readVocabularyPage. Depends on: compiled JSON, PRNG, difficulty bands. */
-import rawCatalog from "../data/catalog.json";
-import type { Catalog, VocabularyLevel } from "../lib/schema";
+/** Server-only merged catalog (base + provider packs) and bounded permutation caches. Exports: catalog, readVocabularyPage. Depends on: ../lib/catalog-source, PRNG, difficulty bands. */
+import { catalog } from "../lib/catalog-source";
+import type { VocabularyLevel } from "../lib/schema";
 import { difficultyLevels } from "../lib/difficulty";
 import { randomGenerator } from "../lib/random";
 import type { FeedPage, FeedRequest } from "../types";
 
-export const catalog = rawCatalog as Catalog;
+export { catalog };
 export const MAX_POSITION = 1_000_000_000_000;
 const pools = new Map<string, Uint32Array>();
 const orders = new Map<string, Uint32Array>();

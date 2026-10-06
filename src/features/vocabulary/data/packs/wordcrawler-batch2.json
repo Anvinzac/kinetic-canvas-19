@@ -1,0 +1,572 @@
+{
+  "revision": "3f2371919c8a4a58ce2d28bd",
+  "name": "WordCrawler deck batch 2",
+  "count": 25,
+  "topics": [
+    "attention",
+    "character",
+    "communication",
+    "daily",
+    "emotion",
+    "thinking",
+    "time",
+    "work"
+  ],
+  "levels": [
+    "A2",
+    "B1",
+    "B2"
+  ],
+  "words": [
+    {
+      "id": "curious",
+      "word": "curious",
+      "defVi": "Luôn muốn /tìm hiểu/ những điều mình chưa biết.",
+      "leadVi": "Thấy cái hộp lạ là không nhịn được, phải mở ra.",
+      "anticipateVi": "Tò mò chưa nào?",
+      "pos": "adj",
+      "ipa": "/ˈkjʊr.i.əs/",
+      "topic": "character",
+      "topics": [
+        "character"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Kids are naturally _____ about the world around them.",
+          "vi": "Trẻ con vốn tò mò về thế giới xung quanh."
+        }
+      ],
+      "chars": 7,
+      "initial": "C"
+    },
+    {
+      "id": "patient",
+      "word": "patient",
+      "defVi": "Bình tĩnh /chờ đợi/, không vội vàng hay cáu gắt.",
+      "leadVi": "Xếp hàng cả tiếng mà vẫn mỉm cười được.",
+      "anticipateVi": "Từ từ, đừng vội đoán!",
+      "pos": "adj",
+      "ipa": "/ˈpeɪ.ʃənt/",
+      "topic": "character",
+      "topics": [
+        "character"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Be _____, good things take time.",
+          "vi": "Hãy kiên nhẫn, điều tốt đẹp cần thời gian."
+        }
+      ],
+      "chars": 7,
+      "initial": "P"
+    },
+    {
+      "id": "generous",
+      "word": "generous",
+      "defVi": "Sẵn lòng /cho đi/ tiền bạc, thời gian hay công sức.",
+      "leadVi": "Có miếng bánh ngon, người này luôn chia phần lớn.",
+      "anticipateVi": "Đoán đi, đừng tiếc chữ!",
+      "pos": "adj",
+      "ipa": "/ˈdʒen.ər.əs/",
+      "topic": "character",
+      "topics": [
+        "character"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "It was very _____ of you to share your lunch.",
+          "vi": "Bạn thật hào phóng khi chia đồ ăn trưa cho mình."
+        }
+      ],
+      "chars": 8,
+      "initial": "G"
+    },
+    {
+      "id": "stubborn",
+      "word": "stubborn",
+      "defVi": "Nhất quyết /giữ ý mình/, ai khuyên cũng không nghe.",
+      "leadVi": "Đã nói không là không, ai năn nỉ cũng vô ích.",
+      "anticipateVi": "Đoán mãi chưa ra à?",
+      "pos": "adj",
+      "ipa": "/ˈstʌb.ɚn/",
+      "topic": "character",
+      "topics": [
+        "character"
+      ],
+      "level": "B2",
+      "usage": [
+        {
+          "en": "He's too _____ to admit he was wrong.",
+          "vi": "Anh ta cứng đầu đến mức không chịu nhận sai."
+        }
+      ],
+      "chars": 8,
+      "initial": "S"
+    },
+    {
+      "id": "humble",
+      "word": "humble",
+      "defVi": "Không /khoe khoang/, dù giỏi vẫn thấy mình còn thiếu.",
+      "leadVi": "Đạt giải nhất mà chỉ cười: \"Mình may mắn thôi.\"",
+      "anticipateVi": "Đoán trúng cũng đừng tự mãn nhé!",
+      "pos": "adj",
+      "ipa": "/ˈhʌm.bəl/",
+      "topic": "character",
+      "topics": [
+        "character"
+      ],
+      "level": "B2",
+      "usage": [
+        {
+          "en": "Despite her fame, she stayed _____.",
+          "vi": "Dù nổi tiếng, cô ấy vẫn khiêm tốn."
+        }
+      ],
+      "chars": 6,
+      "initial": "H"
+    },
+    {
+      "id": "grateful",
+      "word": "grateful",
+      "defVi": "Thấy /biết ơn/ vì điều tốt người khác dành cho mình.",
+      "leadVi": "Được giúp lúc khó khăn, ai mà chẳng nhớ mãi.",
+      "anticipateVi": "Đoán được thì cảm ơn nhé!",
+      "pos": "adj",
+      "ipa": "/ˈɡreɪt.fəl/",
+      "topic": "emotion",
+      "topics": [
+        "emotion"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "I'm really _____ for your help.",
+          "vi": "Tôi thật sự biết ơn sự giúp đỡ của bạn."
+        }
+      ],
+      "chars": 8,
+      "initial": "G"
+    },
+    {
+      "id": "embarrassed",
+      "word": "embarrassed",
+      "defVi": "/Ngượng ngùng/, muốn độn thổ vì lỡ làm điều xấu hổ.",
+      "leadVi": "Vấp ngã giữa sân trường, cả lớp đều nhìn thấy.",
+      "anticipateVi": "Đoán sai cũng đừng đỏ mặt!",
+      "pos": "adj",
+      "ipa": "/ɪmˈber.əst/",
+      "topic": "emotion",
+      "topics": [
+        "emotion"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "I was so _____ when I called her by the wrong name.",
+          "vi": "Tôi ngượng chín mặt khi gọi nhầm tên cô ấy."
+        }
+      ],
+      "chars": 11,
+      "initial": "E"
+    },
+    {
+      "id": "frustrated",
+      "word": "frustrated",
+      "defVi": "/Bực bội/ vì cố mãi mà mọi việc vẫn không thành.",
+      "leadVi": "Gõ lại mật khẩu lần thứ năm, vẫn báo sai.",
+      "anticipateVi": "Bình tĩnh, đoán thêm lần nữa!",
+      "pos": "adj",
+      "ipa": "/ˈfrʌs.treɪ.t̬ɪd/",
+      "topic": "emotion",
+      "topics": [
+        "emotion"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "She got _____ when the app kept crashing.",
+          "vi": "Cô ấy bực mình vì ứng dụng cứ bị treo."
+        }
+      ],
+      "chars": 10,
+      "initial": "F"
+    },
+    {
+      "id": "relieved",
+      "word": "relieved",
+      "defVi": "Thấy /nhẹ nhõm/ khi điều lo lắng cuối cùng đã qua.",
+      "leadVi": "Điểm thi hiện lên: qua môn rồi, thở phào thôi!",
+      "anticipateVi": "Sắp tới đích rồi đây!",
+      "pos": "adj",
+      "ipa": "/rɪˈliːvd/",
+      "topic": "emotion",
+      "topics": [
+        "emotion"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "We were _____ to hear that everyone was safe.",
+          "vi": "Chúng tôi nhẹ nhõm khi biết mọi người đều an toàn."
+        }
+      ],
+      "chars": 8,
+      "initial": "R"
+    },
+    {
+      "id": "apologize",
+      "word": "apologize",
+      "defVi": "Nói /xin lỗi/ khi mình đã làm điều sai.",
+      "leadVi": "Lỡ làm vỡ ly của bạn, câu đầu tiên là gì?",
+      "anticipateVi": "Đoán trật thì nói gì nhỉ?",
+      "pos": "verb",
+      "ipa": "/əˈpɑː.lə.dʒaɪz/",
+      "topic": "communication",
+      "topics": [
+        "communication"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "You should _____ to your sister.",
+          "vi": "Bạn nên xin lỗi chị gái mình."
+        }
+      ],
+      "chars": 9,
+      "initial": "A"
+    },
+    {
+      "id": "interrupt",
+      "word": "interrupt",
+      "defVi": "/Chen ngang/ khi người khác đang nói hay đang làm.",
+      "leadVi": "Đang kể đến đoạn hay nhất thì có người xen vào.",
+      "anticipateVi": "Khoan, để mình đoán đã!",
+      "pos": "verb",
+      "ipa": "/ˌɪn.t̬əˈrʌpt/",
+      "topic": "communication",
+      "topics": [
+        "communication"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Please don't _____ me while I'm talking.",
+          "vi": "Làm ơn đừng ngắt lời khi tôi đang nói."
+        }
+      ],
+      "chars": 9,
+      "initial": "I"
+    },
+    {
+      "id": "mention",
+      "word": "mention",
+      "defVi": "/Nhắc đến/ điều gì đó một cách ngắn gọn.",
+      "leadVi": "Chỉ nói lướt qua một câu thôi, chẳng đi sâu.",
+      "anticipateVi": "Từ này quen lắm đấy!",
+      "pos": "verb",
+      "ipa": "/ˈmen.ʃən/",
+      "topic": "communication",
+      "topics": [
+        "communication"
+      ],
+      "level": "A2",
+      "usage": [
+        {
+          "en": "She didn't _____ that she was leaving.",
+          "vi": "Cô ấy không hề nhắc đến chuyện mình sắp đi."
+        }
+      ],
+      "chars": 7,
+      "initial": "M"
+    },
+    {
+      "id": "schedule",
+      "word": "schedule",
+      "defVi": "Bảng sắp xếp việc gì làm /lúc nào/ trong ngày.",
+      "leadVi": "Thứ Hai họp, thứ Ba thi, thứ Tư… kín mít rồi.",
+      "anticipateVi": "Xếp chữ trong đầu đi nào!",
+      "pos": "noun",
+      "ipa": "/ˈskedʒ.uːl/",
+      "topic": "time",
+      "topics": [
+        "time"
+      ],
+      "level": "A2",
+      "usage": [
+        {
+          "en": "My _____ is completely full this week.",
+          "vi": "Lịch của tôi tuần này kín hết rồi."
+        }
+      ],
+      "chars": 8,
+      "initial": "S"
+    },
+    {
+      "id": "punctual",
+      "word": "punctual",
+      "defVi": "Luôn có mặt /đúng giờ/, không bao giờ để ai chờ.",
+      "leadVi": "Hẹn bảy giờ, sáu giờ năm mươi chín đã có mặt.",
+      "anticipateVi": "Tích tắc, đoán kịp không?",
+      "pos": "adj",
+      "ipa": "/ˈpʌŋk.tʃu.əl/",
+      "topic": "time",
+      "topics": [
+        "time"
+      ],
+      "level": "B2",
+      "usage": [
+        {
+          "en": "He is always _____ for meetings.",
+          "vi": "Anh ấy luôn đến họp đúng giờ."
+        }
+      ],
+      "chars": 8,
+      "initial": "P"
+    },
+    {
+      "id": "delay",
+      "word": "delay",
+      "defVi": "Khiến việc gì /chậm lại/, trễ hơn so với dự kiến.",
+      "leadVi": "Bảng ở sân bay đỏ rực: chuyến bay chưa cất cánh.",
+      "anticipateVi": "Đừng chần chừ, đoán ngay!",
+      "pos": "verb",
+      "ipa": "/dɪˈleɪ/",
+      "topic": "time",
+      "topics": [
+        "time"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Heavy rain may _____ the start of the match.",
+          "vi": "Mưa lớn có thể khiến trận đấu bắt đầu trễ."
+        }
+      ],
+      "chars": 5,
+      "initial": "D"
+    },
+    {
+      "id": "colleague",
+      "word": "colleague",
+      "defVi": "Người /làm cùng/ công ty hoặc cùng nghề với mình.",
+      "leadVi": "Ngày nào cũng gặp, cùng ăn trưa, cùng than chuyện sếp.",
+      "anticipateVi": "Người quen đấy, đoán đi!",
+      "pos": "noun",
+      "ipa": "/ˈkɑː.liːɡ/",
+      "topic": "work",
+      "topics": [
+        "work"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "I'm having lunch with a _____ today.",
+          "vi": "Hôm nay tôi ăn trưa với một đồng nghiệp."
+        }
+      ],
+      "chars": 9,
+      "initial": "C"
+    },
+    {
+      "id": "achieve",
+      "word": "achieve",
+      "defVi": "/Đạt được/ mục tiêu nhờ nỗ lực của bản thân.",
+      "leadVi": "Ba năm cày cuốc, cuối cùng cũng cầm được tấm bằng.",
+      "anticipateVi": "Về đích chưa nào?",
+      "pos": "verb",
+      "ipa": "/əˈtʃiːv/",
+      "topic": "work",
+      "topics": [
+        "work"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "She worked hard to _____ her dream.",
+          "vi": "Cô ấy nỗ lực hết mình để thực hiện ước mơ."
+        }
+      ],
+      "chars": 7,
+      "initial": "A"
+    },
+    {
+      "id": "efficient",
+      "word": "efficient",
+      "defVi": "Làm /nhanh gọn/, ít tốn công sức mà vẫn hiệu quả.",
+      "leadVi": "Người khác làm cả ngày, người này xong trước trưa.",
+      "anticipateVi": "Đoán nhanh mà chuẩn nhé!",
+      "pos": "adj",
+      "ipa": "/ɪˈfɪʃ.ənt/",
+      "topic": "work",
+      "topics": [
+        "work"
+      ],
+      "level": "B2",
+      "usage": [
+        {
+          "en": "This new system is far more _____.",
+          "vi": "Hệ thống mới này hiệu quả hơn hẳn."
+        }
+      ],
+      "chars": 9,
+      "initial": "E"
+    },
+    {
+      "id": "notice",
+      "word": "notice",
+      "defVi": "/Để ý/ thấy điều gì đó bằng mắt hay cảm nhận.",
+      "leadVi": "Bạn cắt tóc mới, chỉ một người nhận ra ngay.",
+      "anticipateVi": "Tinh mắt đoán thử xem!",
+      "pos": "verb",
+      "ipa": "/ˈnoʊ.t̬ɪs/",
+      "topic": "attention",
+      "topics": [
+        "attention"
+      ],
+      "level": "A2",
+      "usage": [
+        {
+          "en": "Did you _____ anything strange?",
+          "vi": "Bạn có để ý thấy điều gì lạ không?"
+        }
+      ],
+      "chars": 6,
+      "initial": "N"
+    },
+    {
+      "id": "ignore",
+      "word": "ignore",
+      "defVi": "Cố tình /làm lơ/, không quan tâm hay đáp lại.",
+      "leadVi": "Tin nhắn đã xem, nhưng mãi không thấy trả lời.",
+      "anticipateVi": "Đừng bỏ lượt nhé!",
+      "pos": "verb",
+      "ipa": "/ɪɡˈnɔːr/",
+      "topic": "attention",
+      "topics": [
+        "attention"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "She tried to _____ the noise and focus.",
+          "vi": "Cô ấy cố mặc kệ tiếng ồn để tập trung."
+        }
+      ],
+      "chars": 6,
+      "initial": "I"
+    },
+    {
+      "id": "consider",
+      "word": "consider",
+      "defVi": "/Cân nhắc/ kỹ trước khi đưa ra quyết định.",
+      "leadVi": "Nên nhận việc mới không? Để nghĩ thêm vài hôm.",
+      "anticipateVi": "Nghĩ kỹ rồi hẵng đoán!",
+      "pos": "verb",
+      "ipa": "/kənˈsɪd.ɚ/",
+      "topic": "thinking",
+      "topics": [
+        "thinking"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "We'll _____ your offer carefully.",
+          "vi": "Chúng tôi sẽ cân nhắc kỹ lời đề nghị của bạn."
+        }
+      ],
+      "chars": 8,
+      "initial": "C"
+    },
+    {
+      "id": "doubt",
+      "word": "doubt",
+      "defVi": "/Nghi ngờ/, chưa tin hẳn điều đó là thật.",
+      "leadVi": "Nghe quảng cáo \"giảm cân thần tốc\", bạn nhíu mày.",
+      "anticipateVi": "Chắc chưa? Đoán lại xem!",
+      "pos": "verb",
+      "ipa": "/daʊt/",
+      "topic": "thinking",
+      "topics": [
+        "thinking"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "I _____ he'll arrive on time.",
+          "vi": "Tôi không tin là anh ấy sẽ đến đúng giờ."
+        }
+      ],
+      "chars": 5,
+      "initial": "D"
+    },
+    {
+      "id": "imagine",
+      "word": "imagine",
+      "defVi": "/Hình dung/ ra trong đầu điều chưa thấy tận mắt.",
+      "leadVi": "Nhắm mắt lại, thấy mình đang nằm trên bãi biển.",
+      "anticipateVi": "Thả hồn bay xa chút nào!",
+      "pos": "verb",
+      "ipa": "/ɪˈmædʒ.ɪn/",
+      "topic": "thinking",
+      "topics": [
+        "thinking"
+      ],
+      "level": "A2",
+      "usage": [
+        {
+          "en": "_____ a world without phones.",
+          "vi": "Hãy tưởng tượng một thế giới không có điện thoại."
+        }
+      ],
+      "chars": 7,
+      "initial": "I"
+    },
+    {
+      "id": "chore",
+      "word": "chore",
+      "defVi": "Việc /lặt vặt/ trong nhà như rửa bát, quét nhà.",
+      "leadVi": "Cuối tuần chưa kịp nghỉ, mẹ đã giao cả danh sách.",
+      "anticipateVi": "Đoán lẹ còn đi rửa bát!",
+      "pos": "noun",
+      "ipa": "/tʃɔːr/",
+      "topic": "daily",
+      "topics": [
+        "daily"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Doing the dishes is my least favorite _____.",
+          "vi": "Rửa bát là việc nhà tôi ghét nhất."
+        }
+      ],
+      "chars": 5,
+      "initial": "C"
+    },
+    {
+      "id": "commute",
+      "word": "commute",
+      "defVi": "Quãng đường /đi làm/ và về nhà mỗi ngày.",
+      "leadVi": "Sáng chen kẹt xe, chiều lại chen kẹt xe.",
+      "anticipateVi": "Kẹt xe cũng phải đoán!",
+      "pos": "noun",
+      "ipa": "/kəˈmjuːt/",
+      "topic": "daily",
+      "topics": [
+        "daily"
+      ],
+      "level": "B2",
+      "usage": [
+        {
+          "en": "My daily _____ takes about an hour.",
+          "vi": "Mỗi ngày tôi mất khoảng một tiếng đi làm."
+        }
+      ],
+      "chars": 7,
+      "initial": "C"
+    }
+  ]
+}
