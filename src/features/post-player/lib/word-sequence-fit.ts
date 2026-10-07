@@ -24,6 +24,9 @@ import {
   getSoloRevealFit,
 } from "./solo-text-fit";
 
+/** How closely a solo word chases its target size when the measurement allows it. */
+const SOLO_FIT_TOLERANCE = 0.002;
+
 export type WordSequenceFitInput = {
   wrapper: HTMLDivElement;
   text: HTMLDivElement;
@@ -41,6 +44,12 @@ export type WordSequenceFitInput = {
 
 export type WordSequenceFitOutput = {
   nextFit: number;
+  /**
+   * Relative change in fit below which a solo page counts as settled. Never tighter
+   * than the measurement can resolve: layout sizes are read in whole pixels, so one
+   * pixel of the binding dimension is the smallest step the fit can actually see.
+   */
+  fitTolerance: number;
   nextSoloInlineScale: number;
   nextCenterY: number;
 };
@@ -175,5 +184,14 @@ export function computeWordSequenceFit(input: WordSequenceFitInput): WordSequenc
       ? (clampNumber(requestedCenter, minCenter, maxCenter) / canvasHeight) * 100
       : ((safeInsets.top + safeHeight / 2) / canvasHeight) * 100;
 
-  return { nextFit, nextSoloInlineScale, nextCenterY };
+  // A solo word is pinned by its width or by its height, whichever is scarcer. Both are
+  // integers from layout, so a 188px-tall word cannot be placed more finely than about
+  // half a percent. Asking for 0.2% there made the fit flip between two neighbouring
+  // sizes for ever — each one re-measured as the other's pixel — until React aborted the
+  // render. The tolerance is therefore one and a half pixels of the smaller dimension,
+  // and the original 0.2% wherever the word is large enough to honour it.
+  const resolvable = Math.min(Math.max(measuredWidth, 1), Math.max(textHeight, 1));
+  const fitTolerance = Math.max(SOLO_FIT_TOLERANCE, 1.5 / resolvable);
+
+  return { nextFit, fitTolerance, nextSoloInlineScale, nextCenterY };
 }

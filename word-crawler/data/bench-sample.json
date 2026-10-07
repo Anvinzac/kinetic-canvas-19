@@ -1,0 +1,231 @@
+{
+  "meta": {
+    "name": "WordCrawler Vietnamese bench sample",
+    "version": "1.0.0",
+    "kind": "bench-sample",
+    "locale": "en",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "derivedFrom": "A 24-word subset of data/ngsl-starter-subset.json, which is itself derived from New General Service List 1.2 (2809 words) and New Academic Word List 1.2 (957 words) by Browne, C., Culligan, B., & Phillips, J. (2013), https://www.newgeneralservicelist.com. Both lists are licensed CC BY-SA 4.0. Attribution and share-alike notice: see NOTICE.md in this package.",
+    "disclaimer": "Fixed comparison set for `npm run bench`. Word choice, order and CEFR levels are the word-crawler authors’ own (inherited from the starter subset); no official NGSL/NAWL ranking is reproduced. Keep this file frozen: changing the words makes earlier bench reports incomparable.",
+    "purpose": "Compare how well annotator models write Vietnamese. Every word is here because it stresses one documented failure mode of the annotation contract, not because it is frequent.",
+    "excludedWords": "The prompt’s own worked example (\"water\") is deliberately absent: a model that only copies the example would score well on it.",
+    "stressCases": {
+      "thing": "classifier trap: the definition must name a noun it is forbidden to name — the \"những này\" failure",
+      "way": "classifier trap: abstract noun with no concrete referent to fall back on",
+      "woman": "compound trap: the natural Vietnamese is \"người đàn ông\"/\"phụ nữ\" — a 3-syllable unit models cut in half",
+      "man": "compound trap: \"người đàn ông\" is the canonical broken-emphasis case in the README",
+      "teacher": "compound trap: \"giáo viên\"/\"học sinh\" — two tight 2-syllable compounds in one sentence",
+      "market": "loanword pressure: Vietnamese keeps \"thị trường\" but models reach for the English noun",
+      "phone": "loanword pressure: \"điện thoại\" competes with the borrowed English word",
+      "enough": "adverb with no noun: hardest part of speech to define in 8-11 Vietnamese words",
+      "idea": "classifier trap plus compound: \"ý tưởng\", \"suy nghĩ\"",
+      "experience": "compound trap: \"kinh nghiệm\", \"trải nghiệm\" — near-synonym compounds",
+      "opportunity": "compound trap: \"cơ hội\" plus a definition that tempts the English word",
+      "knowledge": "compound trap: \"kiến thức\", \"hiểu biết\"",
+      "environment": "compound trap: \"môi trường\" — single unit, routinely split",
+      "relationship": "three-syllable trap: \"mối quan hệ\" — \"quan hệ\" is itself a word, so the split is plausible and wrong",
+      "imply": "abstract verb: \"hàm ý\", \"ngụ ý\" — tone marks carry the meaning",
+      "arbitrary": "abstract adjective: \"tùy ý\", \"ngẫu nhiên\" — weak models default to English",
+      "whereas": "the only conjunction in the corpus: nothing concrete to describe, pure grammar",
+      "perceive": "abstract verb: \"nhận thức\", \"cảm nhận\" — easy to confuse with \"nhận biết\"",
+      "research": "academic noun: \"nghiên cứu\" — definition must stay inside 8-11 words",
+      "data": "loanword pressure: \"dữ liệu\" vs the English word Vietnamese tech speech borrows",
+      "concept": "academic abstraction: \"khái niệm\"",
+      "framework": "academic abstraction: \"khung\", \"bộ khung\" — no settled single Vietnamese word",
+      "hypothesis": "academic abstraction: \"giả thuyết\" vs \"giả thiết\", a one-diacritic distinction",
+      "phenomenon": "academic abstraction: \"hiện tượng\" plus a hard IPA"
+    },
+    "sources": [
+      {
+        "id": "ngsl",
+        "name": "New General Service List 1.2 (2809 words)",
+        "authors": "Browne, C., Culligan, B., & Phillips, J. (2013). The New General Service List. www.newgeneralservicelist.com",
+        "url": "https://www.newgeneralservicelist.com",
+        "license": "CC BY-SA 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+        "note": "Bands 1-3 are curated subsets of NGSL 1.2. Official frequency ranks are not reproduced; see the disclaimer."
+      },
+      {
+        "id": "nawl",
+        "name": "New Academic Word List 1.2 (957 words)",
+        "authors": "Browne, C., Culligan, B., & Phillips, J. (2013). The New Academic Word List. www.newgeneralservicelist.com",
+        "url": "https://www.newgeneralservicelist.com",
+        "license": "CC BY-SA 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+        "note": "Band 4 (C1 academic tier) is a curated subset of NAWL 1.2."
+      }
+    ],
+    "wordCount": 24
+  },
+  "words": [
+    {
+      "word": "thing",
+      "pos": "noun",
+      "level": "A1",
+      "band": 1,
+      "source": "ngsl"
+    },
+    {
+      "word": "way",
+      "pos": "noun",
+      "level": "A1",
+      "band": 1,
+      "source": "ngsl"
+    },
+    {
+      "word": "woman",
+      "pos": "noun",
+      "level": "A1",
+      "band": 1,
+      "source": "ngsl"
+    },
+    {
+      "word": "man",
+      "pos": "noun",
+      "level": "A1",
+      "band": 1,
+      "source": "ngsl"
+    },
+    {
+      "word": "teacher",
+      "pos": "noun",
+      "level": "A2",
+      "band": 1,
+      "source": "ngsl"
+    },
+    {
+      "word": "market",
+      "pos": "noun",
+      "level": "A2",
+      "band": 1,
+      "source": "ngsl"
+    },
+    {
+      "word": "phone",
+      "pos": "noun",
+      "level": "A2",
+      "band": 1,
+      "source": "ngsl"
+    },
+    {
+      "word": "enough",
+      "pos": "adv",
+      "level": "A2",
+      "band": 1,
+      "source": "ngsl"
+    },
+    {
+      "word": "idea",
+      "pos": "noun",
+      "level": "B1",
+      "band": 2,
+      "source": "ngsl"
+    },
+    {
+      "word": "experience",
+      "pos": "noun",
+      "level": "B1",
+      "band": 2,
+      "source": "ngsl"
+    },
+    {
+      "word": "opportunity",
+      "pos": "noun",
+      "level": "B1",
+      "band": 2,
+      "source": "ngsl"
+    },
+    {
+      "word": "knowledge",
+      "pos": "noun",
+      "level": "B1",
+      "band": 2,
+      "source": "ngsl"
+    },
+    {
+      "word": "environment",
+      "pos": "noun",
+      "level": "B1",
+      "band": 2,
+      "source": "ngsl"
+    },
+    {
+      "word": "relationship",
+      "pos": "noun",
+      "level": "B1",
+      "band": 2,
+      "source": "ngsl"
+    },
+    {
+      "word": "imply",
+      "pos": "verb",
+      "level": "B2",
+      "band": 3,
+      "source": "ngsl"
+    },
+    {
+      "word": "arbitrary",
+      "pos": "adj",
+      "level": "B2",
+      "band": 3,
+      "source": "ngsl"
+    },
+    {
+      "word": "whereas",
+      "pos": "conj",
+      "level": "B2",
+      "band": 3,
+      "source": "ngsl"
+    },
+    {
+      "word": "perceive",
+      "pos": "verb",
+      "level": "B2",
+      "band": 3,
+      "source": "ngsl"
+    },
+    {
+      "word": "research",
+      "pos": "noun",
+      "level": "C1",
+      "band": 4,
+      "source": "nawl"
+    },
+    {
+      "word": "data",
+      "pos": "noun",
+      "level": "C1",
+      "band": 4,
+      "source": "nawl"
+    },
+    {
+      "word": "concept",
+      "pos": "noun",
+      "level": "C1",
+      "band": 4,
+      "source": "nawl"
+    },
+    {
+      "word": "framework",
+      "pos": "noun",
+      "level": "C1",
+      "band": 4,
+      "source": "nawl"
+    },
+    {
+      "word": "hypothesis",
+      "pos": "noun",
+      "level": "C1",
+      "band": 4,
+      "source": "nawl"
+    },
+    {
+      "word": "phenomenon",
+      "pos": "noun",
+      "level": "C1",
+      "band": 4,
+      "source": "nawl"
+    }
+  ]
+}

@@ -8,6 +8,7 @@
 import {
   useEffect,
   useLayoutEffect,
+  useRef,
   useState,
   type Dispatch,
   type RefObject,
@@ -17,6 +18,9 @@ import type { CanvasSpec } from "@/features/canvas";
 import { computeWordSequenceFit } from "../lib/word-sequence-fit";
 
 const useIsomorphicLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
+
+/** Fit passes allowed per page before a still-changing size is treated as an oscillation. */
+const MAX_FIT_PASSES = 24;
 
 export type UseWordSequenceFitArgs = {
   initialFit: number;
@@ -67,6 +71,7 @@ export function useWordSequenceFit({
   const [safeCenterY, setSafeCenterY] = useState(spec.y);
   const fontSize = spec.size * (disableFit ? 1 : fitScale);
   const [measurementRevision, setMeasurementRevision] = useState(0);
+  const fitPasses = useRef(0);
 
   useIsomorphicLayoutEffect(() => {
     const wrapper = wrapperRef.current;
@@ -99,6 +104,8 @@ export function useWordSequenceFit({
   }, [measurementKey, spec.text, wrapperRef, textRef]);
 
   useIsomorphicLayoutEffect(() => {
+    // A new page, size or typeface is a fresh fit and gets its full budget of passes.
+    fitPasses.current = 0;
     setFitScale(initialFit);
     setSoloInlineScale(1);
     setSafeCenterY(spec.y);
@@ -137,14 +144,21 @@ export function useWordSequenceFit({
       specY: spec.y,
     });
     if (!next) return;
-
     // Solo pages may need to grow fitScale past its initial 1 (to fill the
     // target width), not just shrink — react to either direction. Multi-word
     // pages never compute a nextFit above 1, so this stays shrink-only for them.
+    // The solo tolerance comes from the measurement itself (see fitTolerance): chasing
+    // a difference smaller than one measured pixel can never settle.
     const fitChanged = isSolo
-      ? Math.abs(next.nextFit - fitScale) / Math.max(fitScale, Number.EPSILON) > 0.002
+      ? Math.abs(next.nextFit - fitScale) / Math.max(fitScale, Number.EPSILON) > next.fitTolerance
       : Math.abs(next.nextFit - fitScale) > 0.01;
-    if (!disableFit && fitChanged) {
+    // Belt and braces for a loop the tolerance did not anticipate: a page that is still
+    // being resized after this many passes is oscillating, not converging. Stopping
+    // leaves it a hair off its target; carrying on would hit React's update limit and
+    // take the whole screen down with an error page.
+    const stillSettling = fitPasses.current < MAX_FIT_PASSES;
+    if (fitChanged && stillSettling) fitPasses.current += 1;
+    if (!disableFit && fitChanged && stillSettling) {
       setFitScale(next.nextFit);
     } else {
       // Converged — report the scale this page needs so the parent can pick a

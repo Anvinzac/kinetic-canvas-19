@@ -68,6 +68,13 @@ export type WordSequenceTextProps = {
    * starting initial while the count keeps the primary mark.
    */
   secondaryEmphasis?: { phrase: string; variant: EmphasisVariant };
+  /**
+   * Whether an emphasised word may be drawn inside the box-shaped `frame`. The box adds
+   * padding and a border around the word, which is height a landscape card does not
+   * have; such a caller passes false and the frame is drawn as an underline. It also
+   * applies to `secondaryEmphasis`. Defaults to true, so every other surface is unchanged.
+   */
+  allowFrameEmphasis?: boolean;
 };
 
 /**
@@ -91,6 +98,7 @@ export function WordSequenceText({
   lineSpacingScale = 1,
   dataEmphasis,
   secondaryEmphasis,
+  allowFrameEmphasis = true,
 }: WordSequenceTextProps): ReactElement {
   const words = useMemo(
     () => (fitAsUnit ? [spec.text.trim()] : getWords(spec.text)),
@@ -244,6 +252,7 @@ export function WordSequenceText({
           phraseKeys={phraseKeys}
           secondaryEmphasized={secondaryEmphasized}
           secondaryVariant={secondaryVariant}
+          allowFrame={allowFrameEmphasis}
           spotlightEmphasis={spotlightEmphasis}
           spec={spec}
           staticRender={staticRender}

@@ -12,9 +12,10 @@
  *          annotationWordPattern, containsTargetWord, blankOutTarget,
  *          countVietnameseWords, checkVietnameseProse, findDanglingDemonstrative,
  *          parseAnnotation, parseAnnotationList
- * Depends on: zod
+ * Depends on: zod, ../vietnamese.ts
  */
 import { z } from "zod";
+import { checkVietnameseText } from "../vietnamese.ts";
 
 /**
  * The exact annotation contract. `level` is deliberately absent: it comes from
@@ -253,6 +254,13 @@ export function parseAnnotation(
     anticipateVi = "";
     issues.push("anticipateVi: leaked the English answer and was emptied");
   }
+
+  // Is it Vietnamese at all? Reported, never repaired: nothing here can write
+  // the sentence again, and a foreign token is the model's mistake to own.
+  issues.push(...checkVietnameseText("defVi", data.defVi));
+  issues.push(...checkVietnameseText("leadVi", data.leadVi));
+  issues.push(...checkVietnameseText("anticipateVi", anticipateVi));
+  issues.push(...checkVietnameseText("usageVi", data.usageVi));
 
   issues.push(...checkVietnameseProse("defVi", data.defVi));
 

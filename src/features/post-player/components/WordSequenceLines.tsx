@@ -35,6 +35,8 @@ export type WordSequenceLinesProps = {
   /** Caller-forced second highlight and the effect it is drawn with. */
   secondaryEmphasized?: Set<number>;
   secondaryVariant?: EmphasisVariant;
+  /** False where the box-drawing frame is not allowed (forwarded from WordSequenceText). */
+  allowFrame?: boolean;
   spotlightEmphasis: boolean;
   spec: CanvasSpec;
   staticRender: boolean;
@@ -98,6 +100,7 @@ export function WordSequenceLines({
   phraseKeys,
   secondaryEmphasized,
   secondaryVariant,
+  allowFrame = true,
   spotlightEmphasis,
   spec,
   staticRender,
@@ -138,6 +141,7 @@ export function WordSequenceLines({
       emphasisColor={emphasisColor}
       entranceStyle={entranceStyle}
       skipFrame={skipFrame}
+      allowFrame={allowFrame}
       runEffect={runEffect}
       sharedVariant={sharedVariant}
     />
@@ -175,6 +179,7 @@ export function WordSequenceLines({
         secondaryEmphasized,
         secondaryVariant,
         emphasisColor,
+        allowFrame,
       },
     );
     // Every syllable of the run is dressed in the one effect the run settled on; only a

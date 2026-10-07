@@ -76,6 +76,7 @@ function crawlCommand(overrides: Partial<CrawlCommand> = {}): CrawlCommand {
     baseUrl: null,
     model: null,
     maxTokens: null,
+    timeoutMs: null,
     temperature: null,
     deckName: null,
     deckVersion: null,
@@ -113,6 +114,56 @@ describe("extractChatContent", () => {
     assert.throws(
       () => extractChatContent({ choices: [{ message: { content: "   " } }] }),
       LlmRequestError,
+    );
+  });
+
+  // Measured against zai-org/GLM-5.3: an 8-word batch spent ~18,700 reasoning
+  // tokens before the first character of the answer, so a tight max_tokens
+  // returns finish_reason=length with empty content. The error has to name
+  // that, or the reader goes looking for a broken provider.
+  test("a reasoning model that burned the whole budget says so", () => {
+    assert.throws(
+      () =>
+        extractChatContent({
+          choices: [
+            {
+              finish_reason: "length",
+              message: { role: "assistant", content: "", reasoning_content: "x".repeat(23564) },
+            },
+          ],
+        }),
+      (error: unknown) => {
+        assert.ok(error instanceof LlmRequestError);
+        assert.match(error.message, /finish_reason=length/u);
+        assert.match(error.message, /23564 characters/u);
+        assert.match(error.message, /Raise --max-tokens or lower --batch/u);
+        return true;
+      },
+    );
+  });
+
+  test("reasoning with no answer and no length cutoff is reported distinctly", () => {
+    assert.throws(
+      () =>
+        extractChatContent({
+          choices: [{ finish_reason: "stop", message: { content: "", reasoning_content: "hmm" } }],
+        }),
+      (error: unknown) => {
+        assert.ok(error instanceof LlmRequestError);
+        assert.match(error.message, /only reasoning \(3 characters\) and no answer/u);
+        return true;
+      },
+    );
+  });
+
+  test("a plain empty reply keeps the plain message", () => {
+    assert.throws(
+      () => extractChatContent({ choices: [{ finish_reason: "stop", message: { content: "" } }] }),
+      (error: unknown) => {
+        assert.ok(error instanceof LlmRequestError);
+        assert.equal(error.message, "Chat response has no message content");
+        return true;
+      },
     );
   });
 });

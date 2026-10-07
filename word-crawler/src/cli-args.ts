@@ -46,6 +46,12 @@ export interface CrawlCommand {
   baseUrl: string | null;
   model: string | null;
   maxTokens: number | null;
+  /**
+   * Per-request timeout in ms. Null keeps the transport default (120s), which
+   * is not enough for a reasoning model: its chain of thought is generated
+   * before the first character of the answer arrives.
+   */
+  timeoutMs: number | null;
   temperature: number | null;
   deckName: string | null;
   deckVersion: string | null;
@@ -112,6 +118,7 @@ function parseCrawl(argv: readonly string[]): CliCommand {
     baseUrl: null,
     model: null,
     maxTokens: null,
+    timeoutMs: null,
     temperature: null,
     deckName: null,
     deckVersion: null,
@@ -188,6 +195,10 @@ function parseCrawl(argv: readonly string[]): CliCommand {
         break;
       case "--max-tokens":
         crawl.maxTokens = readInteger(readValue(argv, index, flag), flag, 64_000);
+        index += 1;
+        break;
+      case "--timeout":
+        crawl.timeoutMs = readInteger(readValue(argv, index, flag), flag, 1_800_000);
         index += 1;
         break;
       case "--name":
@@ -349,6 +360,7 @@ export function formatHelp(): string {
     "  --model name        Model id (default: $LLM_MODEL, the provider's own env var, or its preset default)",
     "  --temperature 0.4   Sampling temperature, 0-2 (OpenAI-compatible providers only)",
     "  --max-tokens 4000   Response token budget per batch",
+    "  --timeout 290000    Per-request timeout in ms (default 120000; raise it for reasoning models)",
     '  --name "Deck name"  Deck meta name',
     "  --deck-version v1   Deck meta version",
     "  --dry-run           Plan only: no API calls, no files written",

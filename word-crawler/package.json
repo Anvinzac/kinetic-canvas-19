@@ -11,8 +11,9 @@
     "crawl": "node --env-file-if-exists=.env src/cli.ts crawl",
     "validate": "node --env-file-if-exists=.env src/cli.ts validate",
     "corpus:import": "node src/cli.ts corpus:import",
-    "test": "node --test test/corpus.test.ts test/emphasis.test.ts test/annotate.test.ts test/openai.test.ts test/deck.test.ts test/crawl.test.ts test/cli-args.test.ts",
-    "typecheck": "tsc --noEmit"
+    "test": "node --test test/corpus.test.ts test/emphasis.test.ts test/vietnamese.test.ts test/annotate.test.ts test/openai.test.ts test/deck.test.ts test/crawl.test.ts test/cli-args.test.ts test/bench.test.ts",
+    "typecheck": "tsc --noEmit",
+    "bench": "node --env-file-if-exists=.env src/bench/run.ts"
   },
   "dependencies": {
     "zod": "^3.24.2"

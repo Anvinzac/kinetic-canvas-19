@@ -231,6 +231,65 @@ describe("Anthropic text extraction", () => {
     assert.deepEqual(extractJsonArray("I used [a tool] then: [1]"), [1]);
   });
 
+  // Measured on Llama-3.3-70B: it intermittently closes the batch as
+  // "[ {...}, {...}, ]". Two runs in three lost a whole 8-word batch to it.
+  test("extractJsonArray repairs a trailing comma", () => {
+    assert.deepEqual(extractJsonArray('[ {"word":"idea"}, {"word":"imply"}, ]'), [
+      { word: "idea" },
+      { word: "imply" },
+    ]);
+    assert.deepEqual(extractJsonArray('[{"a":[1,2,],"b":{"c":1,},},]'), [{ a: [1, 2], b: { c: 1 } }]);
+  });
+
+  test("the trailing-comma repair never touches a comma inside Vietnamese text", () => {
+    assert.deepEqual(
+      extractJsonArray('[{"defVi":"Quả thật, tuy nhiên điều ấy, vẫn chưa đủ."},]'),
+      [{ defVi: "Quả thật, tuy nhiên điều ấy, vẫn chưa đủ." }],
+    );
+    // A comma before a bracket that is itself inside a string must survive.
+    assert.deepEqual(extractJsonArray('[{"note":"a, ] b"},]'), [{ note: "a, ] b" }]);
+    // And an escaped quote must not end the string early.
+    assert.deepEqual(extractJsonArray('[{"note":"say \\", ] ok"},]'), [{ note: 'say ", ] ok' }]);
+  });
+
+  // A reproducible malformed reply cannot be debugged if the error throws the
+  // reply away, so the excerpt is part of the contract.
+  test("extractJsonArray quotes the reply it could not parse", () => {
+    assert.throws(
+      () => extractJsonArray("I'm sorry, I cannot produce that."),
+      (error: unknown) => {
+        assert.ok(error instanceof AnthropicRequestError);
+        assert.match(error.message, /the reply was: I'm sorry, I cannot produce that\./u);
+        return true;
+      },
+    );
+  });
+
+  test("extractJsonArray says so when the reply was empty", () => {
+    assert.throws(
+      () => extractJsonArray("   \n  "),
+      (error: unknown) => {
+        assert.ok(error instanceof AnthropicRequestError);
+        assert.match(error.message, /the reply was empty/u);
+        return true;
+      },
+    );
+  });
+
+  test("extractJsonArray shows both ends of a long unparseable reply", () => {
+    const long = `START${"x".repeat(900)}END`;
+    assert.throws(
+      () => extractJsonArray(long),
+      (error: unknown) => {
+        assert.ok(error instanceof AnthropicRequestError);
+        assert.match(error.message, /the reply started: START/u);
+        assert.match(error.message, /and ended: .*END$/u);
+        assert.ok(error.message.length < 600, "an excerpt, not the whole reply");
+        return true;
+      },
+    );
+  });
+
   test("extractJsonArray throws when no array exists", () => {
     assert.throws(() => extractJsonArray("no array here"), AnthropicRequestError);
   });

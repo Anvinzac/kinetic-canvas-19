@@ -209,3 +209,83 @@ export function adminErrorsQueryOptions(
     },
   });
 }
+
+/**
+ * Session health metrics: aggregate page.loaded/page.failed events by session.
+ */
+export type SessionHealthSummary = {
+  totalSessions: number;
+  sessionsWithErrors: number;
+  totalLoads: number;
+  totalFailures: number;
+  failureRate: number;
+  topErrors: Array<{ message: string; count: number }>;
+};
+
+export function adminSessionHealthQueryOptions(
+  from: string,
+  to: string,
+  mode: AdminMode,
+) {
+  return queryOptions({
+    queryKey: adminKeys.sessionHealth(from, to, mode),
+    staleTime: 30_000,
+    refetchInterval: 30_000,
+    queryFn: async (): Promise<SessionHealthSummary> => {
+      if (mode === "demo") {
+        ensureDemoSeeded();
+        const page = await listEvents({
+          mode,
+          from: `${from}T00:00:00.000Z`,
+          to: `${to}T23:59:59.999Z`,
+          limit: 200,
+        });
+        return computeSessionHealth(page.items);
+      }
+      const page = await getAdminEvents({
+        data: {
+          mode,
+          from: `${from}T00:00:00.000Z`,
+          to: `${to}T23:59:59.999Z`,
+          limit: 200,
+        },
+      });
+      return computeSessionHealth(page.items);
+    },
+  });
+}
+
+function computeSessionHealth(
+  events: Array<{ event_type: string; entity_id?: string | null; metadata?: Record<string, unknown> }>,
+): SessionHealthSummary {
+  const loads = events.filter((e) => e.event_type === "page.loaded");
+  const failures = events.filter((e) => e.event_type === "page.failed");
+  const sessionIds = new Set<string>();
+  const errorSessions = new Set<string>();
+  const errorCounts = new Map<string, number>();
+
+  for (const e of loads) {
+    if (e.entity_id) sessionIds.add(e.entity_id);
+  }
+  for (const e of failures) {
+    if (e.entity_id) {
+      sessionIds.add(e.entity_id);
+      errorSessions.add(e.entity_id);
+    }
+    const msg = String(e.metadata?.message ?? "unknown");
+    errorCounts.set(msg, (errorCounts.get(msg) ?? 0) + 1);
+  }
+
+  const topErrors = Array.from(errorCounts.entries())
+    .map(([message, count]) => ({ message, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 5);
+
+  const totalSessions = sessionIds.size;
+  const sessionsWithErrors = errorSessions.size;
+  const totalLoads = loads.length;
+  const totalFailures = failures.length;
+  const failureRate = totalLoads + totalFailures > 0 ? totalFailures / (totalLoads + totalFailures) : 0;
+
+  return { totalSessions, sessionsWithErrors, totalLoads, totalFailures, failureRate, topErrors };
+}

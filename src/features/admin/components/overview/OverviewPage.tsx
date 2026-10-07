@@ -12,6 +12,7 @@ import {
   adminEventsQueryOptions,
   adminHealthQueryOptions,
   adminRollupsQueryOptions,
+  adminSessionHealthQueryOptions,
 } from "../../api/queries";
 import { useAdminMode, useAdminSearchRange } from "../../hooks/useAdminMode";
 import type { AdminRangePreset } from "../../lib/date-range";
@@ -32,6 +33,7 @@ export function OverviewPage(): React.ReactElement {
   const spark = useQuery(adminRollupsQueryOptions(sparkFrom, to, mode));
   const events = useQuery(adminEventsQueryOptions(from, to, mode));
   const health = useQuery(adminHealthQueryOptions(mode));
+  const sessionHealth = useQuery(adminSessionHealthQueryOptions(from, to, mode));
 
   const rows = rollups.data ?? [];
   const totals = rows.reduce(
@@ -101,6 +103,42 @@ export function OverviewPage(): React.ReactElement {
             ))}
           </ul>
         )}
+      </section>
+
+      <section>
+        <h3 className="mb-3 text-sm font-medium">Session health</h3>
+        {sessionHealth.isLoading ? (
+          <div className="h-20 animate-pulse rounded-lg bg-muted" aria-busy />
+        ) : sessionHealth.isError ? (
+          <p className="text-sm text-red-600">Session health unavailable</p>
+        ) : sessionHealth.data ? (
+          <div className="space-y-3">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <StatCard label="Sessions" value={sessionHealth.data.totalSessions} />
+              <StatCard label="Sessions with errors" value={sessionHealth.data.sessionsWithErrors} />
+              <StatCard label="Page loads" value={sessionHealth.data.totalLoads} />
+              <StatCard label="Page failures" value={sessionHealth.data.totalFailures} />
+            </div>
+            {sessionHealth.data.failureRate > 0 && (
+              <p className="text-xs text-muted-foreground">
+                Failure rate: {(sessionHealth.data.failureRate * 100).toFixed(1)}%
+              </p>
+            )}
+            {sessionHealth.data.topErrors.length > 0 && (
+              <div>
+                <p className="mb-2 text-xs font-medium text-muted-foreground">Top errors</p>
+                <ul className="space-y-1 text-xs">
+                  {sessionHealth.data.topErrors.map((err, i) => (
+                    <li key={i} className="flex justify-between">
+                      <span className="truncate text-muted-foreground">{err.message}</span>
+                      <span className="ml-2 font-medium tabular-nums">{err.count}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        ) : null}
       </section>
     </div>
   );

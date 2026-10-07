@@ -15,12 +15,13 @@
  * Exports: Deck, DeckMeta, DeckWord, DeckUsage, DECK_DISCOVER_PAGES,
  *          DECK_REVERSE_PAGES, slugifyWord, buildDeckWord, buildDeck,
  *          validateDeck, toDeckWord
- * Depends on: ./corpus.ts, ./emphasis.ts, ./annotate/contract.ts
+ * Depends on: ./corpus.ts, ./emphasis.ts, ./annotate/contract.ts, ./vietnamese.ts
  */
 import type { CefrLevel, CorpusWord } from "./corpus.ts";
 import { CEFR_LEVELS } from "./corpus.ts";
 import { containsTargetWord, type CrawlerAnnotation } from "./annotate/contract.ts";
 import { injectEmphasisMarkers, stripEmphasisMarkers } from "./emphasis.ts";
+import { checkVietnameseText } from "./vietnamese.ts";
 
 /** One English/Vietnamese example pair, exactly as the app imports it. */
 export interface DeckUsage {
@@ -238,6 +239,8 @@ export interface DeckValidationReport {
     withMarkers: number;
     withUsage: number;
     withIpa: number;
+    /** Words whose Vietnamese text does not read as Vietnamese. */
+    withForeignText: number;
   };
 }
 
@@ -267,6 +270,7 @@ export function validateDeck(input: unknown): DeckValidationReport {
   let withMarkers = 0;
   let withUsage = 0;
   let withIpa = 0;
+  let withForeignText = 0;
 
   const root = asRecord(input);
   if (root === null) {
@@ -274,7 +278,7 @@ export function validateDeck(input: unknown): DeckValidationReport {
       ok: false,
       errors: ["deck must be a JSON object with meta and words"],
       warnings,
-      stats: { words: 0, byLevel, topics: [], withEmphasis, withMarkers, withUsage, withIpa },
+      stats: { words: 0, byLevel, topics: [], withEmphasis, withMarkers, withUsage, withIpa, withForeignText },
     };
   }
   if (asRecord(root.meta) === null) warnings.push("meta is missing or not an object");
@@ -284,7 +288,7 @@ export function validateDeck(input: unknown): DeckValidationReport {
       ok: false,
       errors: ["words must be a non-empty array"],
       warnings,
-      stats: { words: 0, byLevel, topics: [], withEmphasis, withMarkers, withUsage, withIpa },
+      stats: { words: 0, byLevel, topics: [], withEmphasis, withMarkers, withUsage, withIpa, withForeignText },
     };
   }
 
@@ -349,6 +353,19 @@ export function validateDeck(input: unknown): DeckValidationReport {
     if (word.length > 0 && containsTargetWord(anticipateVi, word)) {
       errors.push(`${where}.anticipateVi: contains the English answer`);
     }
+
+    // Vietnamese-ness is a warning, not an error: one odd token must not block
+    // a whole deck, but it must never reach a learner unnoticed either.
+    const foreignIssues = [
+      ...checkVietnameseText("defVi", defVi),
+      ...checkVietnameseText("leadVi", leadVi),
+      ...checkVietnameseText("anticipateVi", anticipateVi),
+    ];
+    if (foreignIssues.length > 0) {
+      withForeignText += 1;
+      for (const issue of foreignIssues) warnings.push(`${where}.${issue}`);
+    }
+
     const pos = typeof entry.pos === "string" ? entry.pos.trim() : "";
     if (pos.length > 40) errors.push(`${where}.pos: must be at most 40 characters`);
     const ipa = typeof entry.ipa === "string" ? entry.ipa.trim() : "";
@@ -442,6 +459,7 @@ export function validateDeck(input: unknown): DeckValidationReport {
       withMarkers,
       withUsage,
       withIpa,
+      withForeignText,
     },
   };
 }

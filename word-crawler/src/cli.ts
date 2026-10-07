@@ -134,6 +134,7 @@ export function createAnnotator(
       apiKey,
       model,
       maxTokens: command.maxTokens ?? undefined,
+      timeoutMs: command.timeoutMs ?? undefined,
       log: batchLog,
     });
   }
@@ -144,6 +145,7 @@ export function createAnnotator(
     model,
     label: resolved.label,
     maxTokens: command.maxTokens ?? undefined,
+    timeoutMs: command.timeoutMs ?? undefined,
     temperature: command.temperature ?? undefined,
     log: batchLog,
   });
@@ -168,6 +170,17 @@ export async function runValidateCommand(
         `emphasis ${report.stats.withEmphasis}/${report.stats.words}, ` +
         `usage ${report.stats.withUsage}/${report.stats.words}, ipa ${report.stats.withIpa}/${report.stats.words}`,
     );
+    // Vietnamese-ness is a warning, so it would otherwise be buried in a long
+    // warning list; a deck full of English in the Vietnamese fields is the one
+    // quality problem worth seeing before the word "valid" is printed.
+    if (report.stats.withForeignText > 0) {
+      log(
+        `Vietnamese: ${report.stats.withForeignText}/${report.stats.words} words have text that does not read ` +
+          `as Vietnamese (foreign tokens, English words, or stripped accents) — see the warnings`,
+      );
+    } else {
+      log(`Vietnamese: all ${report.stats.words} words read as Vietnamese`);
+    }
 
     if (report.warnings.length > 0) {
       log(`Warnings (${report.warnings.length}):`);

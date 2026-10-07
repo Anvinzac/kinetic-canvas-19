@@ -53,6 +53,8 @@ export type WordSequenceWordProps = {
   emphasisColor: string;
   entranceStyle: ResolvedEntranceStyle;
   skipFrame?: boolean;
+  /** False where the box-drawing frame is not allowed; it is drawn as an underline. */
+  allowFrame?: boolean;
   /**
    * The enclosing run draws this word's moving effect (sweep, halo, glow, pulse,
    * jiggle) once across all of its syllables, so the word must not draw its own.
@@ -91,6 +93,7 @@ export function WordSequenceWord({
   emphasisColor,
   entranceStyle,
   skipFrame = false,
+  allowFrame = true,
   runEffect = false,
   sharedVariant,
 }: WordSequenceWordProps): ReactElement {
@@ -123,6 +126,7 @@ export function WordSequenceWord({
       secondaryVariant,
       emphasisColor,
       inRun: skipFrame,
+      allowFrame,
     });
   const important = displayVariant !== null;
   const primary = important && emphasized.has(index);

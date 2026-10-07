@@ -8,6 +8,22 @@
   --vocab-accent-alt: var(--citrus);
   --vocab-button-ink: #14101f;
 
+  /* Bottom chrome, as one stack measured from the card's bottom edge: the clearance under
+     the button row, the row's own height, the gap up to the page-progress row, and that
+     row's height. `--vocab-chrome-progress-bottom` and `--vocab-chrome-top` are derived, so
+     the progress row, the button row, the meaning panel's cap and the report panel's foot
+     can never disagree about where the chrome ends. Portrait keeps the fixed coordinates
+     these were audited at; the short-viewport tier at the end of the file re-derives the
+     same four from a fraction of the screen height. */
+  --vocab-chrome-inset: max(44px, calc(env(safe-area-inset-bottom) + 34px));
+  --vocab-chrome-bar: 44px;
+  --vocab-chrome-gap: 40px;
+  --vocab-chrome-progress: 3px;
+  --vocab-chrome-progress-bottom: calc(
+    var(--vocab-chrome-inset) + var(--vocab-chrome-bar) + var(--vocab-chrome-gap)
+  );
+  --vocab-chrome-top: calc(var(--vocab-chrome-progress-bottom) + var(--vocab-chrome-progress));
+
   /* Shell surfaces. These resolve to the app-wide tokens in styles.css, so the feed's
      panels, sheets and the saved-words page share one neutral ramp with the rest of the
      product instead of carrying a private set of lavender greys. */
@@ -987,7 +1003,7 @@
 .vocab-stage-label {
   position: absolute;
   z-index: 3;
-  bottom: calc(max(128px, calc(env(safe-area-inset-bottom) + 118px)) + 10px);
+  bottom: calc(var(--vocab-chrome-progress-bottom) + 10px);
   left: 50%;
   transform: translateX(-50%);
   font-family: "Inter", sans-serif;
@@ -1010,6 +1026,10 @@
   flex-shrink: 0;
   color: var(--vocab-accent, var(--vocab-accent));
 }
+/* One page of text is two nested boxes. The band is what the text is fitted to (its
+   height is the "canvas" the fit pipeline measures) and it never moves; the text layer
+   inside it carries the page's slide, scale and fade. Both fill the stage by default. */
+.vocab-stage-band,
 .vocab-stage-text {
   position: absolute;
   inset: 0;
@@ -1017,13 +1037,19 @@
 }
 .vocab-reveal-details {
   position: absolute;
-  /* Top-anchored at the stage midline and content-hugging (height:auto): the frosted
+  /* Top-anchored below the stage and content-hugging (height:auto): the frosted
      box grows to cover the ENTIRE definition + example instead of clipping them to a
      fixed band, so no line is ever left outside the panel. max-height keeps that growth
-     inside the viewport — it stops right above the bottom chrome (top:50% + maxheight =
-     100% − reserve) — and overflow-y stays only as a last-resort safety valve for
-     pathologically long text on very short screens. */
-  top: 50%;
+     inside the viewport, and it is derived from the panel's own top rather than a literal
+     half — top + max-height always lands --vocab-reveal-gap above the bottom chrome,
+     whatever seam the two variables put the panel at. overflow-y stays only as a
+     last-resort safety valve for pathologically long text on very short screens.
+     Portrait keeps the audited midline; the wide-ratio tiers at the end of the file
+     re-declare both variables for the panels that share a shallow card with the answer
+     word. */
+  --vocab-reveal-top: 50%;
+  --vocab-reveal-gap: 23px;
+  top: var(--vocab-reveal-top);
   /* Centred with auto margins rather than a translate: the panel springs in, and the
      spring owns `transform`. */
   left: 0;
@@ -1031,7 +1057,9 @@
   margin-inline: auto;
   width: min(680px, 84%);
   height: auto;
-  max-height: calc(50% - max(154px, calc(env(safe-area-inset-bottom) + 144px)));
+  max-height: calc(
+    100% - var(--vocab-reveal-top) - var(--vocab-chrome-top) - var(--vocab-reveal-gap)
+  );
   overflow-y: auto;
   overflow-x: hidden;
   overscroll-behavior-y: contain;
@@ -1077,7 +1105,7 @@
 .vocab-progress {
   position: absolute;
   z-index: 3;
-  bottom: max(128px, calc(env(safe-area-inset-bottom) + 118px));
+  bottom: var(--vocab-chrome-progress-bottom);
   left: 50%;
   transform: translateX(-50%);
   width: min(440px, calc(100% - 48px));
@@ -1085,7 +1113,7 @@
   gap: 5px;
 }
 .vocab-progress span {
-  height: 3px;
+  height: var(--vocab-chrome-progress);
   flex: 1;
   border-radius: 4px;
   background: color-mix(in srgb, var(--vocab-ink) 26%, transparent);
@@ -1121,7 +1149,7 @@
 .vocab-action-bar {
   position: absolute;
   z-index: 3;
-  bottom: max(44px, calc(env(safe-area-inset-bottom) + 34px));
+  bottom: var(--vocab-chrome-inset);
   left: 50%;
   transform: translateX(-50%);
   /* Exactly the progress bar's box, which is the row's alignment anchor: the report
@@ -1139,7 +1167,11 @@
   /* Nine buttons (report + six emoji + heart + bookmark), eight gaps inside the
      strip, the 5px divider and the gap after the report button. */
   --strip-size: 40px;
-  --strip-size: min(40px, calc((100cqi - 8 * var(--strip-gap) - 5px - var(--action-gap)) / 9));
+  --strip-size: min(
+    40px,
+    var(--vocab-chrome-bar),
+    calc((100cqi - 8 * var(--strip-gap) - 5px - var(--action-gap)) / 9)
+  );
 }
 /* Everything but the report button — the reveal / heart / bookmark group, or the
    emoji strip once the answer is out — packed against the row's right end. Whatever
@@ -1158,7 +1190,7 @@
   gap: 8px;
 }
 .vocab-reveal-pill {
-  min-height: 44px;
+  min-height: var(--vocab-chrome-bar);
   padding: 0 20px;
   display: inline-flex;
   justify-content: center;
@@ -1406,7 +1438,7 @@
 }
 .vocab-reaction-button {
   min-width: 64px;
-  min-height: 44px;
+  min-height: var(--vocab-chrome-bar);
   display: inline-flex;
   justify-content: center;
   align-items: center;
@@ -2656,7 +2688,7 @@
   display: grid;
   place-items: center;
   width: 44px;
-  height: 44px;
+  height: var(--vocab-chrome-bar);
   padding: 0;
   border: 1px dashed color-mix(in srgb, var(--vocab-ink) 42%, transparent);
   border-radius: 14px;
@@ -2716,9 +2748,13 @@
   z-index: 8;
   /* Rises from just above the action row, at the report button's end of it. */
   left: max(12px, calc((100% - 440px) / 2));
-  bottom: calc(max(44px, calc(env(safe-area-inset-bottom) + 34px)) + 54px);
+  bottom: calc(var(--vocab-chrome-inset) + var(--vocab-chrome-bar) + 10px);
   width: min(372px, calc(100% - 24px));
-  max-height: calc(100% - 190px);
+  /* Portrait reads as the old `100% - 190px`: the row's own top (inset + bar) plus the
+     10px it rises on, plus the 102px of toolbar clearance that made up the rest. Measuring
+     it from the row instead of hardcoding it is what keeps the panel out of the toolbar
+     once the chrome is compressed against a short screen's bottom edge. */
+  max-height: calc(100% - var(--vocab-chrome-inset) - var(--vocab-chrome-bar) - 102px);
   overflow-y: auto;
   padding: 16px;
   border: 1px solid var(--shell-line-strong);
@@ -3016,6 +3052,99 @@
   .vocab-example {
     margin-top: 6px;
     padding-top: 8px;
+  }
+}
+/* Short viewport: a phone turned to landscape, or a very short desktop window. The
+   portrait coordinates above are absolute furniture, and on a 390px-tall screen that same
+   131px stack would eat a third of the display instead of sitting under the text. Past this
+   threshold the chrome stops being measured in pixels and is derived from the screen
+   height: the clearance and the progress row take small fixed values, the button row keeps
+   its 44px tap height for exactly as long as the band can afford it and only then compacts,
+   and the gap absorbs whatever is left over — so the chrome's top edge lands on the band and
+   is never allowed past it. Portrait is untouched: the tier opens below the shortest
+   portrait phone measured here (360×640). */
+@media (max-height: 560px) {
+  .vocabulary-shell {
+    /* The whole bottom chrome gets 15% of the screen height, and inside this tier that is
+       at most 84px — already less than the 131px the portrait stack occupies, so the chrome
+       can only ever shrink here. Everything below is a split of this one number. */
+    --vocab-chrome-band: 15dvh;
+    --vocab-chrome-inset: max(6px, calc(env(safe-area-inset-bottom) + 4px));
+    --vocab-chrome-progress: 3px;
+    --vocab-chrome-bar: min(
+      44px,
+      calc(
+        var(--vocab-chrome-band) - var(--vocab-chrome-inset) - var(--vocab-chrome-progress) - 6px
+      )
+    );
+    --vocab-chrome-gap: max(
+      6px,
+      calc(
+        var(--vocab-chrome-band) - var(--vocab-chrome-inset) - var(--vocab-chrome-bar) -
+          var(--vocab-chrome-progress)
+      )
+    );
+  }
+}
+/* Wide cards: the answer page splits its height by PROPORTION instead of at fixed marks.
+
+   The portrait coordinates (word at 34%, meaning panel from 50%) assume a tall card. The
+   answer word is sized against the card's WIDTH, so on a wide card it grows with the width
+   while the height stays put, until it reaches the midline the panel starts at and the two
+   overlap. Measured at 768px tall, a long answer already touches the panel on a 4:3 card
+   and is well past it from 1.4:1 up. So the fixed marks are for upright cards only; any
+   card wider than it is tall drops them:
+
+   - the free height is what lies between the toolbar and the bottom chrome;
+   - the word gets the top half of it. Its band is cut to that share, and because the band
+     is the box the word is fitted to, the word is sized DOWN to its share rather than
+     merely moved — it can no longer stand taller than the room it was given;
+   - the meaning panel starts a seam below and has the rest.
+
+   The band is stretched by the fit pipeline's own reserved margins (72px above, 132px
+   below), so the area the word is fitted into is exactly its share.
+
+   On very short cards the half share would fall under the smallest size the fit pipeline
+   will render the word at (it will not go below about 130px of height), so the word keeps
+   136px regardless. Under roughly 380px of card height that leaves the panel too little
+   room for its text and it scrolls — but the two still do not overlap.
+
+   Export frames keep the portrait geometry, hence the [data-export] exclusion. The card
+   applies the same wider-than-tall test when it centres the word in the band
+   (WIDE_REVEAL_Y) and when it withholds the boxed highlight. */
+@media (orientation: landscape) {
+  .vocab-card:not([data-export]) {
+    --vocab-reveal-head: 72px;
+    --vocab-reveal-seam: 16px;
+    /* Clearance between the panel's foot and the progress row: room for the page label
+       that sits on top of that row. */
+    --vocab-reveal-foot: 30px;
+    --vocab-reveal-free: calc(
+      100% - var(--vocab-reveal-head) - var(--vocab-chrome-top) - var(--vocab-reveal-foot)
+    );
+    --vocab-reveal-word: max(136px, calc(var(--vocab-reveal-free) * 0.5));
+  }
+  .vocab-card:not([data-export]) .vocab-stage-band[data-reveal] {
+    top: calc(var(--vocab-reveal-head) - 72px);
+    bottom: calc(100% - var(--vocab-reveal-head) - var(--vocab-reveal-word) - 132px);
+  }
+  .vocab-card:not([data-export]) .vocab-reveal-details {
+    --vocab-reveal-top: calc(
+      var(--vocab-reveal-head) + var(--vocab-reveal-word) + var(--vocab-reveal-seam)
+    );
+    --vocab-reveal-gap: var(--vocab-reveal-foot);
+  }
+  /* The celebration bursts from the middle of the word, wherever the word now is. */
+  .vocab-card:not([data-export]) .vocab-reveal-burst {
+    top: calc(var(--vocab-reveal-head) + var(--vocab-reveal-word) / 2);
+  }
+}
+/* The page label is hidden on short screens (see the max-height: 620px rule above), so
+   the panel can run down to just above the progress row. */
+@media (orientation: landscape) and (max-height: 620px) {
+  .vocab-card:not([data-export]) {
+    --vocab-reveal-foot: 12px;
+    --vocab-reveal-seam: 12px;
   }
 }
 @media (prefers-reduced-motion: reduce) {

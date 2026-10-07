@@ -124,6 +124,11 @@ const rowItemVariants: Variants = {
     },
   },
 };
+/** Where the answer word sits in its band, as a percentage of the band's height. */
+const PORTRAIT_REVEAL_Y = 34;
+/** On a wide card the band is cut to the word's share of the height; this is its middle. */
+const WIDE_REVEAL_Y = 43;
+
 /** Horizontal travel before a drag starts moving the page, in px. */
 const DRAG_SLOP_PX = 10;
 /** Share of the finger's travel the page follows — under 1 so it feels held, not loose. */
@@ -332,6 +337,14 @@ export function VocabularyCard({
   // In an export the text lives in the frame's clear zone, so that zone — not the
   // whole card — is the width and height everything is fitted to.
   const exportBox = exportLayout ? getExportStageBox(width, height, exportLayout) : null;
+  // A card wider than it is tall has width to spare and height to protect. The boxed
+  // highlight spends height (padding and a border around the word), so it is a portrait-
+  // only effect; on a landscape card the same word is underlined instead.
+  const landscape = width > height;
+  // On a landscape card the answer page also splits the height between the word and
+  // its meaning by proportion (the landscape tier in vocabulary.css); the word is then
+  // centred in its own band rather than pinned at the portrait 34%.
+  const wideCard = !exportLayout && landscape;
   const textWidth = exportBox?.textWidth ?? width;
   const textSize = fitVocabularyTextSize(
     stage.text,
@@ -629,6 +642,8 @@ export function VocabularyCard({
           playKey={playKey}
           direction={nav.direction}
           dragX={dragX}
+          allowFrameEmphasis={!landscape}
+          revealY={wideCard ? WIDE_REVEAL_Y : PORTRAIT_REVEAL_Y}
         />
       )}
       {isRevealed && (

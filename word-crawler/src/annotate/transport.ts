@@ -161,8 +161,55 @@ function findBalancedArrays(value: string): string[] {
 }
 
 /**
- * Extract the JSON array a model returned, tolerating prose around it and
- * markdown code fences.
+ * Drop commas that sit just before a closing `]` or `}`.
+ *
+ * Measured on `meta-llama/Llama-3.3-70B-Instruct-Turbo`: it intermittently
+ * closes the batch as `[ {...}, {...}, ]`, which is a trailing comma and so
+ * not JSON. One of those lost a whole 8-word batch on two runs out of three.
+ * The repair is in the same spirit as tolerating prose and code fences, and it
+ * is strictly syntactic — string contents are skipped, so a comma inside a
+ * Vietnamese sentence is never touched.
+ *
+ * @param value - candidate JSON text
+ * @returns the text with trailing commas removed
+ */
+function removeTrailingCommas(value: string): string {
+  const out: string[] = [];
+  let inString = false;
+  let escaped = false;
+
+  for (let index = 0; index < value.length; index += 1) {
+    const char = value[index];
+    if (inString) {
+      out.push(char);
+      if (escaped) escaped = false;
+      else if (char === "\\") escaped = true;
+      else if (char === '"') inString = false;
+      continue;
+    }
+    if (char === '"') {
+      inString = true;
+      out.push(char);
+      continue;
+    }
+    if (char === ",") {
+      // Look past whitespace: a comma before ] or } is the trailing kind.
+      let ahead = index + 1;
+      while (ahead < value.length && /\s/u.test(value[ahead])) ahead += 1;
+      if (value[ahead] === "]" || value[ahead] === "}") continue;
+    }
+    out.push(char);
+  }
+  return out.join("");
+}
+
+/**
+ * Extract the JSON array a model returned, tolerating prose around it,
+ * markdown code fences and a trailing comma before the closing bracket.
+ *
+ * On failure the error carries an excerpt of what the model actually said.
+ * Without it the reply is discarded and a reproducible malformed-output bug —
+ * one model failing the same batch every run — cannot be diagnosed at all.
  *
  * @param rawText - model text
  * @returns the parsed array
@@ -184,7 +231,26 @@ export function extractJsonArray(rawText: string): unknown[] {
       // Try the next candidate.
     }
   }
-  throw new LlmRequestError("Model text does not contain a JSON array");
+
+  // Last resort before giving up: the one malformation seen often enough in
+  // the wild to be worth repairing rather than losing the whole batch over.
+  for (const candidate of findBalancedArrays(removeTrailingCommas(text))) {
+    try {
+      const parsed = JSON.parse(candidate) as unknown;
+      if (Array.isArray(parsed)) return parsed;
+    } catch {
+      // Still unusable; fall through to the error with the excerpt.
+    }
+  }
+
+  const collapsed = rawText.replace(/\s+/gu, " ").trim();
+  const excerpt =
+    collapsed.length === 0
+      ? "the reply was empty"
+      : collapsed.length <= 400
+        ? `the reply was: ${collapsed}`
+        : `the reply started: ${collapsed.slice(0, 200)} […] and ended: ${collapsed.slice(-200)}`;
+  throw new LlmRequestError(`Model text does not contain a JSON array — ${excerpt}`);
 }
 
 /** Exponential cap with 50-100% jitter; attempt 1 = baseDelayMs. */

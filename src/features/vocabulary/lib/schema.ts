@@ -165,17 +165,30 @@ export function normalizeDeck(input: unknown): Omit<Catalog, "revision"> {
  * Compact, stable FNV-1a hash rendered as hex. Used to derive one revision for a
  * merged catalog so pagination stays deterministic for a given set of inputs without
  * pulling in node:crypto on the client.
+ *
+ * One FNV-1a pass is only 32 bits, so a wider digest is built by re-running the pass
+ * over a round-salted copy of the input and concatenating the blocks: the merged
+ * revision then has the same shape as every stored one (`scripts/import-vocabulary.ts`
+ * writes a 24-hex sha256 slice, and the feed endpoint validates that shape), which
+ * matters because the server echoes this value back as the pagination cursor and a
+ * short revision there rejects every page after the first.
  * @param input Any string
- * @returns 8-char hex digest
+ * @param hexChars Digest width, in hex characters (8 per FNV-1a round)
+ * @returns Lowercase hex digest of the requested width
  * @pure true
  */
-function stableHash(input: string): string {
-  let hash = 0x811c9dc5;
-  for (let index = 0; index < input.length; index += 1) {
-    hash ^= input.charCodeAt(index);
-    hash = Math.imul(hash, 0x01000193) >>> 0;
+function stableHash(input: string, hexChars = 24): string {
+  let digest = "";
+  for (let round = 0; digest.length < hexChars; round += 1) {
+    const stream = `${round}:${input}`;
+    let hash = 0x811c9dc5;
+    for (let index = 0; index < stream.length; index += 1) {
+      hash ^= stream.charCodeAt(index);
+      hash = Math.imul(hash, 0x01000193) >>> 0;
+    }
+    digest += hash.toString(16).padStart(8, "0");
   }
-  return hash.toString(16).padStart(8, "0");
+  return digest.slice(0, hexChars);
 }
 
 /**

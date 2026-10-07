@@ -50,6 +50,9 @@ const PAGE_VARIANTS: Variants = {
   }),
 };
 
+/** The band has no motion of its own; it exists to pass these states to the page inside. */
+const BAND_VARIANTS: Variants = { enter: {}, center: {}, exit: {} };
+
 const STILL_VARIANTS: Variants = {
   enter: { opacity: 1 },
   center: { opacity: 1 },
@@ -69,6 +72,8 @@ export function VocabularyStage({
   playKey,
   direction,
   dragX,
+  allowFrameEmphasis,
+  revealY,
 }: {
   stage: LearningStage;
   word: VocabularyWord;
@@ -83,6 +88,14 @@ export function VocabularyStage({
   direction: number;
   /** Live horizontal offset while a finger is dragging the page. */
   dragX: MotionValue<number>;
+  /** False on a landscape card, where the boxed highlight is drawn as an underline. */
+  allowFrameEmphasis: boolean;
+  /**
+   * Where the answer sits, as a percentage of its band's height. Portrait uses the fixed
+   * 34% the card was designed at; a wide card passes the centre of the shorter band the
+   * stylesheet gives the word there.
+   */
+  revealY: number;
 }) {
   const details = useRef<HTMLDivElement>(null);
   useLayoutEffect(() => {
@@ -102,37 +115,51 @@ export function VocabularyStage({
       {stage.reveal && active && !reducedMotion && <RevealBurst key={playKey} />}
       <AnimatePresence custom={pageMotion} initial={false}>
         {active && (
+          // Two layers per page. The outer BAND is the box the text is fitted to — the
+          // fit pipeline reads its height — and it never transforms, so the page's
+          // entrance scale cannot distort that reading. It only relays the page's
+          // enter/centre/exit state to the inner layer, which does the moving. On a wide
+          // card the stylesheet shrinks the answer page's band to the share of the
+          // height the word is allowed, which is what keeps it clear of the meaning panel.
           <motion.div
             key={`${stage.id}-${playKey}`}
-            className="vocab-stage-text"
-            lang={stage.lang}
-            aria-hidden="true"
+            className="vocab-stage-band"
+            data-reveal={stage.reveal ? "" : undefined}
             custom={pageMotion}
-            variants={reducedMotion ? STILL_VARIANTS : PAGE_VARIANTS}
+            variants={BAND_VARIANTS}
             initial="enter"
             animate="center"
             exit="exit"
           >
-            {/* Deck emphasis annotations for the whole word are passed every stage;
-                exact phrase matching keeps only the ones occurring in this stage's
-                text, so unrelated annotations never glow. The letter-count clue also
-                sends a second mark (its starting initial) drawn with its own effect.
-                The text block itself stays still (loop: "none") — a page of clue
-                text that bobs forever is harder to read; the life is in the backdrop
-                and in the emphasised word. */}
-            <WordSequenceText
-              spec={{ ...spec, y: stage.reveal ? 34 : 46, loop: "none" }}
-              playKey={playKey}
-              paused={!playing}
-              revealed={reducedMotion || !playing}
-              canvasWidth={canvasWidth}
-              background={background}
-              entranceSeed={word.id}
-              fitAsUnit={stage.reveal}
-              lineSpacingScale={VOCAB_LINE_SPACING_SCALE}
-              dataEmphasis={stage.dataEmphasis}
-              secondaryEmphasis={stage.secondaryEmphasis}
-            />
+            <motion.div
+              className="vocab-stage-text"
+              lang={stage.lang}
+              aria-hidden="true"
+              custom={pageMotion}
+              variants={reducedMotion ? STILL_VARIANTS : PAGE_VARIANTS}
+            >
+              {/* Deck emphasis annotations for the whole word are passed every stage;
+                  exact phrase matching keeps only the ones occurring in this stage's
+                  text, so unrelated annotations never glow. The letter-count clue also
+                  sends a second mark (its starting initial) drawn with its own effect.
+                  The text block itself stays still (loop: "none") — a page of clue
+                  text that bobs forever is harder to read; the life is in the backdrop
+                  and in the emphasised word. */}
+              <WordSequenceText
+                spec={{ ...spec, y: stage.reveal ? revealY : 46, loop: "none" }}
+                playKey={playKey}
+                paused={!playing}
+                revealed={reducedMotion || !playing}
+                canvasWidth={canvasWidth}
+                background={background}
+                entranceSeed={word.id}
+                fitAsUnit={stage.reveal}
+                lineSpacingScale={VOCAB_LINE_SPACING_SCALE}
+                dataEmphasis={stage.dataEmphasis}
+                secondaryEmphasis={stage.secondaryEmphasis}
+                allowFrameEmphasis={allowFrameEmphasis}
+              />
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>

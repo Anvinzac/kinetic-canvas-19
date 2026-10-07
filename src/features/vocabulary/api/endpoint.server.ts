@@ -16,9 +16,14 @@ const requestSchema = z
     seed: z.string().regex(/^[a-zA-Z0-9_-]{8,64}$/),
     position: unsigned("0", MAX_POSITION),
     limit: unsigned("12", 24).pipe(z.number().min(1)),
+    // The revision is an opaque digest the client only ever echoes back, and the server
+    // only ever compares for equality. It is validated as bounded hex rather than at an
+    // exact width: the cursor for EVERY page after the first is built from the revision
+    // this server just issued, so a digest that merely changes length would be rejected
+    // here and silently end the feed at word twelve.
     revision: z
       .string()
-      .regex(/^[a-f0-9]{24}$/)
+      .regex(/^[a-f0-9]{8,64}$/)
       .optional(),
     topic: z
       .string()

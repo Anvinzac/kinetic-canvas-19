@@ -21,4 +21,6 @@ export const adminKeys = {
   templates: () => [...adminKeys.all, "templates"] as const,
   palettes: () => [...adminKeys.all, "palettes"] as const,
   llmSettings: () => [...adminKeys.all, "llm-settings"] as const,
+  sessionHealth: (from: string, to: string, mode: string) =>
+    [...adminKeys.all, "session-health", from, to, mode] as const,
 };

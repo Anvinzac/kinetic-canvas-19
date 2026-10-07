@@ -93,6 +93,13 @@ function readUsage(payload: unknown): AnthropicUsage | null {
 /**
  * Pull the assistant reply out of a chat-completions response.
  *
+ * Reasoning models make the empty-content case common and confusing: they put
+ * their chain of thought in `reasoning_content`, which is billed against the
+ * same `max_tokens`, so a budget that is merely tight returns
+ * `finish_reason: "length"` with `content: ""`. Reporting that as "no message
+ * content" sends the reader looking for a broken provider instead of raising
+ * `--max-tokens`, so the error says which it is and how big the reasoning was.
+ *
  * @param payload - parsed response body
  * @returns the message content (empty string becomes a failure, not a silent pass)
  * @throws LlmRequestError when the response has no usable choice
@@ -104,11 +111,25 @@ export function extractChatContent(payload: unknown): string {
   }
   const first = choices[0] as Record<string, unknown> | null;
   const message = (first as { message?: unknown } | null)?.message;
-  const content =
-    typeof message === "object" && message !== null
-      ? (message as Record<string, unknown>).content
-      : undefined;
+  const record = typeof message === "object" && message !== null ? (message as Record<string, unknown>) : {};
+  const content = record.content;
   if (typeof content !== "string" || content.trim().length === 0) {
+    const finishReason = typeof first?.finish_reason === "string" ? first.finish_reason : "";
+    const reasoning = typeof record.reasoning_content === "string" ? record.reasoning_content : "";
+    if (finishReason === "length") {
+      const spent =
+        reasoning.length > 0
+          ? ` The whole budget went to reasoning (${reasoning.length} characters of it).`
+          : "";
+      throw new LlmRequestError(
+        `Chat response was cut off before any answer (finish_reason=length).${spent} Raise --max-tokens or lower --batch.`,
+      );
+    }
+    if (reasoning.length > 0) {
+      throw new LlmRequestError(
+        `Chat response returned only reasoning (${reasoning.length} characters) and no answer`,
+      );
+    }
     throw new LlmRequestError("Chat response has no message content");
   }
   return content;

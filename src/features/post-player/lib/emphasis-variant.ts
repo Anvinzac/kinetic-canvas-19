@@ -48,6 +48,13 @@ export type WordEmphasisInput = {
   emphasisColor: string;
   /** The word sits inside a shared run, where a box-drawing frame is shown as an underline. */
   inRun: boolean;
+  /**
+   * Whether the box-drawing `frame` may be used at all. A surface that cannot spare the
+   * room a box takes around a word (a landscape card, where height is the scarce
+   * dimension) passes false and every frame is drawn as an underline instead — the same
+   * substitution a shared run already makes. Defaults to allowed.
+   */
+  allowFrame?: boolean;
 };
 
 /**
@@ -73,7 +80,8 @@ export function resolveWordEmphasisVariant(input: WordEmphasisInput): EmphasisVa
           getBoundPhraseStartIndex(words, index, phraseKeys),
           !isDimEmphasisColor(input.emphasisColor),
         );
-  return input.inRun && variant === "frame" ? "underline" : variant;
+  const boxed = variant === "frame" && !input.inRun && input.allowFrame !== false;
+  return variant === "frame" && !boxed ? "underline" : variant;
 }
 
 /**

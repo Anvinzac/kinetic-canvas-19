@@ -16,7 +16,10 @@ export type TelemetryEventType =
   | "link.created"
   | "link.interacted"
   | "error.reported"
-  | "system.heartbeat";
+  | "system.heartbeat"
+  | "page.loaded"
+  | "page.failed"
+  | "session.error";
 
 export type TelemetrySeverity = "info" | "warn" | "error" | "critical";
 
