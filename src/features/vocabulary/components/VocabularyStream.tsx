@@ -76,7 +76,10 @@ export function VocabularyStream({
     return out;
   }, [query.entries, history, now]);
 
-  const windowState = useVocabularyWindow(visibleEntries);
+  // Suspended means something is covering the feed, so the neighbouring words
+  // cannot be seen. Dropping overscan unmounts them and hands back their DOM and
+  // their decoded art for as long as the overlay is up.
+  const windowState = useVocabularyWindow(visibleEntries, suspended ? 0 : 2);
   // Paging ceiling: the endpoint permutes the same pool forever, so hasNextPage stays
   // true even when every word it can offer is already buffered (and blocked by the
   // day history). Without this bound the backfill effect below re-arms on every

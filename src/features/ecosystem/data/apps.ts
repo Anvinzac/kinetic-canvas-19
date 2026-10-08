@@ -30,6 +30,11 @@ export type EcosystemApp = {
   accent: [string, string];
   /** "soon" renders the tile as unvisitable, with no link. */
   status: "live" | "soon";
+  /** A paragraph for the store page. MOCK copy. */
+  description: string;
+  /** Captions for the store page's screenshot frames. No real images exist yet,
+   *  so each frame is drawn from the app's own accent and glyph. MOCK. */
+  shots: string[];
 };
 
 /**
@@ -47,6 +52,9 @@ const APPS: EcosystemApp[] = [
     glyph: "🌿",
     accent: ["#1f9e5a", "#0d6b3c"],
     status: "live",
+    description:
+      "Nhà chung của cả hệ sinh thái Chay Lá. Từ đây bạn mở được mọi app con, theo dõi tiến độ học và nhận thông báo khi có nội dung mới.",
+    shots: ["Trang chủ", "Danh sách app", "Hồ sơ của bạn"],
   },
   {
     id: "hieu",
@@ -56,6 +64,9 @@ const APPS: EcosystemApp[] = [
     glyph: "💡",
     accent: ["#f0a722", "#c2560f"],
     status: "live",
+    description:
+      "Đọc hiểu theo từng câu, từng chữ. Mỗi đoạn văn được tách nhỏ, chú giải ngữ pháp và từ vựng ngay tại chỗ, không cần tra từ điển bên ngoài.",
+    shots: ["Đoạn văn có chú giải", "Ngân hàng ngữ pháp", "Bài luyện hằng ngày"],
   },
   {
     id: "viec",
@@ -65,6 +76,9 @@ const APPS: EcosystemApp[] = [
     glyph: "💼",
     accent: ["#3b82f6", "#1e3a8a"],
     status: "live",
+    description:
+      "Tiếng Anh cho người đi làm: email, họp hành, phỏng vấn và mô tả công việc. Học theo tình huống thật, không học thuộc lòng.",
+    shots: ["Mẫu email", "Luyện phỏng vấn", "Từ vựng theo ngành"],
   },
   {
     id: "qua",
@@ -74,6 +88,9 @@ const APPS: EcosystemApp[] = [
     glyph: "🎁",
     accent: ["#ec4899", "#86198f"],
     status: "live",
+    description:
+      "Đổi chuỗi ngày học lấy quà thật. Càng giữ được thói quen lâu, phần thưởng càng lớn — và bạn có thể tặng lại cho bạn bè.",
+    shots: ["Kho quà", "Chuỗi ngày học", "Tặng bạn bè"],
   },
 ];
 

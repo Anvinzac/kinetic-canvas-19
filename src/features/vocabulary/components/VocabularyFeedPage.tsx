@@ -14,6 +14,7 @@ import { useViewHistory } from "../hooks/useViewHistory";
 import { getActiveVocabWording } from "@/features/admin/api/wording.functions";
 import { FeedControls } from "./FeedControls";
 import { VocabularyStream } from "./VocabularyStream";
+import { SavedDrawer } from "./SavedDrawer";
 import "../vocabulary.css";
 
 function newSeed(): string {
@@ -35,6 +36,8 @@ export function VocabularyFeedPage() {
     autoplay: true,
   });
   const [metadata, setMetadata] = useState<FeedPage>();
+  // The saved drawer suspends the feed behind it rather than navigating away.
+  const [savedOpen, setSavedOpen] = useState(false);
   const [optionsOpen, setOptionsOpen] = useState(false);
   // Video export is an admin tool; for everyone else the control is never rendered
   // and the studio's code is never downloaded.
@@ -94,13 +97,14 @@ export function VocabularyFeedPage() {
         onClearHistory={viewHistory.clear}
         onExport={isAdmin ? openExport : undefined}
       />
+      <SavedDrawer open={savedOpen} onOpenChange={setSavedOpen} />
       <VocabularyStream
         key={`${seed}:${filters.topic}:${filters.level}:${filters.difficulty}`}
         seed={seed}
         filters={filters}
         presentation={presentation}
         reducedMotion={reducedMotion}
-        suspended={optionsOpen || !fontsReady || exportOpen || orientationGated}
+        suspended={optionsOpen || savedOpen || !fontsReady || exportOpen || orientationGated}
         exportOpen={isAdmin && exportOpen}
         onCloseExport={closeExport}
         history={viewHistory.history}
