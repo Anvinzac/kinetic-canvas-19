@@ -5,6 +5,7 @@ import {
   Bookmark,
   ChevronDown,
   Clapperboard,
+  LayoutGrid,
   Library,
   Pause,
   Play,
@@ -15,6 +16,7 @@ import {
   X,
 } from "lucide-react";
 import { COMMUNITY_AVAILABLE } from "@/lib/feature-flags";
+import { EcosystemDrawer } from "@/features/ecosystem/components/EcosystemDrawer";
 import { STYLES, THEMES } from "../lib/presets";
 import {
   DIFFICULTY_ALL,
@@ -381,6 +383,17 @@ export function FeedControls({
                 outlined; the resting gear stays an outline. */}
             {open ? <X size={20} fill="currentColor" /> : <Settings size={20} />}
           </button>
+          {/* Sibling apps live beside the gear: both are chrome that leaves the
+              current word alone, unlike the transport controls in the centre. */}
+          <EcosystemDrawer>
+            <button
+              className="vocab-settings-button"
+              type="button"
+              aria-label="Mở app khác trong hệ sinh thái Chay Lá"
+            >
+              <LayoutGrid size={19} />
+            </button>
+          </EcosystemDrawer>
         </div>
         {/* Centre: the three transport controls as bare icons split by two hairlines,
             centred on the top edge. */}
