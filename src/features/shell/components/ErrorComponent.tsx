@@ -5,7 +5,7 @@
  * Depends on: @tanstack/react-router, lib/lovable-error-reporting
  */
 
-import { useRouter } from "@tanstack/react-router";
+import { useRouter, type ErrorComponentProps } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { reportLovableError } from "@/lib/lovable-error-reporting";
 
@@ -15,7 +15,7 @@ import { reportLovableError } from "@/lib/lovable-error-reporting";
  * @param props.reset - Router-provided reset callback
  * @returns Error page element
  */
-export function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
+export function ErrorComponent({ error, reset }: ErrorComponentProps) {
   console.error(error);
   const router = useRouter();
   useEffect(() => {
