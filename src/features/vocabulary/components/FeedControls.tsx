@@ -163,6 +163,14 @@ function DifficultyDropdown({
     setOpen(true);
   };
 
+  // Sum of the packs (tracks) picked so far this session. The "tất cả" row borrows this
+  // figure while a selection is pending, so it reads the combined size of the chosen
+  // packs; once the selection is cleared (tapping "tất cả") it falls back to MOCK_TOTAL.
+  const selectedTotal = useMemo(
+    () => [...draft].reduce((sum, id) => sum + mockTrackWordCount(id), 0),
+    [draft],
+  );
+
   // Move focus into the list once it mounts so arrow keys work without a tab stop.
   useEffect(() => {
     if (open) list.current?.focus();
@@ -255,6 +263,10 @@ function DifficultyDropdown({
             {DIFFICULTY_OPTIONS.map((option, index) => {
               const isSelected =
                 option.id === DIFFICULTY_ALL ? draft.size === 0 : draft.has(option.id);
+              // "tất cả" reports the combined size of the packs just chosen; with no
+              // selection pending it shows the whole library again.
+              const count =
+                option.id === DIFFICULTY_ALL && draft.size > 0 ? selectedTotal : option.words;
               return (
                 <li
                   key={option.id}
@@ -287,7 +299,7 @@ function DifficultyDropdown({
                     {option.label}
                   </span>
                   <span className="vocab-difficulty-count" aria-hidden="true">
-                    {option.words.toLocaleString()}
+                    {count.toLocaleString()}
                   </span>
                 </li>
               );

@@ -2,15 +2,18 @@
 import {
   DEFAULT_CANVAS,
   PALETTES,
+  paletteBackgroundStops,
   vividGradient,
   type CanvasSpec,
   type PaletteTone,
 } from "@/features/canvas";
+import { getRelativeLuminance } from "@/features/canvas/contrast/color-math";
 import {
   getVietnameseLayoutMetrics,
   getWords,
   isLikelyVietnameseText,
 } from "@/features/kinetic-text";
+import { getTextSafeInsets } from "@/features/post-player/lib/playback-timing";
 import type { NarrativeStyle } from "./schema";
 import { hash } from "./random";
 import { pickHandwritingFont } from "./handwriting";
@@ -64,6 +67,30 @@ function reversedGradient(background: string): string {
   return `linear-gradient(${match[1]},${match[3]},${match[2]})`;
 }
 
+/**
+ * Relative-luminance floor above which a backdrop is treated as pale. The curated light
+ * palettes average well above this (their palest stops sit near 0.7), while every deep or
+ * saturated backdrop — even a bright-hued olive, jade or lagoon — averages far below it,
+ * so the split is unambiguous and never depends on a hand-authored flag staying current.
+ */
+const LIGHT_BACKDROP_MIN_LUMINANCE = 0.42;
+
+/**
+ * Categorize a backdrop as deep ("dark") or pale ("light") from the actual luminance of
+ * its own color stops, rather than trusting the palette's stored `tone`. The floating
+ * chrome — the top-bar scrim, the icon ink, the word's text-shadow — follows this value,
+ * so it now tracks what the card really paints. An admin who edits a gradient (or tags a
+ * dark palette `light`) can no longer leave a white veil sitting over a deep background:
+ * the tone is re-derived from the pixels on screen.
+ * @pure true
+ */
+function classifyBackdropTone(background: string): PaletteTone {
+  const stops = paletteBackgroundStops(background);
+  if (!stops.length) return "dark";
+  const average = stops.reduce((sum, stop) => sum + getRelativeLuminance(stop), 0) / stops.length;
+  return average >= LIGHT_BACKDROP_MIN_LUMINANCE ? "light" : "dark";
+}
+
 // The theme list IS the palette collection: no accent is derived at runtime from
 // whatever stop happens to be brightest, which is what used to pair a pale
 // background with white ink and an unrelated fallback highlight.
@@ -72,7 +99,9 @@ export const THEMES: VocabularyTheme[] = PALETTES.map((palette) => ({
   label: palette.label,
   background: palette.background,
   paint: vividGradient(palette.background),
-  tone: palette.tone,
+  // Chrome follows the measured backdrop, not the authored flag, so an edited or
+  // mis-tagged gradient can't put a light veil over a dark card.
+  tone: classifyBackdropTone(palette.background),
   ink: palette.ink,
   accent: palette.accentA,
   accentAlt: palette.accentB,
@@ -171,7 +200,20 @@ export function fitVocabularyTextSize(
   reservedHeight = FEED_CHROME_HEIGHT,
 ) {
   const words = getWords(text);
-  const availableHeight = Math.max(100, height - reservedHeight);
+  // `FEED_CHROME_HEIGHT` is an absolute measurement taken on the tall portrait card, where
+  // 320px is only a few tenths of the height. A card wider than it is tall is barely half as
+  // tall, so that same reservation would eat most of the display and collapse the clue text to
+  // its floor — the layout that looks broken the moment the reader rotates. The clue's final
+  // size is then pinned by the fit solver's legibility floor (it will not shrink text already
+  // under MIN_FONT_SIZE), so the size chosen here has to fit the band the solver will actually
+  // hand the text. On a wide card, reserve exactly the solver's own safe insets instead of the
+  // portrait pixel count — never more than the caller asked, so portrait and export (which
+  // passes 0) are byte-for-byte unchanged.
+  const chrome =
+    width > height
+      ? Math.min(reservedHeight, getTextSafeInsets(height).top + getTextSafeInsets(height).bottom)
+      : reservedHeight;
+  const availableHeight = Math.max(100, height - chrome);
   const availableWidth = Math.max(180, width * 0.84);
   const vietnamese = isLikelyVietnameseText(text);
   for (let size = baseSize; size >= 28; size -= 2) {

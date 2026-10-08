@@ -329,7 +329,7 @@
   /* Low on the right edge, where a thumb falls when the phone is held in the
      right hand — and well clear of the optical middle, where it sat across the
      word itself. */
-  top: 68%;
+  top: 62%;
   right: env(safe-area-inset-right, 0px);
   display: grid;
   place-items: center end;
@@ -361,8 +361,8 @@
   /* Mostly faded while untouched: the handle sits over the word, and at full
      strength it read as a bar across the text. */
   opacity: 0.4;
-  /* The handle rides the finger; 84px of travel for a full pull. */
-  transform: translateX(calc(var(--pull, 0) * -84px));
+  /* The handle only stretches a little; the drawer follows the finger from there. */
+  transform: translateX(calc(var(--handle-shift, 0) * -1px));
   transition:
     transform var(--dur-move) var(--ease-spring),
     opacity var(--dur-move) var(--ease-out),
@@ -445,18 +445,20 @@
   top: 0;
   right: 0;
   bottom: 0;
-  width: min(420px, 100vw);
+  /* ~85% of the width, never the whole screen: the strip of scrim left on the far edge
+     is what a tap closes against, and it keeps a browser back-swipe from starting on the
+     panel itself. Capped at 420px so a wide window still shows plenty of scrim. */
+  width: min(420px, 85vw);
   background: var(--shell-surface, #15102a);
   box-shadow: -18px 0 54px #00000080;
-  animation: vocab-saved-slide-in 320ms var(--ease-io) both;
+  /* The panel's horizontal position is driven by framer-motion in SavedDrawer.tsx, so the
+     same transform both tracks the finger during a pull and eases open/closed on release.
+     A keyframe here would fight that live transform, so there is none. */
 }
-/* A SEPARATE keyframe set, not `slide-in ... reverse`. Reversing reuses the same
-   animation-name, and an animation that has already finished is not restarted by
-   changing its direction — the browser just re-reads it at its end time, which
-   for a reversed run is the `from` state. The panel teleported off-screen in one
-   frame and then sat there for the rest of the duration. */
-.vocab-saved-panel[data-closing] {
-  animation: vocab-saved-slide-out 260ms var(--ease-io) forwards;
+/* While the drawer is only a drag preview it is not yet interactive; the finger is
+   driving it through the dock's window listeners, so it must not swallow taps. */
+.vocab-saved-panel[data-dragging] {
+  pointer-events: none;
 }
 
 /* The list is a route of its own as well as a drawer; inside the panel it fills
@@ -473,14 +475,6 @@
     opacity: 1;
   }
 }
-@keyframes vocab-saved-slide-in {
-  from {
-    transform: translateX(100%);
-  }
-  to {
-    transform: translateX(0);
-  }
-}
 @keyframes vocab-saved-fade-out {
   from {
     opacity: 1;
@@ -489,18 +483,12 @@
     opacity: 0;
   }
 }
-@keyframes vocab-saved-slide-out {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(100%);
-  }
-}
 
 @media (prefers-reduced-motion: reduce) {
-  .vocab-saved-scrim,
-  .vocab-saved-panel {
+  /* The panel's open/close is now a framer-motion transform that already collapses to
+     zero duration under reduced motion (see SavedDrawer.tsx); only the scrim's fade is
+     still a CSS animation to shorten here. */
+  .vocab-saved-scrim {
     animation-duration: 1ms !important;
   }
 }
@@ -509,9 +497,9 @@
 .vocab-saved-hint {
   position: absolute;
   top: 50%;
-  /* Travels with the handle, which slides 84px: pinned at a fixed offset the
-     label ends up underneath the handle it is meant to caption. */
-  right: calc(30px + var(--pull, 0) * 84px);
+  /* Travels with the handle's small stretch, so the label stays beside the tab it
+     captions instead of sliding off on its own. */
+  right: calc(30px + var(--handle-shift, 0) * 1px);
   opacity: var(--pull, 0);
   transform: translateY(-50%);
   color: var(--shell-text);
@@ -1359,7 +1347,8 @@
      rather than a fixed px so the whole panel grows together. */
   font-size: clamp(16px, 1.9vw, 21px);
   line-height: 1.6;
-  padding: 14px 18px;
+  --vocab-reveal-pad-y: 14px;
+  padding: var(--vocab-reveal-pad-y) 18px;
   border-radius: 20px;
   border: 1px solid color-mix(in srgb, var(--vocab-ink) 14%, transparent);
   box-shadow: 0 18px 50px -18px #0007;
@@ -3224,7 +3213,8 @@
   .vocab-reveal-details {
     font-size: clamp(13px, 4vw, 16px);
     line-height: 1.45;
-    padding: 10px 14px;
+    --vocab-reveal-pad-y: 10px;
+    padding: var(--vocab-reveal-pad-y) 14px;
   }
   .vocab-pronunciation {
     margin-bottom: 8px;
@@ -3293,7 +3283,8 @@
      the inter-block gaps further. The box still hugs its content and stays capped to
      the space above the bottom chrome, so the whole meaning fits in view without scroll. */
   .vocab-reveal-details {
-    padding: 8px 12px;
+    --vocab-reveal-pad-y: 8px;
+    padding: var(--vocab-reveal-pad-y) 12px;
     font-size: clamp(12px, 3.6vw, 15px);
     line-height: 1.4;
   }
@@ -3303,6 +3294,24 @@
   .vocab-example {
     margin-top: 6px;
     padding-top: 8px;
+  }
+}
+/* Portrait only: the frosted panel was wrapping too tightly around the meaning and the
+   example, so its vertical padding takes half again as much room as the tier above set
+   (14 -> 21px on a tall card, 10 -> 15px on a phone, 8 -> 12px on a short screen). The
+   padding is expressed once per tier as --vocab-reveal-pad-y and scaled here, so the
+   three tiers keep their own rhythm and only the block axis grows — the panel is
+   content-hugging, so this widens the box rather than squeezing its text.
+
+   Landscape is deliberately NOT included: there the panel shares a shallow card with the
+   answer word, and the seam above it (--vocab-reveal-seam) and the clearance below it
+   (--vocab-reveal-foot) are the scarcer space. Growing the padding there would come
+   straight out of those gaps, so landscape keeps the compact padding and the gaps keep
+   their room. Export frames are untouched too: their [data-export] rule is more
+   specific and owns its own cqi-based padding. */
+@media (orientation: portrait) {
+  .vocab-reveal-details {
+    padding-block: calc(var(--vocab-reveal-pad-y) * 1.5);
   }
 }
 /* Short viewport: a phone turned to landscape, or a very short desktop window. The
