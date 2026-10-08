@@ -687,6 +687,7 @@ export type Database = {
         }
         Returns: string
       }
+      is_admin_account: { Args: { _uid: string }; Returns: boolean }
       is_system_account: { Args: { _uid: string }; Returns: boolean }
       publish_vocabulary_bot_post: {
         Args: { p_run_at?: string }
