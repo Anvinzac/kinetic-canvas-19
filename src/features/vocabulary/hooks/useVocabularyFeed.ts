@@ -4,7 +4,7 @@ import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchVocabularyPage, VocabularyRequestError } from "../api/feed";
 import { VOCAB_MAX_PAGES } from "../lib/backfill";
 import type { FeedCursor, VocabularyFilters } from "../types";
-import { getSessionId } from "@/lib/session-tracker";
+import { markReportedOnce, reportVisitorEvent } from "@/lib/session-tracker";
 
 /** Load deterministic pages, retaining at most VOCAB_MAX_PAGES of them. @param seed Stable visit seed. @param filters Content filters. @returns Query and flattened cards. */
 export function useVocabularyFeed(seed: string, filters: VocabularyFilters) {
@@ -44,44 +44,31 @@ export function useVocabularyFeed(seed: string, filters: VocabularyFilters) {
     [client, queryKey],
   );
 
-  // Session-level telemetry: emit page.loaded / page.failed events
+  // Session-level telemetry. One load is reported per visit, but every distinct
+  // failure is, so the failure rate reflects retries rather than hiding them.
   const prevStatusRef = useRef<"pending" | "success" | "error">("pending");
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    const sessionId = getSessionId();
-    if (!sessionId) return;
-
     const status = query.isLoading ? "pending" : query.isError ? "error" : "success";
     if (status === prevStatusRef.current) return;
     prevStatusRef.current = status;
 
     if (status === "success" && query.data?.pages.length) {
-      void import("@/features/admin/lib/emit").then(({ emitTelemetryEvent }) => {
-        emitTelemetryEvent({
-          event_type: "page.loaded",
-          actor_user_id: null,
-          entity_type: "vocabulary_feed",
-          entity_id: sessionId,
-          metadata: {
-            pages: query.data?.pages.length ?? 0,
-            entries: query.data?.pages.flatMap((p) => p.entries).length ?? 0,
-          },
-          mode: "demo",
-        });
+      if (!markReportedOnce("vocabulary_feed.loaded")) return;
+      reportVisitorEvent({
+        type: "page.loaded",
+        metadata: {
+          surface: "vocabulary_feed",
+          entries: query.data.pages.flatMap((p) => p.entries).length,
+        },
       });
     } else if (status === "error" && query.error) {
-      const message =
-        query.error instanceof Error ? query.error.message : String(query.error);
-      void import("@/features/admin/lib/emit").then(({ emitTelemetryEvent }) => {
-        emitTelemetryEvent({
-          event_type: "page.failed",
-          severity: "warn",
-          actor_user_id: null,
-          entity_type: "vocabulary_feed",
-          entity_id: sessionId,
-          metadata: { message, pages: query.data?.pages.length ?? 0 },
-          mode: "demo",
-        });
+      reportVisitorEvent({
+        type: "page.failed",
+        message: query.error instanceof Error ? query.error.message : String(query.error),
+        metadata: {
+          surface: "vocabulary_feed",
+          code: query.error instanceof VocabularyRequestError ? query.error.code : null,
+        },
       });
     }
   }, [query.isLoading, query.isError, query.error, query.data]);

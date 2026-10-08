@@ -1,25 +1,37 @@
 /**
  * Canonical telemetry contract types for kinetic-canvas admin.
  *
- * Exports: APP_ID, TelemetryEventType, TelemetrySeverity, TelemetryEvent, DailyRollup,
- *   SystemHealthSnapshot, SystemHealthStatus, ErrorReportStatus, AdminErrorReport
+ * Exports: APP_ID, TELEMETRY_EVENT_TYPES, VISITOR_EVENT_TYPES, TelemetryEventType,
+ *   TelemetrySeverity, TelemetryEvent, DailyRollup, SystemHealthSnapshot,
+ *   SystemHealthStatus, ErrorReportStatus, AdminErrorReport, SessionHealthSummary
  * Depends on: none
  */
 
 export const APP_ID = "kinetic-canvas" as const;
 
-export type TelemetryEventType =
-  | "user.registered"
-  | "content.created"
-  | "content.updated"
-  | "content.deleted"
-  | "link.created"
-  | "link.interacted"
-  | "error.reported"
-  | "system.heartbeat"
-  | "page.loaded"
-  | "page.failed"
-  | "session.error";
+/**
+ * Every event type the system accepts. This list is mirrored by the
+ * `telemetry_events_event_type_check` constraint in Postgres; adding a member here
+ * without a migration makes live inserts of it fail the constraint.
+ */
+export const TELEMETRY_EVENT_TYPES = [
+  "user.registered",
+  "content.created",
+  "content.updated",
+  "content.deleted",
+  "link.created",
+  "link.interacted",
+  "error.reported",
+  "system.heartbeat",
+  "page.loaded",
+  "page.failed",
+  "session.error",
+] as const;
+
+export type TelemetryEventType = (typeof TELEMETRY_EVENT_TYPES)[number];
+
+/** The subset a browser may report about itself through the public ingest route. */
+export const VISITOR_EVENT_TYPES = ["page.loaded", "page.failed", "session.error"] as const;
 
 export type TelemetrySeverity = "info" | "warn" | "error" | "critical";
 
@@ -48,11 +60,7 @@ export type DailyRollup = {
   errors_critical: number;
 };
 
-export type SystemHealthStatus =
-  | "operational"
-  | "degraded"
-  | "partial_outage"
-  | "major_outage";
+export type SystemHealthStatus = "operational" | "degraded" | "partial_outage" | "major_outage";
 
 export type SystemHealthSnapshot = {
   app_id: string;
@@ -65,6 +73,23 @@ export type SystemHealthSnapshot = {
   queue_depth?: number;
   db_connections_used?: number;
   db_connections_max?: number;
+};
+
+/**
+ * Visitor-session metrics for a date range, aggregated in the database.
+ *
+ * `uniqueVisitors` counts distinct sessions; `sessionDays` counts session-days, so a
+ * visitor returning on three days is 1 visitor and 3 session-days.
+ */
+export type SessionHealthSummary = {
+  uniqueVisitors: number;
+  sessionDays: number;
+  sessionsWithErrors: number;
+  totalLoads: number;
+  totalFailures: number;
+  totalErrors: number;
+  failureRate: number;
+  topErrors: Array<{ message: string; count: number }>;
 };
 
 export type ErrorReportStatus = "new" | "acknowledged" | "resolved";

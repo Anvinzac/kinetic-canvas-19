@@ -24,7 +24,8 @@ import { daysAgo } from "../../lib/date-range";
  */
 export function OverviewPage(): React.ReactElement {
   const search = useRouterState({
-    select: (s) => (s.location.search ?? {}) as { range?: AdminRangePreset; from?: string; to?: string },
+    select: (s) =>
+      (s.location.search ?? {}) as { range?: AdminRangePreset; from?: string; to?: string },
   });
   const mode = useAdminMode();
   const { from, to } = useAdminSearchRange(search);
@@ -106,7 +107,7 @@ export function OverviewPage(): React.ReactElement {
       </section>
 
       <section>
-        <h3 className="mb-3 text-sm font-medium">Session health</h3>
+        <h3 className="mb-3 text-sm font-medium">Visitors &amp; session health</h3>
         {sessionHealth.isLoading ? (
           <div className="h-20 animate-pulse rounded-lg bg-muted" aria-busy />
         ) : sessionHealth.isError ? (
@@ -114,9 +115,12 @@ export function OverviewPage(): React.ReactElement {
         ) : sessionHealth.data ? (
           <div className="space-y-3">
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              <StatCard label="Sessions" value={sessionHealth.data.totalSessions} />
-              <StatCard label="Sessions with errors" value={sessionHealth.data.sessionsWithErrors} />
-              <StatCard label="Page loads" value={sessionHealth.data.totalLoads} />
+              <StatCard label="Unique visitors" value={sessionHealth.data.uniqueVisitors} />
+              <StatCard label="Visits" value={sessionHealth.data.sessionDays} />
+              <StatCard
+                label="Visitors with errors"
+                value={sessionHealth.data.sessionsWithErrors}
+              />
               <StatCard label="Page failures" value={sessionHealth.data.totalFailures} />
             </div>
             {sessionHealth.data.failureRate > 0 && (
@@ -163,7 +167,13 @@ function Spark(props: { title: string; data: { v: number }[] }): React.ReactElem
         <div className="h-16" role="img" aria-label={props.title}>
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={props.data}>
-              <Area type="monotone" dataKey="v" stroke="currentColor" fill="currentColor" fillOpacity={0.15} />
+              <Area
+                type="monotone"
+                dataKey="v"
+                stroke="currentColor"
+                fill="currentColor"
+                fillOpacity={0.15}
+              />
             </AreaChart>
           </ResponsiveContainer>
         </div>

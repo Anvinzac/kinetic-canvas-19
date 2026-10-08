@@ -1,30 +1,105 @@
 /**
- * Anonymous session tracking for visitor-level telemetry.
+ * Anonymous session identity and visitor telemetry reporting.
  *
- * Generates a stable session ID per browser (localStorage) so we can correlate
- * visitor behavior with error events without requiring authentication. The ID
- * is sent as `entity_id` on telemetry events with `actor_user_id: null`,
- * letting the admin dashboard answer "which sessions broke and why".
+ * Generates a stable session ID per browser (localStorage) so visitor behavior can
+ * be correlated with error events without requiring authentication, and posts events
+ * to the public ingest endpoint. The ID travels as `entity_id` with a null
+ * `actor_user_id`, letting the admin dashboard answer "which sessions broke and why".
  *
- * Exports: getSessionId, resetSessionId
- * Depends: none (browser localStorage only)
+ * Reporting goes over the network rather than through the admin emit path because
+ * that path writes with the Supabase service-role key, which cannot be present in a
+ * browser.
+ *
+ * Exports: getSessionId, resetSessionId, reportVisitorEvent, markReportedOnce
+ * Depends: none (browser localStorage + fetch/sendBeacon)
  */
 
 const STORAGE_KEY = "kinetic.session.id";
+const INGEST_PATH = "/api/public/telemetry";
+
+export type VisitorEventType = "page.loaded" | "page.failed" | "session.error";
+
+export type VisitorEventInput = {
+  type: VisitorEventType;
+  message?: string;
+  metadata?: Record<string, string | number | boolean | null>;
+};
 
 /** Return the current session ID, creating one if absent. */
 export function getSessionId(): string {
   if (typeof window === "undefined") return "";
-  let id = localStorage.getItem(STORAGE_KEY);
-  if (!id) {
-    id = crypto.randomUUID();
-    localStorage.setItem(STORAGE_KEY, id);
+  try {
+    let id = localStorage.getItem(STORAGE_KEY);
+    if (!id) {
+      id = crypto.randomUUID();
+      localStorage.setItem(STORAGE_KEY, id);
+    }
+    return id;
+  } catch {
+    // Private windows and blocked site data throw on access. A session that
+    // cannot be identified is simply not reported.
+    return "";
   }
-  return id;
 }
 
 /** Clear the current session ID (e.g. on explicit logout or for testing). */
 export function resetSessionId(): void {
   if (typeof window === "undefined") return;
-  localStorage.removeItem(STORAGE_KEY);
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+  } catch {
+    /* nothing to clear */
+  }
+}
+
+const reportedOnce = new Set<string>();
+
+/**
+ * Claim a one-shot reporting slot for this page lifetime.
+ *
+ * Rotating the device remounts the feed, which would otherwise report a second
+ * page load for one real visit and inflate the load count the failure rate is
+ * measured against.
+ * @param key Stable name for the thing reported at most once.
+ * @returns true the first time a key is seen, false afterwards.
+ */
+export function markReportedOnce(key: string): boolean {
+  if (reportedOnce.has(key)) return false;
+  reportedOnce.add(key);
+  return true;
+}
+
+/**
+ * Report one visitor event for the current session. Fire-and-forget: a telemetry
+ * failure must never surface to the visitor, so every error is swallowed.
+ * @param event Event type plus optional message and flat metadata.
+ */
+export function reportVisitorEvent(event: VisitorEventInput): void {
+  if (typeof window === "undefined") return;
+  const sessionId = getSessionId();
+  if (!sessionId) return;
+
+  const payload = JSON.stringify({
+    sessionId,
+    events: [{ ...event, occurredAt: new Date().toISOString() }],
+  });
+
+  try {
+    // sendBeacon survives the page being closed mid-flight, which is exactly when
+    // a failure report matters most.
+    if (navigator.sendBeacon) {
+      const blob = new Blob([payload], { type: "application/json" });
+      if (navigator.sendBeacon(INGEST_PATH, blob)) return;
+    }
+    void fetch(INGEST_PATH, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: payload,
+      keepalive: true,
+    }).catch(() => {
+      /* telemetry is best-effort */
+    });
+  } catch {
+    /* telemetry is best-effort */
+  }
 }

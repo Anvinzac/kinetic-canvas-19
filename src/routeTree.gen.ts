@@ -41,6 +41,7 @@ import { Route as AuthenticatedAboutRouteImport } from './routes/_authenticated/
 import { Route as ApiPublicWordReportRouteImport } from './routes/api/public/word-report'
 import { Route as ApiPublicVocabularyRefillRouteImport } from './routes/api/public/vocabulary-refill'
 import { Route as ApiPublicVocabularyRouteImport } from './routes/api/public/vocabulary'
+import { Route as ApiPublicTelemetryRouteImport } from './routes/api/public/telemetry'
 import { Route as ApiPublicEngagementRouteImport } from './routes/api/public/engagement'
 import { Route as AuthenticatedUUsernameRouteImport } from './routes/_authenticated/u.$username'
 import { Route as AuthenticatedPPostIdRouteImport } from './routes/_authenticated/p.$postId'
@@ -207,6 +208,11 @@ const ApiPublicVocabularyRoute = ApiPublicVocabularyRouteImport.update({
   path: '/api/public/vocabulary',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicTelemetryRoute = ApiPublicTelemetryRouteImport.update({
+  id: '/api/public/telemetry',
+  path: '/api/public/telemetry',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicEngagementRoute = ApiPublicEngagementRouteImport.update({
   id: '/api/public/engagement',
   path: '/api/public/engagement',
@@ -255,6 +261,7 @@ export interface FileRoutesByFullPath {
   '/p/$postId': typeof AuthenticatedPPostIdRoute
   '/u/$username': typeof AuthenticatedUUsernameRoute
   '/api/public/engagement': typeof ApiPublicEngagementRoute
+  '/api/public/telemetry': typeof ApiPublicTelemetryRoute
   '/api/public/vocabulary': typeof ApiPublicVocabularyRoute
   '/api/public/vocabulary-refill': typeof ApiPublicVocabularyRefillRoute
   '/api/public/word-report': typeof ApiPublicWordReportRoute
@@ -290,6 +297,7 @@ export interface FileRoutesByTo {
   '/p/$postId': typeof AuthenticatedPPostIdRoute
   '/u/$username': typeof AuthenticatedUUsernameRoute
   '/api/public/engagement': typeof ApiPublicEngagementRoute
+  '/api/public/telemetry': typeof ApiPublicTelemetryRoute
   '/api/public/vocabulary': typeof ApiPublicVocabularyRoute
   '/api/public/vocabulary-refill': typeof ApiPublicVocabularyRefillRoute
   '/api/public/word-report': typeof ApiPublicWordReportRoute
@@ -328,6 +336,7 @@ export interface FileRoutesById {
   '/_authenticated/p/$postId': typeof AuthenticatedPPostIdRoute
   '/_authenticated/u/$username': typeof AuthenticatedUUsernameRoute
   '/api/public/engagement': typeof ApiPublicEngagementRoute
+  '/api/public/telemetry': typeof ApiPublicTelemetryRoute
   '/api/public/vocabulary': typeof ApiPublicVocabularyRoute
   '/api/public/vocabulary-refill': typeof ApiPublicVocabularyRefillRoute
   '/api/public/word-report': typeof ApiPublicWordReportRoute
@@ -366,6 +375,7 @@ export interface FileRouteTypes {
     | '/p/$postId'
     | '/u/$username'
     | '/api/public/engagement'
+    | '/api/public/telemetry'
     | '/api/public/vocabulary'
     | '/api/public/vocabulary-refill'
     | '/api/public/word-report'
@@ -401,6 +411,7 @@ export interface FileRouteTypes {
     | '/p/$postId'
     | '/u/$username'
     | '/api/public/engagement'
+    | '/api/public/telemetry'
     | '/api/public/vocabulary'
     | '/api/public/vocabulary-refill'
     | '/api/public/word-report'
@@ -438,6 +449,7 @@ export interface FileRouteTypes {
     | '/_authenticated/p/$postId'
     | '/_authenticated/u/$username'
     | '/api/public/engagement'
+    | '/api/public/telemetry'
     | '/api/public/vocabulary'
     | '/api/public/vocabulary-refill'
     | '/api/public/word-report'
@@ -453,6 +465,7 @@ export interface RootRouteChildren {
   FeedSavedRoute: typeof FeedSavedRoute
   FeedIndexRoute: typeof FeedIndexRoute
   ApiPublicEngagementRoute: typeof ApiPublicEngagementRoute
+  ApiPublicTelemetryRoute: typeof ApiPublicTelemetryRoute
   ApiPublicVocabularyRoute: typeof ApiPublicVocabularyRoute
   ApiPublicVocabularyRefillRoute: typeof ApiPublicVocabularyRefillRoute
   ApiPublicWordReportRoute: typeof ApiPublicWordReportRoute
@@ -684,6 +697,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicVocabularyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/telemetry': {
+      id: '/api/public/telemetry'
+      path: '/api/public/telemetry'
+      fullPath: '/api/public/telemetry'
+      preLoaderRoute: typeof ApiPublicTelemetryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/engagement': {
       id: '/api/public/engagement'
       path: '/api/public/engagement'
@@ -783,6 +803,7 @@ const rootRouteChildren: RootRouteChildren = {
   FeedSavedRoute: FeedSavedRoute,
   FeedIndexRoute: FeedIndexRoute,
   ApiPublicEngagementRoute: ApiPublicEngagementRoute,
+  ApiPublicTelemetryRoute: ApiPublicTelemetryRoute,
   ApiPublicVocabularyRoute: ApiPublicVocabularyRoute,
   ApiPublicVocabularyRefillRoute: ApiPublicVocabularyRefillRoute,
   ApiPublicWordReportRoute: ApiPublicWordReportRoute,
