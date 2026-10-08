@@ -40,14 +40,49 @@ const TABS: { kind: TabKind; label: string }[] = [
 
 const EMPTY_COPY: Record<TabKind, { title: string; body: string }> = {
   bookmark: {
-    title: "Chưa lưu từ nào",
-    body: "Chạm nút lưu trên bất kỳ từ nào trong luồng để giữ lại đây — kể cả lúc chưa biết đáp án.",
+    title: "Kho từ đang trống",
+    body: "Chạm nút dấu trang dưới mỗi từ để cất vào kho — kể cả lúc chưa lộ đáp án. Trái tim ngay bên cạnh sẽ xếp từ vào mục Yêu thích.",
   },
   heart: {
-    title: "Chưa tim từ nào",
-    body: "Chạm trái tim trên một từ để đánh dấu yêu thích. Những từ tim sẽ hiện ở đây.",
+    title: "Chưa có từ yêu thích",
+    body: "Chạm trái tim dưới một từ để cất vào đây. Nút dấu trang ngay bên cạnh sẽ xếp từ vào mục Đã lưu.",
   },
 };
+
+/** One short, chatty line per key, shown in the empty vault's two tooltips. */
+const TIP_COPY: Record<TabKind, string> = {
+  bookmark: "lưu từ chưa biết nha",
+  heart: "giữ từ iu thích nè",
+};
+
+/**
+ * A tooltip bubble in the empty vault. The sentence is split per WORD so each one can be
+ * animated in on its own beat — a block of text appearing at once reads as a label, while
+ * words arriving one after another reads as someone talking, which is the point here.
+ *
+ * The bubble's body and tail live in one `.vocab-vault-tip-shape` layer behind the text:
+ * the outline is drawn by a filter over that layer, so box and tail are outlined as a
+ * SINGLE silhouette with no seam where they meet. Putting the text in the same layer would
+ * have the filter trace every glyph too.
+ * @param kind - Which key this bubble points at
+ * @param active - Whether that key's tab is the one on screen
+ */
+function VaultTip({ kind }: { kind: TabKind }): React.ReactElement {
+  return (
+    <span className="vocab-vault-tip" data-tip={kind}>
+      <span className="vocab-vault-tip-shape" />
+      {TIP_COPY[kind].split(" ").map((word, index) => (
+        <span
+          key={`${word}-${index}`}
+          className="vocab-vault-word"
+          style={{ "--i": index } as CSSProperties}
+        >
+          {word}
+        </span>
+      ))}
+    </span>
+  );
+}
 
 /**
  * What the gesture is called on each tab. The two lists are removed differently in words
@@ -408,11 +443,45 @@ export function BookmarksPage({ onClose }: { onClose?: () => void } = {}) {
           id={`${groupId}-panel`}
           aria-labelledby={`${groupId}-tab-${tab}`}
         >
-          {tab === "bookmark" ? (
-            <Bookmark size={40} strokeWidth={1.4} aria-hidden="true" />
-          ) : (
-            <Heart size={40} strokeWidth={1.4} aria-hidden="true" />
-          )}
+          {/* The empty list is the one screen that has to TEACH the gesture, so instead of a
+              lone grey glyph it shows the vault doing its job: the two buttons the reader
+              will actually tap, a word-chip dropping from the one this tab belongs to, and
+              the jar catching it. Entirely decorative — the heading and body below say the
+              same thing in words, so a screen reader loses nothing by skipping it. */}
+          <div className="vocab-vault" data-kind={tab} aria-hidden="true">
+            {/* One tooltip per key. Each is centred on its own key — the bookmark held above,
+                the heart directly underneath — so each tail points straight at its icon's
+                midpoint and the pair reads symmetrically about the centre line. */}
+            <VaultTip kind="heart" />
+            <VaultTip kind="bookmark" />
+            {/* Heart first, then bookmark — the same order the two buttons sit in under every
+                word in the feed, so the row learned here matches the row they will tap. */}
+            <div className="vocab-vault-keys">
+              <span className="vocab-vault-key" data-key="heart" data-active>
+                <Heart size={17} strokeWidth={2.2} />
+              </span>
+              <span className="vocab-vault-key" data-key="bookmark" data-active>
+                <Bookmark size={17} strokeWidth={2.2} />
+              </span>
+            </div>
+            {/* The mouth, BEHIND the chips, so a block stays bright while it sinks into the
+                opening and is masked by the bowl's near (lower) rim, not the top arc. */}
+            <span className="vocab-vault-lid" />
+            {/* Two blocks drop into the jar — one per reaction — so the scene teaches both
+                gestures at once instead of one per tab. The heart's is pink. */}
+            <span className="vocab-vault-chip" data-chip="bookmark" />
+            <span className="vocab-vault-chip" data-chip="heart" />
+            <div className="vocab-vault-jar">
+              {/* The bowl's front wall is its own layer so it can be masked: its top edge has
+                  to BE the opening's lower arc, and a mask on the jar itself would also eat
+                  the sparks and the halo that sit outside the bowl. */}
+              <span className="vocab-vault-body" />
+              <span className="vocab-vault-shine" />
+              <span className="vocab-vault-spark" data-s="1" />
+              <span className="vocab-vault-spark" data-s="2" />
+              <span className="vocab-vault-spark" data-s="3" />
+            </div>
+          </div>
           <h2>{empty.title}</h2>
           <p>{empty.body}</p>
           {/* In the drawer the feed is already behind the panel, so the way

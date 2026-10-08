@@ -384,6 +384,48 @@
     opacity var(--dur-quick) var(--ease-out),
     background var(--dur-quick) var(--ease-out);
 }
+/* The reveal is the one moment saving a word means anything: until then the reader does
+   not know what they would be keeping. So when the card on screen reaches its reveal — and
+   through the spelling replay that follows it — the handle leaves its resting 0.4 and
+   animates up to full strength, so the vault is visibly ready exactly when the answer lands.
+   :has() is the same bridge the tone rule at the top of this file uses: the dock is a
+   SIBLING of the stream, not a descendant of the card, so no custom property can inherit
+   down to it. The opacity/background transition is already declared on the handle, so this
+   rule only has to state the destination. */
+.vocabulary-shell:has(.vocab-slot[data-current] .vocab-card[data-stage="reveal"])
+  .vocab-saved-handle,
+.vocabulary-shell:has(.vocab-slot[data-current] .vocab-card[data-stage="spelling"])
+  .vocab-saved-handle {
+  opacity: 1;
+  border-color: #ffffff47;
+  background: color-mix(in srgb, var(--shell-surface, #15102a) 72%, transparent);
+}
+/* Coming up to full strength is the state; this is the call for attention on top of it —
+   two halo pulses in the on-screen card's own accent (lifted onto the shell as
+   --popup-accent by VocabularyStream), then it settles and stays lit. Only the reveal
+   pulses: the spelling replay inherits the lit state above without a second beat. A pull or
+   a hover cancels the call, because the reader has already noticed and the halo would just
+   fight the gesture. The glow is painted with box-shadow alone — `transform` belongs to the
+   pull, and animating it here would tear the handle off the drawer's edge. */
+.vocabulary-shell:has(.vocab-slot[data-current] .vocab-card[data-stage="reveal"])
+  .vocab-saved-dock:not([data-pulling])
+  .vocab-saved-handle:not(:hover) {
+  animation: vocab-saved-call 1100ms var(--ease-out) 2;
+}
+@keyframes vocab-saved-call {
+  0%,
+  100% {
+    box-shadow: -4px 0 14px #0000003d;
+    border-color: #ffffff47;
+  }
+  45% {
+    box-shadow:
+      -4px 0 14px #0000003d,
+      0 0 0 3px color-mix(in srgb, var(--popup-accent, #a78bfa) 40%, transparent),
+      0 0 18px 2px color-mix(in srgb, var(--popup-accent, #a78bfa) 55%, transparent);
+    border-color: color-mix(in srgb, var(--popup-accent, #a78bfa) 70%, #ffffff47);
+  }
+}
 .vocab-saved-handle:focus-visible {
   outline: 2px solid var(--chrome-accent, #a78bfa);
   outline-offset: 2px;
@@ -512,6 +554,8 @@
 @media (prefers-reduced-motion: reduce) {
   .vocab-saved-handle {
     transition: none;
+    /* The reveal still brings the handle to full strength; only the pulsing halo goes. */
+    animation: none;
   }
 }
 .vocab-options {
@@ -2203,9 +2247,573 @@
   align-items: center;
   justify-content: center;
   gap: 14px;
-  padding: 0 28px;
+  /* Narrower side padding than the rest of the panel: the empty state carries the two
+     tooltip bubbles, which need the full width of the drawer to sit beside the keys. */
+  padding: 0 16px;
   text-align: center;
   color: var(--shell-text-mute);
+}
+/* ── Empty vault ──────────────────────────────────────────────────────────────
+   The teaching illustration for an empty list. It has to read as one sentence at a
+   glance — tap this button, and the word drops in here — so the scene is literal: the
+   two real glyphs as keys, a chip leaving whichever key this tab belongs to, and an OPEN
+   vault with a dark mouth that swallows it.
+
+   One 2.6s loop drives every part, so the beats stay in step: the key presses at ~20%,
+   the chip launches at ~30%, reaches the mouth at ~62%, the vault squashes as it catches,
+   and the sparks burst just after. BOTH keys press and BOTH chips drop (--chip-from puts each
+   launch point over its own key, the heart a half-loop behind), so the scene teaches both
+   reactions at once and reads the same on either tab. */
+.vocab-vault {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  /* The vertical stack, as one set of variables so the short-viewport tier at the end can
+     restate it in a block instead of re-deriving every offset:
+       head  - clear band above the keys, where the top-left bubble sits
+       tip   - top of the bottom-right bubble
+       chip  - where the word block starts, BELOW both bubbles so neither lines up with it
+       jar-h - the vault's own height, pinned to the bottom by its auto margin
+       fall  - how far the chip travels to sink through the mouth
+     Width follows the drawer so the bubbles can reach the panel's edges. */
+  --vault-head: 56px;
+  --vault-tip: 116px;
+  --vault-chip: 164px;
+  --vault-jar-h: 56px;
+  /* The bowl's width and the opening's height, shared by the mouth, the near rim and the
+     wall's mask so the three can never disagree about where the arc is. The mouth is inset a
+     few px from the wall (not the full jar width) so its ellipse tucks just inside the bowl's
+     rounded top corners instead of overhanging them and reading wider than the bowl. */
+  --vault-jar-w: 100px;
+  --vault-mouth-w: calc(var(--vault-jar-w) - 8px);
+  --vault-mouth-h: 22px;
+  --vault-fall: 80px;
+  width: min(300px, 100%);
+  height: 280px;
+  padding-top: var(--vault-head);
+  color: var(--vocab-ink);
+  --vault-accent: var(--chrome-accent, #a78bfa);
+  /* The heart keeps a pink of its own so the two keys never read as the same reaction. */
+  --vault-heart: #fb7aa4;
+}
+.vocab-vault-keys {
+  display: flex;
+  gap: 18px;
+}
+/* A key is the button at rest. Both keys stay on screen so an empty list teaches BOTH
+   gestures at once; each owns its colour via --key-accent (bookmark = page accent, heart =
+   pink) rather than the whole scene flipping hue per tab. */
+.vocab-vault-key {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid #ffffff24;
+  background: color-mix(in srgb, var(--shell-surface, #15102a) 58%, transparent);
+  color: var(--shell-text-mute);
+  opacity: 0.45;
+}
+.vocab-vault-key[data-key="bookmark"] {
+  --key-accent: var(--vault-accent);
+}
+.vocab-vault-key[data-key="heart"] {
+  --key-accent: var(--vault-heart);
+}
+.vocab-vault-key[data-active] {
+  color: var(--key-accent, var(--vault-accent));
+  border-color: color-mix(in srgb, var(--key-accent, var(--vault-accent)) 60%, transparent);
+  background: color-mix(in srgb, var(--key-accent, var(--vault-accent)) 18%, transparent);
+  box-shadow: 0 0 18px -4px
+    color-mix(in srgb, var(--key-accent, var(--vault-accent)) 70%, transparent);
+  opacity: 1;
+  animation: vocab-vault-tap 2600ms var(--ease-out) infinite;
+}
+/* The tap itself: a ring leaving the key, the way a touch ripple reads. */
+.vocab-vault-key[data-active]::after {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  border: 2px solid var(--key-accent, var(--vault-accent));
+  opacity: 0;
+  animation: vocab-vault-ring 2600ms var(--ease-out) infinite;
+}
+/* The words being filed. Wordless and slightly tilted — they read as "a word", not as a
+   specific one, so they never contradict whatever is on screen behind the drawer. */
+.vocab-vault-chip {
+  position: absolute;
+  top: var(--vault-chip);
+  z-index: 1;
+  width: 34px;
+  height: 22px;
+  border-radius: 7px;
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--chip-accent) 85%, #ffffff),
+    var(--chip-accent)
+  );
+  box-shadow: 0 8px 16px -6px color-mix(in srgb, var(--chip-accent) 85%, transparent);
+  opacity: 0;
+  animation: vocab-vault-drop 2600ms cubic-bezier(0.5, 0, 0.55, 1) infinite;
+}
+.vocab-vault-chip[data-chip="bookmark"] {
+  --chip-from: 28px;
+  --chip-accent: var(--vault-accent);
+}
+.vocab-vault-chip[data-chip="heart"] {
+  --chip-from: -28px;
+  --chip-accent: var(--vault-heart);
+}
+/* The vault body sits above the chip, so the chip passes BEHIND the front rim on its way
+   in rather than sliding over the top of it. */
+.vocab-vault-jar {
+  position: relative;
+  z-index: 2;
+  width: var(--vault-jar-w);
+  height: var(--vault-jar-h);
+  margin-top: auto;
+  border-radius: 10px 10px 26px 26px;
+  /* Only the cast shadow lives on the jar. A mask clips the masked element's own box-shadow,
+     and this one has to fall OUTSIDE the bowl's silhouette, so it cannot sit on the wall. */
+  box-shadow: 0 16px 30px -16px #000000c4;
+  /* The catch compresses the bowl ONTO its base, so the bottom stays planted and the rim
+     dips — scaling about the default centre pushed the base down into nothing. The mouth
+     below uses this same point as its origin, which is what keeps the two in one piece. */
+  transform-origin: 50% 100%;
+  animation: vocab-vault-catch 2600ms var(--ease-spring) infinite;
+}
+/* The bowl's FRONT WALL, and the fix for the block sinking in along a straight line.
+   The wall's box starts at the opening's centre line, so painting it as a plain rounded
+   rectangle cut every descending chip off along that flat edge — the chip vanished at the
+   ellipse's waist instead of behind its near lip. Masking the mouth ellipse out of the top
+   makes the wall's own top edge the opening's LOWER ARC, so a chip is swallowed along the
+   curve: still fully visible over the dark hole, then eaten from the middle outwards as it
+   drops past the rim, which is what putting something into a bowl actually looks like. */
+.vocab-vault-body {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  border-radius: 10px 10px 26px 26px;
+  border: 1px solid color-mix(in srgb, var(--vault-accent) 42%, #ffffff2e);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--vault-accent) 34%, transparent),
+    color-mix(in srgb, var(--vault-accent) 12%, transparent) 55%,
+    color-mix(in srgb, var(--shell-surface, #15102a) 40%, transparent)
+  );
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, #ffffff 55%, transparent),
+    inset 0 -14px 24px -16px #ffffff66;
+  -webkit-mask-image: radial-gradient(
+    ellipse calc(var(--vault-mouth-w) / 2) calc(var(--vault-mouth-h) / 2) at 50% 0,
+    transparent 99.5%,
+    #000 100%
+  );
+  mask-image: radial-gradient(
+    ellipse calc(var(--vault-mouth-w) / 2) calc(var(--vault-mouth-h) / 2) at 50% 0,
+    transparent 99.5%,
+    #000 100%
+  );
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+}
+/* A soft halo so the vault reads as lit from within rather than as a dark lump on a dark
+   panel. It blooms on the catch, which is what makes the drop feel like it landed. */
+.vocab-vault-jar::before {
+  content: "";
+  position: absolute;
+  inset: -26px -20px -18px;
+  border-radius: 50%;
+  background: radial-gradient(
+    closest-side,
+    color-mix(in srgb, var(--vault-accent) 40%, transparent),
+    transparent
+  );
+  opacity: 0.45;
+  pointer-events: none;
+  animation: vocab-vault-bloom 2600ms var(--ease-out) infinite;
+}
+/* The opening. A dark ellipse inset a few px from the bowl (var(--vault-mouth-w), narrower than
+   --vault-jar-w) so its widest points sit just INSIDE the walls — a thin band of bowl shows on
+   each side, which reads as one connected vessel rather than a lid wider than the cup it rests
+   on. It sits BEHIND the chips (z-index 0): the chip stays bright while it descends through the
+   mouth and is masked by the near (lower) rim below. */
+.vocab-vault-lid {
+  position: absolute;
+  z-index: 0;
+  top: calc(100% - var(--vault-jar-h) - var(--vault-mouth-h) / 2);
+  left: 50%;
+  width: var(--vault-mouth-w);
+  height: var(--vault-mouth-h);
+  border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--vault-accent) 65%, transparent);
+  background: color-mix(in srgb, #05030c 86%, var(--vault-accent));
+  box-shadow:
+    inset 0 -3px 6px -2px color-mix(in srgb, var(--vault-accent) 60%, transparent),
+    0 3px 10px -3px #000000b3;
+  /* Centred with a margin rather than translateX(-50%): the catch below needs `transform`
+     to itself, and a translate here would be overwritten the moment it ran. */
+  margin-left: calc(var(--vault-mouth-w) / -2);
+  /* The mouth is a SIBLING of the bowl (it has to paint behind the falling blocks while the
+     wall paints in front of them), so the wall's squash cannot reach it through the DOM —
+     which is why the opening used to sit still while the body pulsed, splitting one object
+     into two. It runs the same animation instead, about the same point: the bowl's base,
+     which from the mouth's own box is a full bowl-height plus its own half-height below.
+     Same keyframes, same duration, same start, so the two deform as one shape. */
+  transform-origin: 50% calc(var(--vault-jar-h) + var(--vault-mouth-h) / 2);
+  animation: vocab-vault-catch 2600ms var(--ease-spring) infinite;
+}
+/* The near (front) rim: the lower arc of that SAME 100px ellipse, kept as a crescent on the
+   jar so it is as wide as the bowl (meets the walls — no floating lip) and paints IN FRONT of
+   the chips, masking a block exactly along the lower arc as it sinks into the bowl. */
+.vocab-vault-jar::after {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  left: 50%;
+  top: calc(var(--vault-mouth-h) / -2);
+  width: var(--vault-mouth-w);
+  height: var(--vault-mouth-h);
+  border-radius: 50%;
+  /* Border only, no fill: this is the lit near lip drawn over the chip. Filling it would
+     put back the very region the wall's mask opens up, and the chip would disappear at the
+     flat waist again. */
+  border: 1px solid color-mix(in srgb, var(--vault-accent) 78%, #ffffff40);
+  clip-path: inset(50% 0 0 0);
+  transform: translateX(-50%);
+}
+.vocab-vault-shine {
+  position: absolute;
+  top: 18px;
+  left: 16px;
+  width: 18px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ffffff;
+  opacity: 0.26;
+  transform: rotate(-16deg);
+}
+/* Three sparks off the mouth on the catch. Positioned individually and staggered on the
+   same loop, so they read as one burst rather than three blinking dots. */
+.vocab-vault-spark {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--vault-accent);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--vault-accent) 80%, transparent);
+  opacity: 0;
+  animation: vocab-vault-spark 2600ms var(--ease-out) infinite;
+}
+/* Addressed by data-s, not :nth-of-type: every child of the jar is a <span>, so the
+   type-index counted the wall and the shine too — two of the three sparks were picking up
+   the wrong rule and the third was left with no position at all. */
+.vocab-vault-spark[data-s="1"] {
+  top: -12px;
+  left: 14px;
+}
+.vocab-vault-spark[data-s="2"] {
+  top: -20px;
+  left: 50%;
+  width: 4px;
+  height: 4px;
+  animation-delay: 70ms;
+}
+.vocab-vault-spark[data-s="3"] {
+  top: -11px;
+  /* Pulled in from the rim: the bottom-right bubble ends just above this corner. */
+  right: 26px;
+  animation-delay: 140ms;
+}
+/* The two tooltips. They arrive from opposite corners — top-left onto the bookmark key,
+   bottom-right onto the heart key — so each sits on the side its own key is on and the pair
+   brackets the row instead of crowding it. The tail is a rotated square sharing the bubble's
+   fill, and the whole silhouette (box + tail) is outlined as one shape through the shape
+   layer's filter. Each bubble is pinned to the centre line by its inner edge and sizes to its
+   own sentence on ONE line (white-space: nowrap), so it never breaks mid-thought. */
+.vocab-vault-tip {
+  position: absolute;
+  z-index: 3;
+  /* Inner edge sits 24px off centre so it clears the chip lane (the chip is 34px wide, so
+     ±17 from centre) and fixes where the tail lands. The bubble then grows OUTWARD from that
+     anchored edge to fit its sentence on one line, instead of wrapping inside a width cap. */
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 0.3em;
+  width: max-content;
+  white-space: nowrap;
+  padding: 8px 13px;
+  color: var(--vocab-ink);
+  font-size: 13.2px;
+  font-weight: 650;
+  line-height: 1.3;
+  text-align: left;
+  /* A bubble is tinted by the key it points at, the same way the key and its chip are, so the
+     pink one is unmistakably the heart's. Both stay lit: the scene teaches both gestures at
+     once, so neither sentence is ever the greyed-out one. */
+  --tip-fill: color-mix(in srgb, var(--tip-accent) 22%, var(--shell-surface, #15102a));
+  --tip-line: color-mix(in srgb, var(--tip-accent) 62%, var(--shell-surface, #15102a));
+  animation: vocab-vault-bob 2600ms var(--ease-out) infinite;
+}
+/* The bubble body and its tail, as ONE layer behind the words. The outline is a ring of
+   drop-shadows over this layer, and a filter traces the layer's combined silhouette — so
+   the box and the tail are outlined as a single shape with no seam where they join. (The
+   old version drew a border on each separately, which is where the broken outline came
+   from, and a translucent fill let the box's own border show straight through the tail.)
+   The fill has to stay fully opaque for that join to disappear. The text is NOT in here on
+   purpose: inside the filter, every glyph would be outlined too. */
+.vocab-vault-tip-shape {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  border-radius: 13px;
+  background: var(--tip-fill);
+  filter: drop-shadow(1px 0 0 var(--tip-line)) drop-shadow(-1px 0 0 var(--tip-line))
+    drop-shadow(0 1px 0 var(--tip-line)) drop-shadow(0 -1px 0 var(--tip-line))
+    drop-shadow(0 9px 12px #0000008f);
+}
+.vocab-vault-tip .vocab-vault-tip-shape {
+  filter: drop-shadow(1px 0 0 var(--tip-line)) drop-shadow(-1px 0 0 var(--tip-line))
+    drop-shadow(0 1px 0 var(--tip-line)) drop-shadow(0 -1px 0 var(--tip-line))
+    drop-shadow(0 9px 12px #0000008f)
+    drop-shadow(0 0 9px color-mix(in srgb, var(--tip-accent) 55%, transparent));
+}
+/* The tail: a NARROW triangle sharing the bubble's fill, merged into the shape layer so the
+   bubble and its point outline as one. Its horizontal position is set per bubble (off-centre,
+   a 1:2 split) and its direction by the per-bubble clip-path. */
+.vocab-vault-tip-shape::after {
+  content: "";
+  position: absolute;
+  width: 10px;
+  height: 9px;
+  background: var(--tip-fill);
+}
+/* The words. Split in the component so each can arrive on its own beat; they ride above
+   the shape layer, outside its filter. */
+.vocab-vault-word {
+  position: relative;
+  z-index: 1;
+  display: inline-block;
+  animation: vocab-vault-word-in 460ms var(--ease-spring) both;
+  /* Only the per-WORD cascade is staggered now. The two bubbles themselves start together,
+     so the pair speaks on one beat instead of taking turns. */
+  animation-delay: calc(var(--i, 0) * 70ms);
+}
+@keyframes vocab-vault-word-in {
+  from {
+    opacity: 0;
+    transform: translateY(7px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+/* The pair runs in the feed's order — heart on the LEFT, bookmark on the RIGHT — so a reader
+   who learns the row here finds it the same way round under every word.
+
+   Heart bubble: held above the LEFT (heart) key with a clear vertical gap. Its tail sits near
+   the RIGHT end — the short segment to the right of the tail is about half the long one on its
+   left (a 1:2 split). Anchoring the bubble at translateX(-66.6%) puts that 2/3 mark over the
+   key centre, so the narrow tail still points straight down at the icon, not at the bubble's
+   midpoint. */
+.vocab-vault-tip[data-tip="heart"] {
+  --tip-accent: var(--vault-heart);
+  top: 6px;
+  left: calc(50% - 29px);
+  transform: translateX(-66.6%);
+}
+.vocab-vault-tip[data-tip="heart"] .vocab-vault-tip-shape::after {
+  left: 66.6%;
+  right: auto;
+  bottom: -7px;
+  transform: translateX(-50%);
+  clip-path: polygon(50% 100%, 0 0, 100% 0);
+}
+/* Bookmark bubble: directly under the RIGHT (bookmark) key, its tail near the LEFT end (short 1
+   side on the left, 2 on the right) — the mirror of the heart's. translateX(-33.3%) brings that
+   1/3 mark onto the key centre so the tail points straight up at the icon, with the same gap. */
+.vocab-vault-tip[data-tip="bookmark"] {
+  --tip-accent: var(--vault-accent);
+  top: var(--vault-tip);
+  left: calc(50% + 29px);
+  right: auto;
+  transform: translateX(-33.3%);
+}
+.vocab-vault-tip[data-tip="bookmark"] .vocab-vault-tip-shape::after {
+  top: -7px;
+  left: 33.3%;
+  right: auto;
+  transform: translateX(-50%);
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+}
+@keyframes vocab-vault-bob {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 -3px;
+  }
+}
+/* One crisp press at the very top of the loop: with the heart offset a half-loop, the two
+   presses land evenly (0% and 50%) with an equal idle gap between them — the old lingering
+   squish across 14–40% is what made the two beats read as a cluster followed by a wait. */
+@keyframes vocab-vault-tap {
+  0%,
+  34%,
+  100% {
+    transform: scale(1);
+  }
+  7% {
+    transform: scale(0.85);
+  }
+  15% {
+    transform: scale(1.07);
+  }
+}
+@keyframes vocab-vault-ring {
+  0%,
+  6% {
+    opacity: 0;
+    transform: scale(0.82);
+  }
+  13% {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+  32%,
+  100% {
+    opacity: 0;
+    transform: scale(1.8);
+  }
+}
+/* The chip hops off its key and is back over the centre line by 44%, well above the
+   bottom-right bubble: the outward offset only exists while it is still beside the key,
+   so the flight never crosses a tooltip. */
+@keyframes vocab-vault-drop {
+  0%,
+  24% {
+    opacity: 0;
+    transform: translate(var(--chip-from, 0), -6px) scale(0.5) rotate(-10deg);
+  }
+  32% {
+    opacity: 1;
+    transform: translate(var(--chip-from, 0), 0) scale(1) rotate(-10deg);
+  }
+  44% {
+    opacity: 1;
+    /* Fully back on the centre line here, not merely close to it: on the narrowest drawer
+       a residual offset still put the chip's corner under the right-hand bubble. */
+    transform: translate(0, calc(var(--vault-fall) * 0.33)) scale(0.98) rotate(-2deg);
+  }
+  60% {
+    opacity: 1;
+    transform: translate(0, calc(var(--vault-fall) * 0.7)) scale(0.92) rotate(5deg);
+  }
+  68% {
+    opacity: 1;
+    transform: translate(0, calc(var(--vault-fall) * 0.92)) scale(0.7) rotate(5deg);
+  }
+  74%,
+  100% {
+    opacity: 0;
+    transform: translate(0, var(--vault-fall)) scale(0.5) rotate(5deg);
+  }
+}
+@keyframes vocab-vault-catch {
+  0%,
+  62%,
+  92%,
+  100% {
+    transform: scale(1, 1);
+  }
+  70% {
+    transform: scale(1.08, 0.9);
+  }
+  82% {
+    transform: scale(0.97, 1.05);
+  }
+}
+@keyframes vocab-vault-bloom {
+  0%,
+  62%,
+  100% {
+    opacity: 0.4;
+  }
+  72% {
+    opacity: 0.95;
+  }
+}
+@keyframes vocab-vault-spark {
+  0%,
+  66% {
+    opacity: 0;
+    transform: translateY(4px) scale(0.4);
+  }
+  76% {
+    opacity: 1;
+    transform: translateY(-8px) scale(1);
+  }
+  92%,
+  100% {
+    opacity: 0;
+    transform: translateY(-18px) scale(0.4);
+  }
+}
+/* Short viewports (a landscape phone, a small desktop window): the scene keeps its whole
+   composition — bubble, key, bubble, chip, vault — and only restates the vertical stack at
+   a smaller step, so nothing has to be dropped to make it fit above the heading. */
+@media (max-height: 680px) {
+  .vocab-vault {
+    --vault-head: 46px;
+    --vault-tip: 98px;
+    --vault-chip: 140px;
+    --vault-jar-h: 48px;
+    --vault-jar-w: 92px;
+    --vault-mouth-h: 20px;
+    --vault-fall: 64px;
+    height: 234px;
+  }
+  .vocab-vault-chip[data-chip="bookmark"] {
+    --chip-from: 26px;
+  }
+  .vocab-vault-chip[data-chip="heart"] {
+    --chip-from: -26px;
+  }
+  .vocab-vault-key {
+    width: 34px;
+    height: 34px;
+  }
+  .vocab-vault-tip {
+    padding: 7px 12px;
+    font-size: 12.7px;
+  }
+}
+/* The scene is a loop, not information: with motion turned down every part holds a legible
+   resting pose — chip in hand above the open vault — and the instruction is carried by the
+   heading and body below it. */
+@media (prefers-reduced-motion: reduce) {
+  .vocab-vault-key[data-active],
+  .vocab-vault-key[data-active]::after,
+  .vocab-vault-chip,
+  .vocab-vault-jar,
+  .vocab-vault-jar::before,
+  .vocab-vault-lid,
+  .vocab-vault-spark,
+  .vocab-vault-tip,
+  .vocab-vault-word {
+    animation: none;
+  }
+  .vocab-vault-chip {
+    opacity: 1;
+    transform: translate(var(--chip-from, 0), 0) rotate(-10deg);
+  }
 }
 .vocab-saved-empty h2 {
   font-size: 22px;
