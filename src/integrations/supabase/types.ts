@@ -512,6 +512,24 @@ export type Database = {
         }
         Relationships: []
       }
+      telemetry_active_actors: {
+        Row: {
+          actor_user_id: string
+          app_id: string
+          date: string
+        }
+        Insert: {
+          actor_user_id: string
+          app_id?: string
+          date: string
+        }
+        Update: {
+          actor_user_id?: string
+          app_id?: string
+          date?: string
+        }
+        Relationships: []
+      }
       telemetry_daily_rollups: {
         Row: {
           active_users: number
@@ -632,6 +650,39 @@ export type Database = {
         }
         Relationships: []
       }
+      telemetry_visitor_sessions: {
+        Row: {
+          app_id: string
+          date: string
+          errors: number
+          first_seen_at: string
+          last_seen_at: string
+          page_failures: number
+          page_loads: number
+          session_id: string
+        }
+        Insert: {
+          app_id?: string
+          date: string
+          errors?: number
+          first_seen_at?: string
+          last_seen_at?: string
+          page_failures?: number
+          page_loads?: number
+          session_id: string
+        }
+        Update: {
+          app_id?: string
+          date?: string
+          errors?: number
+          first_seen_at?: string
+          last_seen_at?: string
+          page_failures?: number
+          page_loads?: number
+          session_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       profiles_public: {
@@ -689,11 +740,39 @@ export type Database = {
       }
       is_admin_account: { Args: { _uid: string }; Returns: boolean }
       is_system_account: { Args: { _uid: string }; Returns: boolean }
+      mark_actor_active: {
+        Args: { _actor_user_id: string; _app_id: string; _date: string }
+        Returns: undefined
+      }
       publish_vocabulary_bot_post: {
         Args: { p_run_at?: string }
         Returns: number
       }
+      record_visitor_session: {
+        Args: {
+          _app_id: string
+          _date: string
+          _errors?: number
+          _page_failures?: number
+          _page_loads?: number
+          _session_id: string
+        }
+        Returns: undefined
+      }
       request_vocabulary_refill: { Args: never; Returns: number }
+      telemetry_session_health: {
+        Args: { _app_id: string; _from: string; _to: string }
+        Returns: Json
+      }
+      telemetry_visitors_by_day: {
+        Args: { _app_id: string; _from: string; _to: string }
+        Returns: {
+          day: string
+          failures: number
+          loads: number
+          unique_visitors: number
+        }[]
+      }
       vocabulary_reveal_word_from_canvas: {
         Args: { p_canvas_html: string }
         Returns: string
