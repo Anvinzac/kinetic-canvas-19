@@ -39,3 +39,6 @@ src/features/admin/data/llm-config.json
 *.njsproj
 *.sln
 *.sw?
+
+# word-crawler is an independent experimental repo (../word-crawler), not part of the feed.
+/word-crawler/
