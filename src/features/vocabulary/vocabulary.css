@@ -76,6 +76,11 @@
   cursor: default;
 }
 .vocab-toolbar {
+  /* Replaced at runtime with the corner control's measured width; the icon
+     button is 44px, but shrinks to 34 and 30 at narrower widths. Declared here,
+     on the element the observer writes to, so .vocab-options inherits it —
+     declaring it on .vocab-options would beat the inherited value. */
+  --vocab-corner: 44px;
   position: fixed;
   z-index: 50;
   top: max(12px, env(safe-area-inset-top));
@@ -290,49 +295,250 @@
 .vocab-player-controls .vocab-export-open {
   margin-left: 8px;
 }
-/* Saved-words shortcut: the badge sits on the button's top-right corner. It is pinned
-   to the row's right edge and kept OPAQUE (solid fill, no frost) so it reads as a
-   distinct destination rather than one more frosted transport control. */
-.vocab-bookmark-button {
+/* The top-right corner control. Opaque, the way the bookmark and the app-panel
+   trigger before it were: it is the one control that owns that corner. */
+.vocab-corner-button {
   justify-self: end;
+  /* Above the sheet, so the button is not clipped by the notch cut for it. */
+  position: relative;
+  z-index: 2;
   background: var(--shell-text);
   border-color: transparent;
   color: var(--shell-on-text);
   backdrop-filter: none;
 }
-.vocab-icon-button.vocab-bookmark-button:hover:not(:disabled) {
+.vocab-icon-button.vocab-corner-button:hover:not(:disabled) {
   background: #fff;
   color: #000;
 }
-.vocab-saved-link {
-  position: relative;
+.vocab-icon-button.vocab-corner-button[data-active] {
+  background: var(--chrome-accent);
+  border-color: transparent;
+  color: #0a0014;
 }
-.vocab-saved-badge-count {
-  position: absolute;
-  top: -3px;
-  right: -3px;
-  min-width: 19px;
-  height: 19px;
-  padding: 0 5px;
+
+/* Saved words as a handle docked to the right edge, replacing the old top-right
+   bookmark button. The dock is a tall, narrow strip so the pull can be started
+   anywhere down the edge, not just on the handle itself. `touch-action: pan-y`
+   hands vertical scrolling back to the browser while claiming horizontal
+   movement, which is what keeps the pull smooth on a phone. */
+.vocab-saved-dock {
+  position: fixed;
+  /* Under the toolbar (50), so the ecosystem fan's scrim covers the handle. */
+  z-index: 46;
+  /* Low on the right edge, where a thumb falls when the phone is held in the
+     right hand — and well clear of the optical middle, where it sat across the
+     word itself. */
+  top: 68%;
+  right: env(safe-area-inset-right, 0px);
   display: grid;
-  place-items: center;
-  border-radius: 999px;
-  background: var(--vocab-accent);
-  color: var(--vocab-button-ink);
-  font-size: 10px;
+  place-items: center end;
+  width: 28px;
+  height: min(52vh, 420px);
+  transform: translateY(-50%);
+  touch-action: pan-y;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.vocab-saved-handle {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  width: 20px;
+  height: 72px;
+  /* Room on the left for the grip bar, so the glyph stays optically centred. */
+  padding-left: 4px;
+  border: 1px solid #ffffff1f;
+  border-right: 0;
+  border-radius: 11px 0 0 11px;
+  background: color-mix(in srgb, var(--shell-surface, #15102a) 34%, transparent);
+  backdrop-filter: blur(10px);
+  color: var(--shell-text);
+  box-shadow: -4px 0 14px #0000003d;
+  /* Mostly faded while untouched: the handle sits over the word, and at full
+     strength it read as a bar across the text. */
+  opacity: 0.4;
+  /* The handle rides the finger; 84px of travel for a full pull. */
+  transform: translateX(calc(var(--pull, 0) * -84px));
+  transition:
+    transform var(--dur-move) var(--ease-spring),
+    opacity var(--dur-move) var(--ease-out),
+    border-color var(--dur-quick) var(--ease-out),
+    background var(--dur-quick) var(--ease-out);
+}
+/* Any attention at all brings it up to full strength. */
+.vocab-saved-dock[data-pulling] .vocab-saved-handle,
+.vocab-saved-handle:hover,
+.vocab-saved-handle:focus-visible {
+  opacity: 1;
+  border-color: #ffffff47;
+  background: color-mix(in srgb, var(--shell-surface, #15102a) 72%, transparent);
+}
+/* While the finger is down the handle must track it exactly; the spring is only
+   for the release. */
+.vocab-saved-dock[data-pulling] .vocab-saved-handle {
+  transition:
+    opacity var(--dur-quick) var(--ease-out),
+    background var(--dur-quick) var(--ease-out);
+}
+.vocab-saved-handle:focus-visible {
+  outline: 2px solid var(--chrome-accent, #a78bfa);
+  outline-offset: 2px;
+}
+/* Two-pixel bar at the inner edge: the one affordance saying this is pulled, not
+   pressed. */
+.vocab-saved-grip {
+  position: absolute;
+  top: 50%;
+  left: 4px;
+  width: 2px;
+  height: 18px;
+  border-radius: 2px;
+  background: currentColor;
+  opacity: 0.34;
+  transform: translateY(-50%);
+}
+/* No pill behind the count: at 20px wide there is no room for one. */
+.vocab-saved-handle-count {
+  color: var(--vocab-accent);
+  font-size: 9px;
   font-weight: 800;
   line-height: 1;
-  letter-spacing: 0;
-  box-shadow: 0 2px 8px #0007;
+  letter-spacing: -0.02em;
+}
+/* The handle is the drawer's edge: once the panel is in, it has nothing left to
+   pull, so it steps aside instead of sitting on top of the panel. */
+.vocab-saved-dock[data-hidden] {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--dur-quick) var(--ease-out);
+}
+
+/* Saved-words drawer -------------------------------------------------------- */
+
+/* A symmetric ease-in-out, so the panel leaves exactly the way it arrived. The
+   feed's own --ease-out is deliberately asymmetric and read as a snap here. */
+.vocab-saved-scrim,
+.vocab-saved-panel {
+  --ease-io: cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+.vocab-saved-scrim {
+  position: fixed;
+  inset: 0;
+  /* Above the toolbar (50) and the dock (46): the drawer is modal. */
+  z-index: 60;
+  background: #05010ea8;
+  animation: vocab-saved-fade 320ms var(--ease-io) both;
+}
+.vocab-saved-scrim[data-closing] {
+  pointer-events: none;
+  animation: vocab-saved-fade-out 260ms var(--ease-io) forwards;
+}
+
+.vocab-saved-panel {
+  position: fixed;
+  z-index: 61;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(420px, 100vw);
+  background: var(--shell-surface, #15102a);
+  box-shadow: -18px 0 54px #00000080;
+  animation: vocab-saved-slide-in 320ms var(--ease-io) both;
+}
+/* A SEPARATE keyframe set, not `slide-in ... reverse`. Reversing reuses the same
+   animation-name, and an animation that has already finished is not restarted by
+   changing its direction — the browser just re-reads it at its end time, which
+   for a reversed run is the `from` state. The panel teleported off-screen in one
+   frame and then sat there for the rest of the duration. */
+.vocab-saved-panel[data-closing] {
+  animation: vocab-saved-slide-out 260ms var(--ease-io) forwards;
+}
+
+/* The list is a route of its own as well as a drawer; inside the panel it fills
+   the panel rather than the viewport. */
+.vocab-saved-embedded {
+  height: 100%;
+}
+
+@keyframes vocab-saved-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes vocab-saved-slide-in {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+@keyframes vocab-saved-fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+@keyframes vocab-saved-slide-out {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vocab-saved-scrim,
+  .vocab-saved-panel {
+    animation-duration: 1ms !important;
+  }
+}
+
+/* Fades in as the pull progresses, so the gesture names its own destination. */
+.vocab-saved-hint {
+  position: absolute;
+  top: 50%;
+  /* Travels with the handle, which slides 84px: pinned at a fixed offset the
+     label ends up underneath the handle it is meant to caption. */
+  right: calc(30px + var(--pull, 0) * 84px);
+  opacity: var(--pull, 0);
+  transform: translateY(-50%);
+  color: var(--shell-text);
+  font-size: 11px;
+  font-weight: 650;
+  white-space: nowrap;
+  text-shadow: 0 1px 4px #000000c4;
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .vocab-saved-handle {
+    transition: none;
+  }
 }
 .vocab-options {
   width: min(100%, 520px);
-  /* The settings gear now sits beside the title at the top-LEFT, so the panel opens
-     under it instead of docking to the opposite (top-right) corner. */
-  margin-left: 0;
-  margin-right: auto;
-  margin-top: 14px;
-  padding: 22px;
+  /* Anchored flush to the toolbar's box, whose top-right corner IS the corner
+     button's: the row is the toolbar's first child and the button is the last
+     column, so top/right of 0 land the panel's corner on the button's corner and
+     the notch below falls on its centre. */
+  position: absolute;
+  top: 0;
+  right: 0;
+  margin: 0;
+  --vocab-corner-half: calc(var(--vocab-corner) / 2);
+  --vocab-corner-notch: calc(var(--vocab-corner-half) + 9px);
+  padding: 16px 22px 22px;
   /* Panels are always dark surfaces; they must not inherit the toolbar's ink, which
      flips to dark over a pale card. */
   color: var(--shell-text);
@@ -342,8 +548,46 @@
   box-shadow: 0 20px 60px #0008;
   max-height: calc(100dvh - 110px - env(safe-area-inset-top));
   overflow-y: auto;
-  transform-origin: top left;
-  animation: vocab-panel-in var(--dur-move) var(--ease-out) both;
+  /* The notch: a circle punched out of the corner so the sheet wraps the button
+     rather than starting below it. Same treatment as the app panel's. */
+  --vocab-notch-mask: radial-gradient(
+    circle var(--vocab-corner-notch) at calc(100% - var(--vocab-corner-half))
+      var(--vocab-corner-half),
+    transparent 0 var(--vocab-corner-notch),
+    #000 calc(var(--vocab-corner-notch) + 0.5px)
+  );
+  -webkit-mask-image: var(--vocab-notch-mask);
+  mask-image: var(--vocab-notch-mask);
+  transform-origin: calc(100% - var(--vocab-corner-half)) var(--vocab-corner-half);
+  /* Grown from the corner of the control that opened it, the same way the app
+     panel is — not nudged down a few pixels. */
+  animation: vocab-options-in var(--dur-move) var(--ease-spring) both;
+}
+/* The first block sits beside the notch, so the rest of the sheet starts below
+   it rather than running under the button. */
+.vocab-options > :first-child {
+  padding-right: calc(var(--vocab-corner) + 14px);
+  min-height: calc(var(--vocab-corner) - 4px);
+}
+@keyframes vocab-options-in {
+  from {
+    opacity: 0;
+    transform: scale(0.26);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes vocab-options-out {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.3);
+  }
 }
 @keyframes vocab-panel-in {
   from {
@@ -359,9 +603,12 @@
     transform: translateY(-6px) scale(0.97);
   }
 }
-.vocab-options[data-closing],
 .vocab-difficulty-pop[data-closing] {
   animation: vocab-panel-out var(--dur-quick) var(--ease-in) forwards;
+}
+/* Collapses back into the corner it grew from. Must finish inside POPUP_EXIT_MS. */
+.vocab-options[data-closing] {
+  animation: vocab-options-out var(--dur-quick) var(--ease-in) forwards;
 }
 /* Transparent catcher behind an open popup (see PopupScrim); the popups stack above it. */
 .vocab-popup-scrim {
@@ -373,7 +620,6 @@
   pointer-events: none;
 }
 .vocab-options {
-  position: relative;
   z-index: 1;
 }
 /* The feed is a tap surface: long-pressing a card or a panel must not select text. */
@@ -500,8 +746,46 @@
     0 26px 70px #000000b8,
     inset 0 1px 0 #ffffff33,
     0 0 26px color-mix(in srgb, var(--pop-accent) 22%, transparent);
-  transform-origin: top left;
-  animation: vocab-panel-in var(--dur-move) var(--ease-out) both;
+  /* The notch: a circle punched out of the corner so the sheet wraps the button
+     rather than starting below it. Same treatment as the app panel's. */
+  --vocab-notch-mask: radial-gradient(
+    circle var(--vocab-corner-notch) at calc(100% - var(--vocab-corner-half))
+      var(--vocab-corner-half),
+    transparent 0 var(--vocab-corner-notch),
+    #000 calc(var(--vocab-corner-notch) + 0.5px)
+  );
+  -webkit-mask-image: var(--vocab-notch-mask);
+  mask-image: var(--vocab-notch-mask);
+  transform-origin: calc(100% - var(--vocab-corner-half)) var(--vocab-corner-half);
+  /* Grown from the corner of the control that opened it, the same way the app
+     panel is — not nudged down a few pixels. */
+  animation: vocab-options-in var(--dur-move) var(--ease-spring) both;
+}
+/* The first block sits beside the notch, so the rest of the sheet starts below
+   it rather than running under the button. */
+.vocab-options > :first-child {
+  padding-right: calc(var(--vocab-corner) + 14px);
+  min-height: calc(var(--vocab-corner) - 4px);
+}
+@keyframes vocab-options-in {
+  from {
+    opacity: 0;
+    transform: scale(0.26);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes vocab-options-out {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.3);
+  }
 }
 /* The scrollable option column; the floating confirm bar overlays its bottom edge,
    so the column reserves padding-bottom for the last row to scroll clear of it.
@@ -2178,56 +2462,23 @@
     background-position: -60% 0;
   }
 }
-/* ── Options as a bottom sheet on phones ─────────────────────────────────────
-   Under the gear on wide screens; on a phone it rises from the bottom edge where the
-   thumb already is. The dimmed backdrop is the sheet's own spread shadow; taps on it
-   land on the transparent PopupScrim beneath, which closes the sheet. */
+/* ── Options on phones ───────────────────────────────────────────────────────
+   It used to rise from the bottom edge as a sheet, where the thumb already is.
+   Now that it belongs to the corner button it grows out of that corner instead,
+   at every width, so the control and its panel read as one object. The dimmed
+   backdrop is the panel's own spread shadow; taps on it land on the transparent
+   PopupScrim beneath, which closes the panel. */
 @media (max-width: 640px) {
   .vocab-options {
-    position: fixed;
-    z-index: 1;
-    left: 0;
-    right: 0;
-    bottom: 0;
     width: 100%;
-    margin: 0;
-    padding: 10px 20px calc(20px + env(safe-area-inset-bottom));
-    border-radius: 28px 28px 0 0;
-    border-bottom: 0;
-    max-height: min(84dvh, calc(100dvh - 92px));
+    padding: 14px 18px 18px;
+    max-height: min(74dvh, calc(100dvh - 104px));
     box-shadow:
       0 0 0 100vmax #05030c99,
-      0 -24px 80px #000a;
-    transform-origin: bottom center;
-    animation-name: vocab-sheet-up;
-    animation-duration: 0.42s;
-  }
-  .vocab-options::before {
-    content: "";
-    display: block;
-    width: 40px;
-    height: 4px;
-    margin: 0 auto 14px;
-    border-radius: 999px;
-    background: var(--shell-line-strong);
+      0 24px 70px #000a;
   }
 }
-@keyframes vocab-sheet-up {
-  from {
-    transform: translateY(100%);
-  }
-}
-@keyframes vocab-sheet-down {
-  to {
-    transform: translateY(100%);
-    opacity: 0;
-  }
-}
-@media (max-width: 640px) {
-  .vocab-options[data-closing] {
-    animation: vocab-sheet-down var(--dur-quick) var(--ease-in) forwards;
-  }
-}
+
 /* ── Card laid out for video export ──────────────────────────────────────────
    The card is told a clear zone (the part of the frame a social app leaves
    uncovered) as four percentages. The text stage is stretched so its own reserved

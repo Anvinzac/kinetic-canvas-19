@@ -1,11 +1,9 @@
 /** Public navigation and stream/presentation controls. Exports: FeedControls. Depends on: router, presets, difficulty tracks, transport types. */
 import { Link } from "@tanstack/react-router";
-import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import {
-  Bookmark,
   ChevronDown,
   Clapperboard,
-  LayoutGrid,
   Library,
   Pause,
   Play,
@@ -16,7 +14,8 @@ import {
   X,
 } from "lucide-react";
 import { COMMUNITY_AVAILABLE } from "@/lib/feature-flags";
-import { EcosystemDrawer } from "@/features/ecosystem/components/EcosystemDrawer";
+import { EcosystemMenu } from "@/features/ecosystem/components/EcosystemMenu";
+import { ECOSYSTEM_STORE_AVAILABLE } from "@/lib/feature-flags";
 import { STYLES, THEMES } from "../lib/presets";
 import {
   DIFFICULTY_ALL,
@@ -28,7 +27,6 @@ import {
 import type { NarrativeStyle } from "../lib/schema";
 import type { HistoryStats } from "../lib/history";
 import { styleLabelVi, themeLabelVi, topicLabelVi } from "../lib/i18n";
-import { useSavedCount } from "../hooks/useSavedCount";
 import { useAmbientSound } from "../hooks/useAmbientSound";
 import type { FeedPage, Presentation, VocabularyFilters } from "../types";
 import { usePresence } from "@/hooks/use-presence";
@@ -349,51 +347,59 @@ export function FeedControls({
 }) {
   const panelId = useId();
   const toggleButton = useRef<HTMLButtonElement>(null);
-  const savedCount = useSavedCount();
+  const toolbar = useRef<HTMLElement>(null);
   const ambient = useAmbientSound();
   const close = () => {
     onOpen(false);
     toggleButton.current?.focus();
   };
   const options = usePresence(open, POPUP_EXIT_MS);
+  const [ecoOpen, setEcoOpen] = useState(false);
+  // Opening the app fan pauses the stream: the reader is looking at the menu, so
+  // letting words keep turning behind it would lose them one per tick. Closing
+  // restores whatever autoplay was before, rather than forcing it on.
+  const resumeAfterEco = useRef(false);
+  const toggleEco = useCallback(
+    (next: boolean) => {
+      setEcoOpen(next);
+      if (next) {
+        resumeAfterEco.current = presentation.autoplay;
+        if (presentation.autoplay) onPresentation({ ...presentation, autoplay: false });
+      } else if (resumeAfterEco.current) {
+        resumeAfterEco.current = false;
+        onPresentation({ ...presentation, autoplay: true });
+      }
+    },
+    [presentation, onPresentation],
+  );
+  // The options sheet is notched around whichever control owns the top-right
+  // corner, so it needs that control's real width — .vocab-icon-button is 44px
+  // but shrinks to 34 and then 30 at narrower widths, and a hard-coded half
+  // would leave the cut-out off the button on every small screen.
+  useEffect(() => {
+    const host = toolbar.current;
+    if (!host) return;
+    const corner = host.querySelector<HTMLElement>(".vocab-corner-button, .eco-trigger");
+    if (!corner) return;
+    const sync = () => host.style.setProperty("--vocab-corner", `${corner.offsetWidth}px`);
+    sync();
+    const observer = new ResizeObserver(sync);
+    observer.observe(corner);
+    return () => observer.disconnect();
+  }, []);
+
   /** The stream is only really playing while autoplay is on AND motion is allowed. */
   const playing = presentation.autoplay && !reducedMotion;
   return (
-    <header className="vocab-toolbar">
+    <header className="vocab-toolbar" ref={toolbar}>
       <div className="vocab-toolbar-row">
-        {/* Left: the title (which is the difficulty trigger) with the settings gear
-            tucked beside it. The gear is a bare icon, not a container button, so it
-            reads as part of the header rather than a fourth control. */}
+        {/* Left: just the title, which is the difficulty trigger. Settings moved
+            to the top-right corner — see the right column. */}
         <div className="vocab-toolbar-left">
           <DifficultyDropdown
             value={filters.difficulty}
             onChange={(difficulty) => onFilters({ ...filters, difficulty })}
           />
-          <button
-            className="vocab-settings-button"
-            type="button"
-            ref={toggleButton}
-            onClick={() => (open ? close() : onOpen(true))}
-            aria-expanded={open}
-            aria-controls={panelId}
-            aria-label={open ? "Close feed options" : "Open feed options"}
-            data-active={open || undefined}
-          >
-            {/* Open sheet = engaged control, so the glyph is drawn solid instead of
-                outlined; the resting gear stays an outline. */}
-            {open ? <X size={20} fill="currentColor" /> : <Settings size={20} />}
-          </button>
-          {/* Sibling apps live beside the gear: both are chrome that leaves the
-              current word alone, unlike the transport controls in the centre. */}
-          <EcosystemDrawer>
-            <button
-              className="vocab-settings-button"
-              type="button"
-              aria-label="Mở app khác trong hệ sinh thái Chay Lá"
-            >
-              <LayoutGrid size={19} />
-            </button>
-          </EcosystemDrawer>
         </div>
         {/* Centre: the three transport controls as bare icons split by two hairlines,
             centred on the top edge. */}
@@ -444,20 +450,31 @@ export function FeedControls({
             </button>
           )}
         </div>
-        {/* Right: the saved-words shortcut, pinned to the top-right corner and kept
-            opaque so it is visibly distinct from the frosted player controls. */}
-        <Link
-          className="vocab-icon-button vocab-saved-link vocab-bookmark-button"
-          to="/feed/saved"
-          aria-label={savedCount ? `Xem ${savedCount} từ đã lưu` : "Xem từ vựng đã lưu"}
-        >
-          <Bookmark size={19} fill={savedCount ? "currentColor" : "none"} />
-          {savedCount > 0 && (
-            <span className="vocab-saved-badge-count" aria-hidden="true">
-              {savedCount > 99 ? "99+" : savedCount}
-            </span>
-          )}
-        </Link>
+        {/* Right: the corner control. While the sibling apps are unannounced the
+            app panel is gone entirely and Settings takes the corner; when the
+            store ships, the corner goes back to the app panel and Settings
+            becomes a tile inside it. Either way the sheet pops from HERE. */}
+        {ECOSYSTEM_STORE_AVAILABLE ? (
+          <EcosystemMenu
+            open={ecoOpen}
+            onOpenChange={toggleEco}
+            reducedMotion={reducedMotion}
+            onOpenSettings={() => onOpen(true)}
+          />
+        ) : (
+          <button
+            className="vocab-icon-button vocab-corner-button"
+            type="button"
+            ref={toggleButton}
+            onClick={() => (open ? close() : onOpen(true))}
+            aria-expanded={open}
+            aria-controls={panelId}
+            aria-label={open ? "Đóng tùy chọn" : "Mở tùy chọn luồng từ vựng"}
+            data-active={open || undefined}
+          >
+            {open ? <X size={19} /> : <Settings size={19} />}
+          </button>
+        )}
       </div>
       {options.mounted && <PopupScrim closing={options.closing} onDismiss={() => onOpen(false)} />}
       {options.mounted && (

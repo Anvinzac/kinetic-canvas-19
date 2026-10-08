@@ -13,7 +13,7 @@
  */
 
 import { Link } from "@tanstack/react-router";
-import { ArrowLeft, Bookmark, Heart, Undo2 } from "lucide-react";
+import { ArrowLeft, Bookmark, Heart, Undo2, X } from "lucide-react";
 import {
   useEffect,
   useId,
@@ -271,8 +271,14 @@ function SavedFolders({
   );
 }
 
-/** Show this device's saved words as folders, with a swipe/hold gesture to un-save. */
-export function BookmarksPage() {
+/**
+ * Show this device's saved words as folders, with a swipe/hold gesture to un-save.
+ * @param onClose Present when the list is embedded in the feed's saved drawer
+ *   rather than standing as its own route: the shell drops to a plain div (a
+ *   second <main> inside the feed's would be invalid) and the leading control
+ *   becomes a close button instead of a link back to the feed.
+ */
+export function BookmarksPage({ onClose }: { onClose?: () => void } = {}) {
   const { saved, favorites, remove, restore } = useSavedWords();
   const [tab, setTab] = useState<TabKind>("bookmark");
   const [mode, setMode] = useState<GroupMode>("day");
@@ -310,12 +316,28 @@ export function BookmarksPage() {
     remove(entry.word.id, tab);
   }
 
+  const embedded = Boolean(onClose);
+  const Shell = embedded ? "div" : "main";
+
   return (
-    <main className="vocabulary-shell vocab-saved-shell">
+    <Shell
+      className={`vocabulary-shell vocab-saved-shell${embedded ? " vocab-saved-embedded" : ""}`}
+    >
       <header className="vocab-saved-header">
-        <Link className="vocab-icon-button" to="/feed" aria-label="Về luồng từ vựng">
-          <ArrowLeft size={19} />
-        </Link>
+        {onClose ? (
+          <button
+            type="button"
+            className="vocab-icon-button"
+            onClick={onClose}
+            aria-label="Đóng từ vựng đã lưu"
+          >
+            <X size={19} />
+          </button>
+        ) : (
+          <Link className="vocab-icon-button" to="/feed" aria-label="Về luồng từ vựng">
+            <ArrowLeft size={19} />
+          </Link>
+        )}
         <div>
           <h1 className="vocab-saved-title">Từ vựng của bạn</h1>
           <p className="vocab-saved-subtitle">
@@ -393,9 +415,17 @@ export function BookmarksPage() {
           )}
           <h2>{empty.title}</h2>
           <p>{empty.body}</p>
-          <Link className="vocab-light-button" to="/feed">
-            Về luồng từ vựng
-          </Link>
+          {/* In the drawer the feed is already behind the panel, so the way
+              back is to close it — a link to /feed would be a dead button. */}
+          {onClose ? (
+            <button type="button" className="vocab-light-button" onClick={onClose}>
+              Về luồng từ vựng
+            </button>
+          ) : (
+            <Link className="vocab-light-button" to="/feed">
+              Về luồng từ vựng
+            </Link>
+          )}
         </div>
       )}
 
@@ -417,6 +447,6 @@ export function BookmarksPage() {
           </button>
         </div>
       )}
-    </main>
+    </Shell>
   );
 }

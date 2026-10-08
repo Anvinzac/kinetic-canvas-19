@@ -24,8 +24,15 @@ function resolveActiveIndex(frac: number, current: number, count: number): numbe
   return Math.max(0, Math.min(count - 1, index));
 }
 
-/** Virtualize a bounded page window without accumulating huge spacers. @param entries Contiguous occurrences. @returns Viewport bindings. */
-export function useVocabularyWindow(entries: FeedEntry[]) {
+/**
+ * Virtualize a bounded page window without accumulating huge spacers.
+ * @param entries Contiguous occurrences.
+ * @param overscan How many words either side of the visible one to keep mounted.
+ *   Normally 2, so a flick lands on an already-rendered card; 0 while an overlay
+ *   covers the feed, where the neighbours cannot be seen and only cost memory.
+ * @returns Viewport bindings.
+ */
+export function useVocabularyWindow(entries: FeedEntry[], overscan = 2) {
   const viewport = useRef<HTMLDivElement>(null);
   const [height, setHeight] = useState(() =>
     typeof window === "undefined" ? 800 : window.innerHeight,
@@ -56,7 +63,7 @@ export function useVocabularyWindow(entries: FeedEntry[]) {
     estimateSize: () => height,
     getItemKey,
     rangeExtractor,
-    overscan: 2,
+    overscan,
   });
 
   useLayoutEffect(() => {

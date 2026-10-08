@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as StoreRouteImport } from './routes/store'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AdminAccessDeniedRouteImport } from './routes/admin-access-denied'
 import { Route as AdminRouteRouteImport } from './routes/admin/route'
@@ -46,6 +47,11 @@ import { Route as ApiPublicEngagementRouteImport } from './routes/api/public/eng
 import { Route as AuthenticatedUUsernameRouteImport } from './routes/_authenticated/u.$username'
 import { Route as AuthenticatedPPostIdRouteImport } from './routes/_authenticated/p.$postId'
 
+const StoreRoute = StoreRouteImport.update({
+  id: '/store',
+  path: '/store',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
@@ -234,6 +240,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRouteRouteWithChildren
   '/admin-access-denied': typeof AdminAccessDeniedRoute
   '/auth': typeof AuthRoute
+  '/store': typeof StoreRoute
   '/about': typeof AuthenticatedAboutRoute
   '/community': typeof AuthenticatedCommunityRoute
   '/create': typeof AuthenticatedCreateRoute
@@ -270,6 +277,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin-access-denied': typeof AdminAccessDeniedRoute
   '/auth': typeof AuthRoute
+  '/store': typeof StoreRoute
   '/about': typeof AuthenticatedAboutRoute
   '/community': typeof AuthenticatedCommunityRoute
   '/create': typeof AuthenticatedCreateRoute
@@ -309,6 +317,7 @@ export interface FileRoutesById {
   '/admin': typeof AdminRouteRouteWithChildren
   '/admin-access-denied': typeof AdminAccessDeniedRoute
   '/auth': typeof AuthRoute
+  '/store': typeof StoreRoute
   '/_authenticated/about': typeof AuthenticatedAboutRoute
   '/_authenticated/community': typeof AuthenticatedCommunityRoute
   '/_authenticated/create': typeof AuthenticatedCreateRoute
@@ -348,6 +357,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/admin-access-denied'
     | '/auth'
+    | '/store'
     | '/about'
     | '/community'
     | '/create'
@@ -384,6 +394,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin-access-denied'
     | '/auth'
+    | '/store'
     | '/about'
     | '/community'
     | '/create'
@@ -422,6 +433,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/admin-access-denied'
     | '/auth'
+    | '/store'
     | '/_authenticated/about'
     | '/_authenticated/community'
     | '/_authenticated/create'
@@ -461,6 +473,7 @@ export interface RootRouteChildren {
   AdminRouteRoute: typeof AdminRouteRouteWithChildren
   AdminAccessDeniedRoute: typeof AdminAccessDeniedRoute
   AuthRoute: typeof AuthRoute
+  StoreRoute: typeof StoreRoute
   FeedLibraryRoute: typeof FeedLibraryRoute
   FeedSavedRoute: typeof FeedSavedRoute
   FeedIndexRoute: typeof FeedIndexRoute
@@ -473,6 +486,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/store': {
+      id: '/store'
+      path: '/store'
+      fullPath: '/store'
+      preLoaderRoute: typeof StoreRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auth': {
       id: '/auth'
       path: '/auth'
@@ -799,6 +819,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRouteRoute: AdminRouteRouteWithChildren,
   AdminAccessDeniedRoute: AdminAccessDeniedRoute,
   AuthRoute: AuthRoute,
+  StoreRoute: StoreRoute,
   FeedLibraryRoute: FeedLibraryRoute,
   FeedSavedRoute: FeedSavedRoute,
   FeedIndexRoute: FeedIndexRoute,

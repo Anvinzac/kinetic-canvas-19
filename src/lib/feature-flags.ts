@@ -36,3 +36,15 @@ export function isVocabularyPost(post: { author_id: string; canvas_html: string 
  * To bring the buttons back: set COMMUNITY_AVAILABLE = true.
  */
 export const COMMUNITY_AVAILABLE = false;
+
+/**
+ * The ecosystem store page lists every sibling app with screenshots and copy,
+ * but those apps are not public yet, so the tile that opens it is hidden and the
+ * app panel shows a Settings tile in its place.
+ *
+ * Only the tile is gated. The `/store` route stays mounted, so a direct link
+ * still resolves and the page can be reviewed before it is announced.
+ *
+ * To bring the tile back: set ECOSYSTEM_STORE_AVAILABLE = true.
+ */
+export const ECOSYSTEM_STORE_AVAILABLE = false;
