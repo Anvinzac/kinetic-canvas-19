@@ -13,6 +13,9 @@ const ExportStudio = lazy(() =>
   import("./ExportStudio").then((module) => ({ default: module.ExportStudio })),
 );
 
+/** How long a word must hold the screen before it counts as seen. */
+const VIEW_DWELL_MS = 900;
+
 /** Render a single mounted session; remount on shuffle/filter changes. @param props Session and UI choices. @returns Virtualized feed. */
 export function VocabularyStream({
   seed,
@@ -100,20 +103,39 @@ export function VocabularyStream({
     windowState,
     canFetchMorePositions,
   );
-  const { viewport, height, activeIndex, virtualizer, onScroll, onKeyDown, move } = windowState;
+  const {
+    viewport,
+    height,
+    activeIndex,
+    virtualizer,
+    onScroll,
+    onKeyDown,
+    advanceFrom,
+    flick,
+    touchStarted,
+  } = windowState;
   useEffect(() => {
     if (query.metadata) onMetadata(query.metadata);
   }, [query.metadata, onMetadata]);
 
-  // Record a view once per occurrence when its card becomes active.
+  // Record a view once per occurrence — but only for a word the reader actually stayed on.
+  // Recording the instant a card became active meant every card the scroll merely passed
+  // through (a long flick, a snap that overshot and came back) was written to the history
+  // and blocked for a day without ever having been read. The dwell is short enough that a
+  // word someone glances at and deliberately skips still counts.
   const recorded = useRef(new Set<string>());
   const activeEntry = visibleEntries[activeIndex];
+  const activeOccurrenceId = activeEntry?.occurrenceId;
+  const activeWordId = activeEntry?.word.id;
   useEffect(() => {
-    if (!activeEntry || suspended) return;
-    if (recorded.current.has(activeEntry.occurrenceId)) return;
-    recorded.current.add(activeEntry.occurrenceId);
-    onRecordView(activeEntry.word.id);
-  }, [activeEntry, suspended, onRecordView]);
+    if (!activeOccurrenceId || !activeWordId || suspended) return;
+    if (recorded.current.has(activeOccurrenceId)) return;
+    const timer = setTimeout(() => {
+      recorded.current.add(activeOccurrenceId);
+      onRecordView(activeWordId);
+    }, VIEW_DWELL_MS);
+    return () => clearTimeout(timer);
+  }, [activeOccurrenceId, activeWordId, suspended, onRecordView]);
 
   // The export studio needs a word. Opened with none on screen (empty stream, every
   // word blocked) it would render nothing while still holding the feed suspended, so
@@ -175,9 +197,12 @@ export function VocabularyStream({
   ]);
 
   // Natural vertical flick gestures: flick up -> next word, flick down -> previous word
-  const flickStart = useRef<{ x: number; y: number; t: number } | null>(null);
+  const flickStart = useRef<{ x: number; y: number; t: number; index: number } | null>(null);
   const handleFlickStart = (x: number, y: number) => {
-    flickStart.current = { x, y, t: Date.now() };
+    // The row is captured HERE, at finger-down: by finger-up the native drag may already
+    // have carried the feed onto the next word, and "one past whatever is on screen" would
+    // then be two words on.
+    flickStart.current = { x, y, t: Date.now(), index: touchStarted() };
   };
   const handleFlickEnd = (x: number, y: number) => {
     const start = flickStart.current;
@@ -190,13 +215,9 @@ export function VocabularyStream({
     if (Math.abs(dy) < 52 || Math.abs(dy) < Math.abs(dx) * 1.1) return;
     if (dt > 700) return;
     // Velocity hint: short duration + sufficient distance already gated; allow both directions
-    if (dy < 0) {
-      // flick up -> next word
-      if (activeIndex < visibleEntries.length - 1) move(1);
-    } else {
-      // flick down -> previous word
-      if (activeIndex > 0) move(-1);
-    }
+    // flick up -> next word, flick down -> previous word; always relative to the row the
+    // gesture started on. The window clamps at either end.
+    flick(start.index, dy < 0 ? 1 : -1, !reducedMotion);
   };
 
   const empty = query.isSuccess && !query.entries.length;
@@ -306,12 +327,13 @@ export function VocabularyStream({
                 <VocabularyCard
                   key={`${entry.occurrenceId}:${presentation.style}`}
                   entry={entry}
+                  current={item.index === activeIndex}
                   active={item.index === activeIndex && !suspended}
                   presentation={presentation}
                   reducedMotion={reducedMotion}
                   matching={query.metadata?.matching ?? 0}
                   canAdvance={activeIndex < visibleEntries.length - 1}
-                  onAdvance={() => move(1)}
+                  onAdvance={() => advanceFrom(entry.occurrenceId)}
                   onWordEnding={onWordEnding}
                   revealButtonLabel={revealButtonLabel}
                 />

@@ -5,6 +5,13 @@ import { useEffect, useRef, useState } from "react";
 export function useLearningPlayback(options: {
   count: number;
   active: boolean;
+  /**
+   * Whether this card is the word on screen at all, playing or not. `active` drops while
+   * an overlay covers the feed; `current` does not. The difference is what separates a
+   * pause (keep the page's clock) from the reader leaving the word (start it afresh).
+   * Defaults to `active`.
+   */
+  current?: boolean;
   autoplay: boolean;
   reducedMotion: boolean;
   durations: number[];
@@ -51,29 +58,41 @@ export function useLearningPlayback(options: {
   useEffect(() => {
     finishRef.current = options.onFinish;
   }, [options.onFinish]);
+  // A pause must be a pause. The timer used to be re-armed with the page's FULL duration
+  // every time playback resumed, so closing a sheet restarted the page's clock (and, with
+  // the text remounting alongside it, replayed the page). `elapsed` carries the time a page
+  // has already been shown across pauses, and is reset only when the page itself changes.
+  const elapsed = useRef(0);
+  const pageKey = `${page}:${replay}`;
+  const lastPageKey = useRef(pageKey);
   useEffect(() => {
-    if (!playing || !options.autoplay) return;
-    if (!isLast) {
-      const timer = setTimeout(
-        () => setPage((current) => Math.min(current + 1, options.count - 1)),
-        duration,
-      );
-      return () => clearTimeout(timer);
+    if (lastPageKey.current !== pageKey) {
+      lastPageKey.current = pageKey;
+      elapsed.current = 0;
     }
+    if (!playing || !options.autoplay) return;
     // Wait for a buffered next word; retry/reconnect must not strand the reveal.
-    if (!options.canAdvance) return;
-    const timer = setTimeout(() => finishRef.current?.(), duration);
-    return () => clearTimeout(timer);
-  }, [
-    playing,
-    options.autoplay,
-    options.count,
-    options.canAdvance,
-    duration,
-    isLast,
-    page,
-    replay,
-  ]);
+    if (isLast && !options.canAdvance) return;
+    const startedAt = performance.now();
+    const timer = setTimeout(
+      () => {
+        if (isLast) finishRef.current?.();
+        else setPage((current) => Math.min(current + 1, options.count - 1));
+      },
+      Math.max(0, duration - elapsed.current),
+    );
+    return () => {
+      clearTimeout(timer);
+      elapsed.current = Math.min(duration, elapsed.current + (performance.now() - startedAt));
+    };
+  }, [playing, options.autoplay, options.count, options.canAdvance, duration, isLast, pageKey]);
+  // Declared after the timer effect on purpose: its cleanup has just banked the time this
+  // page was shown, and a word the reader has LEFT must not keep that — coming back to a
+  // finished card would otherwise find its clock already spent and bounce straight off it.
+  const current = options.current ?? options.active;
+  useEffect(() => {
+    if (!current) elapsed.current = 0;
+  }, [current]);
   return {
     page,
     playing,

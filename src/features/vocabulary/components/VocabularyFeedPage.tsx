@@ -87,6 +87,16 @@ export function VocabularyFeedPage() {
         filters={filters}
         presentation={presentation}
         onFilters={(value) => {
+          // Confirming a picker without changing anything is not a new stream. A fresh
+          // seed remounts the whole feed on a different word, so "Xong" on an untouched
+          // difficulty list — or re-picking the topic already chosen — used to throw away
+          // the word on screen for no reason the reader could see.
+          if (
+            value.topic === filters.topic &&
+            value.level === filters.level &&
+            value.difficulty === filters.difficulty
+          )
+            return;
           setFilters(value);
           setSeed(newSeed());
         }}

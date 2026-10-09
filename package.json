@@ -17,7 +17,8 @@
     "check:saved-groups": "npx tsx scripts/check-saved-groups.ts",
     "check:emphasis-runs": "npx tsx scripts/check-emphasis-runs.ts",
     "format": "prettier --write .",
-    "check:workbench": "npx tsx scripts/check-vocabulary-workbench.ts"
+    "check:workbench": "npx tsx scripts/check-vocabulary-workbench.ts",
+    "mock:saved": "npx tsx scripts/mock-saved-words.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

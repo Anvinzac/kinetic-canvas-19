@@ -13,8 +13,18 @@
  */
 
 import { Link } from "@tanstack/react-router";
-import { ArrowLeft, Bookmark, Heart, Undo2, X } from "lucide-react";
 import {
+  ArrowLeft,
+  Bookmark,
+  ChevronDown,
+  ChevronsUpDown,
+  FoldVertical,
+  Heart,
+  Undo2,
+  X,
+} from "lucide-react";
+import {
+  Fragment,
   useEffect,
   useId,
   useRef,
@@ -25,7 +35,7 @@ import {
 } from "react";
 import { useSavedWords } from "../hooks/useSavedWords";
 import { posLabelVi, topicLabelVi } from "../lib/i18n";
-import { GROUP_MODES, groupSavedWords, type GroupMode, type WordGroup } from "../lib/saved-groups";
+import { groupSavedWords, type WordGroup } from "../lib/saved-groups";
 import type { SavedWord } from "../lib/saved-words";
 import { FilledUsage, MarkedText } from "./MarkedText";
 import "../vocabulary.css";
@@ -38,14 +48,16 @@ const TABS: { kind: TabKind; label: string }[] = [
   { kind: "heart", label: "Yêu thích" },
 ];
 
-const EMPTY_COPY: Record<TabKind, { title: string; body: string }> = {
+const EMPTY_COPY: Record<TabKind, { title: string; body: string; short: string }> = {
   bookmark: {
     title: "Kho từ đang trống",
     body: "Chạm nút dấu trang dưới mỗi từ để cất vào kho — kể cả lúc chưa lộ đáp án. Trái tim ngay bên cạnh sẽ xếp từ vào mục Yêu thích.",
+    short: "Chạm dấu trang dưới một từ để cất vào kho.",
   },
   heart: {
     title: "Chưa có từ yêu thích",
     body: "Chạm trái tim dưới một từ để cất vào đây. Nút dấu trang ngay bên cạnh sẽ xếp từ vào mục Đã lưu.",
+    short: "Chạm trái tim dưới một từ để cất vào đây.",
   },
 };
 
@@ -104,13 +116,17 @@ const UNDO_MS = 6000;
 function SavedRow({
   entry,
   flag,
+  compact,
   onRemove,
 }: {
   entry: SavedWord;
   flag: string;
+  /** Compact list: the word alone until the reader asks for the rest. */
+  compact: boolean;
   onRemove: () => void;
 }) {
   const [shift, setShift] = useState(0);
+  const [revealed, setRevealed] = useState(false);
   const [pressing, setPressing] = useState(false);
   const origin = useRef<{ x: number; y: number } | null>(null);
   const timer = useRef<number | null>(null);
@@ -182,15 +198,30 @@ function SavedRow({
   }
 
   function onPointerUp() {
+    // A tap is what is LEFT once the two destructive gestures are ruled out: the
+    // long-press already fired (settled) or the finger travelled far enough to be
+    // a swipe. Only then does it mean "show me the meaning".
+    const tapped = compact && !settled.current && Math.abs(shift) <= 8;
     reset();
+    if (tapped) setRevealed((on) => !on);
   }
 
   function onKeyDown(event: KeyboardEvent<HTMLLIElement>) {
     if (event.key === "Delete" || event.key === "Backspace") {
       event.preventDefault();
       onRemove();
+      return;
+    }
+    // The row is the control in compact mode, so it answers to the keys a
+    // disclosure normally would.
+    if (compact && (event.key === "Enter" || event.key === " ")) {
+      event.preventDefault();
+      setRevealed((on) => !on);
     }
   }
+
+  /** Everything below the word, withheld until asked for in compact mode. */
+  const showDetail = !compact || revealed;
 
   return (
     <li
@@ -199,8 +230,14 @@ function SavedRow({
       data-shifted={shifted || undefined}
       data-reveal={shifted ? (shift < 0 ? "right" : "left") : undefined}
       style={{ "--row-shift": `${shift}px` } as CSSProperties}
+      data-compact={compact || undefined}
       tabIndex={0}
-      aria-label={`${entry.word.word} — vuốt ngang hoặc nhấn giữ để ${flag.toLowerCase()}`}
+      aria-expanded={compact ? revealed : undefined}
+      aria-label={
+        compact
+          ? `${entry.word.word} — chạm để xem nghĩa, vuốt ngang hoặc nhấn giữ để ${flag.toLowerCase()}`
+          : `${entry.word.word} — vuốt ngang hoặc nhấn giữ để ${flag.toLowerCase()}`
+      }
       onContextMenu={(event) => event.preventDefault()}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
@@ -217,33 +254,40 @@ function SavedRow({
           <h3 className="vocab-saved-word" lang="en">
             {entry.word.word}
           </h3>
-          <div className="vocab-saved-badges">
-            {entry.word.level && <span className="vocab-saved-badge">{entry.word.level}</span>}
-            {entry.word.pos && (
-              <span className="vocab-saved-badge" data-plain>
-                {posLabelVi(entry.word.pos)}
-              </span>
-            )}
-            {entry.word.topic && (
-              <span className="vocab-saved-badge" data-plain>
-                {topicLabelVi(entry.word.topic)}
-              </span>
-            )}
-          </div>
+          {showDetail && (
+            <div className="vocab-saved-badges">
+              {entry.word.level && <span className="vocab-saved-badge">{entry.word.level}</span>}
+              {entry.word.pos && (
+                <span className="vocab-saved-badge" data-plain>
+                  {posLabelVi(entry.word.pos)}
+                </span>
+              )}
+              {entry.word.topic && (
+                <span className="vocab-saved-badge" data-plain>
+                  {topicLabelVi(entry.word.topic)}
+                </span>
+              )}
+            </div>
+          )}
+          {compact && <ChevronDown className="vocab-saved-peek" size={16} aria-hidden="true" />}
         </div>
 
-        {entry.word.ipa && (
-          <p className="vocab-saved-ipa" lang="en">
-            {entry.word.ipa}
-          </p>
-        )}
-        <p className="vocab-saved-def" lang="vi">
-          <MarkedText text={entry.word.defVi} />
-        </p>
-        {entry.word.usage[0] && (
-          <p className="vocab-saved-usage" lang="en">
-            <FilledUsage text={entry.word.usage[0].en} word={entry.word.word} />
-          </p>
+        {showDetail && (
+          <>
+            {entry.word.ipa && (
+              <p className="vocab-saved-ipa" lang="en">
+                {entry.word.ipa}
+              </p>
+            )}
+            <p className="vocab-saved-def" lang="vi">
+              <MarkedText text={entry.word.defVi} />
+            </p>
+            {entry.word.usage[0] && (
+              <p className="vocab-saved-usage" lang="en">
+                <FilledUsage text={entry.word.usage[0].en} word={entry.word.word} />
+              </p>
+            )}
+          </>
         )}
       </div>
     </li>
@@ -254,10 +298,12 @@ function SavedRow({
 function SavedFolders({
   groups,
   flag,
+  compact,
   onRemove,
 }: {
   groups: WordGroup[];
   flag: string;
+  compact: boolean;
   onRemove: (entry: SavedWord) => void;
 }) {
   return (
@@ -276,6 +322,7 @@ function SavedFolders({
                   key={entry.word.id}
                   entry={entry}
                   flag={flag}
+                  compact={compact}
                   onRemove={() => onRemove(entry)}
                 />
               ))}
@@ -293,6 +340,7 @@ function SavedFolders({
                       key={entry.word.id}
                       entry={entry}
                       flag={flag}
+                      compact={compact}
                       onRemove={() => onRemove(entry)}
                     />
                   ))}
@@ -316,7 +364,9 @@ function SavedFolders({
 export function BookmarksPage({ onClose }: { onClose?: () => void } = {}) {
   const { saved, favorites, remove, restore } = useSavedWords();
   const [tab, setTab] = useState<TabKind>("bookmark");
-  const [mode, setMode] = useState<GroupMode>("day");
+  // Compact is the resting state: the list is a self-test first — word alone, meaning on
+  // tap — and the per-tab toggle below opens it out again.
+  const [compact, setCompact] = useState(true);
   const [undo, setUndo] = useState<{
     word: string;
     id: string;
@@ -328,7 +378,9 @@ export function BookmarksPage({ onClose }: { onClose?: () => void } = {}) {
 
   const counts: Record<TabKind, number> = { bookmark: saved.length, heart: favorites.length };
   const rows = tab === "bookmark" ? saved : favorites;
-  const groups = groupSavedWords(rows, mode);
+  // Filed by day, always. Grouping by level was a second switch for something the reader
+  // never changed, so the list keeps the one order that matches how it was collected.
+  const groups = groupSavedWords(rows, "day");
   const empty = EMPTY_COPY[tab];
 
   useEffect(() => {
@@ -340,6 +392,9 @@ export function BookmarksPage({ onClose }: { onClose?: () => void } = {}) {
   /** A tablist is expected to move between tabs with the arrow keys. */
   function onTabKeyDown(event: KeyboardEvent<HTMLDivElement>) {
     if (event.key !== "ArrowRight" && event.key !== "ArrowLeft") return;
+    // The density button sits in this row too: arrows pressed on it belong to it, not to
+    // the tablist, or the list would switch lists under the reader's finger.
+    if (!(event.target as HTMLElement).closest('[role="tab"]')) return;
     event.preventDefault();
     const at = TABS.findIndex((item) => item.kind === tab);
     const step = event.key === "ArrowRight" ? 1 : -1;
@@ -387,42 +442,49 @@ export function BookmarksPage({ onClose }: { onClose?: () => void } = {}) {
         aria-label="Danh sách từ vựng đã lưu"
         onKeyDown={onTabKeyDown}
       >
-        {TABS.map((item) => (
-          <button
-            key={item.kind}
-            type="button"
-            role="tab"
-            id={`${groupId}-tab-${item.kind}`}
-            aria-selected={tab === item.kind}
-            aria-controls={`${groupId}-panel`}
-            tabIndex={tab === item.kind ? 0 : -1}
-            className="vocab-saved-tab"
-            data-on={tab === item.kind || undefined}
-            onClick={() => setTab(item.kind)}
-          >
-            {item.kind === "bookmark" ? <Bookmark size={15} /> : <Heart size={15} />}
-            {item.label}
-            <span className="vocab-saved-tab-count">{counts[item.kind]}</span>
-          </button>
-        ))}
+        {TABS.map((item) => {
+          // The density control belongs to the list that is open, so it rides on the active
+          // tab itself rather than standing in a switch row of its own. It is withheld until
+          // there is something to expand.
+          const fused = tab === item.kind && rows.length > 0;
+          return (
+            <Fragment key={item.kind}>
+              <button
+                type="button"
+                role="tab"
+                id={`${groupId}-tab-${item.kind}`}
+                aria-selected={tab === item.kind}
+                aria-controls={`${groupId}-panel`}
+                tabIndex={tab === item.kind ? 0 : -1}
+                className="vocab-saved-tab"
+                data-on={tab === item.kind || undefined}
+                data-fused={fused || undefined}
+                onClick={() => setTab(item.kind)}
+              >
+                {item.kind === "bookmark" ? <Bookmark size={15} /> : <Heart size={15} />}
+                {item.label}
+                <span className="vocab-saved-tab-count">{counts[item.kind]}</span>
+              </button>
+              {fused && (
+                <button
+                  type="button"
+                  className="vocab-saved-density"
+                  aria-pressed={!compact}
+                  aria-label={compact ? "Mở rộng danh sách" : "Thu gọn danh sách"}
+                  title={compact ? "Mở rộng danh sách" : "Thu gọn danh sách"}
+                  onClick={() => setCompact((value) => !value)}
+                >
+                  {compact ? (
+                    <ChevronsUpDown size={15} aria-hidden="true" />
+                  ) : (
+                    <FoldVertical size={15} aria-hidden="true" />
+                  )}
+                </button>
+              )}
+            </Fragment>
+          );
+        })}
       </div>
-
-      {/* Nothing to file while the tab is empty, so the switch waits for the first word. */}
-      {rows.length > 0 && (
-        <div className="vocab-saved-switch" role="group" aria-label="Cách xếp nhóm từ">
-          {GROUP_MODES.map((option) => (
-            <button
-              key={option.id}
-              type="button"
-              className="vocab-saved-switch-button"
-              aria-pressed={mode === option.id}
-              onClick={() => setMode(option.id)}
-            >
-              {option.label}
-            </button>
-          ))}
-        </div>
-      )}
 
       {rows.length ? (
         <div
@@ -432,9 +494,15 @@ export function BookmarksPage({ onClose }: { onClose?: () => void } = {}) {
           className="vocab-saved-body"
         >
           <p className="vocab-saved-hint">
-            Vuốt ngang hoặc nhấn giữ một từ để {REMOVE_COPY[tab].flag.toLowerCase()}.
+            {compact ? "Chạm một từ để xem nghĩa. " : ""}Vuốt ngang hoặc nhấn giữ một từ để{" "}
+            {REMOVE_COPY[tab].flag.toLowerCase()}.
           </p>
-          <SavedFolders groups={groups} flag={REMOVE_COPY[tab].flag} onRemove={handleRemove} />
+          <SavedFolders
+            groups={groups}
+            flag={REMOVE_COPY[tab].flag}
+            compact={compact}
+            onRemove={handleRemove}
+          />
         </div>
       ) : (
         <div
@@ -483,7 +551,10 @@ export function BookmarksPage({ onClose }: { onClose?: () => void } = {}) {
             </div>
           </div>
           <h2>{empty.title}</h2>
-          <p>{empty.body}</p>
+          {/* Two lengths, one shown at a time: a landscape phone drops the bowl and
+              most of the scene, so the instruction has to carry itself in one line. */}
+          <p className="vocab-saved-empty-long">{empty.body}</p>
+          <p className="vocab-saved-empty-short">{empty.short}</p>
           {/* In the drawer the feed is already behind the panel, so the way
               back is to close it — a link to /feed would be a dead button. */}
           {onClose ? (

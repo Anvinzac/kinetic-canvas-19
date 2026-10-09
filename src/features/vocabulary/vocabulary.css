@@ -518,7 +518,10 @@
 }
 
 /* Fades in as the pull progresses, so the gesture names its own destination. */
-.vocab-saved-hint {
+/* Scoped to the dock. The saved PANEL has a paragraph on the same class, and unscoped
+   this rule reached it too — absolutely positioned at opacity var(--pull), which is 0 off
+   the feed, so the panel's gesture hint rendered invisible. */
+.vocab-saved-dock .vocab-saved-hint {
   position: absolute;
   top: 50%;
   /* Travels with the handle's small stretch, so the label stays beside the tab it
@@ -702,9 +705,9 @@
 /* Theme allow-list: the trigger wears the select's skin, and the open list expands
    in flow inside its grid cell — the options sheet already scrolls, so no absolute
    popover can escape (or fight) it. Checked swatches burn, unchecked ones fade.
-   Row labels are `.vocab-theme-option-label`, NOT `.vocab-theme-name`: the latter is a
+   Row labels are `.vocab-picker-option-label`, NOT `.vocab-theme-name`: the latter is a
    removed card element still hidden by a display:none !important rule below. */
-.vocab-theme-picker {
+.vocab-picker {
   position: relative;
   display: flex;
   flex-direction: column;
@@ -714,7 +717,7 @@
   color: var(--shell-text-soft);
   align-self: start;
 }
-.vocab-theme-trigger {
+.vocab-picker-trigger {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -734,18 +737,18 @@
     border-color var(--dur-quick) var(--ease-out),
     background-color var(--dur-quick) var(--ease-out);
 }
-.vocab-theme-trigger:hover {
+.vocab-picker-trigger:hover {
   border-color: color-mix(in srgb, var(--vocab-accent) 60%, transparent);
 }
-.vocab-theme-trigger:focus-visible {
+.vocab-picker-trigger:focus-visible {
   border-color: var(--vocab-accent);
 }
-.vocab-theme-trigger svg {
+.vocab-picker-trigger svg {
   flex: none;
   opacity: 0.7;
   transition: transform var(--dur-quick) var(--ease-out);
 }
-.vocab-theme-trigger[aria-expanded="true"] svg {
+.vocab-picker-trigger[aria-expanded="true"] svg {
   transform: rotate(180deg);
 }
 .vocab-theme-chips {
@@ -762,14 +765,14 @@
 .vocab-theme-chips span:first-child {
   margin-left: 0;
 }
-.vocab-theme-summary {
+.vocab-picker-summary {
   flex: 1;
   min-width: 0;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
 }
-.vocab-theme-list {
+.vocab-picker-list {
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -780,7 +783,7 @@
   border-radius: 14px;
   background: var(--shell-well);
 }
-.vocab-theme-list button {
+.vocab-picker-list button {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -796,7 +799,7 @@
   text-align: left;
   cursor: pointer;
 }
-.vocab-theme-list button:hover {
+.vocab-picker-list button:hover {
   background: rgb(255 255 255 / 6%);
 }
 .vocab-theme-swatch {
@@ -809,12 +812,12 @@
   box-shadow: 0 0 0 1.5px #ffffff2e;
   transition: box-shadow var(--dur-quick) var(--ease-out);
 }
-.vocab-theme-list button[data-on] .vocab-theme-swatch {
+.vocab-picker-list button[data-on] .vocab-theme-swatch {
   box-shadow:
     0 0 0 2px var(--shell-text),
     0 2px 8px #0005;
 }
-.vocab-theme-option-label {
+.vocab-picker-option-label {
   flex: 1;
   min-width: 0;
   overflow: hidden;
@@ -822,10 +825,10 @@
   text-overflow: ellipsis;
 }
 /* The name fades with the ring going translucent, so an unselected row dims as one unit. */
-.vocab-theme-list button:not([data-on]) .vocab-theme-option-label {
+.vocab-picker-list button:not([data-on]) .vocab-picker-option-label {
   opacity: 0.55;
 }
-.vocab-theme-reset {
+.vocab-picker-reset {
   justify-content: center;
   color: var(--vocab-accent) !important;
 }
@@ -2117,33 +2120,49 @@
   background: color-mix(in srgb, var(--vocab-accent) 28%, transparent);
   color: var(--vocab-ink);
 }
-/* The grouping switch sits under the tabs and is deliberately quieter: it only changes
-   how the same words are filed, not which list is open. */
-.vocab-saved-switch {
-  display: flex;
-  width: fit-content;
-  gap: 4px;
-  margin: 0 max(18px, env(safe-area-inset-right)) 0 max(18px, env(safe-area-inset-left));
-  padding: 3px;
-  border: 1px solid var(--shell-line);
-  border-radius: 999px;
+/* Density rides ON the open tab rather than in a switch row of its own: the control only
+   ever applies to the list that is showing, so it is drawn as the tail of that list's own
+   pill. The active tab squares off its trailing edge, the button rounds the far end, and a
+   negative margin swallows the row gap — so the pair reads as one chip with an icon on the
+   end, not as a pill with something parked beside it. */
+.vocab-saved-tab[data-fused] {
+  padding-right: 10px;
+  border-right: 0;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
 }
-.vocab-saved-switch-button {
-  min-height: 32px;
-  padding: 0 14px;
-  border: 0;
-  border-radius: 999px;
-  background: transparent;
-  color: var(--shell-text-mute);
-  font-size: 12px;
-  font-weight: 700;
+.vocab-saved-density {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* Cancels the .vocab-saved-tabs gap so there is no seam between the two halves. */
+  margin-left: -8px;
+  min-height: 40px;
+  padding: 0 11px;
+  border: 1px solid color-mix(in srgb, var(--vocab-accent) 45%, transparent);
+  border-left: 1px solid color-mix(in srgb, var(--vocab-accent) 28%, transparent);
+  border-radius: 0 999px 999px 0;
+  background: color-mix(in srgb, var(--vocab-accent) 14%, transparent);
+  color: var(--shell-text-soft);
   transition:
     color var(--dur-quick) var(--ease-out),
     background var(--dur-quick) var(--ease-out);
 }
-.vocab-saved-switch-button[aria-pressed="true"] {
-  background: var(--shell-hover);
+.vocab-saved-density:hover {
   color: var(--vocab-ink);
+  background: color-mix(in srgb, var(--vocab-accent) 22%, transparent);
+}
+.vocab-saved-density:active {
+  background: color-mix(in srgb, var(--vocab-accent) 30%, transparent);
+}
+/* Pressed = the list is open; the icon already flips, so the fill only has to confirm it. */
+.vocab-saved-density[aria-pressed="true"] {
+  color: var(--vocab-ink);
+  background: color-mix(in srgb, var(--vocab-accent) 26%, transparent);
+}
+.vocab-saved-density:focus-visible {
+  outline: 2px solid var(--chrome-accent, #a78bfa);
+  outline-offset: 2px;
 }
 .vocab-saved-body {
   padding: 0 max(18px, env(safe-area-inset-right)) calc(env(safe-area-inset-bottom) + 96px)
@@ -2310,6 +2329,26 @@
   gap: 12px;
   flex-wrap: wrap;
 }
+/* Compact rows: the word alone, the row itself the control that reveals the rest.
+   A smaller word than the full view's 26px, because a compact list is read as a
+   column of items rather than a stack of cards. */
+.vocab-saved-item[data-compact] {
+  cursor: pointer;
+}
+.vocab-saved-item[data-compact] .vocab-saved-word {
+  font-size: 21px;
+}
+.vocab-saved-peek {
+  flex-shrink: 0;
+  margin-left: auto;
+  align-self: center;
+  color: var(--shell-text-mute);
+  transition: transform var(--dur-quick) var(--ease-out);
+}
+.vocab-saved-item[aria-expanded="true"] .vocab-saved-peek {
+  transform: rotate(180deg);
+}
+
 .vocab-saved-word {
   font-size: 26px;
   font-weight: 800;
@@ -2970,6 +3009,66 @@
     font-size: 12.7px;
   }
 }
+/* ── Landscape phone: the keys, and nothing else ──────────────────────────────
+   The scene is a vertical stack ~234px tall before the heading and body below it.
+   A landscape phone has barely that much height in total, so the bowl, the chips
+   and the drop all land on top of one another and on the text. Rather than scale
+   a six-part illustration into illegibility, the two keys and their tooltips —
+   the only parts that name the actual gesture — are kept and the rest is dropped.
+   The short copy below carries the instruction in one line. */
+@media (orientation: landscape) and (max-height: 560px) {
+  /* A wrapping row instead of the tall stack: the two bubbles sit side by side and
+     the keys drop to the line beneath them. The DOM order is heart then bookmark in
+     both, and each bubble is already tinted by the key it belongs to, so the pairing
+     survives losing the tails. */
+  .vocab-vault {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    height: auto;
+    padding-top: 0;
+    gap: 8px;
+  }
+  /* The bowl and everything that falls into it. */
+  .vocab-vault-jar,
+  .vocab-vault-lid,
+  .vocab-vault-chip {
+    display: none;
+  }
+  /* The bubbles are absolutely placed for the tall layout; here they are laid out by
+     the row. The bob is dropped too — two bubbles jiggling side by side is noise
+     once there is no chip for them to be reacting to. */
+  .vocab-vault-tip {
+    position: static;
+    transform: none;
+    margin: 0;
+    animation: none;
+    font-size: 12.5px;
+    padding: 6px 11px;
+  }
+  /* The tail pointed down at a key that is now on the next line. */
+  .vocab-vault-tip-shape::after {
+    display: none;
+  }
+  .vocab-vault-keys {
+    order: 2;
+    flex-basis: 100%;
+    justify-content: center;
+  }
+  /* No chip to catch, so the keys stop miming a press and just sit there. */
+  .vocab-vault-key[data-active],
+  .vocab-vault-key[data-active]::after {
+    animation: none;
+  }
+  .vocab-saved-empty {
+    gap: 8px;
+  }
+  .vocab-saved-empty h2 {
+    font-size: 17px;
+  }
+}
+
 /* The scene is a loop, not information: with motion turned down every part holds a legible
    resting pose — chip in hand above the open vault — and the instruction is carried by the
    heading and body below it. */
@@ -2988,6 +3087,17 @@
   .vocab-vault-chip {
     opacity: 1;
     transform: translate(var(--chip-from, 0), 0) rotate(-10deg);
+  }
+}
+.vocab-saved-empty-short {
+  display: none;
+}
+@media (orientation: landscape) and (max-height: 560px) {
+  .vocab-saved-empty-long {
+    display: none;
+  }
+  .vocab-saved-empty-short {
+    display: block;
   }
 }
 .vocab-saved-empty h2 {
@@ -4122,20 +4232,28 @@
    portrait phone measured here (360×640). */
 @media (max-height: 560px) {
   .vocabulary-shell {
-    /* The whole bottom chrome gets 15% of the screen height, and inside this tier that is
-       at most 84px — already less than the 131px the portrait stack occupies, so the chrome
-       can only ever shrink here. Everything below is a split of this one number. */
-    --vocab-chrome-band: 15dvh;
+    /* The bottom chrome gets 15% of the screen height, but NOT less than 72px. A pure
+       ratio collapsed on a landscape phone: at 390px tall, 15dvh is 58px, which the
+       44px button row and the 3px progress row all but fill, leaving the gap on its
+       floor and the progress bar sitting on top of the buttons. The floor costs a
+       little height on the shortest screens and buys a gap you can see. At the tier's
+       own ceiling (560px) 15dvh is 84px, so the ratio still governs the taller end and
+       the two meet continuously at the boundary. */
+    --vocab-chrome-band: max(15dvh, 72px);
     --vocab-chrome-inset: max(6px, calc(env(safe-area-inset-bottom) + 4px));
     --vocab-chrome-progress: 3px;
+    /* The separation the progress row needs to read as its own row rather than as part
+       of the button row below it. The button row compacts before this is given up. */
+    --vocab-chrome-gap-min: 14px;
     --vocab-chrome-bar: min(
       44px,
       calc(
-        var(--vocab-chrome-band) - var(--vocab-chrome-inset) - var(--vocab-chrome-progress) - 6px
+        var(--vocab-chrome-band) - var(--vocab-chrome-inset) - var(--vocab-chrome-progress) -
+          var(--vocab-chrome-gap-min)
       )
     );
     --vocab-chrome-gap: max(
-      6px,
+      var(--vocab-chrome-gap-min),
       calc(
         var(--vocab-chrome-band) - var(--vocab-chrome-inset) - var(--vocab-chrome-bar) -
           var(--vocab-chrome-progress)

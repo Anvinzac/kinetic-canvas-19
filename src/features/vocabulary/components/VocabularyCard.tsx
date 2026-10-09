@@ -139,6 +139,7 @@ export function VocabularyCard({
   entry,
   presentation,
   active,
+  current = active,
   reducedMotion,
   matching,
   canAdvance,
@@ -149,7 +150,15 @@ export function VocabularyCard({
 }: {
   entry: FeedEntry;
   presentation: Presentation;
+  /** This card is the word on screen AND nothing is covering the feed: it plays. */
   active: boolean;
+  /**
+   * This card is the word on screen, whether or not it is playing. It stays true while a
+   * sheet, the saved drawer or the rotate gate covers the feed — which is how the card
+   * tells "paused" (hold everything exactly where it is) from "the reader moved on".
+   * Defaults to `active` for callers with nothing that can cover the card.
+   */
+  current?: boolean;
   reducedMotion: boolean;
   matching: number;
   canAdvance: boolean;
@@ -242,6 +251,24 @@ export function VocabularyCard({
     }, STRIP_EXIT_MS);
   }, [reducedMotion, canAdvance, exportLayout, onAdvance]);
   useEffect(() => () => window.clearTimeout(leaveTimer.current), []);
+  // An overlay opening mid-exit must not let the timer carry the stream on to the next
+  // word underneath it. Drop the exit; the playback clock for this page is already spent,
+  // so it asks to advance again the moment the card is playing.
+  useEffect(() => {
+    if (active || leaveTimer.current === undefined) return;
+    window.clearTimeout(leaveTimer.current);
+    leaveTimer.current = undefined;
+    setLeaving(false);
+  }, [active]);
+  // The page's text is on stage from the first moment this card PLAYS and stays there
+  // until the reader leaves the word. It used to be tied straight to `active`, so anything
+  // that paused the feed (the options sheet, the saved drawer) unmounted the text and its
+  // return re-ran the page's whole entrance — the scene "starting again". Waiting for the
+  // first play, rather than for `current`, is what still holds the opening word back
+  // until its typeface is ready.
+  const [started, setStarted] = useState(active);
+  if (active && !started) setStarted(true);
+  if (!current && started) setStarted(false);
   // The default row makes its entrance the first time this card is the word on screen,
   // not on mount: neighbours are pre-rendered off screen, where it would go unseen.
   const [entered, setEntered] = useState(active);
@@ -251,6 +278,7 @@ export function VocabularyCard({
   const playback = useLearningPlayback({
     count: pageCount,
     active,
+    current,
     autoplay: presentation.autoplay && !reportOpen,
     reducedMotion,
     durations: pageDurations,
@@ -332,7 +360,9 @@ export function VocabularyCard({
   // Only the single active card animates the sweeping transition backdrop. Inactive
   // neighbours keep a static gradient, so a transient active-index flip can never make
   // every visible background strobe at once.
-  const sweep = !!sliding && !reducedMotion && active;
+  // Keyed to `started`, not `active`: a pause must not switch the backdrop back to its
+  // static form and then restart the drift from its first frame when playback resumes.
+  const sweep = !!sliding && !reducedMotion && started;
   const cluePages = stages.filter((item) => !item.reveal).map((item) => item.text);
   // In an export the text lives in the frame's clear zone, so that zone — not the
   // whole card — is the width and height everything is fitted to.
@@ -662,6 +692,7 @@ export function VocabularyCard({
           background={theme.background}
           canvasWidth={textWidth}
           active={active}
+          staged={started}
           playing={playback.playing}
           reducedMotion={reducedMotion}
           playKey={playKey}
@@ -738,7 +769,10 @@ export function VocabularyCard({
           <span key={key} data-complete={index < playback.page}>
             {index === playback.page && (
               <i
-                key={`${playKey}-${playback.playing}`}
+                // Keyed on the page alone. `playing` used to be part of the key, which
+                // remounted the bar — refilling it from empty — on every pause and resume;
+                // animation-play-state below is what actually holds it in place.
+                key={playKey}
                 style={{
                   animationDuration: `${playback.duration}ms`,
                   animationPlayState: playback.playing ? "running" : "paused",

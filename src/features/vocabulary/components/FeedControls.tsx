@@ -24,7 +24,7 @@ import {
   formatLevelBand,
   mockTrackWordCount,
 } from "../lib/difficulty";
-import type { NarrativeStyle } from "../lib/schema";
+import { LEVELS, type NarrativeStyle } from "../lib/schema";
 import type { HistoryStats } from "../lib/history";
 import { styleLabelVi, themeLabelVi, topicLabelVi } from "../lib/i18n";
 import { useAmbientSound } from "../hooks/useAmbientSound";
@@ -56,6 +56,91 @@ function PopupScrim({ closing, onDismiss }: { closing: boolean; onDismiss: () =>
  * live gradient swatch — a theme IS its colors, and a name alone can't show that.
  * Stored as "mix" while everything is picked, else a comma-joined id list.
  */
+/**
+ * Single-select dropdown in the sheet's own skin.
+ *
+ * A native <select> was styled to match while closed, but the list it opens belongs to the
+ * OS — the iOS wheel, the desktop menu — and no stylesheet can reach inside it, so the one
+ * part a reader actually looks at never matched the app. This is the theme picker's popover
+ * with one choice instead of many, so topic, theme and style all open the same thing.
+ *
+ * @param label Caption above the trigger
+ * @param value Current option id
+ * @param options Rows to choose from, in display order
+ * @param onChange Called with the chosen id
+ */
+function OptionPicker({
+  label,
+  value,
+  options,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  options: { id: string; label: string }[];
+  onChange: (id: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const labelId = useId();
+  const current = options.find((option) => option.id === value) ?? options[0];
+
+  useEffect(() => {
+    if (!open) return;
+    function onPointerDown(event: PointerEvent) {
+      if (!rootRef.current?.contains(event.target as Node)) setOpen(false);
+    }
+    document.addEventListener("pointerdown", onPointerDown);
+    return () => document.removeEventListener("pointerdown", onPointerDown);
+  }, [open]);
+
+  return (
+    <div
+      className="vocab-picker"
+      ref={rootRef}
+      onKeyDown={(event) => {
+        if (event.key === "Escape") setOpen(false);
+      }}
+    >
+      <span className="vocab-picker-label" id={labelId}>
+        {label}
+      </span>
+      <button
+        type="button"
+        className="vocab-picker-trigger"
+        onClick={() => setOpen((value2) => !value2)}
+        aria-expanded={open}
+        aria-haspopup="listbox"
+      >
+        <span className="vocab-picker-summary">{current?.label}</span>
+        <ChevronDown size={15} />
+      </button>
+      {open && (
+        <div className="vocab-picker-list" role="listbox" aria-labelledby={labelId}>
+          {options.map((option) => {
+            const on = option.id === value;
+            return (
+              <button
+                key={option.id}
+                type="button"
+                role="option"
+                aria-selected={on}
+                data-on={on || undefined}
+                onClick={() => {
+                  onChange(option.id);
+                  setOpen(false);
+                }}
+              >
+                <span className="vocab-picker-option-label">{option.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function ThemePicker({ value, onChange }: { value: string; onChange: (theme: string) => void }) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -101,18 +186,18 @@ function ThemePicker({ value, onChange }: { value: string; onChange: (theme: str
 
   return (
     <div
-      className="vocab-theme-picker"
+      className="vocab-picker"
       ref={rootRef}
       onKeyDown={(event) => {
         if (event.key === "Escape") setOpen(false);
       }}
     >
-      <span className="vocab-theme-label" id={labelId}>
+      <span className="vocab-picker-label" id={labelId}>
         Giao diện
       </span>
       <button
         type="button"
-        className="vocab-theme-trigger"
+        className="vocab-picker-trigger"
         onClick={() => (open ? setOpen(false) : setOpen(true))}
         aria-expanded={open}
         aria-haspopup="listbox"
@@ -122,12 +207,12 @@ function ThemePicker({ value, onChange }: { value: string; onChange: (theme: str
             <span key={theme.id} style={{ background: theme.paint }} />
           ))}
         </span>
-        <span className="vocab-theme-summary">{summary}</span>
+        <span className="vocab-picker-summary">{summary}</span>
         <ChevronDown size={15} />
       </button>
       {open && (
         <div
-          className="vocab-theme-list"
+          className="vocab-picker-list"
           role="listbox"
           aria-multiselectable="true"
           aria-labelledby={labelId}
@@ -144,14 +229,14 @@ function ThemePicker({ value, onChange }: { value: string; onChange: (theme: str
                 onClick={() => toggle(theme.id)}
               >
                 <span className="vocab-theme-swatch" style={{ background: theme.paint }} />
-                <span className="vocab-theme-option-label">
+                <span className="vocab-picker-option-label">
                   {themeLabelVi(theme.id, theme.label)}
                 </span>
               </button>
             );
           })}
           {!isAll && (
-            <button type="button" className="vocab-theme-reset" onClick={() => onChange("mix")}>
+            <button type="button" className="vocab-picker-reset" onClick={() => onChange("mix")}>
               Chọn lại tất cả
             </button>
           )}
@@ -178,7 +263,16 @@ type DifficultyOption = {
  * before the first feed page resolves.
  */
 const DIFFICULTY_OPTIONS: DifficultyOption[] = [
-  { id: DIFFICULTY_ALL, label: "tất cả", hint: "Mọi trình độ", band: "", words: MOCK_TOTAL_WORDS },
+  {
+    id: DIFFICULTY_ALL,
+    label: "tất cả",
+    hint: "Mọi trình độ",
+    // Derived from LEVELS rather than written out, so the row keeps stating the real full
+    // span if the CEFR list ever gains or loses an end. Empty here left the one row in the
+    // list without a chip, which broke the column the other ten line up on.
+    band: formatLevelBand(LEVELS),
+    words: MOCK_TOTAL_WORDS,
+  },
   ...DIFFICULTY_TRACKS.map((track) => ({
     id: track.id,
     label: track.label,
@@ -683,43 +777,36 @@ export function FeedControls({
           <div className="vocab-options-secondary">
             <span className="vocab-group-label">Chủ đề, giao diện và cách hiện đáp án</span>
             <div className="vocab-select-grid">
-              <label>
-                Chủ đề
-                <select
-                  value={filters.topic}
-                  onChange={(event) => onFilters({ ...filters, topic: event.target.value })}
-                >
-                  <option value="">Mọi chủ đề</option>
-                  {metadata?.topics.map((topic) => (
-                    <option key={topic} value={topic}>
-                      {topicLabelVi(topic)}
-                    </option>
-                  ))}
-                </select>
-              </label>
+              <OptionPicker
+                label="Chủ đề"
+                value={filters.topic}
+                options={[
+                  { id: "", label: "Mọi chủ đề" },
+                  ...(metadata?.topics ?? []).map((topic) => ({
+                    id: topic,
+                    label: topicLabelVi(topic),
+                  })),
+                ]}
+                onChange={(topic) => onFilters({ ...filters, topic })}
+              />
               <ThemePicker
                 value={presentation.theme}
                 onChange={(theme) => onPresentation({ ...presentation, theme })}
               />
-              <label>
-                Cách hiện
-                <select
-                  value={presentation.style}
-                  onChange={(event) =>
-                    onPresentation({
-                      ...presentation,
-                      style: event.target.value as NarrativeStyle | "mix",
-                    })
-                  }
-                >
-                  <option value="mix">Trộn cách hiện</option>
-                  {STYLES.map((style) => (
-                    <option key={style.id} value={style.id}>
-                      {styleLabelVi(style.id, style.label)}
-                    </option>
-                  ))}
-                </select>
-              </label>
+              <OptionPicker
+                label="Cách hiện"
+                value={presentation.style}
+                options={[
+                  { id: "mix", label: "Trộn cách hiện" },
+                  ...STYLES.map((style) => ({
+                    id: style.id,
+                    label: styleLabelVi(style.id, style.label),
+                  })),
+                ]}
+                onChange={(style) =>
+                  onPresentation({ ...presentation, style: style as NarrativeStyle | "mix" })
+                }
+              />
             </div>
           </div>
           <label className="vocab-autoplay">

@@ -19,8 +19,13 @@
 /**
  * Master switch. Set to `false` to disable the rotation gate across the whole app.
  * This is the single line to change once the cross-browser trial is finished.
+ *
+ * !!! TEMPORARILY OFF FOR LANDSCAPE TESTING — RESTORE TO `true` BEFORE DEPLOYING. !!!
+ * Landscape layout work is in progress (empty-vault scene, bottom chrome band), and
+ * the gate hides the very screens being worked on. Flip this back before the next
+ * push to the cloud.
  */
-export const ORIENTATION_GATE_ENABLED = true;
+export const ORIENTATION_GATE_ENABLED = false;
 
 /** `localStorage` key for the per-device runtime override ("on" | "off"). */
 export const ORIENTATION_GATE_STORAGE_KEY = "kinetic.orientation.gate";
