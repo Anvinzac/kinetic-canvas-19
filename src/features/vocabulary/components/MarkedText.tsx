@@ -11,21 +11,29 @@ import { splitEmphasisMarkers } from "../lib/stages";
 
 /**
  * Render a deck sentence with its /markers/ turned into highlights.
+ * At most ONE mark per sentence: the first highlighted phrase gets the underline;
+ * any subsequent markers are rendered as plain text, so a sentence never has
+ * duplicate highlights fighting for attention.
  * @param props.text - Source field, possibly carrying /word/ markers
  * @returns Inline prose
  */
 export function MarkedText({ text }: { text: string }) {
+  const parts = splitEmphasisMarkers(text);
+  let highlighted = false;
   return (
     <>
-      {splitEmphasisMarkers(text).map((part, index) =>
-        part.marked ? (
+      {parts.map((part, index) => {
+        // Only the FIRST marked run gets the highlight; the rest stay plain.
+        const shouldHighlight = part.marked && !highlighted;
+        if (part.marked) highlighted = true;
+        return shouldHighlight ? (
           <mark key={index} className="vocab-def-mark">
             {part.text}
           </mark>
         ) : (
           <Fragment key={index}>{part.text}</Fragment>
-        ),
-      )}
+        );
+      })}
     </>
   );
 }

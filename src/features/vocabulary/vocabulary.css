@@ -3194,11 +3194,29 @@
   font-weight: 700;
 }
 .vocab-def-mark {
-  text-decoration: underline;
-  text-decoration-color: var(--vocab-accent);
-  text-decoration-thickness: 0.14em;
-  text-underline-offset: 0.2em;
-  text-decoration-skip-ink: none;
+  position: relative;
+  text-decoration: none;
+}
+/* The underline is a progress-bar stroke: it grows from left to right, not a fade.
+   A pseudo-element lets us animate width via scaleX, which text-decoration cannot do. */
+.vocab-def-mark::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -0.2em;
+  height: 0.14em;
+  background: var(--vocab-accent);
+  transform-origin: left;
+  animation: vocab-def-mark-grow 0.6s ease-out forwards;
+}
+@keyframes vocab-def-mark-grow {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
 }
 .vocab-def-answer {
   padding: 0.02em 0.34em 0.06em;
