@@ -1520,11 +1520,11 @@
   overflow-x: hidden;
   overscroll-behavior-y: contain;
   scrollbar-width: thin;
-  /* Never let a single over-wide token push the meaning past the viewport edge: break it
-     inside the box (inherited by every paragraph below), so the panel is exactly the width
-     it declares and its text can never overflow horizontally on a phone. */
-  overflow-wrap: anywhere;
-  word-break: break-word;
+  /* Never let text overflow horizontally, but respect Vietnamese compound words:
+     keep-all prevents breaking mid-word (so 2-syllable compounds stay on one line),
+     while break-word only breaks as a last resort for truly unbreakable tokens. */
+  overflow-wrap: break-word;
+  word-break: keep-all;
   font-family: "Inter", sans-serif;
   /* Definition + examples were reading too small next to the large kinetic stage
      text, so the panel baseline is lifted a step; the pronunciation tracks it in em
@@ -3512,7 +3512,8 @@
   font-weight: 800;
   letter-spacing: -0.6px;
   line-height: 1.15;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
+  word-break: keep-all;
 }
 .vocab-export-group {
   display: flex;
