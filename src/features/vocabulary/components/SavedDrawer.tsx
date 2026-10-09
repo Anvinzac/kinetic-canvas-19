@@ -221,11 +221,11 @@ export function SavedDrawer({ open, onOpenChange }: SavedDrawerProps): React.Rea
           aria-expanded={open}
           onClick={() => onOpenChange(true)}
         >
-          <span className="vocab-saved-grip" aria-hidden="true" />
-          {/* The vault keeps two kinds, so the tab shows both: bookmark over heart.
-              The count badge is gone — the tab names the drawer, it doesn't tally it. */}
-          <Bookmark size={13} fill={savedCount ? "currentColor" : "none"} aria-hidden="true" />
-          <Heart size={13} aria-hidden="true" />
+          {/* The vault keeps two kinds, so the tab shows both: bookmark over heart,
+              centred and spaced. The grip bar and the count badge are both gone — the tab
+              names the drawer, it doesn't tally it or advertise a pull affordance. */}
+          <Bookmark size={15} fill={savedCount ? "currentColor" : "none"} aria-hidden="true" />
+          <Heart size={15} aria-hidden="true" />
         </button>
       </div>
 

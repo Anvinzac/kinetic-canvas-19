@@ -560,14 +560,39 @@ export function VocabularyCard({
   // The last emoji tapped and how many taps there have been, so that emoji alone
   // replays its bounce and floats a "+1" — feedback the strip never gave before.
   const [emojiTap, setEmojiTap] = useState<{ emoji: string; count: number }>();
+  // Every tap launches its OWN emoji into the scene, so tapping 🔥 five times sends five
+  // 🔥 rising from the button rather than swapping a single stamp. Each flight is tagged
+  // with a process-wide sequence id (so reusing the same emoji still gets a distinct key)
+  // and retires itself the moment its animation ends, keeping the mounted set bounded.
+  const [emojiFlights, setEmojiFlights] = useState<
+    Array<{ id: number; emoji: string; origin: { x: number; y: number } }>
+  >([]);
+  const flightSeq = useRef(0);
   const handleEmojiTap = useCallback(
-    (emoji: string) => {
+    (emoji: string, button: HTMLElement) => {
       addEmojiComment(wordId, emoji);
       setEmojiComments(getEmojiComments(wordId));
+      // Measure the tapped button's own card-local centre so this reader's emoji rises
+      // from the exact glyph they pressed — not the shared action-bar fallback, which is
+      // what makes it read as "mine", not the community puff.
+      const cardRect = cardRef.current?.getBoundingClientRect();
+      const buttonRect = button.getBoundingClientRect();
+      const origin = cardRect
+        ? {
+            x: buttonRect.left - cardRect.left + buttonRect.width / 2,
+            y: buttonRect.top - cardRect.top + buttonRect.height / 2,
+          }
+        : (emojiOrigins[emoji] ?? burstOrigin);
+      const id = (flightSeq.current += 1);
       setEmojiTap((current) => ({ emoji, count: (current?.count ?? 0) + 1 }));
+      setEmojiFlights((current) => [...current, { id, emoji, origin }]);
     },
-    [wordId],
+    [wordId, emojiOrigins, burstOrigin],
   );
+  // Drop a flight from the mounted set once its rise finishes, so held taps don't pile up.
+  const retireEmojiFlight = useCallback((id: number) => {
+    setEmojiFlights((current) => current.filter((flight) => flight.id !== id));
+  }, []);
 
   return (
     <article
@@ -659,6 +684,49 @@ export function VocabularyCard({
           reducedMotion={reducedMotion}
         />
       )}
+      {/* The reader's OWN reaction, kept separate from the community smoke: the burst
+          above is keyed to the mocked crowd totals and deliberately ignores taps, so a
+          tap used to only hop the strip badge. Each tap stamps the tapped emoji straight
+          into the scene — crisp (no blur), larger, near-fully opaque. Every flight mounts
+          and retires on its own, so tapping 🔥 five times sends five 🔥, not one redraw.
+          A deterministic per-flight horizontal drift fans simultaneous taps out so the
+          count reads as several distinct glyphs instead of one overlapping stack. */}
+      {isRevealed &&
+        emojiFlights.map((flight) => {
+          const drift = ((flight.id % 5) - 2) * 9;
+          return (
+            <motion.span
+              key={`emoji-self-${flight.id}`}
+              className="vocab-emoji-self"
+              style={{ left: flight.origin.x, top: flight.origin.y }}
+              initial={{ opacity: 0, scale: 0.5, x: 0, y: 0 }}
+              animate={
+                reducedMotion
+                  ? {
+                      opacity: [0, 1, 1, 0],
+                      scale: [0.5, 1.12, 1.12, 1],
+                      x: [0, drift * 0.4, drift, drift],
+                      y: 0,
+                    }
+                  : {
+                      opacity: [0, 1, 1, 0],
+                      scale: [0.5, 1.35, 1.22, 1.06],
+                      x: [0, drift * 0.4, drift, drift],
+                      y: [0, -height * 0.12, -height * 0.3, -height * 0.44],
+                    }
+              }
+              transition={{
+                duration: reducedMotion ? 0.6 : 1.25,
+                ease: "easeOut",
+                times: [0, 0.2, 0.7, 1],
+              }}
+              onAnimationComplete={() => retireEmojiFlight(flight.id)}
+              aria-hidden="true"
+            >
+              {flight.emoji}
+            </motion.span>
+          );
+        })}
       {exportLayout?.showBrand && (
         <p className="vocab-export-brand" aria-hidden="true">
           anh.chay<span>Lá</span>
@@ -736,7 +804,7 @@ export function VocabularyCard({
                           type="button"
                           className="vocab-emoji-strip-btn"
                           data-emoji={emoji}
-                          onClick={() => handleEmojiTap(emoji)}
+                          onClick={(e) => handleEmojiTap(emoji, e.currentTarget)}
                           aria-label={`React with ${emoji}${count ? `, ${count} so far` : ""}`}
                         >
                           <span

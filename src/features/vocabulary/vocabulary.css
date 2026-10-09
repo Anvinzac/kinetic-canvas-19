@@ -348,13 +348,12 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 5px;
+  /* The two glyphs sit apart and dead-centre now the grip bar is gone. */
+  gap: 10px;
   /* 1.5× wider (20 → 30px): the tab now carries two stacked glyphs, not one icon
      and a count. */
   width: 30px;
   height: 72px;
-  /* Room on the left for the grip bar, so the glyph stays optically centred. */
-  padding-left: 4px;
   border: 1px solid #ffffff1f;
   border-right: 0;
   border-radius: 11px 0 0 11px;
@@ -433,19 +432,6 @@
 .vocab-saved-handle:focus-visible {
   outline: 2px solid var(--chrome-accent, #a78bfa);
   outline-offset: 2px;
-}
-/* Two-pixel bar at the inner edge: the one affordance saying this is pulled, not
-   pressed. */
-.vocab-saved-grip {
-  position: absolute;
-  top: 50%;
-  left: 4px;
-  width: 2px;
-  height: 18px;
-  border-radius: 2px;
-  background: currentColor;
-  opacity: 0.34;
-  transform: translateY(-50%);
 }
 /* The handle is the drawer's edge: once the panel is in, it has nothing left to
    pull, so it steps aside instead of sitting on top of the panel. */
@@ -1892,6 +1878,24 @@
   /* Softened edges read as a puff of smoke; a crisp emoji reads as confetti. */
   filter: blur(0.4px);
   text-shadow: 0 6px 18px #0005;
+  will-change: transform, opacity;
+}
+/* The reader's own reaction: a single crisp, large, near-opaque emoji that rises straight
+   into the scene from the tapped button. Kept deliberately distinct from the blurred
+   community smoke above — same card-local launch geometry, but no blur, a much larger em,
+   full opacity, and it paints over both the burst (z2) and the strip (z3). pointer-events
+   none keeps the card gestures and the strip interactive. `translate` is its own property,
+   so framer-motion writing `transform` (scale/y) still composes with the -50% -50% centring. */
+.vocab-emoji-self {
+  position: absolute;
+  z-index: 4;
+  line-height: 1;
+  translate: -50% -50%;
+  font-size: 44px;
+  opacity: 0;
+  filter: none;
+  text-shadow: 0 3px 14px #0007;
+  pointer-events: none;
   will-change: transform, opacity;
 }
 .vocab-reaction {

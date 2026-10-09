@@ -224,7 +224,7 @@ export function VocabularyStream({
         ref={viewport}
         className="vocab-viewport"
         role="feed"
-        aria-label="Endless English vocabulary"
+        aria-label="Vốn từ tiếng Anh vô tận"
         aria-busy={query.isFetching}
         tabIndex={0}
         onScroll={onScroll}
@@ -241,34 +241,32 @@ export function VocabularyStream({
       >
         {!visibleEntries.length && (
           <div className="vocab-empty" role="status">
-            <p className="vocab-eyebrow">
-              {allBlocked ? "Mỗi từ là một khởi đầu" : "A word is a beginning"}
-            </p>
+            <p className="vocab-eyebrow">Mỗi từ là một khởi đầu</p>
             <h1>
               {initialError
-                ? "Let’s try that again."
+                ? "Thử lại nhé."
                 : empty
-                  ? "No words match just yet."
+                  ? "Chưa có từ nào khớp."
                   : allBlocked
                     ? "Bạn đã xem hết mọi từ rồi."
                     : query.isPaused
-                      ? "Waiting for a connection."
+                      ? "Đang chờ kết nối."
                       : query.entries.length
-                        ? "Finding a word you haven’t seen…"
-                        : "Finding your first word…"}
+                        ? "Đang tìm một từ bạn chưa xem…"
+                        : "Đang tìm từ đầu tiên của bạn…"}
             </h1>
             <p>
               {initialError
-                ? "The word stream couldn’t load. Your settings are still here."
+                ? "Không tải được dòng từ. Cài đặt của bạn vẫn được giữ nguyên."
                 : empty
-                  ? "Try a different difficulty or category."
+                  ? "Hãy thử một cấp độ hoặc chủ đề khác."
                   : allBlocked
                     ? `Bộ nhớ trên thiết bị giữ mỗi từ ở mức một lần mỗi ngày, hai lần trong ba ngày, ba lần mỗi tuần.${
                         nextUnlock
                           ? ` Từ tiếp theo sẽ mở sau ${formatCountdown(nextUnlock, now)}.`
                           : ""
                       }`
-                    : "Vietnamese clues. English discoveries. No sign-in needed."}
+                    : "Gợi ý tiếng Việt, từ mới tiếng Anh. Không cần đăng nhập."}
             </p>
             {initialError && (
               <button
@@ -276,12 +274,12 @@ export function VocabularyStream({
                 className="vocab-light-button"
                 onClick={query.catalogChanged || exhausted ? onRestart : retry}
               >
-                {query.catalogChanged ? "Start a fresh stream" : "Retry"}
+                {query.catalogChanged ? "Bắt đầu dòng mới" : "Thử lại"}
               </button>
             )}
             {empty && (
               <button type="button" className="vocab-light-button" onClick={onClearFilters}>
-                Show all words
+                Xem tất cả từ
               </button>
             )}
             {allBlocked && (
