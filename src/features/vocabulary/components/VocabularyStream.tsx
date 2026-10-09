@@ -84,7 +84,7 @@ export function VocabularyStream({
   // true even when every word it can offer is already buffered (and blocked by the
   // day history). Without this bound the backfill effect below re-arms on every
   // response — measured at ~144 requests/second with the pool exhausted — and each
-  // cycle re-renders the empty-state panel, which is why the “Reset viewing history”
+  // cycle re-renders the empty-state panel, which is why the “Xóa lịch sử xem”
   // button flickered too fast to read or tap while no word ever played.
   const canFetchMorePositions = canWalkFurther(
     query.metadata?.matching ?? 0,
@@ -241,14 +241,16 @@ export function VocabularyStream({
       >
         {!visibleEntries.length && (
           <div className="vocab-empty" role="status">
-            <p className="vocab-eyebrow">A word is a beginning</p>
+            <p className="vocab-eyebrow">
+              {allBlocked ? "Mỗi từ là một khởi đầu" : "A word is a beginning"}
+            </p>
             <h1>
               {initialError
                 ? "Let’s try that again."
                 : empty
                   ? "No words match just yet."
                   : allBlocked
-                    ? "You’ve seen every word for now."
+                    ? "Bạn đã xem hết mọi từ rồi."
                     : query.isPaused
                       ? "Waiting for a connection."
                       : query.entries.length
@@ -261,9 +263,9 @@ export function VocabularyStream({
                 : empty
                   ? "Try a different difficulty or category."
                   : allBlocked
-                    ? `On-device memory holds each word to once a day, twice in 3 days, three times a week.${
+                    ? `Bộ nhớ trên thiết bị giữ mỗi từ ở mức một lần mỗi ngày, hai lần trong ba ngày, ba lần mỗi tuần.${
                         nextUnlock
-                          ? ` Next word unlocks in ${formatCountdown(nextUnlock, now)}.`
+                          ? ` Từ tiếp theo sẽ mở sau ${formatCountdown(nextUnlock, now)}.`
                           : ""
                       }`
                     : "Vietnamese clues. English discoveries. No sign-in needed."}
@@ -284,7 +286,7 @@ export function VocabularyStream({
             )}
             {allBlocked && (
               <button type="button" className="vocab-light-button" onClick={onClearHistory}>
-                Reset viewing history
+                Xóa lịch sử xem
               </button>
             )}
           </div>

@@ -121,14 +121,14 @@ export function historyStats(history: ViewHistory, now: number = Date.now()): Hi
   return { distinctToday, distinct3d, distinct7d, totalViews7d };
 }
 
-/** Human countdown until a timestamp. @param target Future time. @param now Reference. @returns Short label like "5h 12m". */
+/** Countdown duration for the Vietnamese “seen every word” scene. @param target Future time. @param now Reference. @returns A bare duration like "5 giờ 12 phút", safe to place after "sau". */
 export function formatCountdown(target: number, now: number = Date.now()): string {
   const ms = Math.max(0, target - now);
   const mins = Math.ceil(ms / 60_000);
-  if (mins < 1) return "soon";
-  if (mins < 60) return `${mins}m`;
+  if (mins < 1) return "ít phút";
+  if (mins < 60) return `${mins} phút`;
   const hours = Math.floor(mins / 60);
-  if (hours < 48) return `${hours}h ${mins % 60}m`;
+  if (hours < 48) return `${hours} giờ ${mins % 60} phút`;
   const days = Math.floor(hours / 24);
-  return `${days}d ${hours % 24}h`;
+  return `${days} ngày ${hours % 24} giờ`;
 }
