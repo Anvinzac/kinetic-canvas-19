@@ -5,12 +5,20 @@
  *   npm run vocab:import -- <deck.json>                # rewrite the base catalog.json
  *   npm run vocab:import -- <deck.json> --pack <name>  # compile a read-only provider pack
  *                                                      #   → data/packs/<name>.json
+ *   npm run vocab:import -- <deck.json> --pack <name> --staged
+ *                                                      # compile a pack but keep it OUT of
+ *                                                      #   the served feed: → data/packs/incoming/
  *
  * Both modes validate through normalizeDeck (which throws on a duplicate id, a leaked
  * answer or a malformed field) and write atomically via a temp file + rename, so the
  * previous file stays intact if anything fails. The feed merges catalog.json with every
  * data/packs/*.json at load time (lib/catalog-source.ts); packs never overwrite the
  * admin-editable base — on a shared id/headword the base wins.
+ *
+ * A `--staged` pack lands in `data/packs/incoming/`, one level below the
+ * `data/packs/*.json` glob the loader globs (that pattern is non-recursive), so the words
+ * are embedded in the repo and validated but stay invisible to the feed. Moving the file
+ * up into `data/packs/` and rebuilding is the whole activation step — no code changes.
  */
 import { createHash, randomUUID } from "node:crypto";
 import { mkdir, readFile, rename, stat, writeFile } from "node:fs/promises";
@@ -22,6 +30,11 @@ const USAGE = "Usage: npm run vocab:import -- <WordCrawler JSON path> [--pack <n
 
 // Split off an optional `--pack <name>`; what remains must be exactly one deck path.
 const argv = process.argv.slice(2);
+// `--staged` is a modifier on `--pack`: write the compiled pack into the non-globbed
+// incoming/ folder so it is embedded but not served. Pulled out first so it can't shift
+// the `--pack` index below.
+const staged = argv.includes("--staged");
+if (staged) argv.splice(argv.indexOf("--staged"), 1);
 const packAt = argv.indexOf("--pack");
 let packName: string | undefined;
 if (packAt !== -1) {
@@ -44,6 +57,9 @@ function packSlug(name: string): string {
 if (!source || argv.length !== 1 || (packAt !== -1 && !packName)) {
   console.error(USAGE);
   process.exitCode = 1;
+} else if (staged && !packName) {
+  console.error("--staged only applies with --pack <name>; the base catalog is always served.");
+  process.exitCode = 1;
 } else {
   try {
     const input = resolve(source);
@@ -58,7 +74,7 @@ if (!source || argv.length !== 1 || (packAt !== -1 && !packName)) {
     const output = fileURLToPath(
       new URL(
         slug
-          ? `../src/features/vocabulary/data/packs/${slug}.json`
+          ? `../src/features/vocabulary/data/packs/${staged ? "incoming/" : ""}${slug}.json`
           : "../src/features/vocabulary/data/catalog.json",
         import.meta.url,
       ),
@@ -72,7 +88,9 @@ if (!source || argv.length !== 1 || (packAt !== -1 && !packName)) {
     await rename(temporary, output);
     console.log(
       slug
-        ? `Compiled pack "${slug}": ${catalog.count} words; revision ${revision} → data/packs/${slug}.json. Restart dev / rebuild to serve.`
+        ? staged
+          ? `Staged pack "${slug}": ${catalog.count} words; revision ${revision} → data/packs/incoming/${slug}.json. Embedded and validated, but NOT served — move it into data/packs/ and rebuild/restart to display.`
+          : `Compiled pack "${slug}": ${catalog.count} words; revision ${revision} → data/packs/${slug}.json. Restart dev / rebuild to serve.`
         : `Imported ${catalog.count} distinct words; revision ${revision}. Rebuild/deploy to publish.`,
     );
   } catch (error) {

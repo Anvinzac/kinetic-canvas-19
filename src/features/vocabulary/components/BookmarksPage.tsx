@@ -52,7 +52,7 @@ const EMPTY_COPY: Record<TabKind, { title: string; body: string }> = {
 /** One short, chatty line per key, shown in the empty vault's two tooltips. */
 const TIP_COPY: Record<TabKind, string> = {
   bookmark: "lưu từ chưa biết nha",
-  heart: "giữ từ iu thích nè",
+  heart: "giữ từ iu thích nà",
 };
 
 /**

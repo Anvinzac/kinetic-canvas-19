@@ -33,4 +33,8 @@ export type FeedPage = {
   levels: VocabularyLevel[];
 };
 export type FeedCursor = { position: number; revision?: string };
+/**
+ * `theme` is an allow-list: "mix" lets every theme rotate, one id locks the look,
+ * and a comma-joined id list (the picker's unselect model) rotates within just those.
+ */
 export type Presentation = { theme: string; style: NarrativeStyle | "mix"; autoplay: boolean };

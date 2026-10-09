@@ -25,7 +25,7 @@
 
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import { motion, useReducedMotion } from "framer-motion";
-import { Bookmark } from "lucide-react";
+import { Bookmark, Heart } from "lucide-react";
 import { usePresence } from "@/hooks/use-presence";
 import { useSavedCount } from "../hooks/useSavedCount";
 import { BookmarksPage } from "./BookmarksPage";
@@ -222,12 +222,10 @@ export function SavedDrawer({ open, onOpenChange }: SavedDrawerProps): React.Rea
           onClick={() => onOpenChange(true)}
         >
           <span className="vocab-saved-grip" aria-hidden="true" />
+          {/* The vault keeps two kinds, so the tab shows both: bookmark over heart.
+              The count badge is gone — the tab names the drawer, it doesn't tally it. */}
           <Bookmark size={13} fill={savedCount ? "currentColor" : "none"} aria-hidden="true" />
-          {savedCount > 0 && (
-            <span className="vocab-saved-handle-count" aria-hidden="true">
-              {savedCount > 99 ? "99+" : savedCount}
-            </span>
-          )}
+          <Heart size={13} aria-hidden="true" />
         </button>
       </div>
 

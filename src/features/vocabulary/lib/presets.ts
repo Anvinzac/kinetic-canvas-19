@@ -251,6 +251,23 @@ function withFont(theme: VocabularyTheme, font: string | null): VocabularyTheme 
 }
 
 /**
+ * The themes a card may actually wear for a given `Presentation.theme` choice.
+ * The choice is the picker's allow-list — "mix" (everything), one id, or a
+ * comma-joined set of ids the reader left picked. An unparseable or emptied
+ * list falls back to the full collection so the stream can never go colorless.
+ * @pure (depends only on the module-level THEMES registry)
+ */
+export function themePool(theme: string): VocabularyTheme[] {
+  const ids = theme
+    .split(",")
+    .map((id) => id.trim())
+    .filter(Boolean);
+  if (!ids.length || ids.includes("mix")) return THEMES;
+  const picked = THEMES.filter((item) => ids.includes(item.id));
+  return picked.length ? picked : THEMES;
+}
+
+/**
  * Choose appearance independently of word order. Every 5–7 cards the palette's font
  * gives way to a handwriting face; colors and motion are untouched.
  * @param occurrence Stable occurrence. @param choice Visitor overrides.
@@ -258,9 +275,10 @@ function withFont(theme: VocabularyTheme, font: string | null): VocabularyTheme 
  * @returns Theme/style.
  */
 export function choosePresentation(occurrence: string, choice: Presentation, position?: number) {
-  const theme =
-    THEMES.find((item) => item.id === choice.theme) ??
-    THEMES[hash(`${occurrence}:theme`) % THEMES.length];
+  // A single-theme pick still locks (a one-item pool always lands on it); a
+  // multi-theme pick keeps the per-card surprise of mix inside the picked subset.
+  const pool = themePool(choice.theme);
+  const theme = pool[hash(`${occurrence}:theme`) % pool.length];
   return {
     theme: withFont(
       theme,

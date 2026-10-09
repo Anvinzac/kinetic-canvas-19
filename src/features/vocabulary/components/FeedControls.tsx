@@ -49,6 +49,118 @@ function PopupScrim({ closing, onDismiss }: { closing: boolean; onDismiss: () =>
   );
 }
 
+/**
+ * Theme allow-list, deliberately the inverse of a single choice: every theme starts
+ * picked and the reader only ever UNPICKS the ones they dislike, so the stream keeps
+ * rotating (mix semantics) instead of wearing one skin forever. Each row leads with a
+ * live gradient swatch — a theme IS its colors, and a name alone can't show that.
+ * Stored as "mix" while everything is picked, else a comma-joined id list.
+ */
+function ThemePicker({ value, onChange }: { value: string; onChange: (theme: string) => void }) {
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const labelId = useId();
+  const allIds = useMemo(() => THEMES.map((theme) => theme.id), []);
+  const selected = useMemo(() => {
+    const ids = value
+      .split(",")
+      .map((id) => id.trim())
+      .filter(Boolean);
+    return new Set(ids.length && !ids.includes("mix") ? ids : allIds);
+  }, [value, allIds]);
+  const isAll = selected.size === allIds.length;
+  // THEMES order keeps the chips and the joined value stable across toggles.
+  const pickedThemes = useMemo(() => THEMES.filter((theme) => selected.has(theme.id)), [selected]);
+
+  useEffect(() => {
+    if (!open) return;
+    function onPointerDown(event: PointerEvent) {
+      if (!rootRef.current?.contains(event.target as Node)) setOpen(false);
+    }
+    document.addEventListener("pointerdown", onPointerDown);
+    return () => document.removeEventListener("pointerdown", onPointerDown);
+  }, [open]);
+
+  function toggle(id: string) {
+    const next = new Set(selected);
+    if (next.has(id)) {
+      // The stream must always have something to wear: the last theme stays pinned.
+      if (next.size === 1) return;
+      next.delete(id);
+    } else {
+      next.add(id);
+    }
+    onChange(next.size === allIds.length ? "mix" : allIds.filter((id2) => next.has(id2)).join(","));
+  }
+
+  const summary = isAll
+    ? "Trộn giao diện"
+    : pickedThemes.length === 1
+      ? themeLabelVi(pickedThemes[0].id, pickedThemes[0].label)
+      : `${pickedThemes.length}/${allIds.length}`;
+
+  return (
+    <div
+      className="vocab-theme-picker"
+      ref={rootRef}
+      onKeyDown={(event) => {
+        if (event.key === "Escape") setOpen(false);
+      }}
+    >
+      <span className="vocab-theme-label" id={labelId}>
+        Giao diện
+      </span>
+      <button
+        type="button"
+        className="vocab-theme-trigger"
+        onClick={() => (open ? setOpen(false) : setOpen(true))}
+        aria-expanded={open}
+        aria-haspopup="listbox"
+      >
+        <span className="vocab-theme-chips" aria-hidden="true">
+          {pickedThemes.slice(0, 3).map((theme) => (
+            <span key={theme.id} style={{ background: theme.paint }} />
+          ))}
+        </span>
+        <span className="vocab-theme-summary">{summary}</span>
+        <ChevronDown size={15} />
+      </button>
+      {open && (
+        <div
+          className="vocab-theme-list"
+          role="listbox"
+          aria-multiselectable="true"
+          aria-labelledby={labelId}
+        >
+          {THEMES.map((theme) => {
+            const on = selected.has(theme.id);
+            return (
+              <button
+                key={theme.id}
+                type="button"
+                role="option"
+                aria-selected={on}
+                data-on={on || undefined}
+                onClick={() => toggle(theme.id)}
+              >
+                <span className="vocab-theme-swatch" style={{ background: theme.paint }} />
+                <span className="vocab-theme-option-label">
+                  {themeLabelVi(theme.id, theme.label)}
+                </span>
+              </button>
+            );
+          })}
+          {!isAll && (
+            <button type="button" className="vocab-theme-reset" onClick={() => onChange("mix")}>
+              Chọn lại tất cả
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 type DifficultyOption = {
   id: string;
   label: string;
@@ -109,20 +221,25 @@ function describeSelection(ids: string[]): { emoji: string; label: string; band:
  * commits it, so browsing choices never re-shuffle the live stream until confirmed. A
  * listbox rather than a native select so each row can carry its emoji, CEFR band and
  * Vietnamese gloss, and so tap targets stay large.
- * @param props Current comma-joined selection and change handler
+ * Open state lives in the parent: the toolbar-level popup guardrail needs to know the
+ * sheet is out, and one popup can never stay open while another is being reached for.
+ * @param props Current comma-joined selection, change handler, and open state
  * @returns Brand trigger plus its popup list
  */
 function DifficultyDropdown({
   value,
   onChange,
+  open,
+  onOpenChange,
 }: {
   value: string;
   onChange: (next: string) => void;
+  open: boolean;
+  onOpenChange: (next: boolean) => void;
 }) {
   const listId = useId();
   const committed = useMemo(() => parseDifficulty(value), [value]);
   const summary = describeSelection(committed);
-  const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState<Set<string>>(() => new Set(committed));
   const [cursor, setCursor] = useState(0);
   // "Done" stays hidden until the reader picks a row this session, then fades in.
@@ -130,7 +247,7 @@ function DifficultyDropdown({
   const trigger = useRef<HTMLButtonElement>(null);
   const list = useRef<HTMLUListElement>(null);
   const close = (restoreFocus: boolean) => {
-    setOpen(false);
+    onOpenChange(false);
     if (restoreFocus) trigger.current?.focus();
   };
   // Multi-select edits a draft; only "Done" commits it, so a tap never re-shuffles the
@@ -160,7 +277,7 @@ function DifficultyDropdown({
     setDraft(new Set(committed));
     setCursor(0);
     setTouched(false);
-    setOpen(true);
+    onOpenChange(true);
   };
 
   // Sum of the packs (tracks) picked so far this session. The "tất cả" row borrows this
@@ -298,7 +415,9 @@ function DifficultyDropdown({
                     </span>
                     {option.label}
                   </span>
-                  <span className="vocab-difficulty-count" aria-hidden="true">
+                  {/* key=count re-mounts the figure whenever the sum moves, which is what
+                      (re)triggers the spring-and-flash CSS entrance on it. */}
+                  <span className="vocab-difficulty-count" aria-hidden="true" key={count}>
                     {count.toLocaleString()}
                   </span>
                 </li>
@@ -366,7 +485,60 @@ export function FeedControls({
     toggleButton.current?.focus();
   };
   const options = usePresence(open, POPUP_EXIT_MS);
+  const [difficultyOpen, setDifficultyOpen] = useState(false);
   const [ecoOpen, setEcoOpen] = useState(false);
+  // Guardrail while any sheet is out: the first tap on anything outside the open
+  // popup — the gear, the title, a transport icon, the dock, even the empty toolbar —
+  // only hides the sheet. It never also acts as a press of the control underneath,
+  // so two popups can never overlap or trade places in one tap; the next tap works
+  // normally. document capture (not the toolbar element) because the dock and the
+  // scrims live outside the header; taps inside the sheets pass through untouched,
+  // and keyboard events are not intercepted at all.
+  // The listeners stay mounted for the whole session and read state through refs:
+  // closing on pointerdown would otherwise re-run the effect and REMOVE the click
+  // listener before the same gesture's click arrives, letting the tapped button
+  // fire anyway (verified as a real leak). Instead the intercepted pointerdown arms
+  // a one-shot that swallows exactly that trailing click — within a short window,
+  // so a drag that never produces a click cannot eat the next real tap.
+  const armedRef = useRef(false);
+  const onOpenRef = useRef(onOpen);
+  const swallowClickBefore = useRef(0);
+  useEffect(() => {
+    armedRef.current = open || difficultyOpen;
+    onOpenRef.current = onOpen;
+  });
+  useEffect(() => {
+    function onInterceptPointerDown(event: PointerEvent) {
+      if (!armedRef.current) return;
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+      // instanceof Element, not HTMLElement: tapping a row's svg glyph must count as
+      // inside the sheet too.
+      if (target.closest(".vocab-options, .vocab-difficulty-pop")) return;
+      event.preventDefault();
+      event.stopPropagation();
+      swallowClickBefore.current = event.timeStamp;
+      setDifficultyOpen(false);
+      onOpenRef.current(false);
+    }
+    function onInterceptClick(event: MouseEvent) {
+      const armedAt = swallowClickBefore.current;
+      if (!armedAt) return;
+      swallowClickBefore.current = 0;
+      // Only the click of the dismissing gesture itself — same time origin as
+      // PointerEvent.timeStamp in every modern browser.
+      if (event.timeStamp - armedAt > 700) return;
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    document.addEventListener("pointerdown", onInterceptPointerDown, true);
+    document.addEventListener("click", onInterceptClick, true);
+    return () => {
+      document.removeEventListener("pointerdown", onInterceptPointerDown, true);
+      document.removeEventListener("click", onInterceptClick, true);
+    };
+  }, []);
+
   // Opening the app fan pauses the stream: the reader is looking at the menu, so
   // letting words keep turning behind it would lose them one per tick. Closing
   // restores whatever autoplay was before, rather than forcing it on.
@@ -411,6 +583,8 @@ export function FeedControls({
           <DifficultyDropdown
             value={filters.difficulty}
             onChange={(difficulty) => onFilters({ ...filters, difficulty })}
+            open={difficultyOpen}
+            onOpenChange={setDifficultyOpen}
           />
         </div>
         {/* Centre: the three transport controls as bare icons split by two hairlines,
@@ -523,22 +697,10 @@ export function FeedControls({
                   ))}
                 </select>
               </label>
-              <label>
-                Giao diện
-                <select
-                  value={presentation.theme}
-                  onChange={(event) =>
-                    onPresentation({ ...presentation, theme: event.target.value })
-                  }
-                >
-                  <option value="mix">Trộn giao diện</option>
-                  {THEMES.map((theme) => (
-                    <option key={theme.id} value={theme.id}>
-                      {themeLabelVi(theme.id, theme.label)}
-                    </option>
-                  ))}
-                </select>
-              </label>
+              <ThemePicker
+                value={presentation.theme}
+                onChange={(theme) => onPresentation({ ...presentation, theme })}
+              />
               <label>
                 Cách hiện
                 <select
@@ -591,10 +753,14 @@ export function FeedControls({
             {/* Community is not open to readers yet; only the button is hidden, the
                 /community route still resolves. Flip COMMUNITY_AVAILABLE to bring it back. */}
             {COMMUNITY_AVAILABLE && <Link to="/community">Cộng đồng</Link>}
+            {/* Temporarily hidden at request: "Đăng nhập" and "Về với từ vựng" leave the
+                sheet for now — uncomment (both live together) to bring them back. The
+                /auth route and the close behaviour are untouched.
             <Link to="/auth">Đăng nhập</Link>
             <button type="button" onClick={close}>
               Về với từ vựng
             </button>
+            */}
           </nav>
         </section>
       )}

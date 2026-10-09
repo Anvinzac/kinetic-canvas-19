@@ -319,7 +319,13 @@ export function ExportStudio({
               <div className="vocab-select-grid vocab-export-selects">
                 <label>
                   Theme
-                  <select value={theme} onChange={(event) => setTheme(event.target.value)}>
+                  <select
+                    // The feed picker stores an allow-list; a joined set has no row
+                    // here, so it displays as "as picked" while the preview keeps
+                    // rotating inside exactly those themes.
+                    value={theme.includes(",") ? "mix" : theme}
+                    onChange={(event) => setTheme(event.target.value)}
+                  >
                     <option value="mix">As picked for this word</option>
                     {THEMES.map((option) => (
                       <option key={option.id} value={option.id}>

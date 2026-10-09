@@ -333,7 +333,9 @@
   right: env(safe-area-inset-right, 0px);
   display: grid;
   place-items: center end;
-  width: 28px;
+  /* 1.5× the tab's own width plus its old breathing room, so the wider handle never
+     clips against the screen edge. */
+  width: 42px;
   height: min(52vh, 420px);
   transform: translateY(-50%);
   touch-action: pan-y;
@@ -346,8 +348,10 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px;
-  width: 20px;
+  gap: 5px;
+  /* 1.5× wider (20 → 30px): the tab now carries two stacked glyphs, not one icon
+     and a count. */
+  width: 30px;
   height: 72px;
   /* Room on the left for the grip bar, so the glyph stays optically centred. */
   padding-left: 4px;
@@ -443,14 +447,6 @@
   opacity: 0.34;
   transform: translateY(-50%);
 }
-/* No pill behind the count: at 20px wide there is no room for one. */
-.vocab-saved-handle-count {
-  color: var(--vocab-accent);
-  font-size: 9px;
-  font-weight: 800;
-  line-height: 1;
-  letter-spacing: -0.02em;
-}
 /* The handle is the drawer's edge: once the panel is in, it has nothing left to
    pull, so it steps aside instead of sitting on top of the panel. */
 .vocab-saved-dock[data-hidden] {
@@ -541,7 +537,7 @@
   top: 50%;
   /* Travels with the handle's small stretch, so the label stays beside the tab it
      captions instead of sliding off on its own. */
-  right: calc(30px + var(--handle-shift, 0) * 1px);
+  right: calc(40px + var(--handle-shift, 0) * 1px);
   opacity: var(--pull, 0);
   transform: translateY(-50%);
   color: var(--shell-text);
@@ -580,6 +576,9 @@
   box-shadow: 0 20px 60px #0008;
   max-height: calc(100dvh - 110px - env(safe-area-inset-top));
   overflow-y: auto;
+  /* Reserve the scrollbar lane: without it the sheet's inner width jumps ~15px the moment
+     the theme list opens and the content first overflows, so every control re-flows. */
+  scrollbar-gutter: stable;
   /* The notch: a circle punched out of the corner so the sheet wraps the button
      rather than starting below it. Same treatment as the app panel's. */
   --vocab-notch-mask: radial-gradient(
@@ -636,7 +635,8 @@
   }
 }
 .vocab-difficulty-pop[data-closing] {
-  animation: vocab-panel-out var(--dur-quick) var(--ease-in) forwards;
+  /* Collapses back up toward the title it grew from — the same corner in reverse. */
+  animation: vocab-options-out var(--dur-quick) var(--ease-in) forwards;
 }
 /* Collapses back into the corner it grew from. Must finish inside POPUP_EXIT_MS. */
 .vocab-options[data-closing] {
@@ -667,7 +667,13 @@
 }
 .vocab-select-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  /* minmax(0, 1fr), not bare 1fr: an `fr` track's automatic minimum is its content's
+     min-content, so the theme summary (white-space: nowrap, never truncated because the
+     track always grew to fit it) inflated the picker's column every time its text got
+     longer — unselecting a theme swapped "Trộn giao diện" for "25/26 giao diện" and the
+     whole grid visibly grew, stealing width from the neighbouring select. A 0 floor keeps
+     both columns a stable half and finally lets the summary's ellipsis do its job. */
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 16px;
 }
 .vocab-select-grid label {
@@ -706,6 +712,136 @@
 }
 .vocab-select-grid select:focus-visible {
   border-color: var(--vocab-accent);
+}
+/* Theme allow-list: the trigger wears the select's skin, and the open list expands
+   in flow inside its grid cell — the options sheet already scrolls, so no absolute
+   popover can escape (or fight) it. Checked swatches burn, unchecked ones fade.
+   Row labels are `.vocab-theme-option-label`, NOT `.vocab-theme-name`: the latter is a
+   removed card element still hidden by a display:none !important rule below. */
+.vocab-theme-picker {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--shell-text-soft);
+  align-self: start;
+}
+.vocab-theme-trigger {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  min-height: 48px;
+  padding: 10px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 14px;
+  background: var(--shell-well);
+  color: var(--shell-text);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color var(--dur-quick) var(--ease-out),
+    background-color var(--dur-quick) var(--ease-out);
+}
+.vocab-theme-trigger:hover {
+  border-color: color-mix(in srgb, var(--vocab-accent) 60%, transparent);
+}
+.vocab-theme-trigger:focus-visible {
+  border-color: var(--vocab-accent);
+}
+.vocab-theme-trigger svg {
+  flex: none;
+  opacity: 0.7;
+  transition: transform var(--dur-quick) var(--ease-out);
+}
+.vocab-theme-trigger[aria-expanded="true"] svg {
+  transform: rotate(180deg);
+}
+.vocab-theme-chips {
+  display: flex;
+  flex: none;
+}
+.vocab-theme-chips span {
+  width: 14px;
+  height: 14px;
+  border-radius: 5px;
+  margin-left: -6px;
+  box-shadow: 0 0 0 1.5px var(--shell-well);
+}
+.vocab-theme-chips span:first-child {
+  margin-left: 0;
+}
+.vocab-theme-summary {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.vocab-theme-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 240px;
+  overflow-y: auto;
+  padding: 6px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 14px;
+  background: var(--shell-well);
+}
+.vocab-theme-list button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 9px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--shell-text);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+.vocab-theme-list button:hover {
+  background: rgb(255 255 255 / 6%);
+}
+.vocab-theme-swatch {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 7px;
+  /* Picked state is the cell's own outline: a solid ring keeps, a translucent one
+     is excluded — no separate checkbox, the gradient is its own control. */
+  box-shadow: 0 0 0 1.5px #ffffff2e;
+  transition: box-shadow var(--dur-quick) var(--ease-out);
+}
+.vocab-theme-list button[data-on] .vocab-theme-swatch {
+  box-shadow:
+    0 0 0 2px var(--shell-text),
+    0 2px 8px #0005;
+}
+.vocab-theme-option-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+/* The name fades with the ring going translucent, so an unselected row dims as one unit. */
+.vocab-theme-list button:not([data-on]) .vocab-theme-option-label {
+  opacity: 0.55;
+}
+.vocab-theme-reset {
+  justify-content: center;
+  color: var(--vocab-accent) !important;
 }
 /* Three secondary controls: the category spans a row so theme and reveal sit side by side. */
 .vocab-select-grid label:first-child {
@@ -764,33 +900,20 @@
   width: min(330px, calc(100vw - 40px));
   max-height: min(60dvh, 430px);
   padding: 6px;
-  /* High-grade translucent glass: a darkened frosted body under a top-to-bottom sheen,
-     edged with a hairline that carries the palette's accent highlight. */
-  border: 1px solid color-mix(in srgb, var(--pop-accent) 34%, #ffffff2b);
-  border-radius: 20px;
+  /* The same flat sheet paint as every other popup and drawer (the options sheet,
+     the saved drawer) — no frosted glass, so no surface floats above the feed
+     wearing a different material. --pop-accent stays for the row highlights. */
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 22px;
   color: var(--shell-text);
-  background:
-    linear-gradient(180deg, #ffffff1f, #ffffff06 42%, #ffffff00),
-    color-mix(in srgb, var(--shell-surface) 74%, #090712 26%);
-  backdrop-filter: blur(22px) saturate(165%);
-  -webkit-backdrop-filter: blur(22px) saturate(165%);
-  box-shadow:
-    0 26px 70px #000000b8,
-    inset 0 1px 0 #ffffff33,
-    0 0 26px color-mix(in srgb, var(--pop-accent) 22%, transparent);
-  /* The notch: a circle punched out of the corner so the sheet wraps the button
-     rather than starting below it. Same treatment as the app panel's. */
-  --vocab-notch-mask: radial-gradient(
-    circle var(--vocab-corner-notch) at calc(100% - var(--vocab-corner-half))
-      var(--vocab-corner-half),
-    transparent 0 var(--vocab-corner-notch),
-    #000 calc(var(--vocab-corner-notch) + 0.5px)
-  );
-  -webkit-mask-image: var(--vocab-notch-mask);
-  mask-image: var(--vocab-notch-mask);
-  transform-origin: calc(100% - var(--vocab-corner-half)) var(--vocab-corner-half);
-  /* Grown from the corner of the control that opened it, the same way the app
-     panel is — not nudged down a few pixels. */
+  background: var(--shell-surface);
+  box-shadow: 0 20px 60px #0008;
+  /* Grow out of the page title, not out of its own centre: the origin sits on the
+     brand text — panel-left plus a nudge under the name, panel-top minus the 25px
+     anchor gap — so scaling up reads as the sheet unfolding downwards from the
+     title. (The old corner-notch mask never applied here: its variables live on
+     .vocab-options, so the whole declaration was silently dropped as invalid.) */
+  transform-origin: 24px -25px;
   animation: vocab-options-in var(--dur-move) var(--ease-spring) both;
 }
 /* The first block sits beside the notch, so the rest of the sheet starts below
@@ -894,6 +1017,34 @@
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
+}
+/* The "tất cả" sum re-mounts on every change (key={count}), so this runs exactly when
+   the figure moves: it springs up from below, overshoots while flashing the card's
+   accent with a glow, then settles back to muted ink. */
+@keyframes vocab-count-pop {
+  0% {
+    opacity: 0;
+    transform: translateY(7px) scale(0.6);
+  }
+  45% {
+    opacity: 1;
+    transform: translateY(-3px) scale(1.18);
+    color: var(--pop-accent);
+    text-shadow: 0 0 14px color-mix(in srgb, var(--pop-accent) 65%, transparent);
+  }
+  72% {
+    transform: translateY(1px) scale(0.95);
+    color: var(--pop-accent);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+    color: var(--shell-text-mute);
+    text-shadow: none;
+  }
+}
+.vocab-difficulty-count {
+  animation: vocab-count-pop 540ms var(--ease-spring) both;
 }
 /* Floating confirm bar: a gradient fade so the last rows read through it as they
    scroll beneath, with the bar itself click-transparent except on its buttons. */
@@ -2363,6 +2514,13 @@
 .vocab-vault-chip[data-chip="bookmark"] {
   --chip-from: 28px;
   --chip-accent: var(--vault-accent);
+  /* The green/accent chip is FIRST in the DOM, so the pink one paints exactly over it and the
+     pair reads as a single block once they meet. Park this one a little off the landing point
+     instead, so the two settle as a shallow 3D stack: the green edge peeks out to the RIGHT of
+     the pink block (and slightly above it), not the left. */
+  --chip-land-x: 9px;
+  --chip-land-y: -3px;
+  --chip-land-rot: -1deg;
 }
 .vocab-vault-chip[data-chip="heart"] {
   --chip-from: -28px;
@@ -2708,22 +2866,35 @@
   }
   44% {
     opacity: 1;
-    /* Fully back on the centre line here, not merely close to it: on the narrowest drawer
-       a residual offset still put the chip's corner under the right-hand bubble. */
-    transform: translate(0, calc(var(--vault-fall) * 0.33)) scale(0.98) rotate(-2deg);
+    /* Back toward the centre line, but each chip keeps its own small landing offset
+       (--chip-land-*) so the pair stacks with both visible instead of merging into one. */
+    transform: translate(
+        var(--chip-land-x, 0px),
+        calc(var(--vault-fall) * 0.33 + var(--chip-land-y, 0px))
+      )
+      scale(0.98) rotate(var(--chip-land-rot, -2deg));
   }
   60% {
     opacity: 1;
-    transform: translate(0, calc(var(--vault-fall) * 0.7)) scale(0.92) rotate(5deg);
+    transform: translate(
+        var(--chip-land-x, 0px),
+        calc(var(--vault-fall) * 0.7 + var(--chip-land-y, 0px))
+      )
+      scale(0.92) rotate(var(--chip-land-rot, 5deg));
   }
   68% {
     opacity: 1;
-    transform: translate(0, calc(var(--vault-fall) * 0.92)) scale(0.7) rotate(5deg);
+    transform: translate(
+        var(--chip-land-x, 0px),
+        calc(var(--vault-fall) * 0.92 + var(--chip-land-y, 0px))
+      )
+      scale(0.7) rotate(var(--chip-land-rot, 5deg));
   }
   74%,
   100% {
     opacity: 0;
-    transform: translate(0, var(--vault-fall)) scale(0.5) rotate(5deg);
+    transform: translate(var(--chip-land-x, 0px), calc(var(--vault-fall) + var(--chip-land-y, 0px)))
+      scale(0.5) rotate(var(--chip-land-rot, 5deg));
   }
 }
 @keyframes vocab-vault-catch {
@@ -2824,6 +2995,20 @@
   max-width: 320px;
   font-size: 14px;
   line-height: 1.7;
+}
+/* The way-back button belongs at the bottom of the panel, not in the centred stack. The
+   container is justify-content: center, which re-centres the whole group when you merely add
+   margin — the button visibly never moves. `auto` absorbs ALL the free space above it instead,
+   pinning the scene block at the top of its centred band and dropping the button to the bottom. */
+.vocab-saved-empty .vocab-light-button {
+  margin-top: auto;
+  margin-bottom: 28px;
+}
+/* …but a single auto margin below would leave the scene flush under the toolbar. The vault
+   carries an auto margin too, so the free space splits in two: the scene sits centred in the
+   band above the button instead of glued to the top. */
+.vocab-saved-empty .vocab-vault {
+  margin-top: auto;
 }
 /* ── Post-reveal spelling replay ──────────────────────────────────────────────
    The revealed word dissolves, then every letter pops in one at a time so the
@@ -3832,7 +4017,7 @@
     padding-top: 10px;
   }
   .vocab-select-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 /* Very small phones (≤360px, down to a 320px row): shave the same dimensions one more
