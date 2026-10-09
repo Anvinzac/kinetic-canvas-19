@@ -1,22 +1,7 @@
 {
-  "revision": "b08acfb1cb299d5467e303d6",
-  "name": "WordCrawler deck batch 3",
-  "count": 25,
-  "topics": [
-    "character",
-    "communication",
-    "daily",
-    "emotion",
-    "money",
-    "thinking",
-    "time",
-    "work"
-  ],
-  "levels": [
-    "A1",
-    "A2",
-    "B1"
-  ],
+  "meta": {
+    "name": "WordCrawler deck batch 3"
+  },
   "words": [
     {
       "id": "jealous",
@@ -26,7 +11,6 @@
       "anticipateVi": "Có ai đang nóng mắt không?",
       "pos": "adj",
       "ipa": "/ˈdʒel.əs/",
-      "topic": "emotion",
       "topics": [
         "emotion"
       ],
@@ -36,9 +20,7 @@
           "en": "She felt _____ of her sister's success.",
           "vi": "Cô ấy ghen tị với thành công của chị gái."
         }
-      ],
-      "chars": 7,
-      "initial": "J"
+      ]
     },
     {
       "id": "lonely",
@@ -48,7 +30,6 @@
       "anticipateVi": "Có mình ở đây rồi mà!",
       "pos": "adj",
       "ipa": "/ˈloʊn.li/",
-      "topic": "emotion",
       "topics": [
         "emotion"
       ],
@@ -58,9 +39,7 @@
           "en": "He felt _____ after moving to a new city.",
           "vi": "Anh ấy thấy cô đơn sau khi chuyển đến thành phố mới."
         }
-      ],
-      "chars": 6,
-      "initial": "L"
+      ]
     },
     {
       "id": "proud",
@@ -70,7 +49,6 @@
       "anticipateVi": "Ưỡn ngực lên nào!",
       "pos": "adj",
       "ipa": "/praʊd/",
-      "topic": "emotion",
       "topics": [
         "emotion"
       ],
@@ -80,9 +58,7 @@
           "en": "We are so _____ of you.",
           "vi": "Bố mẹ rất tự hào về con."
         }
-      ],
-      "chars": 5,
-      "initial": "P"
+      ]
     },
     {
       "id": "confused",
@@ -92,7 +68,6 @@
       "anticipateVi": "Ủa, rồi sao nữa?",
       "pos": "adj",
       "ipa": "/kənˈfjuːzd/",
-      "topic": "emotion",
       "topics": [
         "emotion"
       ],
@@ -102,9 +77,7 @@
           "en": "I'm _____ about what to do next.",
           "vi": "Tôi đang rối, không biết làm gì tiếp theo."
         }
-      ],
-      "chars": 8,
-      "initial": "C"
+      ]
     },
     {
       "id": "exhausted",
@@ -114,7 +87,6 @@
       "anticipateVi": "Ráng thêm chút, sắp xong rồi!",
       "pos": "adj",
       "ipa": "/ɪɡˈzɑː.stɪd/",
-      "topic": "emotion",
       "topics": [
         "emotion"
       ],
@@ -124,9 +96,7 @@
           "en": "After the long hike, we were completely _____.",
           "vi": "Sau chuyến leo núi dài, chúng tôi kiệt sức hoàn toàn."
         }
-      ],
-      "chars": 9,
-      "initial": "E"
+      ]
     },
     {
       "id": "honest",
@@ -136,7 +106,6 @@
       "anticipateVi": "Nói thật đi, bạn biết rồi!",
       "pos": "adj",
       "ipa": "/ˈɑː.nɪst/",
-      "topic": "character",
       "topics": [
         "character"
       ],
@@ -146,9 +115,7 @@
           "en": "To be _____, I didn't like the movie.",
           "vi": "Nói thật, tôi không thích bộ phim đó."
         }
-      ],
-      "chars": 6,
-      "initial": "H"
+      ]
     },
     {
       "id": "polite",
@@ -158,7 +125,6 @@
       "anticipateVi": "Mời bạn đoán trước ạ!",
       "pos": "adj",
       "ipa": "/pəˈlaɪt/",
-      "topic": "character",
       "topics": [
         "character"
       ],
@@ -168,9 +134,7 @@
           "en": "It's _____ to say thank you.",
           "vi": "Nói cảm ơn là phép lịch sự."
         }
-      ],
-      "chars": 6,
-      "initial": "P"
+      ]
     },
     {
       "id": "lazy",
@@ -180,7 +144,6 @@
       "anticipateVi": "Nghĩ thôi cũng thấy mệt…",
       "pos": "adj",
       "ipa": "/ˈleɪ.zi/",
-      "topic": "character",
       "topics": [
         "character"
       ],
@@ -190,9 +153,7 @@
           "en": "Don't be so _____, help me clean up!",
           "vi": "Đừng lười thế, phụ mình dọn dẹp đi!"
         }
-      ],
-      "chars": 4,
-      "initial": "L"
+      ]
     },
     {
       "id": "brave",
@@ -202,7 +163,6 @@
       "anticipateVi": "Gan lì thì đoán đi!",
       "pos": "adj",
       "ipa": "/breɪv/",
-      "topic": "character",
       "topics": [
         "character"
       ],
@@ -212,9 +172,7 @@
           "en": "It was _____ of her to speak up.",
           "vi": "Cô ấy thật can đảm khi dám lên tiếng."
         }
-      ],
-      "chars": 5,
-      "initial": "B"
+      ]
     },
     {
       "id": "selfish",
@@ -224,7 +182,6 @@
       "anticipateVi": "Đáp án này không chia đâu!",
       "pos": "adj",
       "ipa": "/ˈsel.fɪʃ/",
-      "topic": "character",
       "topics": [
         "character"
       ],
@@ -234,9 +191,7 @@
           "en": "It's _____ to keep all the snacks for yourself.",
           "vi": "Giữ hết đồ ăn vặt cho riêng mình là ích kỷ."
         }
-      ],
-      "chars": 7,
-      "initial": "S"
+      ]
     },
     {
       "id": "complain",
@@ -246,7 +201,6 @@
       "anticipateVi": "Khó quá? Cứ thở dài đi!",
       "pos": "verb",
       "ipa": "/kəmˈpleɪn/",
-      "topic": "communication",
       "topics": [
         "communication"
       ],
@@ -256,9 +210,7 @@
           "en": "Customers often _____ about the slow Wi-Fi.",
           "vi": "Khách hay phàn nàn về Wi-Fi chậm."
         }
-      ],
-      "chars": 8,
-      "initial": "C"
+      ]
     },
     {
       "id": "explain",
@@ -268,7 +220,6 @@
       "anticipateVi": "Hiểu rồi thì nói luôn!",
       "pos": "verb",
       "ipa": "/ɪkˈspleɪn/",
-      "topic": "communication",
       "topics": [
         "communication"
       ],
@@ -278,9 +229,7 @@
           "en": "Can you _____ this rule to me?",
           "vi": "Bạn giải thích luật này cho mình được không?"
         }
-      ],
-      "chars": 7,
-      "initial": "E"
+      ]
     },
     {
       "id": "promise",
@@ -290,7 +239,6 @@
       "anticipateVi": "Đoán đúng, mình bao trà sữa!",
       "pos": "verb",
       "ipa": "/ˈprɑː.mɪs/",
-      "topic": "communication",
       "topics": [
         "communication"
       ],
@@ -300,9 +248,7 @@
           "en": "I _____ I'll call you tonight.",
           "vi": "Mình hứa tối nay sẽ gọi cho bạn."
         }
-      ],
-      "chars": 7,
-      "initial": "P"
+      ]
     },
     {
       "id": "argue",
@@ -312,7 +258,6 @@
       "anticipateVi": "Đừng to tiếng, nói nhỏ thôi!",
       "pos": "verb",
       "ipa": "/ˈɑːrɡ.juː/",
-      "topic": "communication",
       "topics": [
         "communication"
       ],
@@ -322,9 +267,7 @@
           "en": "My brothers _____ about everything.",
           "vi": "Mấy anh em tôi cãi nhau đủ thứ chuyện."
         }
-      ],
-      "chars": 5,
-      "initial": "A"
+      ]
     },
     {
       "id": "encourage",
@@ -334,7 +277,6 @@
       "anticipateVi": "Vỗ tay cho bạn trước nè!",
       "pos": "verb",
       "ipa": "/ɪnˈkɝː.ɪdʒ/",
-      "topic": "communication",
       "topics": [
         "communication"
       ],
@@ -344,9 +286,7 @@
           "en": "Teachers should _____ students to ask questions.",
           "vi": "Thầy cô nên khuyến khích học sinh đặt câu hỏi."
         }
-      ],
-      "chars": 9,
-      "initial": "E"
+      ]
     },
     {
       "id": "realize",
@@ -356,7 +296,6 @@
       "anticipateVi": "Bóng đèn trong đầu sáng chưa?",
       "pos": "verb",
       "ipa": "/ˈriː.ə.laɪz/",
-      "topic": "thinking",
       "topics": [
         "thinking"
       ],
@@ -366,9 +305,7 @@
           "en": "I didn't _____ how late it was.",
           "vi": "Tôi không nhận ra là đã khuya đến thế."
         }
-      ],
-      "chars": 7,
-      "initial": "R"
+      ]
     },
     {
       "id": "decide",
@@ -378,7 +315,6 @@
       "anticipateVi": "Chốt đơn đi bạn ơi!",
       "pos": "verb",
       "ipa": "/dɪˈsaɪd/",
-      "topic": "thinking",
       "topics": [
         "thinking"
       ],
@@ -388,9 +324,7 @@
           "en": "We need to _____ by Friday.",
           "vi": "Chúng ta cần quyết định trước thứ Sáu."
         }
-      ],
-      "chars": 6,
-      "initial": "D"
+      ]
     },
     {
       "id": "forget",
@@ -400,7 +334,6 @@
       "anticipateVi": "Ơ, mình đang làm gì đây?",
       "pos": "verb",
       "ipa": "/fɚˈɡet/",
-      "topic": "thinking",
       "topics": [
         "thinking"
       ],
@@ -410,9 +343,7 @@
           "en": "Don't _____ your umbrella.",
           "vi": "Đừng quên mang ô nhé."
         }
-      ],
-      "chars": 6,
-      "initial": "F"
+      ]
     },
     {
       "id": "habit",
@@ -422,7 +353,6 @@
       "anticipateVi": "Ngày nào cũng vậy mà!",
       "pos": "noun",
       "ipa": "/ˈhæb.ɪt/",
-      "topic": "daily",
       "topics": [
         "daily"
       ],
@@ -432,9 +362,7 @@
           "en": "Biting your nails is a bad _____.",
           "vi": "Cắn móng tay là một thói quen xấu."
         }
-      ],
-      "chars": 5,
-      "initial": "H"
+      ]
     },
     {
       "id": "neighbor",
@@ -444,7 +372,6 @@
       "anticipateVi": "Bán anh em xa, mua…?",
       "pos": "noun",
       "ipa": "/ˈneɪ.bɚ/",
-      "topic": "daily",
       "topics": [
         "daily"
       ],
@@ -454,9 +381,7 @@
           "en": "My _____ often waters my plants when I travel.",
           "vi": "Bác hàng xóm hay tưới cây giúp khi tôi đi xa."
         }
-      ],
-      "chars": 8,
-      "initial": "N"
+      ]
     },
     {
       "id": "rush",
@@ -466,7 +391,6 @@
       "anticipateVi": "Từ từ thôi, kịp mà!",
       "pos": "verb",
       "ipa": "/rʌʃ/",
-      "topic": "time",
       "topics": [
         "time"
       ],
@@ -476,9 +400,7 @@
           "en": "There's no need to _____, we have time.",
           "vi": "Không cần vội đâu, mình còn thời gian."
         }
-      ],
-      "chars": 4,
-      "initial": "R"
+      ]
     },
     {
       "id": "afford",
@@ -488,7 +410,6 @@
       "anticipateVi": "Đoán miễn phí, khỏi trả tiền!",
       "pos": "verb",
       "ipa": "/əˈfɔːrd/",
-      "topic": "money",
       "topics": [
         "money"
       ],
@@ -498,9 +419,7 @@
           "en": "I can't _____ a new laptop right now.",
           "vi": "Giờ tôi chưa đủ tiền mua laptop mới."
         }
-      ],
-      "chars": 6,
-      "initial": "A"
+      ]
     },
     {
       "id": "borrow",
@@ -510,7 +429,6 @@
       "anticipateVi": "Cái gì đi rồi phải về?",
       "pos": "verb",
       "ipa": "/ˈbɑːr.oʊ/",
-      "topic": "money",
       "topics": [
         "money"
       ],
@@ -520,9 +438,7 @@
           "en": "Can I _____ your charger?",
           "vi": "Mình mượn cục sạc của bạn được không?"
         }
-      ],
-      "chars": 6,
-      "initial": "B"
+      ]
     },
     {
       "id": "budget",
@@ -532,7 +448,6 @@
       "anticipateVi": "Tiêu chữ cái cho khéo nhé!",
       "pos": "noun",
       "ipa": "/ˈbʌdʒ.ɪt/",
-      "topic": "money",
       "topics": [
         "money"
       ],
@@ -542,9 +457,7 @@
           "en": "We're planning a trip on a tight _____.",
           "vi": "Chúng tôi lên kế hoạch đi chơi với ngân sách eo hẹp."
         }
-      ],
-      "chars": 6,
-      "initial": "B"
+      ]
     },
     {
       "id": "salary",
@@ -554,7 +467,6 @@
       "anticipateVi": "Cuối tháng nào cũng mong!",
       "pos": "noun",
       "ipa": "/ˈsæl.ɚ.i/",
-      "topic": "work",
       "topics": [
         "work"
       ],
@@ -564,9 +476,7 @@
           "en": "She asked for a higher _____.",
           "vi": "Cô ấy đề nghị được tăng lương."
         }
-      ],
-      "chars": 6,
-      "initial": "S"
+      ]
     }
   ]
 }

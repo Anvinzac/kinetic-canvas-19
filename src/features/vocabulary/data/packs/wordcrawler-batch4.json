@@ -1,0 +1,1907 @@
+{
+  "meta": {
+    "name": "WordCrawler deck batch 4 (A1-A2)"
+  },
+  "words": [
+    {
+      "id": "hungry",
+      "word": "hungry",
+      "defVi": "/Đói bụng/, muốn ăn vì lâu rồi chưa ăn gì.",
+      "leadVi": "Mới mười giờ sáng mà bụng đã réo ầm ầm.",
+      "anticipateVi": "Ăn tạm chữ cái nhé?",
+      "pos": "adj",
+      "ipa": "/ˈhʌŋ.ɡri/",
+      "topics": [
+        "body"
+      ],
+      "level": "A1",
+      "usage": [
+        {
+          "en": "I'm so _____, let's get some pho.",
+          "vi": "Mình đói quá, đi ăn phở đi."
+        }
+      ]
+    },
+    {
+      "id": "thirsty",
+      "word": "thirsty",
+      "defVi": "/Khát nước/, cổ họng khô và rất muốn uống.",
+      "leadVi": "Chạy bộ trưa nắng, về là tu cạn bình nước.",
+      "anticipateVi": "Một ly trà đá không?",
+      "pos": "adj",
+      "ipa": "/ˈθɝː.sti/",
+      "topics": [
+        "body"
+      ],
+      "level": "A1",
+      "usage": [
+        {
+          "en": "Can I have some water? I'm really _____.",
+          "vi": "Cho mình xin ít nước, mình khát quá."
+        }
+      ]
+    },
+    {
+      "id": "tired",
+      "word": "tired",
+      "defVi": "/Mệt mỏi/, chỉ muốn nghỉ ngơi sau khi làm nhiều.",
+      "leadVi": "Tan ca về, ngồi xuống ghế là không muốn đứng dậy.",
+      "anticipateVi": "Mắt díp lại rồi kìa!",
+      "pos": "adj",
+      "ipa": "/taɪrd/",
+      "topics": [
+        "body"
+      ],
+      "level": "A1",
+      "usage": [
+        {
+          "en": "I'm too _____ to cook tonight.",
+          "vi": "Tối nay mình mệt quá, chẳng muốn nấu nướng."
+        }
+      ]
+    },
+    {
+      "id": "angry",
+      "word": "angry",
+      "defVi": "/Tức giận/, khó chịu vì ai đó làm điều sai.",
+      "leadVi": "Bị giành mất chỗ đậu xe, mặt đỏ phừng phừng.",
+      "anticipateVi": "Hít sâu, đếm đến mười!",
+      "pos": "adj",
+      "ipa": "/ˈæŋ.ɡri/",
+      "topics": [
+        "emotion"
+      ],
+      "level": "A1",
+      "usage": [
+        {
+          "en": "Mom gets _____ when I come home late.",
+          "vi": "Mẹ nổi giận mỗi khi tôi về nhà muộn."
+        }
+      ]
+    },
+    {
+      "id": "afraid",
+      "word": "afraid",
+      "defVi": "/Sợ hãi/, lo điều gì đó xấu sắp xảy ra.",
+      "leadVi": "Mất điện giữa đêm, nghe tiếng cửa kẽo kẹt.",
+      "anticipateVi": "Bật đèn lên giùm cái!",
+      "pos": "adj",
+      "ipa": "/əˈfreɪd/",
+      "topics": [
+        "emotion"
+      ],
+      "level": "A1",
+      "usage": [
+        {
+          "en": "My little brother is _____ of the dark.",
+          "vi": "Em trai tôi sợ bóng tối."
+        }
+      ]
+    },
+    {
+      "id": "bored",
+      "word": "bored",
+      "defVi": "/Chán ngán/ vì chẳng có gì vui để làm.",
+      "leadVi": "Mưa cả ngày, lướt điện thoại mãi cũng hết cái xem.",
+      "anticipateVi": "Ngáp dài chưa đó?",
+      "pos": "adj",
+      "ipa": "/bɔːrd/",
+      "topics": [
+        "emotion"
+      ],
+      "level": "A1",
+      "usage": [
+        {
+          "en": "The kids got _____ during the long drive.",
+          "vi": "Bọn trẻ thấy chán trong chuyến xe dài."
+        }
+      ]
+    },
+    {
+      "id": "busy",
+      "word": "busy",
+      "defVi": "/Bận rộn/, có quá nhiều việc phải làm cùng lúc.",
+      "leadVi": "Rủ đi cà phê, lần nào cũng: \"Để tuần sau nha.\"",
+      "anticipateVi": "Rảnh thì đoán giùm!",
+      "pos": "adj",
+      "ipa": "/ˈbɪz.i/",
+      "topics": [
+        "work"
+      ],
+      "level": "A1",
+      "usage": [
+        {
+          "en": "Sorry, I'm _____ right now. Can I call you back?",
+          "vi": "Xin lỗi, giờ mình đang bận. Lát mình gọi lại nhé?"
+        }
+      ]
+    },
+    {
+      "id": "cheap",
+      "word": "cheap",
+      "defVi": "Có /giá rẻ/, tốn ít tiền mà vẫn mua được.",
+      "leadVi": "Áo thun đồng giá ba chục, ai đi ngang cũng ghé.",
+      "anticipateVi": "Mua một tặng một nè!",
+      "pos": "adj",
+      "ipa": "/tʃiːp/",
+      "topics": [
+        "money"
+      ],
+      "level": "A1",
+      "usage": [
+        {
+          "en": "This street food is tasty and _____.",
+          "vi": "Món ăn đường phố này ngon mà rẻ."
+        }
+      ]
+    },
+    {
+      "id": "expensive",
+      "word": "expensive",
+      "defVi": "/Đắt đỏ/, giá cao hơn nhiều so với bình thường.",
+      "leadVi": "Nhìn hóa đơn nhà hàng xong, ví bỗng thấy nhẹ tênh.",
+      "anticipateVi": "Nghe giá là muốn xỉu!",
+      "pos": "adj",
+      "ipa": "/ɪkˈspen.sɪv/",
+      "topics": [
+        "money"
+      ],
+      "level": "A1",
+      "usage": [
+        {
+          "en": "Rent in the city center is very _____.",
+          "vi": "Tiền thuê nhà ở trung tâm rất đắt."
+        }
+      ]
+    },
+    {
+      "id": "delicious",
+      "word": "delicious",
+      "defVi": "Có vị /rất ngon/, ăn rồi còn muốn ăn thêm.",
+      "leadVi": "Húp miếng nước lèo, ai cũng gật gù im lặng.",
+      "anticipateVi": "Thơm quá, chảy nước miếng!",
+      "pos": "adj",
+      "ipa": "/dɪˈlɪʃ.əs/",
+      "topics": [
+        "food"
+      ],
+      "level": "A1",
+      "usage": [
+        {
+          "en": "Grandma's spring rolls are _____.",
+          "vi": "Chả giò bà làm ngon tuyệt."
+        }
+      ]
+    },
+    {
+      "id": "dangerous",
+      "word": "dangerous",
+      "defVi": "/Nguy hiểm/, dễ gây tai nạn hoặc làm người bị thương.",
+      "leadVi": "Biển báo đầu lầu xương chéo treo ngay trước cổng.",
+      "anticipateVi": "Lùi lại, lùi lại!",
+      "pos": "adj",
+      "ipa": "/ˈdeɪn.dʒɚ.əs/",
+      "topics": [
+        "safety"
+      ],
+      "level": "A1",
+      "usage": [
+        {
+          "en": "It's _____ to swim here at night.",
+          "vi": "Bơi ở đây vào ban đêm rất nguy hiểm."
+        }
+      ]
+    },
+    {
+      "id": "famous",
+      "word": "famous",
+      "defVi": "/Nổi tiếng/, được rất nhiều người biết đến.",
+      "leadVi": "Hát một bài, sáng hôm sau cả nước biết tên.",
+      "anticipateVi": "Xin chữ ký cái nào!",
+      "pos": "adj",
+      "ipa": "/ˈfeɪ.məs/",
+      "topics": [
+        "people"
+      ],
+      "level": "A1",
+      "usage": [
+        {
+          "en": "Hoi An is _____ for its lanterns.",
+          "vi": "Hội An nổi tiếng với những chiếc đèn lồng."
+        }
+      ]
+    },
+    {
+      "id": "quiet",
+      "word": "quiet",
+      "defVi": "/Yên tĩnh/, không có tiếng ồn hay ai nói chuyện.",
+      "leadVi": "Thư viện sáu giờ sáng, nghe rõ tiếng lật trang.",
+      "anticipateVi": "Suỵt… đoán thầm thôi!",
+      "pos": "adj",
+      "ipa": "/ˈkwaɪ.ət/",
+      "topics": [
+        "daily"
+      ],
+      "level": "A1",
+      "usage": [
+        {
+          "en": "Please be _____, the baby is sleeping.",
+          "vi": "Làm ơn giữ yên lặng, em bé đang ngủ."
+        }
+      ]
+    },
+    {
+      "id": "dirty",
+      "word": "dirty",
+      "defVi": "/Lấm lem/, dính đầy bụi đất hoặc vết bẩn.",
+      "leadVi": "Đá bóng dưới mưa về, áo trắng thành áo nâu.",
+      "anticipateVi": "Rửa tay rồi hẵng đoán!",
+      "pos": "adj",
+      "ipa": "/ˈdɝː.t̬i/",
+      "topics": [
+        "home"
+      ],
+      "level": "A1",
+      "usage": [
+        {
+          "en": "Take off your _____ shoes before coming in.",
+          "vi": "Cởi đôi giày dơ ra trước khi vào nhà nhé."
+        }
+      ]
+    },
+    {
+      "id": "funny",
+      "word": "funny",
+      "defVi": "/Buồn cười/, hài hước khiến người khác thích thú.",
+      "leadVi": "Nghe anh ấy kể chuyện, cả bàn cười chảy nước mắt.",
+      "anticipateVi": "Nhịn cười nổi không?",
+      "pos": "adj",
+      "ipa": "/ˈfʌn.i/",
+      "topics": [
+        "character"
+      ],
+      "level": "A1",
+      "usage": [
+        {
+          "en": "My uncle tells really _____ stories.",
+          "vi": "Chú tôi kể chuyện rất buồn cười."
+        }
+      ]
+    },
+    {
+      "id": "excited",
+      "word": "excited",
+      "defVi": "/Háo hức/, vui sướng mong chờ điều sắp đến.",
+      "leadVi": "Mai đi biển, tối nay nằm mãi không ngủ được.",
+      "anticipateVi": "Tim đập thình thịch chưa?",
+      "pos": "adj",
+      "ipa": "/ɪkˈsaɪ.t̬ɪd/",
+      "topics": [
+        "emotion"
+      ],
+      "level": "A1",
+      "usage": [
+        {
+          "en": "The children are _____ about the trip.",
+          "vi": "Bọn trẻ đang háo hức về chuyến đi."
+        }
+      ]
+    },
+    {
+      "id": "friendly",
+      "word": "friendly",
+      "defVi": "/Thân thiện/, cởi mở và dễ bắt chuyện với mọi người.",
+      "leadVi": "Mới chuyển đến, bác bên cạnh đã mang sang đĩa xôi.",
+      "anticipateVi": "Cười một cái nào!",
+      "pos": "adj",
+      "ipa": "/ˈfrend.li/",
+      "topics": [
+        "character"
+      ],
+      "level": "A1",
+      "usage": [
+        {
+          "en": "The staff at this hotel are very _____.",
+          "vi": "Nhân viên khách sạn này rất thân thiện."
+        }
+      ]
+    },
+    {
+      "id": "healthy",
+      "word": "healthy",
+      "defVi": "/Khỏe mạnh/, cơ thể tốt và ít khi ốm đau.",
+      "leadVi": "Ông bảy mươi tuổi, sáng nào cũng chạy bộ quanh hồ.",
+      "anticipateVi": "Hít thở sâu, đoán nào!",
+      "pos": "adj",
+      "ipa": "/ˈhel.θi/",
+      "topics": [
+        "body"
+      ],
+      "level": "A1",
+      "usage": [
+        {
+          "en": "Eating vegetables keeps you _____.",
+          "vi": "Ăn rau giúp bạn khỏe mạnh."
+        }
+      ]
+    },
+    {
+      "id": "umbrella",
+      "word": "umbrella",
+      "defVi": "Vật dùng để /che mưa/ hoặc che nắng, gấp gọn được.",
+      "leadVi": "Trời Sài Gòn đang nắng chang chang bỗng đổ mưa.",
+      "anticipateVi": "Bung ra là khô người!",
+      "pos": "noun",
+      "ipa": "/ʌmˈbrel.ə/",
+      "topics": [
+        "daily"
+      ],
+      "level": "A1",
+      "usage": [
+        {
+          "en": "Take an _____, it might rain.",
+          "vi": "Mang theo cây dù nhé, trời có thể mưa."
+        }
+      ]
+    },
+    {
+      "id": "passport",
+      "word": "passport",
+      "defVi": "Giấy tờ /tùy thân/ dùng khi đi ra nước ngoài.",
+      "leadVi": "Ra sân bay rồi mới hoảng: cuốn sổ nhỏ đâu rồi?",
+      "anticipateVi": "Xuất trình đi bạn ơi!",
+      "pos": "noun",
+      "ipa": "/ˈpæs.pɔːrt/",
+      "topics": [
+        "travel"
+      ],
+      "level": "A1",
+      "usage": [
+        {
+          "en": "You need a _____ to travel abroad.",
+          "vi": "Bạn cần hộ chiếu để ra nước ngoài."
+        }
+      ]
+    },
+    {
+      "id": "breakfast",
+      "word": "breakfast",
+      "defVi": "/Bữa sáng/, bữa ăn đầu tiên trong ngày.",
+      "leadVi": "Ổ bánh mì nóng giòn với ly cà phê sữa đá.",
+      "anticipateVi": "Bánh mì hay xôi đây?",
+      "pos": "noun",
+      "ipa": "/ˈbrek.fəst/",
+      "topics": [
+        "food"
+      ],
+      "level": "A1",
+      "usage": [
+        {
+          "en": "I usually have pho for _____.",
+          "vi": "Bữa sáng tôi hay ăn phở."
+        }
+      ]
+    },
+    {
+      "id": "birthday",
+      "word": "birthday",
+      "defVi": "/Ngày sinh/ của ai đó, thường có bánh và quà.",
+      "leadVi": "Thổi nến xong, cả nhà hát vang bài quen thuộc.",
+      "anticipateVi": "Ước một điều đi!",
+      "pos": "noun",
+      "ipa": "/ˈbɝːθ.deɪ/",
+      "topics": [
+        "celebration"
+      ],
+      "level": "A1",
+      "usage": [
+        {
+          "en": "Happy _____! How old are you now?",
+          "vi": "Chúc mừng sinh nhật! Giờ bạn bao nhiêu tuổi rồi?"
+        }
+      ]
+    },
+    {
+      "id": "kitchen",
+      "word": "kitchen",
+      "defVi": "Phòng /nấu nướng/ trong nhà, có bếp và chén bát.",
+      "leadVi": "Mùi hành phi thơm lừng bay ra từ cuối nhà.",
+      "anticipateVi": "Ai đang nấu gì thơm thế?",
+      "pos": "noun",
+      "ipa": "/ˈkɪtʃ.ən/",
+      "topics": [
+        "home"
+      ],
+      "level": "A1",
+      "usage": [
+        {
+          "en": "Mom is cooking dinner in the _____.",
+          "vi": "Mẹ đang nấu bữa tối trong bếp."
+        }
+      ]
+    },
+    {
+      "id": "holiday",
+      "word": "holiday",
+      "defVi": "/Kỳ nghỉ/, những ngày không phải đi học hay đi làm.",
+      "leadVi": "Nghỉ lễ dài ngày, cả nhà xách vali đi Đà Lạt.",
+      "anticipateVi": "Xếp vali chưa nào?",
+      "pos": "noun",
+      "ipa": "/ˈhɑː.lə.deɪ/",
+      "topics": [
+        "leisure"
+      ],
+      "level": "A1",
+      "usage": [
+        {
+          "en": "We spent our summer _____ in Nha Trang.",
+          "vi": "Chúng tôi nghỉ hè ở Nha Trang."
+        }
+      ]
+    },
+    {
+      "id": "homework",
+      "word": "homework",
+      "defVi": "/Bài tập/ thầy cô giao về nhà làm.",
+      "leadVi": "Chủ nhật tối mới lôi vở ra, chép vội cho kịp.",
+      "anticipateVi": "Nộp bài đúng hạn nha!",
+      "pos": "noun",
+      "ipa": "/ˈhoʊm.wɝːk/",
+      "topics": [
+        "school"
+      ],
+      "level": "A1",
+      "usage": [
+        {
+          "en": "Have you finished your _____ yet?",
+          "vi": "Con làm xong bài tập chưa?"
+        }
+      ]
+    },
+    {
+      "id": "weekend",
+      "word": "weekend",
+      "defVi": "/Cuối tuần/, gồm thứ Bảy và Chủ nhật.",
+      "leadVi": "Sáng thứ Bảy, tắt báo thức, ngủ nướng tới trưa.",
+      "anticipateVi": "Thứ Sáu rồi, vui lên!",
+      "pos": "noun",
+      "ipa": "/ˈwiːk.end/",
+      "topics": [
+        "time"
+      ],
+      "level": "A1",
+      "usage": [
+        {
+          "en": "What are you doing this _____?",
+          "vi": "Cuối tuần này bạn làm gì?"
+        }
+      ]
+    },
+    {
+      "id": "island",
+      "word": "island",
+      "defVi": "Vùng đất /bốn bề/ là nước, như Phú Quốc.",
+      "leadVi": "Ngồi tàu ba tiếng, xung quanh chỉ toàn biển xanh.",
+      "anticipateVi": "Lênh đênh tí nào!",
+      "pos": "noun",
+      "ipa": "/ˈaɪ.lənd/",
+      "topics": [
+        "travel"
+      ],
+      "level": "A1",
+      "usage": [
+        {
+          "en": "We took a boat to a small _____.",
+          "vi": "Chúng tôi đi thuyền ra một hòn đảo nhỏ."
+        }
+      ]
+    },
+    {
+      "id": "library",
+      "word": "library",
+      "defVi": "Nơi có /nhiều sách/ để đọc hoặc mượn về.",
+      "leadVi": "Hắt hơi một cái, cả phòng đang đọc quay lại nhìn.",
+      "anticipateVi": "Mở sách ra nào!",
+      "pos": "noun",
+      "ipa": "/ˈlaɪ.brer.i/",
+      "topics": [
+        "school"
+      ],
+      "level": "A1",
+      "usage": [
+        {
+          "en": "I borrowed this book from the _____.",
+          "vi": "Tôi mượn cuốn sách này ở thư viện."
+        }
+      ]
+    },
+    {
+      "id": "ticket",
+      "word": "ticket",
+      "defVi": "Tờ giấy nhỏ cho phép /vào cửa/ hoặc lên xe.",
+      "leadVi": "Gần Tết, thức nửa đêm canh giành chỗ về quê.",
+      "anticipateVi": "Xin mời lên tàu!",
+      "pos": "noun",
+      "ipa": "/ˈtɪk.ɪt/",
+      "topics": [
+        "travel"
+      ],
+      "level": "A1",
+      "usage": [
+        {
+          "en": "I bought a _____ for the 8 p.m. show.",
+          "vi": "Tôi đã mua vé suất chiếu 8 giờ tối."
+        }
+      ]
+    },
+    {
+      "id": "traffic",
+      "word": "traffic",
+      "defVi": "Dòng /xe cộ/ đi lại trên đường phố.",
+      "leadVi": "Sáu giờ chiều, ngã tư kẹt cứng, xe nhích từng chút.",
+      "anticipateVi": "Bóp còi cũng vô ích!",
+      "pos": "noun",
+      "ipa": "/ˈtræf.ɪk/",
+      "topics": [
+        "daily"
+      ],
+      "level": "A1",
+      "usage": [
+        {
+          "en": "The _____ is terrible this morning.",
+          "vi": "Sáng nay đường kẹt kinh khủng."
+        }
+      ]
+    },
+    {
+      "id": "hobby",
+      "word": "hobby",
+      "defVi": "/Sở thích/, việc mình hay làm lúc rảnh cho vui.",
+      "leadVi": "Cuối tuần là ôm máy ảnh đi chụp khắp phố.",
+      "anticipateVi": "Bạn mê món gì nhất?",
+      "pos": "noun",
+      "ipa": "/ˈhɑː.bi/",
+      "topics": [
+        "leisure"
+      ],
+      "level": "A1",
+      "usage": [
+        {
+          "en": "My _____ is playing the guitar.",
+          "vi": "Sở thích của tôi là chơi đàn guitar."
+        }
+      ]
+    },
+    {
+      "id": "menu",
+      "word": "menu",
+      "defVi": "/Thực đơn/, danh sách món ăn và giá ở quán.",
+      "leadVi": "Vừa ngồi xuống, phục vụ đưa cuốn sổ đầy hình món.",
+      "anticipateVi": "Gọi món chưa anh chị?",
+      "pos": "noun",
+      "ipa": "/ˈmen.juː/",
+      "topics": [
+        "food"
+      ],
+      "level": "A1",
+      "usage": [
+        {
+          "en": "Could we see the _____, please?",
+          "vi": "Cho chúng tôi xem thực đơn được không?"
+        }
+      ]
+    },
+    {
+      "id": "market",
+      "word": "market",
+      "defVi": "Nơi nhiều người họp lại /mua bán/ rau, thịt, cá.",
+      "leadVi": "Sáng sớm, cô bán cá rao inh ỏi: \"Tươi rói nè!\"",
+      "anticipateVi": "Trả giá đi nào!",
+      "pos": "noun",
+      "ipa": "/ˈmɑːr.kɪt/",
+      "topics": [
+        "daily"
+      ],
+      "level": "A1",
+      "usage": [
+        {
+          "en": "Mom goes to the _____ every morning.",
+          "vi": "Sáng nào mẹ cũng đi chợ."
+        }
+      ]
+    },
+    {
+      "id": "festival",
+      "word": "festival",
+      "defVi": "/Lễ hội/, dịp nhiều người cùng vui chơi, ca múa.",
+      "leadVi": "Rằm tháng Tám, phố đông nghẹt đèn lồng và trống lân.",
+      "anticipateVi": "Tùng tùng cheng!",
+      "pos": "noun",
+      "ipa": "/ˈfes.tə.vəl/",
+      "topics": [
+        "celebration"
+      ],
+      "level": "A1",
+      "usage": [
+        {
+          "en": "The flower _____ in Da Lat is beautiful.",
+          "vi": "Lễ hội hoa ở Đà Lạt rất đẹp."
+        }
+      ]
+    },
+    {
+      "id": "airport",
+      "word": "airport",
+      "defVi": "Nơi máy bay /cất cánh/ và hạ cánh.",
+      "leadVi": "Kéo vali qua cửa an ninh, loa gọi chuyến liên tục.",
+      "anticipateVi": "Thắt dây an toàn nào!",
+      "pos": "noun",
+      "ipa": "/ˈer.pɔːrt/",
+      "topics": [
+        "travel"
+      ],
+      "level": "A1",
+      "usage": [
+        {
+          "en": "We need to be at the _____ by 6 a.m.",
+          "vi": "Chúng ta phải có mặt ở sân bay trước 6 giờ sáng."
+        }
+      ]
+    },
+    {
+      "id": "mistake",
+      "word": "mistake",
+      "defVi": "/Lỗi sai/, việc làm hoặc nói chưa đúng.",
+      "leadVi": "Nộp bài xong mới thấy: hai cộng hai ghi thành năm.",
+      "anticipateVi": "Gõ nhầm rồi kìa!",
+      "pos": "noun",
+      "ipa": "/mɪˈsteɪk/",
+      "topics": [
+        "thinking"
+      ],
+      "level": "A1",
+      "usage": [
+        {
+          "en": "I made a big _____ in my report.",
+          "vi": "Tôi mắc một lỗi to trong bản báo cáo."
+        }
+      ]
+    },
+    {
+      "id": "advice",
+      "word": "advice",
+      "defVi": "/Lời khuyên/ giúp ai đó biết nên làm gì.",
+      "leadVi": "Đang phân vân bỏ việc, gọi ngay cho chị gái hỏi.",
+      "anticipateVi": "Nghe mình nói nè!",
+      "pos": "noun",
+      "ipa": "/ədˈvaɪs/",
+      "topics": [
+        "communication"
+      ],
+      "level": "A1",
+      "usage": [
+        {
+          "en": "Can you give me some _____?",
+          "vi": "Bạn cho mình vài lời khuyên được không?"
+        }
+      ]
+    },
+    {
+      "id": "dictionary",
+      "word": "dictionary",
+      "defVi": "Sách để /tra cứu/ nghĩa của từ, xếp theo vần.",
+      "leadVi": "Gặp chữ lạ là lật cuốn sách dày cộm ra tìm.",
+      "anticipateVi": "Tra thử chữ này xem!",
+      "pos": "noun",
+      "ipa": "/ˈdɪk.ʃən.er.i/",
+      "topics": [
+        "school"
+      ],
+      "level": "A1",
+      "usage": [
+        {
+          "en": "Look up the word in a _____.",
+          "vi": "Hãy tra từ đó trong từ điển."
+        }
+      ]
+    },
+    {
+      "id": "arrive",
+      "word": "arrive",
+      "defVi": "/Đến nơi/ sau khi đi một quãng đường.",
+      "leadVi": "Xe dừng bánh, tài xế báo: \"Tới bến rồi nha!\"",
+      "anticipateVi": "Sắp tới chưa vậy?",
+      "pos": "verb",
+      "ipa": "/əˈraɪv/",
+      "topics": [
+        "travel"
+      ],
+      "level": "A1",
+      "usage": [
+        {
+          "en": "What time does the train _____?",
+          "vi": "Mấy giờ tàu tới nơi?"
+        }
+      ]
+    },
+    {
+      "id": "laugh",
+      "word": "laugh",
+      "defVi": "/Bật cười/ thành tiếng vì thấy vui hay buồn cười.",
+      "leadVi": "Xem phim hài, cả nhà ôm bụng ha hả.",
+      "anticipateVi": "Ha ha, đoán ra chưa?",
+      "pos": "verb",
+      "ipa": "/læf/",
+      "topics": [
+        "emotion"
+      ],
+      "level": "A1",
+      "usage": [
+        {
+          "en": "Her jokes always make me _____.",
+          "vi": "Mấy câu đùa của cô ấy lúc nào cũng làm tôi cười."
+        }
+      ]
+    },
+    {
+      "id": "climb",
+      "word": "climb",
+      "defVi": "/Leo trèo/ lên cao bằng tay và chân.",
+      "leadVi": "Chinh phục Fansipan, đến đỉnh thở không ra hơi.",
+      "anticipateVi": "Lên cao chút nữa!",
+      "pos": "verb",
+      "ipa": "/klaɪm/",
+      "topics": [
+        "leisure"
+      ],
+      "level": "A1",
+      "usage": [
+        {
+          "en": "Let's _____ to the top of the hill.",
+          "vi": "Mình leo lên đỉnh đồi nhé."
+        }
+      ]
+    },
+    {
+      "id": "share",
+      "word": "share",
+      "defVi": "/Chia sẻ/, cùng dùng hoặc chia phần cho người khác.",
+      "leadVi": "Có gói bim bim, xé ra mời cả bàn cùng ăn.",
+      "anticipateVi": "Mỗi người một miếng nha!",
+      "pos": "verb",
+      "ipa": "/ʃer/",
+      "topics": [
+        "communication"
+      ],
+      "level": "A1",
+      "usage": [
+        {
+          "en": "Can I _____ your table?",
+          "vi": "Mình ngồi chung bàn với bạn được không?"
+        }
+      ]
+    },
+    {
+      "id": "wait",
+      "word": "wait",
+      "defVi": "/Chờ đợi/ cho tới khi người hay việc mình mong đến.",
+      "leadVi": "Đặt đồ ăn xong, năm phút lại mở ứng dụng xem.",
+      "anticipateVi": "Khoan, chút nữa thôi!",
+      "pos": "verb",
+      "ipa": "/weɪt/",
+      "topics": [
+        "time"
+      ],
+      "level": "A1",
+      "usage": [
+        {
+          "en": "Please _____ here for a moment.",
+          "vi": "Vui lòng đợi ở đây một lát."
+        }
+      ]
+    },
+    {
+      "id": "choose",
+      "word": "choose",
+      "defVi": "/Lựa chọn/ một thứ mình thích nhất trong nhiều thứ.",
+      "leadVi": "Đứng trước tủ kính, chỉ tay: \"Cho em cái bánh này.\"",
+      "anticipateVi": "Một, hai hay ba?",
+      "pos": "verb",
+      "ipa": "/tʃuːz/",
+      "topics": [
+        "thinking"
+      ],
+      "level": "A1",
+      "usage": [
+        {
+          "en": "You can _____ any color you like.",
+          "vi": "Bạn có thể chọn bất kỳ màu nào bạn thích."
+        }
+      ]
+    },
+    {
+      "id": "believe",
+      "word": "believe",
+      "defVi": "/Tin rằng/ điều gì đó là thật hoặc đúng.",
+      "leadVi": "Trẻ con nghe chuyện ông già Noel, ai cũng gật đầu.",
+      "anticipateVi": "Thật hay đùa vậy?",
+      "pos": "verb",
+      "ipa": "/bɪˈliːv/",
+      "topics": [
+        "thinking"
+      ],
+      "level": "A1",
+      "usage": [
+        {
+          "en": "I can't _____ it's already October!",
+          "vi": "Không thể tin là đã tháng Mười rồi!"
+        }
+      ]
+    },
+    {
+      "id": "enjoy",
+      "word": "enjoy",
+      "defVi": "/Tận hưởng/, thấy vui thích khi làm điều gì.",
+      "leadVi": "Nằm võng, gió biển mát rượi, tay cầm trái dừa.",
+      "anticipateVi": "Sướng chưa nè!",
+      "pos": "verb",
+      "ipa": "/ɪnˈdʒɔɪ/",
+      "topics": [
+        "leisure"
+      ],
+      "level": "A1",
+      "usage": [
+        {
+          "en": "Did you _____ the party?",
+          "vi": "Bạn có vui ở bữa tiệc không?"
+        }
+      ]
+    },
+    {
+      "id": "relax",
+      "word": "relax",
+      "defVi": "/Thư giãn/, nghỉ ngơi cho đầu óc nhẹ nhàng.",
+      "leadVi": "Tắt điện thoại, bật nhạc nhẹ, ngâm chân nước ấm.",
+      "anticipateVi": "Thả lỏng vai ra nào!",
+      "pos": "verb",
+      "ipa": "/rɪˈlæks/",
+      "topics": [
+        "leisure"
+      ],
+      "level": "A1",
+      "usage": [
+        {
+          "en": "Sit down and _____ for a bit.",
+          "vi": "Ngồi xuống nghỉ ngơi chút đi."
+        }
+      ]
+    },
+    {
+      "id": "spend",
+      "word": "spend",
+      "defVi": "/Tiêu tiền/ hoặc dùng thời gian cho việc gì đó.",
+      "leadVi": "Lương mới về, ba ngày sau tài khoản còn số lẻ.",
+      "anticipateVi": "Ví ơi, cố lên!",
+      "pos": "verb",
+      "ipa": "/spend/",
+      "topics": [
+        "money"
+      ],
+      "level": "A1",
+      "usage": [
+        {
+          "en": "How much did you _____ on that phone?",
+          "vi": "Bạn đã tốn bao nhiêu tiền cho cái điện thoại đó?"
+        }
+      ]
+    },
+    {
+      "id": "wake",
+      "word": "wake",
+      "defVi": "/Thức dậy/ sau giấc ngủ, mở mắt ra lúc sáng.",
+      "leadVi": "Tiếng gà gáy ngoài sân, mắt nhắm mắt mở bò dậy.",
+      "anticipateVi": "Reng reng reng!",
+      "pos": "verb",
+      "ipa": "/weɪk/",
+      "topics": [
+        "daily"
+      ],
+      "level": "A1",
+      "usage": [
+        {
+          "en": "I usually _____ up at six.",
+          "vi": "Tôi thường dậy lúc sáu giờ."
+        }
+      ]
+    },
+    {
+      "id": "travel",
+      "word": "travel",
+      "defVi": "/Đi xa/ đến nơi khác để chơi hoặc công tác.",
+      "leadVi": "Ba lô trên vai, năm nào cũng khám phá tỉnh mới.",
+      "anticipateVi": "Xách ba lô lên và đi!",
+      "pos": "verb",
+      "ipa": "/ˈtræv.əl/",
+      "topics": [
+        "travel"
+      ],
+      "level": "A1",
+      "usage": [
+        {
+          "en": "I want to _____ around Vietnam by motorbike.",
+          "vi": "Tôi muốn đi du lịch vòng quanh Việt Nam bằng xe máy."
+        }
+      ]
+    },
+    {
+      "id": "nervous",
+      "word": "nervous",
+      "defVi": "/Hồi hộp/, lo lắng trước một việc quan trọng.",
+      "leadVi": "Ngồi chờ phỏng vấn, tay lạnh ngắt, tim đập loạn.",
+      "anticipateVi": "Run tay rồi phải không?",
+      "pos": "adj",
+      "ipa": "/ˈnɝː.vəs/",
+      "topics": [
+        "emotion"
+      ],
+      "level": "A2",
+      "usage": [
+        {
+          "en": "I always get _____ before exams.",
+          "vi": "Tôi lúc nào cũng hồi hộp trước kỳ thi."
+        }
+      ]
+    },
+    {
+      "id": "lucky",
+      "word": "lucky",
+      "defVi": "/May mắn/, gặp điều tốt mà không cần cố gắng.",
+      "leadVi": "Mua tờ vé số cuối cùng, sáng hôm sau trúng giải.",
+      "anticipateVi": "Hên xui, đoán thử!",
+      "pos": "adj",
+      "ipa": "/ˈlʌk.i/",
+      "topics": [
+        "emotion"
+      ],
+      "level": "A2",
+      "usage": [
+        {
+          "en": "You're _____ to have such good friends.",
+          "vi": "Bạn thật may mắn khi có những người bạn tốt như vậy."
+        }
+      ]
+    },
+    {
+      "id": "careful",
+      "word": "careful",
+      "defVi": "/Cẩn thận/, chú ý để không gây lỗi hay tai nạn.",
+      "leadVi": "Bưng tô canh nóng, bước từng bước thật chậm.",
+      "anticipateVi": "Từng chữ một thôi!",
+      "pos": "adj",
+      "ipa": "/ˈker.fəl/",
+      "topics": [
+        "character"
+      ],
+      "level": "A2",
+      "usage": [
+        {
+          "en": "Be _____, the floor is wet.",
+          "vi": "Cẩn thận nhé, sàn nhà đang ướt."
+        }
+      ]
+    },
+    {
+      "id": "clever",
+      "word": "clever",
+      "defVi": "/Thông minh/, hiểu nhanh và nghĩ ra cách hay.",
+      "leadVi": "Mới năm tuổi đã tự mở khóa điện thoại của bố.",
+      "anticipateVi": "Cái đầu này nhạy ghê!",
+      "pos": "adj",
+      "ipa": "/ˈklev.ɚ/",
+      "topics": [
+        "character"
+      ],
+      "level": "A2",
+      "usage": [
+        {
+          "en": "What a _____ idea!",
+          "vi": "Ý tưởng thông minh quá!"
+        }
+      ]
+    },
+    {
+      "id": "crowded",
+      "word": "crowded",
+      "defVi": "/Đông đúc/, chật kín người đến mức khó chen chân.",
+      "leadVi": "Tối Giao thừa ở phố đi bộ, người chen vai nhau.",
+      "anticipateVi": "Chen lấn quá trời!",
+      "pos": "adj",
+      "ipa": "/ˈkraʊ.dɪd/",
+      "topics": [
+        "daily"
+      ],
+      "level": "A2",
+      "usage": [
+        {
+          "en": "The bus was so _____ that I had to stand.",
+          "vi": "Xe buýt đông đến mức tôi phải đứng."
+        }
+      ]
+    },
+    {
+      "id": "empty",
+      "word": "empty",
+      "defVi": "/Trống rỗng/, không còn gì hoặc không có ai bên trong.",
+      "leadVi": "Cuối tháng lắc lắc hũ tiết kiệm, chẳng nghe tiếng gì.",
+      "anticipateVi": "Không còn gì ở đây!",
+      "pos": "adj",
+      "ipa": "/ˈemp.ti/",
+      "topics": [
+        "daily"
+      ],
+      "level": "A2",
+      "usage": [
+        {
+          "en": "The streets are _____ during Tet.",
+          "vi": "Ngày Tết đường phố vắng tanh."
+        }
+      ]
+    },
+    {
+      "id": "noisy",
+      "word": "noisy",
+      "defVi": "/Ồn ào/, có nhiều tiếng động lớn khiến khó chịu.",
+      "leadVi": "Hàng xóm hát karaoke từ chiều đến tận nửa đêm.",
+      "anticipateVi": "Bịt tai lại rồi đoán!",
+      "pos": "adj",
+      "ipa": "/ˈnɔɪ.zi/",
+      "topics": [
+        "daily"
+      ],
+      "level": "A2",
+      "usage": [
+        {
+          "en": "This café is too _____ to work in.",
+          "vi": "Quán cà phê này ồn quá, không làm việc được."
+        }
+      ]
+    },
+    {
+      "id": "rude",
+      "word": "rude",
+      "defVi": "/Thô lỗ/, cư xử thiếu tôn trọng người khác.",
+      "leadVi": "Chen ngang hàng, bị nhắc còn quay lại trợn mắt.",
+      "anticipateVi": "Ăn nói cho đàng hoàng!",
+      "pos": "adj",
+      "ipa": "/ruːd/",
+      "topics": [
+        "character"
+      ],
+      "level": "A2",
+      "usage": [
+        {
+          "en": "It's _____ to talk with your mouth full.",
+          "vi": "Vừa nhai vừa nói là bất lịch sự."
+        }
+      ]
+    },
+    {
+      "id": "worried",
+      "word": "worried",
+      "defVi": "/Lo lắng/, cứ nghĩ mãi về chuyện xấu có thể đến.",
+      "leadVi": "Mười giờ đêm con chưa về, mẹ gọi mãi không được.",
+      "anticipateVi": "Đừng nhăn trán nữa!",
+      "pos": "adj",
+      "ipa": "/ˈwɝː.id/",
+      "topics": [
+        "emotion"
+      ],
+      "level": "A2",
+      "usage": [
+        {
+          "en": "My parents get _____ when I travel alone.",
+          "vi": "Bố mẹ lo lắng mỗi khi tôi đi một mình."
+        }
+      ]
+    },
+    {
+      "id": "strange",
+      "word": "strange",
+      "defVi": "/Kỳ lạ/, khác thường đến mức khiến mình thấy khó hiểu.",
+      "leadVi": "Nửa đêm, chuông cửa reo mà ngoài kia chẳng có ai.",
+      "anticipateVi": "Hơi sai sai nhỉ?",
+      "pos": "adj",
+      "ipa": "/streɪndʒ/",
+      "topics": [
+        "thinking"
+      ],
+      "level": "A2",
+      "usage": [
+        {
+          "en": "I heard a _____ noise outside.",
+          "vi": "Tôi nghe thấy một tiếng động lạ bên ngoài."
+        }
+      ]
+    },
+    {
+      "id": "huge",
+      "word": "huge",
+      "defVi": "/Khổng lồ/, to lớn hơn hẳn mức bình thường.",
+      "leadVi": "Tô phở to bằng cái chậu, hai người ăn không hết.",
+      "anticipateVi": "To cỡ nào nhỉ?",
+      "pos": "adj",
+      "ipa": "/hjuːdʒ/",
+      "topics": [
+        "daily"
+      ],
+      "level": "A2",
+      "usage": [
+        {
+          "en": "They live in a _____ house.",
+          "vi": "Họ sống trong một căn nhà rất lớn."
+        }
+      ]
+    },
+    {
+      "id": "fresh",
+      "word": "fresh",
+      "defVi": "/Tươi ngon/, mới hái hoặc mới làm, chưa để lâu.",
+      "leadVi": "Rau vừa cắt ngoài vườn, còn đọng giọt sương buổi sớm.",
+      "anticipateVi": "Vừa ra lò nè!",
+      "pos": "adj",
+      "ipa": "/freʃ/",
+      "topics": [
+        "food"
+      ],
+      "level": "A2",
+      "usage": [
+        {
+          "en": "These vegetables are really _____.",
+          "vi": "Rau này tươi thật."
+        }
+      ]
+    },
+    {
+      "id": "comfortable",
+      "word": "comfortable",
+      "defVi": "/Thoải mái/, dễ chịu, không thấy chật hay đau.",
+      "leadVi": "Về nhà thay đồ bộ, nằm dài trên ghế sofa êm.",
+      "anticipateVi": "Dễ chịu chưa nè?",
+      "pos": "adj",
+      "ipa": "/ˈkʌm.fɚ.t̬ə.bəl/",
+      "topics": [
+        "home"
+      ],
+      "level": "A2",
+      "usage": [
+        {
+          "en": "These shoes are very _____.",
+          "vi": "Đôi giày này đi rất êm chân."
+        }
+      ]
+    },
+    {
+      "id": "surprised",
+      "word": "surprised",
+      "defVi": "/Ngạc nhiên/ vì gặp điều mình hoàn toàn không ngờ.",
+      "leadVi": "Mở cửa ra, cả nhóm bạn hét lên cùng bánh kem.",
+      "anticipateVi": "Há hốc mồm chưa?",
+      "pos": "adj",
+      "ipa": "/sɚˈpraɪzd/",
+      "topics": [
+        "emotion"
+      ],
+      "level": "A2",
+      "usage": [
+        {
+          "en": "I was _____ to see him at the party.",
+          "vi": "Tôi ngạc nhiên khi thấy anh ấy ở bữa tiệc."
+        }
+      ]
+    },
+    {
+      "id": "tidy",
+      "word": "tidy",
+      "defVi": "/Gọn gàng/, mọi thứ được xếp đúng chỗ, ngăn nắp.",
+      "leadVi": "Bàn học không một tờ giấy lệch, bút xếp thẳng hàng.",
+      "anticipateVi": "Mọi thứ vào nếp nào!",
+      "pos": "adj",
+      "ipa": "/ˈtaɪ.di/",
+      "topics": [
+        "home"
+      ],
+      "level": "A2",
+      "usage": [
+        {
+          "en": "Keep your room _____, please.",
+          "vi": "Con giữ phòng gọn gàng nhé."
+        }
+      ]
+    },
+    {
+      "id": "accident",
+      "word": "accident",
+      "defVi": "/Tai nạn/, chuyện rủi ro bất ngờ gây thương tích.",
+      "leadVi": "Đường trơn, hai xe máy quẹt nhau, người ngã ra đường.",
+      "anticipateVi": "Chạy chậm thôi nha!",
+      "pos": "noun",
+      "ipa": "/ˈæk.sə.dənt/",
+      "topics": [
+        "safety"
+      ],
+      "level": "A2",
+      "usage": [
+        {
+          "en": "He broke his leg in a car _____.",
+          "vi": "Anh ấy bị gãy chân trong một vụ tai nạn ô tô."
+        }
+      ]
+    },
+    {
+      "id": "adventure",
+      "word": "adventure",
+      "defVi": "/Chuyến phiêu lưu/ đầy thú vị và có chút mạo hiểm.",
+      "leadVi": "Băng rừng ba ngày, chỉ mang bản đồ và la bàn.",
+      "anticipateVi": "Sẵn sàng khám phá chưa?",
+      "pos": "noun",
+      "ipa": "/ədˈven.tʃɚ/",
+      "topics": [
+        "travel"
+      ],
+      "level": "A2",
+      "usage": [
+        {
+          "en": "Our trip to Ha Giang was a real _____.",
+          "vi": "Chuyến đi Hà Giang thật sự là một cuộc phiêu lưu."
+        }
+      ]
+    },
+    {
+      "id": "gift",
+      "word": "gift",
+      "defVi": "/Món quà/ tặng ai đó để thể hiện tình cảm.",
+      "leadVi": "Hộp nhỏ thắt nơ đỏ, lắc thử nghe lục cục.",
+      "anticipateVi": "Mở ra xem nào!",
+      "pos": "noun",
+      "ipa": "/ɡɪft/",
+      "topics": [
+        "celebration"
+      ],
+      "level": "A2",
+      "usage": [
+        {
+          "en": "This watch was a _____ from my dad.",
+          "vi": "Chiếc đồng hồ này là quà bố tặng tôi."
+        }
+      ]
+    },
+    {
+      "id": "recipe",
+      "word": "recipe",
+      "defVi": "/Công thức/ nấu một món, ghi nguyên liệu và các bước.",
+      "leadVi": "Bà ghi tay vào cuốn sổ cũ: nước mắm, đường, tỏi.",
+      "anticipateVi": "Bí quyết gia truyền đây!",
+      "pos": "noun",
+      "ipa": "/ˈres.ə.pi/",
+      "topics": [
+        "food"
+      ],
+      "level": "A2",
+      "usage": [
+        {
+          "en": "Can you send me your _____ for this soup?",
+          "vi": "Bạn gửi mình công thức nấu món canh này được không?"
+        }
+      ]
+    },
+    {
+      "id": "invitation",
+      "word": "invitation",
+      "defVi": "/Lời mời/ ai đó đến dự tiệc hay sự kiện.",
+      "leadVi": "Phong bì đỏ in chữ Hỷ, kèm tên mình viết tay.",
+      "anticipateVi": "Nhớ đến đúng giờ nha!",
+      "pos": "noun",
+      "ipa": "/ˌɪn.vəˈteɪ.ʃən/",
+      "topics": [
+        "communication"
+      ],
+      "level": "A2",
+      "usage": [
+        {
+          "en": "Thanks for the _____ to your party.",
+          "vi": "Cảm ơn bạn đã mời mình dự tiệc."
+        }
+      ]
+    },
+    {
+      "id": "wedding",
+      "word": "wedding",
+      "defVi": "/Đám cưới/, lễ kết hôn của cô dâu và chú rể.",
+      "leadVi": "Nhạc xập xình, bàn tròn đầy món, ai cũng nâng ly.",
+      "anticipateVi": "Một, hai, ba, dzô!",
+      "pos": "noun",
+      "ipa": "/ˈwed.ɪŋ/",
+      "topics": [
+        "celebration"
+      ],
+      "level": "A2",
+      "usage": [
+        {
+          "en": "We're going to my cousin's _____ on Sunday.",
+          "vi": "Chủ nhật này chúng tôi đi đám cưới em họ."
+        }
+      ]
+    },
+    {
+      "id": "headache",
+      "word": "headache",
+      "defVi": "Cơn /đau đầu/, nhức nhối khó chịu ở vùng đầu.",
+      "leadVi": "Ngồi máy tính cả ngày, hai bên thái dương giật giật.",
+      "anticipateVi": "Xoa dầu gió đi!",
+      "pos": "noun",
+      "ipa": "/ˈhed.eɪk/",
+      "topics": [
+        "body"
+      ],
+      "level": "A2",
+      "usage": [
+        {
+          "en": "I have a terrible _____ today.",
+          "vi": "Hôm nay tôi đau đầu kinh khủng."
+        }
+      ]
+    },
+    {
+      "id": "memory",
+      "word": "memory",
+      "defVi": "/Kỷ niệm/ hoặc điều mình còn nhớ từ ngày xưa.",
+      "leadVi": "Lật album cũ, thấy mình ngày bé mặc áo dài.",
+      "anticipateVi": "Nhớ hồi đó không?",
+      "pos": "noun",
+      "ipa": "/ˈmem.ɚ.i/",
+      "topics": [
+        "thinking"
+      ],
+      "level": "A2",
+      "usage": [
+        {
+          "en": "That trip is my favorite childhood _____.",
+          "vi": "Chuyến đi ấy là kỷ niệm tuổi thơ tôi thích nhất."
+        }
+      ]
+    },
+    {
+      "id": "secret",
+      "word": "secret",
+      "defVi": "/Bí mật/, điều giấu kín không muốn ai biết.",
+      "leadVi": "Ghé tai bạn thân thì thầm: \"Đừng kể với ai nhé.\"",
+      "anticipateVi": "Chỉ mình bạn biết thôi!",
+      "pos": "noun",
+      "ipa": "/ˈsiː.krət/",
+      "topics": [
+        "communication"
+      ],
+      "level": "A2",
+      "usage": [
+        {
+          "en": "Can you keep a _____?",
+          "vi": "Bạn giữ bí mật được không?"
+        }
+      ]
+    },
+    {
+      "id": "joke",
+      "word": "joke",
+      "defVi": "/Câu đùa/ hay chuyện vui kể để mọi người cười.",
+      "leadVi": "\"Con gì đầu dê mình ốc?\" Cả bàn ngơ ra.",
+      "anticipateVi": "Nghe xong nhớ cười nha!",
+      "pos": "noun",
+      "ipa": "/dʒoʊk/",
+      "topics": [
+        "communication"
+      ],
+      "level": "A2",
+      "usage": [
+        {
+          "en": "He told a _____ and everyone laughed.",
+          "vi": "Anh ấy kể một câu đùa và mọi người đều cười."
+        }
+      ]
+    },
+    {
+      "id": "prize",
+      "word": "prize",
+      "defVi": "/Giải thưởng/ trao cho người thắng cuộc thi.",
+      "leadVi": "Bốc thăm cuối tiệc tất niên, trúng ngay chiếc xe đạp.",
+      "anticipateVi": "Xin chúc mừng bạn!",
+      "pos": "noun",
+      "ipa": "/praɪz/",
+      "topics": [
+        "leisure"
+      ],
+      "level": "A2",
+      "usage": [
+        {
+          "en": "She won first _____ in the singing contest.",
+          "vi": "Cô ấy đoạt giải nhất cuộc thi hát."
+        }
+      ]
+    },
+    {
+      "id": "guest",
+      "word": "guest",
+      "defVi": "Người được /mời đến/ nhà hay dự tiệc.",
+      "leadVi": "Nghe chuông cửa, mẹ vội pha trà, bày đĩa trái cây.",
+      "anticipateVi": "Mời vào, mời vào!",
+      "pos": "noun",
+      "ipa": "/ɡest/",
+      "topics": [
+        "people"
+      ],
+      "level": "A2",
+      "usage": [
+        {
+          "en": "Our _____ will arrive at seven.",
+          "vi": "Khách của chúng tôi sẽ đến lúc bảy giờ."
+        }
+      ]
+    },
+    {
+      "id": "pocket",
+      "word": "pocket",
+      "defVi": "/Túi áo/ hoặc túi quần, để đựng đồ nhỏ.",
+      "leadVi": "Giặt đồ xong mới thấy tờ tiền nhàu nát trong đó.",
+      "anticipateVi": "Thò tay vào thử xem!",
+      "pos": "noun",
+      "ipa": "/ˈpɑː.kɪt/",
+      "topics": [
+        "clothing"
+      ],
+      "level": "A2",
+      "usage": [
+        {
+          "en": "My keys are in my _____.",
+          "vi": "Chìa khóa ở trong túi tôi."
+        }
+      ]
+    },
+    {
+      "id": "mirror",
+      "word": "mirror",
+      "defVi": "/Tấm gương/ soi để thấy mặt hay dáng mình.",
+      "leadVi": "Trước khi ra khỏi nhà, xoay trái xoay phải ngắm nghía.",
+      "anticipateVi": "Ai đẹp nhất thế gian?",
+      "pos": "noun",
+      "ipa": "/ˈmɪr.ɚ/",
+      "topics": [
+        "home"
+      ],
+      "level": "A2",
+      "usage": [
+        {
+          "en": "She looked at herself in the _____.",
+          "vi": "Cô ấy ngắm mình trong gương."
+        }
+      ]
+    },
+    {
+      "id": "fridge",
+      "word": "fridge",
+      "defVi": "/Tủ lạnh/ giữ đồ ăn luôn mát và tươi lâu.",
+      "leadVi": "Đói lúc khuya, mở cửa ra là đèn bật sáng.",
+      "anticipateVi": "Lạnh run cả người!",
+      "pos": "noun",
+      "ipa": "/frɪdʒ/",
+      "topics": [
+        "home"
+      ],
+      "level": "A2",
+      "usage": [
+        {
+          "en": "Put the milk back in the _____.",
+          "vi": "Cất sữa lại vào tủ lạnh đi."
+        }
+      ]
+    },
+    {
+      "id": "rubbish",
+      "word": "rubbish",
+      "defVi": "Đồ bỏ đi như vỏ hộp, /túi ni lông/, giấy vụn.",
+      "leadVi": "Tám giờ tối, xe đẩy leng keng chạy qua đầu hẻm.",
+      "anticipateVi": "Bỏ đúng chỗ nha!",
+      "pos": "noun",
+      "ipa": "/ˈrʌb.ɪʃ/",
+      "topics": [
+        "home"
+      ],
+      "level": "A2",
+      "usage": [
+        {
+          "en": "Please put your _____ in the bin.",
+          "vi": "Vui lòng bỏ rác vào thùng."
+        }
+      ]
+    },
+    {
+      "id": "uniform",
+      "word": "uniform",
+      "defVi": "/Đồng phục/, quần áo giống nhau của trường hay công ty.",
+      "leadVi": "Thứ Hai, cả trường áo trắng quần xanh giống hệt.",
+      "anticipateVi": "Mặc giống nhau ghê!",
+      "pos": "noun",
+      "ipa": "/ˈjuː.nə.fɔːrm/",
+      "topics": [
+        "clothing"
+      ],
+      "level": "A2",
+      "usage": [
+        {
+          "en": "Students must wear a _____ at my school.",
+          "vi": "Ở trường tôi, học sinh phải mặc đồng phục."
+        }
+      ]
+    },
+    {
+      "id": "thief",
+      "word": "thief",
+      "defVi": "/Kẻ trộm/, người lén lấy đồ của người khác.",
+      "leadVi": "Chợ đông, quay lại đã thấy ví không cánh mà bay.",
+      "anticipateVi": "Bắt lấy hắn!",
+      "pos": "noun",
+      "ipa": "/θiːf/",
+      "topics": [
+        "safety"
+      ],
+      "level": "A2",
+      "usage": [
+        {
+          "en": "The police caught the _____.",
+          "vi": "Cảnh sát đã bắt được tên trộm."
+        }
+      ]
+    },
+    {
+      "id": "celebrity",
+      "word": "celebrity",
+      "defVi": "/Người nổi tiếng/, thường là ca sĩ hay diễn viên.",
+      "leadVi": "Người hâm mộ xếp hàng từ sớm chỉ để chụp chung.",
+      "anticipateVi": "Thảm đỏ đang chờ!",
+      "pos": "noun",
+      "ipa": "/səˈleb.rə.t̬i/",
+      "topics": [
+        "people"
+      ],
+      "level": "A2",
+      "usage": [
+        {
+          "en": "She became a _____ after the TV show.",
+          "vi": "Cô ấy trở thành người nổi tiếng sau chương trình truyền hình đó."
+        }
+      ]
+    },
+    {
+      "id": "charity",
+      "word": "charity",
+      "defVi": "Tổ chức /từ thiện/, quyên góp giúp người gặp khó khăn.",
+      "leadVi": "Miền Trung lũ lụt, cả lớp góp tiền gửi quần áo.",
+      "anticipateVi": "Lá lành đùm lá rách!",
+      "pos": "noun",
+      "ipa": "/ˈtʃer.ə.t̬i/",
+      "topics": [
+        "community"
+      ],
+      "level": "A2",
+      "usage": [
+        {
+          "en": "She gives money to _____ every month.",
+          "vi": "Tháng nào cô ấy cũng quyên góp cho tổ chức từ thiện."
+        }
+      ]
+    },
+    {
+      "id": "permission",
+      "word": "permission",
+      "defVi": "/Sự cho phép/ để được làm điều gì đó.",
+      "leadVi": "\"Mẹ ơi, cho con đi chơi đến mười giờ nhé?\"",
+      "anticipateVi": "Được chưa ạ?",
+      "pos": "noun",
+      "ipa": "/pɚˈmɪʃ.ən/",
+      "topics": [
+        "communication"
+      ],
+      "level": "A2",
+      "usage": [
+        {
+          "en": "You need _____ to park here.",
+          "vi": "Bạn cần được cho phép mới đỗ xe ở đây."
+        }
+      ]
+    },
+    {
+      "id": "pet",
+      "word": "pet",
+      "defVi": "/Thú cưng/, con vật nuôi trong nhà để làm bạn.",
+      "leadVi": "Đi làm về, vừa mở cửa đã có đứa vẫy đuôi.",
+      "anticipateVi": "Meo meo, gâu gâu!",
+      "pos": "noun",
+      "ipa": "/pet/",
+      "topics": [
+        "home"
+      ],
+      "level": "A2",
+      "usage": [
+        {
+          "en": "My cat is the best _____ ever.",
+          "vi": "Con mèo của tôi là thú cưng tuyệt nhất."
+        }
+      ]
+    },
+    {
+      "id": "avoid",
+      "word": "avoid",
+      "defVi": "/Tránh né/, cố không gặp hoặc không làm điều gì.",
+      "leadVi": "Thấy chủ nợ đầu ngõ, lập tức rẽ sang đường khác.",
+      "anticipateVi": "Né được thì né!",
+      "pos": "verb",
+      "ipa": "/əˈvɔɪd/",
+      "topics": [
+        "thinking"
+      ],
+      "level": "A2",
+      "usage": [
+        {
+          "en": "Try to _____ eating too much sugar.",
+          "vi": "Cố tránh ăn quá nhiều đường."
+        }
+      ]
+    },
+    {
+      "id": "celebrate",
+      "word": "celebrate",
+      "defVi": "/Ăn mừng/ một dịp vui hay chuyện đáng nhớ.",
+      "leadVi": "Đội nhà thắng, cả phố đổ ra đường hò reo.",
+      "anticipateVi": "Đi bão thôi anh em!",
+      "pos": "verb",
+      "ipa": "/ˈsel.ə.breɪt/",
+      "topics": [
+        "celebration"
+      ],
+      "level": "A2",
+      "usage": [
+        {
+          "en": "Let's _____ your new job tonight!",
+          "vi": "Tối nay mình ăn mừng công việc mới của bạn nhé!"
+        }
+      ]
+    },
+    {
+      "id": "earn",
+      "word": "earn",
+      "defVi": "/Kiếm tiền/ nhờ làm việc hay công sức của mình.",
+      "leadVi": "Ngày đi học, tối chạy xe ôm thêm vài cuốc.",
+      "anticipateVi": "Cày thêm chút nữa!",
+      "pos": "verb",
+      "ipa": "/ɝːn/",
+      "topics": [
+        "work"
+      ],
+      "level": "A2",
+      "usage": [
+        {
+          "en": "How much do you _____ a month?",
+          "vi": "Mỗi tháng bạn kiếm được bao nhiêu?"
+        }
+      ]
+    },
+    {
+      "id": "lend",
+      "word": "lend",
+      "defVi": "/Cho mượn/ đồ hay tiền, người kia sẽ trả lại sau.",
+      "leadVi": "Bạn quên ví, mình rút ngay trăm nghìn: \"Cầm đỡ đi.\"",
+      "anticipateVi": "Nhớ đòi lại nha!",
+      "pos": "verb",
+      "ipa": "/lend/",
+      "topics": [
+        "money"
+      ],
+      "level": "A2",
+      "usage": [
+        {
+          "en": "Can you _____ me your pen?",
+          "vi": "Bạn cho mình mượn cây bút được không?"
+        }
+      ]
+    },
+    {
+      "id": "hide",
+      "word": "hide",
+      "defVi": "/Giấu đi/ hoặc trốn để người khác không tìm thấy.",
+      "leadVi": "Chơi trốn tìm, chui tọt vào gầm giường nín thở.",
+      "anticipateVi": "Ú òa, thấy rồi nhé!",
+      "pos": "verb",
+      "ipa": "/haɪd/",
+      "topics": [
+        "daily"
+      ],
+      "level": "A2",
+      "usage": [
+        {
+          "en": "The cat likes to _____ under the bed.",
+          "vi": "Con mèo thích trốn dưới gầm giường."
+        }
+      ]
+    },
+    {
+      "id": "steal",
+      "word": "steal",
+      "defVi": "/Lấy trộm/ đồ của người khác khi họ không biết.",
+      "leadVi": "Camera ghi lại cảnh ai đó lén dắt xe đi mất.",
+      "anticipateVi": "Giữ chặt đồ nha!",
+      "pos": "verb",
+      "ipa": "/stiːl/",
+      "topics": [
+        "safety"
+      ],
+      "level": "A2",
+      "usage": [
+        {
+          "en": "Someone tried to _____ my bike.",
+          "vi": "Có người định lấy trộm xe đạp của tôi."
+        }
+      ]
+    },
+    {
+      "id": "repair",
+      "word": "repair",
+      "defVi": "/Sửa chữa/ đồ bị hư để dùng lại được.",
+      "leadVi": "Xe thủng lốp giữa đường, may có tiệm vá ngay góc.",
+      "anticipateVi": "Đưa cờ lê đây!",
+      "pos": "verb",
+      "ipa": "/rɪˈper/",
+      "topics": [
+        "home"
+      ],
+      "level": "A2",
+      "usage": [
+        {
+          "en": "How much does it cost to _____ the TV?",
+          "vi": "Sửa cái tivi tốn bao nhiêu tiền?"
+        }
+      ]
+    },
+    {
+      "id": "refuse",
+      "word": "refuse",
+      "defVi": "/Từ chối/, nói không với lời mời hay yêu cầu.",
+      "leadVi": "Được mời thêm chén nữa, xua tay lia lịa: \"Thôi, thôi!\"",
+      "anticipateVi": "Lắc đầu nguầy nguậy!",
+      "pos": "verb",
+      "ipa": "/rɪˈfjuːz/",
+      "topics": [
+        "communication"
+      ],
+      "level": "A2",
+      "usage": [
+        {
+          "en": "I can't _____ such a kind offer.",
+          "vi": "Tôi không nỡ từ chối lời đề nghị tử tế như vậy."
+        }
+      ]
+    },
+    {
+      "id": "recommend",
+      "word": "recommend",
+      "defVi": "/Gợi ý/ cho ai đó thứ mình thấy hay, nên thử.",
+      "leadVi": "Hỏi quán nào ngon, cô bạn gửi ngay danh sách dài.",
+      "anticipateVi": "Tin mình, thử đi!",
+      "pos": "verb",
+      "ipa": "/ˌrek.əˈmend/",
+      "topics": [
+        "communication"
+      ],
+      "level": "A2",
+      "usage": [
+        {
+          "en": "Can you _____ a good restaurant nearby?",
+          "vi": "Bạn gợi ý giúp mình một quán ngon gần đây được không?"
+        }
+      ]
+    },
+    {
+      "id": "shout",
+      "word": "shout",
+      "defVi": "/La hét/, nói thật to để người khác nghe thấy.",
+      "leadVi": "Đứng dưới sân gọi vọng lên tầng năm: \"Xuống ăn cơm!\"",
+      "anticipateVi": "Nói to lên coi!",
+      "pos": "verb",
+      "ipa": "/ʃaʊt/",
+      "topics": [
+        "communication"
+      ],
+      "level": "A2",
+      "usage": [
+        {
+          "en": "Don't _____ at me!",
+          "vi": "Đừng quát mình!"
+        }
+      ]
+    },
+    {
+      "id": "pack",
+      "word": "pack",
+      "defVi": "Xếp quần áo, đồ dùng vào /hành lý/ trước chuyến đi.",
+      "leadVi": "Tối trước chuyến bay, ngồi đè lên vali cho đóng được.",
+      "anticipateVi": "Nhét thêm được nữa không?",
+      "pos": "verb",
+      "ipa": "/pæk/",
+      "topics": [
+        "travel"
+      ],
+      "level": "A2",
+      "usage": [
+        {
+          "en": "Don't forget to _____ your swimsuit.",
+          "vi": "Nhớ mang theo đồ bơi nhé."
+        }
+      ]
+    },
+    {
+      "id": "disappear",
+      "word": "disappear",
+      "defVi": "/Biến mất/, bỗng nhiên không còn thấy đâu nữa.",
+      "leadVi": "Đặt đĩa bánh xuống, quay đi quay lại đã sạch trơn.",
+      "anticipateVi": "Ơ, đâu mất rồi?",
+      "pos": "verb",
+      "ipa": "/ˌdɪs.əˈpɪr/",
+      "topics": [
+        "daily"
+      ],
+      "level": "A2",
+      "usage": [
+        {
+          "en": "My socks always _____ in the washing machine.",
+          "vi": "Tất của tôi cứ biến mất trong máy giặt."
+        }
+      ]
+    },
+    {
+      "id": "cry",
+      "word": "cry",
+      "defVi": "/Rơi nước mắt/ vì buồn, đau hay quá xúc động.",
+      "leadVi": "Xem đến cảnh cuối phim, cả rạp sụt sịt lau mắt.",
+      "anticipateVi": "Đưa khăn giấy đây!",
+      "pos": "verb",
+      "ipa": "/kraɪ/",
+      "topics": [
+        "emotion"
+      ],
+      "level": "A2",
+      "usage": [
+        {
+          "en": "The baby started to _____.",
+          "vi": "Em bé bắt đầu khóc."
+        }
+      ]
+    }
+  ]
+}
