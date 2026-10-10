@@ -3484,6 +3484,191 @@
     transition: opacity 0.18s ease;
   }
 }
+/* ── Landscape onboarding ────────────────────────────────────────────────────
+   The gauge flips to a horizontal rail. Each rung becomes a narrow vertical
+   strip; the tick sits on the centre rail and the name/sample are positioned
+   on opposite sides using :nth-child(odd/even) so adjacent labels never
+   collide. The knob tracks --rung-index on the left axis. All driven by the
+   data-landscape attribute set by DifficultyOnboarding.tsx. */
+@media (orientation: landscape) {
+  /* Section: reclaim vertical space with tighter safe-area padding. */
+  .vocab-onboard[data-landscape] {
+    padding: max(6px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right))
+      max(6px, env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left));
+  }
+  /* Head: single-line title, hint paragraph hidden. */
+  .vocab-onboard[data-landscape] .vocab-onboard-head {
+    padding: 0 0 2px;
+  }
+  .vocab-onboard[data-landscape] .vocab-onboard-head h1 {
+    margin: 0;
+    font-size: 16px;
+  }
+  .vocab-onboard[data-landscape] .vocab-onboard-head p {
+    display: none;
+  }
+  /* Gauge: span full viewport width. */
+  .vocab-onboard[data-landscape] .vocab-onboard-gauge {
+    width: 100%;
+    max-width: none;
+    margin: 2px 0;
+  }
+  /* Ladder: columns instead of rows. */
+  .vocab-onboard[data-landscape] .vocab-onboard-ladder {
+    grid-template-rows: none;
+    grid-template-columns: repeat(var(--rung-count), minmax(0, 1fr));
+  }
+  /* Rung: relative container; children are absolutely positioned inside. */
+  .vocab-onboard[data-landscape] .vocab-onboard-rung {
+    display: block;
+    position: relative;
+    height: 100%;
+    column-gap: 0;
+  }
+  /* Tick: centred on the rail line. */
+  .vocab-onboard[data-landscape] .vocab-onboard-tick {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    justify-self: unset;
+  }
+  /* Name: centred horizontally, placed above or below the rail. */
+  .vocab-onboard[data-landscape] .vocab-onboard-name {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    align-items: center;
+    text-align: center;
+    padding: 0 2px;
+    box-sizing: border-box;
+  }
+  /* All names: consistently BELOW the rail, fixed position. */
+  .vocab-onboard[data-landscape] .vocab-onboard-name {
+    top: calc(50% + 22px);
+    bottom: auto;
+  }
+  .vocab-onboard[data-landscape] .vocab-onboard-label {
+    font-size: 11px;
+    white-space: normal;
+    text-align: center;
+    line-height: 1.2;
+  }
+  .vocab-onboard[data-landscape] .vocab-onboard-rung[data-on] .vocab-onboard-label {
+    font-size: 13px;
+  }
+  .vocab-onboard[data-landscape] .vocab-onboard-meta {
+    font-size: 9px;
+  }
+  .vocab-onboard[data-landscape] .vocab-onboard-band {
+    padding: 0 4px;
+    font-size: 8px;
+  }
+  /* All samples: consistently ABOVE the rail. */
+  .vocab-onboard[data-landscape] .vocab-onboard-sample {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    align-items: center;
+    text-align: center;
+    padding: 0 2px;
+    box-sizing: border-box;
+    bottom: auto;
+  }
+  /* Odd rungs (1st, 3rd, 5th…): word sits closer to the rail. */
+  .vocab-onboard[data-landscape] .vocab-onboard-rung:nth-child(odd) .vocab-onboard-sample {
+    bottom: calc(50% + 22px);
+    top: auto;
+  }
+  /* Even rungs (2nd, 4th, 6th…): word is lifted one row higher so neighbours never collide. */
+  .vocab-onboard[data-landscape] .vocab-onboard-rung:nth-child(even) .vocab-onboard-sample {
+    bottom: calc(50% + 54px);
+    top: auto;
+  }
+  .vocab-onboard[data-landscape] .vocab-onboard-sample strong {
+    font-size: 13px;
+    white-space: normal;
+    text-align: center;
+  }
+  .vocab-onboard[data-landscape] .vocab-onboard-rung[data-on] .vocab-onboard-sample strong {
+    font-size: 17px;
+  }
+  /* Curiosity: allow wrapping in narrow columns; scale from centre. */
+  .vocab-onboard[data-landscape] .vocab-onboard-curiosity {
+    white-space: normal;
+    text-align: center;
+    font-size: 9.5px;
+    line-height: 1.3;
+    transform: translateY(0) scale(0.8);
+    transform-origin: center center;
+  }
+  .vocab-onboard[data-landscape] .vocab-onboard-rung[data-on] .vocab-onboard-curiosity {
+    transform: translateY(0) scale(1);
+  }
+  /* Rail: horizontal strip through the middle. */
+  .vocab-onboard[data-landscape] .vocab-onboard-rail {
+    left: 0;
+    right: 0;
+    top: 50%;
+    bottom: auto;
+    width: auto;
+    height: 56px;
+    transform: translateY(-50%);
+    cursor: ew-resize;
+  }
+  /* Track: horizontal gradient bar (direction handled by --rung-scale inline angle). */
+  .vocab-onboard[data-landscape] .vocab-onboard-track {
+    left: calc(50% / var(--rung-count));
+    right: calc(50% / var(--rung-count));
+    top: 50%;
+    bottom: auto;
+    width: auto;
+    height: 4px;
+    transform: translateY(-50%);
+  }
+  /* Overlay: fills to the RIGHT of the knob (unvisited harder levels). */
+  .vocab-onboard[data-landscape] .vocab-onboard-track::after {
+    inset: 0 0 0 calc(var(--rung-index) / (var(--rung-count) - 1) * 100%);
+    transition: inset var(--dur-move) var(--ease-spring);
+  }
+  /* Knob: moves left by --rung-index. */
+  .vocab-onboard[data-landscape] .vocab-onboard-knob {
+    left: calc((var(--rung-index) + 0.5) * 100% / var(--rung-count));
+    top: 50%;
+    margin: -15px 0 0 -15px;
+    transition:
+      left var(--dur-move) var(--ease-spring),
+      background var(--dur-move) var(--ease-out),
+      box-shadow var(--dur-move) var(--ease-out);
+  }
+  /* Foot: buttons side-by-side. */
+  .vocab-onboard[data-landscape] .vocab-onboard-foot {
+    flex-direction: row;
+    justify-content: center;
+    gap: 8px;
+    padding: 2px 8px 0;
+  }
+  .vocab-onboard[data-landscape] .vocab-onboard-go {
+    width: auto;
+    flex: 1;
+    max-width: 240px;
+    min-height: 38px;
+    font-size: 13px;
+    padding: 8px 14px;
+  }
+  .vocab-onboard[data-landscape] .vocab-onboard-all {
+    min-height: 34px;
+    font-size: 11px;
+  }
+}
+/* Landscape reduced-motion: remove left transition on knob. */
+@media (orientation: landscape) and (prefers-reduced-motion: reduce) {
+  .vocab-onboard[data-landscape] .vocab-onboard-knob {
+    transition:
+      background 0s,
+      box-shadow 0s;
+  }
+}
 /* ── Post-reveal spelling replay ──────────────────────────────────────────────
    The revealed word dissolves, then every letter pops in one at a time so the
    reader can spell it silently before the stream advances. */

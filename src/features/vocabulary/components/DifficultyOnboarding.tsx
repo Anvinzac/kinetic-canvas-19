@@ -12,7 +12,14 @@
  * Depends on: difficulty tracks, feed metadata types, vocabulary.css
  */
 
-import { useCallback, useRef, useState, type KeyboardEvent, type PointerEvent } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type KeyboardEvent,
+  type PointerEvent,
+} from "react";
 import {
   DIFFICULTY_ALL,
   DIFFICULTY_TRACKS,
@@ -99,6 +106,18 @@ export function DifficultyOnboarding({
   const current = rungs[index]!;
   const ladder = useRef<HTMLOListElement>(null);
 
+  // Landscape detection: drives both pointer-axis mapping in JS and a data-landscape
+  // attribute that CSS uses to switch the gauge to a horizontal layout with alternating
+  // sample/names that avoid collision.
+  const [landscape, setLandscape] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(orientation: landscape)");
+    setLandscape(mq.matches);
+    const handler = (e: MediaQueryListEvent) => setLandscape(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
+
   const choose = useCallback(
     (target: number) => {
       const next = nearestAvailable(Math.max(0, Math.min(rungs.length - 1, target)), availability);
@@ -109,20 +128,21 @@ export function DifficultyOnboarding({
     [availability.join(), rungs.length],
   );
 
-  /** Map a pointer's height on the ladder to the rung under it. */
-  const rungAt = (clientY: number): number => {
+  /** Map a pointer's position on the ladder to the rung under it. */
+  const rungAt = (clientX: number, clientY: number): number => {
     const box = ladder.current?.getBoundingClientRect();
-    if (!box || box.height <= 0) return index;
+    if (!box || box.width <= 0 || box.height <= 0) return index;
+    if (landscape) return Math.floor(((clientX - box.left) / box.width) * rungs.length);
     return Math.floor(((clientY - box.top) / box.height) * rungs.length);
   };
   const dragging = useRef(false);
   const onPointerDown = (event: PointerEvent<HTMLDivElement>) => {
     dragging.current = true;
     event.currentTarget.setPointerCapture(event.pointerId);
-    choose(rungAt(event.clientY));
+    choose(rungAt(event.clientX, event.clientY));
   };
   const onPointerMove = (event: PointerEvent<HTMLDivElement>) => {
-    if (dragging.current) choose(rungAt(event.clientY));
+    if (dragging.current) choose(rungAt(event.clientX, event.clientY));
   };
   const onPointerEnd = () => {
     dragging.current = false;
@@ -151,11 +171,13 @@ export function DifficultyOnboarding({
     <section
       className="vocab-onboard"
       aria-labelledby="vocab-onboard-title"
+      data-landscape={landscape ? "" : undefined}
       style={
         {
           "--rung": current.color,
           // The rail is painted with the same ten colours the knob steps through.
-          "--rung-scale": `linear-gradient(180deg, ${RUNG_COLORS.join(", ")})`,
+          // Axis flips with orientation: 180deg = top→bottom in portrait, 90deg = left→right in landscape.
+          "--rung-scale": `linear-gradient(${landscape ? "90deg" : "180deg"}, ${RUNG_COLORS.join(", ")})`,
           "--rung-index": index,
           "--rung-count": rungs.length,
         } as React.CSSProperties
@@ -212,7 +234,7 @@ export function DifficultyOnboarding({
           className="vocab-onboard-rail"
           role="slider"
           tabIndex={0}
-          aria-orientation="vertical"
+          aria-orientation={landscape ? "horizontal" : "vertical"}
           aria-label="Trình độ"
           aria-valuemin={1}
           aria-valuemax={rungs.length}
