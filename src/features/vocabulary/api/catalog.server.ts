@@ -1,11 +1,13 @@
 /** Server-only merged catalog (base + provider packs) and bounded permutation caches. Exports: catalog, readVocabularyPage. Depends on: ../lib/catalog-source, PRNG, difficulty bands. */
-import { catalog } from "../lib/catalog-source";
+import { catalog, catalogFor } from "../lib/catalog-source";
+import type { Catalog } from "../lib/schema";
+import type { TargetLocale } from "../lib/target-language";
 import type { VocabularyLevel } from "../lib/schema";
 import { LEVEL_SAMPLE_PRIORITY, difficultyLevels } from "../lib/difficulty";
 import { randomGenerator } from "../lib/random";
 import type { FeedPage, FeedRequest } from "../types";
 
-export { catalog };
+export { catalog, catalogFor };
 export const MAX_POSITION = 1_000_000_000_000;
 const pools = new Map<string, Uint32Array>();
 const orders = new Map<string, Uint32Array>();
@@ -24,7 +26,7 @@ function remember(cache: Map<string, Uint32Array>, key: string, value: Uint32Arr
  * @returns The admitted levels, or null when no level filter applies
  * @pure true
  */
-function allowedLevels(level: string, difficulty: string): Set<string> | null {
+function allowedLevels(catalog: Catalog, level: string, difficulty: string): Set<string> | null {
   // The catalog's own levels decide which tracks can be served at all — the same rule the
   // picker greys rows by, so a track shown at 0 streams nothing even if asked for by URL.
   const band = difficultyLevels(difficulty, catalog.levels);
@@ -35,11 +37,17 @@ function allowedLevels(level: string, difficulty: string): Set<string> | null {
   return band.includes(level as VocabularyLevel) ? new Set<string>([level]) : new Set<string>();
 }
 
-function matchingPool(topic: string, level: string, difficulty: string): Uint32Array {
-  const key = `${topic}:${level}:${difficulty}`;
+function matchingPool(
+  catalog: Catalog,
+  topic: string,
+  level: string,
+  difficulty: string,
+): Uint32Array {
+  // Revision in the key: each locale deck has its own word indices.
+  const key = `${catalog.revision}:${topic}:${level}:${difficulty}`;
   const existing = pools.get(key);
-  if (existing) return remember(pools, key, existing, 16);
-  const allowed = allowedLevels(level, difficulty);
+  if (existing) return remember(pools, key, existing, 64);
+  const allowed = allowedLevels(catalog, level, difficulty);
   const matches: number[] = [];
   catalog.words.forEach((word, index) => {
     // A word carries several usage domains; the legacy single `topic` is the fallback
@@ -50,7 +58,7 @@ function matchingPool(topic: string, level: string, difficulty: string): Uint32A
     if (allowed && !(word.level && allowed.has(word.level))) return;
     matches.push(index);
   });
-  return remember(pools, key, Uint32Array.from(matches), 16);
+  return remember(pools, key, Uint32Array.from(matches), 64);
 }
 
 /** Sample words kept per level: enough for every track that shares a top level. */
@@ -77,7 +85,7 @@ const levelTallies = new Map<
  * @param topic Topic slug, or "" for every topic
  * @returns Per-level counts plus the topic's full size (unlevelled words included)
  */
-function levelTally(topic: string) {
+function levelTally(catalog: Catalog, topic: string) {
   const key = `${catalog.revision}:${topic}`;
   const cached = levelTallies.get(key);
   if (cached) return cached;
@@ -126,14 +134,14 @@ function rawOrder(size: number, seed: string, cycle: number): Uint32Array {
   const orderCycle = size <= 2 ? 0 : cycle;
   const key = `${seed}:${size}:${orderCycle}`;
   const cached = orders.get(key);
-  if (cached) return remember(orders, key, cached, 8);
+  if (cached) return remember(orders, key, cached, 32);
   const order = Uint32Array.from({ length: size }, (_, index) => index);
   const random = randomGenerator(key);
   for (let index = size - 1; index > 0; index--) {
     const other = Math.floor(random() * (index + 1));
     [order[index], order[other]] = [order[other], order[index]];
   }
-  return remember(orders, key, order, 8);
+  return remember(orders, key, order, 32);
 }
 
 function indexAt(size: number, seed: string, position: number): number {
@@ -150,10 +158,11 @@ function indexAt(size: number, seed: string, position: number): number {
 }
 
 /** Read a deterministic page without writes or external services. @param input Validated cursor/filters. @returns Page plus catalog metadata. */
-export function readVocabularyPage(input: FeedRequest): FeedPage {
+export function readVocabularyPage(input: FeedRequest, locale: TargetLocale = "en"): FeedPage {
+  const catalog = catalogFor(locale);
   const { seed, position, topic, level, difficulty, limit } = input;
-  const pool = matchingPool(topic, level, difficulty);
-  const tally = levelTally(topic);
+  const pool = matchingPool(catalog, topic, level, difficulty);
+  const tally = levelTally(catalog, topic);
   const streamKey = `${catalog.revision}:${seed}:${topic}:${level}:${difficulty}`;
   const entries = pool.length
     ? Array.from({ length: limit }, (_, offset) => {
