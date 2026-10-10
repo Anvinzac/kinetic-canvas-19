@@ -998,6 +998,11 @@
   flex-shrink: 0;
 }
 /* Mock total words for the track's band, at the trailing edge. */
+/* A track with no words in the catalog yet: still on the ladder, visibly not on offer. */
+.vocab-difficulty-option[aria-disabled="true"] {
+  opacity: 0.38;
+  cursor: default;
+}
 .vocab-difficulty-count {
   grid-area: count;
   align-self: center;
@@ -2473,6 +2478,10 @@
        fall  - how far the chip travels to sink through the mouth
      Width follows the drawer so the bubbles can reach the panel's edges. */
   --vault-head: 56px;
+  /* Half a key plus half the gap between the two: how far each key's centre sits from the
+     centre line. The bubbles are placed from it, so their tails stay on the icons when a
+     shorter tier shrinks the keys (they were 3px off there while this was a literal 29px). */
+  --vault-key-x: 29px;
   --vault-tip: 116px;
   --vault-chip: 164px;
   --vault-jar-h: 56px;
@@ -2826,7 +2835,7 @@
 .vocab-vault-tip[data-tip="heart"] {
   --tip-accent: var(--vault-heart);
   top: 6px;
-  left: calc(50% - 29px);
+  left: calc(50% - var(--vault-key-x));
   transform: translateX(-66.6%);
 }
 .vocab-vault-tip[data-tip="heart"] .vocab-vault-tip-shape::after {
@@ -2842,7 +2851,7 @@
 .vocab-vault-tip[data-tip="bookmark"] {
   --tip-accent: var(--vault-accent);
   top: var(--vault-tip);
-  left: calc(50% + 29px);
+  left: calc(50% + var(--vault-key-x));
   right: auto;
   transform: translateX(-33.3%);
 }
@@ -2986,6 +2995,7 @@
 @media (max-height: 680px) {
   .vocab-vault {
     --vault-head: 46px;
+    --vault-key-x: 26px;
     --vault-tip: 98px;
     --vault-chip: 140px;
     --vault-jar-h: 48px;
@@ -3009,26 +3019,26 @@
     font-size: 12.7px;
   }
 }
-/* ── Landscape phone: the keys, and nothing else ──────────────────────────────
-   The scene is a vertical stack ~234px tall before the heading and body below it.
-   A landscape phone has barely that much height in total, so the bowl, the chips
-   and the drop all land on top of one another and on the text. Rather than scale
-   a six-part illustration into illegibility, the two keys and their tooltips —
-   the only parts that name the actual gesture — are kept and the rest is dropped.
-   The short copy below carries the instruction in one line. */
+/* ── Landscape phone: the keys and their two bubbles ─────────────────────────
+   The full scene is a vertical stack ~234px tall before any text. A landscape phone
+   has barely that much height in total, so the bowl, the chips and the drop are
+   dropped — but the part that names the gesture is kept EXACTLY as it stands in
+   portrait: the heart's bubble above its key with the tail pointing down at the icon,
+   the bookmark's bubble below its key with the tail pointing up, mirrored about the
+   centre line. (An earlier version laid the bubbles out in a row above the keys with
+   no tails, which left each sentence pointing at nothing.) The same absolute
+   placement rules apply; only the vertical stack is restated for a scene that ends
+   at the lower bubble instead of at a bowl. */
 @media (orientation: landscape) and (max-height: 560px) {
-  /* A wrapping row instead of the tall stack: the two bubbles sit side by side and
-     the keys drop to the line beneath them. The DOM order is heart then bookmark in
-     both, and each bubble is already tinted by the key it belongs to, so the pairing
-     survives losing the tails. */
   .vocab-vault {
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: center;
-    align-items: center;
-    height: auto;
-    padding-top: 0;
-    gap: 8px;
+    --vault-head: 40px;
+    /* head + the 34px key + room for the lower bubble's tail. */
+    --vault-tip: 88px;
+    height: 118px;
+    padding-top: var(--vault-head);
+    /* The column is shorter than its contents on the smallest phones; the scene must not
+       be the thing that gives, or the lower bubble slides under the description. */
+    flex-shrink: 0;
   }
   /* The bowl and everything that falls into it. */
   .vocab-vault-jar,
@@ -3036,25 +3046,9 @@
   .vocab-vault-chip {
     display: none;
   }
-  /* The bubbles are absolutely placed for the tall layout; here they are laid out by
-     the row. The bob is dropped too — two bubbles jiggling side by side is noise
-     once there is no chip for them to be reacting to. */
   .vocab-vault-tip {
-    position: static;
-    transform: none;
-    margin: 0;
-    animation: none;
-    font-size: 12.5px;
     padding: 6px 11px;
-  }
-  /* The tail pointed down at a key that is now on the next line. */
-  .vocab-vault-tip-shape::after {
-    display: none;
-  }
-  .vocab-vault-keys {
-    order: 2;
-    flex-basis: 100%;
-    justify-content: center;
+    font-size: 12.5px;
   }
   /* No chip to catch, so the keys stop miming a press and just sit there. */
   .vocab-vault-key[data-active],
@@ -3062,10 +3056,21 @@
     animation: none;
   }
   .vocab-saved-empty {
-    gap: 8px;
+    gap: 6px;
   }
+  /* The one-line description says it all at this height; the heading only pushed the
+     scene and the way-back button into each other. */
   .vocab-saved-empty h2 {
-    font-size: 17px;
+    display: none;
+  }
+  .vocab-saved-empty p {
+    font-size: 13px;
+    line-height: 1.4;
+  }
+  .vocab-saved-empty .vocab-light-button {
+    min-height: 40px;
+    padding-block: 8px;
+    margin-bottom: 8px;
   }
 }
 
@@ -3123,6 +3128,361 @@
    band above the button instead of glued to the top. */
 .vocab-saved-empty .vocab-vault {
   margin-top: auto;
+}
+/* ── First-load level picker ──────────────────────────────────────────────────
+   The difficulty ladder as one gauge: level names down the left, a rail with a draggable
+   knob through the middle, one real word per level on the right. Rows are equal shares of
+   the gauge's height, which is what lets the knob's position be pure arithmetic
+   (--rung-index of --rung-count) instead of a measurement. --rung is the colour of the
+   level the knob is on; it tints the knob, the page glow and the start button together,
+   so climbing the ladder visibly heats the whole screen. */
+.vocab-onboard {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  padding: max(18px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right))
+    max(16px, env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left));
+  background:
+    radial-gradient(
+      120% 70% at 50% 46%,
+      color-mix(in srgb, var(--rung) 20%, transparent),
+      transparent 70%
+    ),
+    var(--shell-bg);
+  color: var(--shell-text);
+  font-family: "Inter", sans-serif;
+}
+.vocab-onboard-head {
+  padding: 10px 12px 6px;
+  text-align: center;
+}
+.vocab-onboard-head h1 {
+  margin: 4px 0 6px;
+  font-size: clamp(22px, 6vw, 30px);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.vocab-onboard-head p:last-child {
+  margin: 0 auto;
+  max-width: 340px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--shell-text-mute);
+}
+.vocab-onboard-gauge {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  width: min(560px, 100%);
+  margin: 10px auto;
+}
+.vocab-onboard-ladder {
+  display: grid;
+  grid-template-rows: repeat(var(--rung-count), minmax(0, 1fr));
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+/* name | rail column | sample. The middle column is only a gap here; the rail itself is one
+   element laid over it, so the knob can cross every row. */
+.vocab-onboard-rung {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 56px minmax(0, 1fr);
+  column-gap: 14px;
+  align-items: center;
+  opacity: 0.5;
+  cursor: pointer;
+  transition: opacity var(--dur-quick) var(--ease-out);
+}
+.vocab-onboard-rung[data-on] {
+  opacity: 1;
+}
+/* Not on offer yet: listed so the ladder reads whole, plainly out of reach. */
+.vocab-onboard-rung[aria-disabled="true"] {
+  opacity: 0.26;
+  cursor: default;
+}
+.vocab-onboard-name {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+  min-width: 0;
+  text-align: right;
+}
+.vocab-onboard-label {
+  font-size: 15px;
+  font-weight: 700;
+  white-space: nowrap;
+  transition:
+    color var(--dur-quick) var(--ease-out),
+    font-size var(--dur-quick) var(--ease-out);
+}
+.vocab-onboard-rung[data-on] .vocab-onboard-label {
+  color: var(--rung-own);
+  font-size: 18px;
+}
+.vocab-onboard-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--shell-text-mute);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.vocab-onboard-band {
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: #ffffff1f;
+  color: #ffffffd9;
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+}
+/* A dot per rung on the rail's centre line; it takes its level's colour once the knob has
+   reached or passed it. */
+.vocab-onboard-tick {
+  justify-self: center;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--shell-line-strong);
+  transition: background var(--dur-quick) var(--ease-out);
+}
+.vocab-onboard-rung:is([data-on], [data-passed]) .vocab-onboard-tick {
+  background: var(--rung-own);
+}
+.vocab-onboard-sample {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  text-align: left;
+}
+.vocab-onboard-sample strong {
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: font-size var(--dur-quick) var(--ease-out);
+}
+.vocab-onboard-rung[data-on] .vocab-onboard-sample strong {
+  font-size: 21px;
+}
+/* The meaning is one quiet line everywhere except on the chosen rung, where it opens to two. */
+.vocab-onboard-sample > span:not(.vocab-onboard-curiosity) {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+  overflow: hidden;
+  font-size: 11.5px;
+  line-height: 1.35;
+  color: var(--shell-text-mute);
+}
+.vocab-onboard-rung[data-on] .vocab-onboard-sample > span:not(.vocab-onboard-curiosity) {
+  -webkit-line-clamp: 2;
+  color: var(--shell-text-soft);
+}
+/* The curiosity prompt replaces the old per-word defVi line.
+   Hidden state: fully transparent and offset — the slot stays open so no layout jump.
+   Active rung: slides up with a spring overshoot while the colour shifts to the rung hue. */
+.vocab-onboard-curiosity {
+  display: block;
+  font-size: 11.5px;
+  font-style: italic;
+  letter-spacing: 0.01em;
+  line-height: 1.45;
+  white-space: nowrap;
+  overflow: hidden;
+  pointer-events: none;
+  color: var(--shell-text-mute);
+  opacity: 0;
+  transform: translateY(8px) scale(0.86);
+  transform-origin: left center;
+  /* Fast smooth exit — no overshoot leaving */
+  transition:
+    opacity 0.13s ease-out,
+    transform 0.17s ease-out,
+    color 0.18s ease-out;
+}
+.vocab-onboard-rung[data-on] .vocab-onboard-curiosity {
+  opacity: 1;
+  color: var(--rung-own);
+  transform: translateY(0) scale(1);
+  /* Enter: spring overshoot, matching the premium count-pop feel */
+  transition:
+    opacity 0.18s cubic-bezier(0.22, 1, 0.37, 1),
+    transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+    color 0.24s ease-out;
+}
+.vocab-onboard-soon {
+  font-style: italic;
+}
+/* The rail: a 56px-wide strip over the ladder's middle column. touch-action: none, or a
+   vertical drag would scroll the page instead of moving the knob. */
+.vocab-onboard-rail {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 56px;
+  transform: translateX(-50%);
+  touch-action: none;
+  cursor: grab;
+  outline: none;
+}
+.vocab-onboard-rail:active {
+  cursor: grabbing;
+}
+/* Runs from the first rung's centre to the last one's. The whole scale is painted on it;
+   the ::after shade covers everything BELOW the knob, so what shows is the climb so far. */
+.vocab-onboard-track {
+  position: absolute;
+  left: 50%;
+  top: calc(50% / var(--rung-count));
+  bottom: calc(50% / var(--rung-count));
+  width: 4px;
+  border-radius: 4px;
+  background: var(--rung-scale);
+  transform: translateX(-50%);
+  overflow: hidden;
+}
+.vocab-onboard-track::after {
+  content: "";
+  position: absolute;
+  inset: calc(var(--rung-index) / (var(--rung-count) - 1) * 100%) 0 0;
+  background: color-mix(in srgb, var(--shell-bg) 82%, #ffffff);
+  transition: inset var(--dur-move) var(--ease-spring);
+}
+.vocab-onboard-knob {
+  position: absolute;
+  left: 50%;
+  top: calc((var(--rung-index) + 0.5) * 100% / var(--rung-count));
+  width: 30px;
+  height: 30px;
+  margin: -15px 0 0 -15px;
+  border: 3px solid #ffffff;
+  border-radius: 50%;
+  background: var(--rung);
+  box-shadow:
+    0 0 0 6px color-mix(in srgb, var(--rung) 28%, transparent),
+    0 0 26px color-mix(in srgb, var(--rung) 70%, transparent),
+    0 4px 12px #00000080;
+  transition:
+    top var(--dur-move) var(--ease-spring),
+    background var(--dur-move) var(--ease-out),
+    box-shadow var(--dur-move) var(--ease-out);
+}
+.vocab-onboard-rail:focus-visible .vocab-onboard-knob {
+  outline: 2px solid #ffffff;
+  outline-offset: 5px;
+}
+.vocab-onboard-foot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px 0;
+}
+/* The start button wears the chosen level's colour, so the commitment matches the knob. */
+.vocab-onboard-go {
+  width: min(360px, 100%);
+  min-height: 50px;
+  padding: 12px 24px;
+  border-radius: 40px;
+  background: var(--rung);
+  color: #14101f;
+  font-size: 15px;
+  font-weight: 800;
+  transition:
+    background var(--dur-move) var(--ease-out),
+    transform var(--dur-move) var(--ease-spring);
+}
+.vocab-onboard-go:active {
+  transform: scale(0.97);
+}
+.vocab-onboard-go:disabled {
+  background: var(--shell-hover);
+  color: var(--shell-text-mute);
+}
+.vocab-onboard-all {
+  min-height: 40px;
+  padding: 6px 14px;
+  background: transparent;
+  color: var(--shell-text-mute);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+/* Short screens: ten rows have to share less height, so the secondary line of each gives. */
+@media (max-height: 640px) {
+  .vocab-onboard-head p:last-child,
+  .vocab-onboard-rung:not([data-on]) .vocab-onboard-sample > span:not(.vocab-onboard-curiosity) {
+    display: none;
+  }
+  .vocab-onboard-rung[data-on] .vocab-onboard-sample > span:not(.vocab-onboard-curiosity) {
+    -webkit-line-clamp: 1;
+  }
+  /* Curiosity is already opacity-0 when inactive, so just shrink it on short screens. */
+  .vocab-onboard-curiosity {
+    font-size: 10px;
+  }
+  /* Two lines (name, then band and count) have to fit a ~34px row on the smallest phones,
+     so both tighten and lose their breathing room rather than spilling into the next rung. */
+  .vocab-onboard-name {
+    gap: 1px;
+  }
+  .vocab-onboard-label {
+    font-size: 13px;
+    line-height: 1.15;
+  }
+  .vocab-onboard-rung[data-on] .vocab-onboard-label {
+    font-size: 15px;
+  }
+  .vocab-onboard-meta {
+    font-size: 10px;
+    line-height: 1.2;
+  }
+  .vocab-onboard-band {
+    padding: 0 5px;
+    font-size: 9px;
+  }
+  .vocab-onboard-sample strong {
+    font-size: 14px;
+    line-height: 1.15;
+  }
+  .vocab-onboard-head h1 {
+    margin: 2px 0;
+  }
+  .vocab-onboard-rung[data-on] .vocab-onboard-sample strong {
+    font-size: 18px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .vocab-onboard-knob,
+  .vocab-onboard-track::after,
+  .vocab-onboard-label,
+  .vocab-onboard-sample strong,
+  .vocab-onboard-go {
+    transition: none;
+  }
+  /* Reduced motion: fade only, no translateY or scale. */
+  .vocab-onboard-curiosity {
+    transition: opacity 0.18s ease;
+    transform: translateY(0) scale(1);
+  }
+  .vocab-onboard-rung[data-on] .vocab-onboard-curiosity {
+    transform: translateY(0) scale(1);
+    transition: opacity 0.18s ease;
+  }
 }
 /* ── Post-reveal spelling replay ──────────────────────────────────────────────
    The revealed word dissolves, then every letter pops in one at a time so the

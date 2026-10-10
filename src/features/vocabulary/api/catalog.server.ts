@@ -1,7 +1,7 @@
 /** Server-only merged catalog (base + provider packs) and bounded permutation caches. Exports: catalog, readVocabularyPage. Depends on: ../lib/catalog-source, PRNG, difficulty bands. */
 import { catalog } from "../lib/catalog-source";
 import type { VocabularyLevel } from "../lib/schema";
-import { difficultyLevels } from "../lib/difficulty";
+import { LEVEL_SAMPLE_PRIORITY, difficultyLevels } from "../lib/difficulty";
 import { randomGenerator } from "../lib/random";
 import type { FeedPage, FeedRequest } from "../types";
 
@@ -25,7 +25,9 @@ function remember(cache: Map<string, Uint32Array>, key: string, value: Uint32Arr
  * @pure true
  */
 function allowedLevels(level: string, difficulty: string): Set<string> | null {
-  const band = difficultyLevels(difficulty);
+  // The catalog's own levels decide which tracks can be served at all — the same rule the
+  // picker greys rows by, so a track shown at 0 streams nothing even if asked for by URL.
+  const band = difficultyLevels(difficulty, catalog.levels);
   if (!level) return band ? new Set<string>(band) : null;
   if (!band) return new Set<string>([level]);
   // Both given: intersect, so an exact level outside the chosen track's band
@@ -49,6 +51,74 @@ function matchingPool(topic: string, level: string, difficulty: string): Uint32A
     matches.push(index);
   });
   return remember(pools, key, Uint32Array.from(matches), 16);
+}
+
+/** Sample words kept per level: enough for every track that shares a top level. */
+const LEVEL_SAMPLES = 4;
+const levelTallies = new Map<
+  string,
+  {
+    counts: Partial<Record<VocabularyLevel, number>>;
+    samples: FeedPage["levelSamples"];
+    total: number;
+  }
+>();
+
+/**
+ * Count the catalog's words per CEFR level under one topic. This is what sizes the
+ * difficulty picker, and it is taken with the SAME topic test `matchingPool` uses, so a
+ * track's figure is by construction the number of words choosing it will stream.
+ *
+ * Sample selection is two-pass per level: priority words named in LEVEL_SAMPLE_PRIORITY
+ * are looked up by name first (wherever they appear in the merged catalog), then any
+ * remaining slots are filled in catalog order. This ensures the onboarding picker always
+ * shows a learner-appropriate representative word rather than the first word the base
+ * catalog happens to carry for that level.
+ * @param topic Topic slug, or "" for every topic
+ * @returns Per-level counts plus the topic's full size (unlevelled words included)
+ */
+function levelTally(topic: string) {
+  const key = `${catalog.revision}:${topic}`;
+  const cached = levelTallies.get(key);
+  if (cached) return cached;
+  const counts: Partial<Record<VocabularyLevel, number>> = {};
+  const samples: FeedPage["levelSamples"] = {};
+  let total = 0;
+  // Index every matching word per level so the priority pass can look up by name.
+  const byLevel = new Map<VocabularyLevel, typeof catalog.words>();
+  for (const word of catalog.words) {
+    if (topic && !(word.topics?.includes(topic) ?? word.topic === topic)) continue;
+    total += 1;
+    if (!word.level) continue;
+    counts[word.level] = (counts[word.level] ?? 0) + 1;
+    if (!byLevel.has(word.level)) byLevel.set(word.level, []);
+    byLevel.get(word.level)!.push(word);
+  }
+  for (const [level, words] of byLevel) {
+    const priority = LEVEL_SAMPLE_PRIORITY[level] ?? [];
+    const picked: FeedPage["levelSamples"][VocabularyLevel] = [];
+    const already = new Set<string>();
+    // Pass 1: priority words in declared order, matched case-sensitively.
+    for (const name of priority) {
+      if (picked.length >= LEVEL_SAMPLES) break;
+      const w = words.find((x) => x.word === name && !already.has(name));
+      if (w) {
+        picked.push({ word: w.word, defVi: w.defVi.replace(/\//g, "") });
+        already.add(w.word);
+      }
+    }
+    // Pass 2: fill remaining slots in catalog order, skipping already-picked.
+    for (const w of words) {
+      if (picked.length >= LEVEL_SAMPLES) break;
+      if (already.has(w.word)) continue;
+      picked.push({ word: w.word, defVi: w.defVi.replace(/\//g, "") });
+    }
+    samples[level] = picked;
+  }
+  const tally = { counts, samples, total };
+  if (levelTallies.size > 32) levelTallies.clear();
+  levelTallies.set(key, tally);
+  return tally;
 }
 
 function rawOrder(size: number, seed: string, cycle: number): Uint32Array {
@@ -83,6 +153,7 @@ function indexAt(size: number, seed: string, position: number): number {
 export function readVocabularyPage(input: FeedRequest): FeedPage {
   const { seed, position, topic, level, difficulty, limit } = input;
   const pool = matchingPool(topic, level, difficulty);
+  const tally = levelTally(topic);
   const streamKey = `${catalog.revision}:${seed}:${topic}:${level}:${difficulty}`;
   const entries = pool.length
     ? Array.from({ length: limit }, (_, offset) => {
@@ -104,6 +175,9 @@ export function readVocabularyPage(input: FeedRequest): FeedPage {
     nextPosition: pool.length && position + limit <= MAX_POSITION ? position + limit : null,
     total: catalog.count,
     matching: pool.length,
+    levelCounts: tally.counts,
+    levelSamples: tally.samples,
+    topicTotal: tally.total,
     name: catalog.name,
     topics: catalog.topics,
     levels: catalog.levels,

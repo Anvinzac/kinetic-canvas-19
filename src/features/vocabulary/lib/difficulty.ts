@@ -11,7 +11,9 @@
  * renders an empty stream.
  *
  * Exports: DifficultyTrack, DIFFICULTY_TRACKS, DIFFICULTY_IDS, DIFFICULTY_ALL,
- *          difficultyLevels, formatLevelBand
+ *          LEVEL_SAMPLE_PRIORITY,
+ *          difficultyLevels, formatLevelBand, countTrackWords,
+ *          trackCeiling, isTrackAvailable
  * Depends on: ./schema
  */
 
@@ -28,10 +30,29 @@ export type DifficultyTrack = {
   emoji: string;
   /** CEFR levels this track admits. */
   levels: VocabularyLevel[];
+  /**
+   * Which level's sample word is shown in the onboarding picker.
+   * Defaults to trackCeiling() (the hardest level) when omitted.
+   * Set explicitly on vỡ lòng so the first rung shows truly basic A1 words
+   * rather than the A2 business terms in the base catalog.
+   */
+  sampleLevel?: VocabularyLevel;
 };
 
 /** Sentinel for "no track chosen" — the endpoint accepts it alongside a track id. */
 export const DIFFICULTY_ALL = "";
+
+/**
+ * Words that should appear first in the onboarding sample pool for each level.
+ * The base catalog carries business A2 words (deadline, feedback…) that would be
+ * shown as the first A2 samples under the old catalog-order rule; listing specific
+ * everyday words here ensures the representative shown for each level is one that
+ * a learner would actually recognise at that difficulty.
+ */
+export const LEVEL_SAMPLE_PRIORITY: Partial<Record<VocabularyLevel, readonly string[]>> = {
+  A1: ["hungry", "thirsty", "tired", "angry"],
+  A2: ["proud", "honest", "polite", "lazy"],
+};
 
 /** The ten tracks, in the order the dropdown lists them. */
 export const DIFFICULTY_TRACKS: readonly DifficultyTrack[] = [
@@ -41,6 +62,7 @@ export const DIFFICULTY_TRACKS: readonly DifficultyTrack[] = [
     hint: "Mới bắt đầu, toàn từ rất quen",
     emoji: "🐣",
     levels: ["A1", "A2"],
+    sampleLevel: "A1",
   },
   {
     id: "co-ban",
@@ -48,6 +70,7 @@ export const DIFFICULTY_TRACKS: readonly DifficultyTrack[] = [
     hint: "Vốn từ nền tảng hằng ngày",
     emoji: "🌱",
     levels: ["A2"],
+    sampleLevel: "A2",
   },
   {
     id: "du-lich",
@@ -111,20 +134,54 @@ export const DIFFICULTY_TRACKS: readonly DifficultyTrack[] = [
 export const DIFFICULTY_IDS = DIFFICULTY_TRACKS.map((track) => track.id);
 
 /**
- * Resolve a track id to the CEFR levels it admits.
- * @param difficulty Track id, or the empty sentinel
- * @returns The level band, or null when no track is chosen
+ * The hardest CEFR level a track reaches — the level that makes it THAT track.
+ * @param track A difficulty track
+ * @returns Its highest level in the canonical CEFR order
  * @pure true
  */
+export function trackCeiling(track: DifficultyTrack): VocabularyLevel {
+  const ordered = LEVELS.filter((level) => track.levels.includes(level));
+  return ordered[ordered.length - 1] ?? track.levels[0]!;
+}
+
 /**
- * Resolve a `difficulty` value into the CEFR levels it admits. A difficulty is now
- * a comma-joined list of track ids (multi-select), so the admitted band is the UNION
- * of every chosen track's levels, ordered by the canonical CEFR sequence.
- * @param difficulty Comma-joined track ids, or the empty sentinel for "all"
- * @returns The union band, or null when no track is chosen
+ * Whether the catalog can actually serve a track yet.
+ *
+ * Bands overlap, so a track whose own top level is missing would still "work" by quietly
+ * streaming the easier words it shares with the track below — "nâng cao" (B2–C1) with no
+ * C1 words is just "chuyên sâu" (B2) under another name. That is a promise the deck cannot
+ * keep, so a track is on offer only once the level that defines it has words; until then
+ * it is listed, greyed, at zero.
+ * @param track A difficulty track
+ * @param catalogLevels Levels the catalog has at least one word for
+ * @returns True when the track's ceiling level is populated
  * @pure true
  */
-export function difficultyLevels(difficulty: string): VocabularyLevel[] | null {
+export function isTrackAvailable(
+  track: DifficultyTrack,
+  catalogLevels: readonly VocabularyLevel[],
+): boolean {
+  return catalogLevels.includes(trackCeiling(track));
+}
+
+/**
+ * Resolve a `difficulty` value into the CEFR levels it admits. A difficulty is a
+ * comma-joined list of track ids (multi-select), so the admitted band is the UNION of
+ * every chosen track's levels, ordered by the canonical CEFR sequence.
+ *
+ * Given `catalogLevels`, tracks the catalog cannot serve yet (see isTrackAvailable)
+ * contribute nothing — so a selection made only of such tracks admits NO words, rather
+ * than falling back to "everything".
+ * @param difficulty Comma-joined track ids, or the empty sentinel for "all"
+ * @param catalogLevels Levels the catalog has words for; omit to skip the availability rule
+ * @returns The union band, an empty band when tracks were chosen but none can be served,
+ *   or null when no track is chosen
+ * @pure true
+ */
+export function difficultyLevels(
+  difficulty: string,
+  catalogLevels?: readonly VocabularyLevel[],
+): VocabularyLevel[] | null {
   const ids = difficulty
     .split(",")
     .map((id) => id.trim())
@@ -133,9 +190,10 @@ export function difficultyLevels(difficulty: string): VocabularyLevel[] | null {
   const union = new Set<VocabularyLevel>();
   for (const id of ids) {
     const track = DIFFICULTY_TRACKS.find((entry) => entry.id === id);
-    if (track) for (const level of track.levels) union.add(level);
+    if (!track) continue;
+    if (catalogLevels && !isTrackAvailable(track, catalogLevels)) continue;
+    for (const level of track.levels) union.add(level);
   }
-  if (!union.size) return null;
   return LEVELS.filter((level) => union.has(level));
 }
 
@@ -155,32 +213,24 @@ export function formatLevelBand(levels: readonly VocabularyLevel[]): string {
 }
 
 /**
- * A stable, illustrative word count for each difficulty track, shown at the row's
- * right. These are MOCK curated-pack sizes, not the live catalog count: the dropdown
- * renders before the feed resolves and must not imply a real total. Each number is a
- * specific value under 100 (bigger for broad everyday tracks, smaller for narrow or
- * advanced ones) so a track reads as a bite-size pack, not a vague estimate.
+ * How many words a set of tracks streams, given the catalog's per-level counts.
+ *
+ * Tracks overlap on purpose (see the header), so the size of a multi-track selection is
+ * the count over the UNION of their levels — adding the tracks' own sizes would count a
+ * shared level once per track. This is the same union `difficultyLevels` hands the feed
+ * endpoint, availability rule included, so the figure shown is the pack that is served.
+ * @param ids Track ids (order and duplicates do not matter)
+ * @param levelCounts Words per CEFR level, as reported by the feed endpoint
+ * @param catalogLevels Levels the catalog has words for
+ * @returns The number of distinct words the selection admits (0 for no tracks)
+ * @pure true
  */
-const TRACK_WORD_COUNTS: Record<string, number> = {
-  "vo-long": 84,
-  "co-ban": 62,
-  "du-lich": 47,
-  "doc-hieu": 58,
-  "giao-tiep": 91,
-  "chuyen-sau": 39,
-  "nang-cao": 55,
-  "viet-lach": 43,
-  "du-hoc": 68,
-  "van-chuong": 36,
-};
-
-/** Illustrative word count for one track (falls back to 0 for an unknown id). @pure true */
-export function mockTrackWordCount(id: string): number {
-  return TRACK_WORD_COUNTS[id] ?? 0;
+export function countTrackWords(
+  ids: Iterable<string>,
+  levelCounts: Partial<Record<VocabularyLevel, number>>,
+  catalogLevels: readonly VocabularyLevel[],
+): number {
+  const levels = difficultyLevels([...ids].join(","), catalogLevels);
+  if (!levels) return 0;
+  return levels.reduce((sum, level) => sum + (levelCounts[level] ?? 0), 0);
 }
-
-/** Illustrative total across every track, shown on the "tất cả" row. */
-export const MOCK_TOTAL_WORDS: number = Object.values(TRACK_WORD_COUNTS).reduce(
-  (total, count) => total + count,
-  0,
-);
