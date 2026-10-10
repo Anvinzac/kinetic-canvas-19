@@ -189,9 +189,7 @@ export async function listErrorReports(options: {
     items = items.sort((a, b) => b.created_at.localeCompare(a.created_at));
     if (options.cursor) {
       const [ts, id] = options.cursor.split("|");
-      items = items.filter(
-        (e) => e.created_at < ts! || (e.created_at === ts && e.id < (id ?? "")),
-      );
+      items = items.filter((e) => e.created_at < ts! || (e.created_at === ts && e.id < (id ?? "")));
     }
     const page = items.slice(0, limit);
     const last = page[page.length - 1];

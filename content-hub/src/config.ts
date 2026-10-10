@@ -49,7 +49,7 @@ function buildSink(log: Logger): Sink {
     requireEnv("SUPABASE_URL"),
     requireEnv("SUPABASE_ANON_KEY"),
     requireEnv("SYSTEM_BOT_EMAIL"),
-    requireEnv("SYSTEM_BOT_PASSWORD")
+    requireEnv("SYSTEM_BOT_PASSWORD"),
   );
   log.info("sink configured", { sink: sink.name });
   return sink;
@@ -57,8 +57,14 @@ function buildSink(log: Logger): Sink {
 
 function buildVocabularyGenerator(log: Logger): VocabularyGenerator {
   if (env("VOCAB_GENERATOR", "curated") === "claude") {
-    const gen = new ClaudeVocabularyGenerator(requireEnv("ANTHROPIC_API_KEY"), env("CLAUDE_MODEL", "claude-haiku-4-5-20251001"));
-    log.info("vocabulary generator", { generator: gen.name, model: env("CLAUDE_MODEL", "claude-haiku-4-5-20251001") });
+    const gen = new ClaudeVocabularyGenerator(
+      requireEnv("ANTHROPIC_API_KEY"),
+      env("CLAUDE_MODEL", "claude-haiku-4-5-20251001"),
+    );
+    log.info("vocabulary generator", {
+      generator: gen.name,
+      model: env("CLAUDE_MODEL", "claude-haiku-4-5-20251001"),
+    });
     return gen;
   }
   const gen = new CuratedVocabularyGenerator();

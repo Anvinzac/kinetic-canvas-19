@@ -43,7 +43,8 @@ export const getPost = createServerFn({ method: "GET" })
       ? await supabaseAdmin
           .from("profiles")
           .select("id, username, display_name, avatar_url")
-          .in("id", profileIds): { data: [] };
+          .in("id", profileIds)
+      : { data: [] };
 
     return {
       post,
@@ -52,4 +53,3 @@ export const getPost = createServerFn({ method: "GET" })
       comments: comments ?? [],
     };
   });
-

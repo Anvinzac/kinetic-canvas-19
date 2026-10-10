@@ -11,10 +11,10 @@ Rollup date key: UTC `YYYY-MM-DD`.
 
 ## Content (`content.created` / `updated` / `deleted`)
 
-| entity_type | Source |
-|-------------|--------|
-| `post` | `posts` insert (`createPost` / demo `addMockPost`) |
-| `comment` | `comments` insert (`addComment` / demo) |
+| entity_type     | Source                                                                            |
+| --------------- | --------------------------------------------------------------------------------- |
+| `post`          | `posts` insert (`createPost` / demo `addMockPost`)                                |
+| `comment`       | `comments` insert (`addComment` / demo)                                           |
 | `agent_content` | when an `agent_content_items` row is marked used/posted (backfill + future hooks) |
 
 - `content.updated`: emitted on profile display_name/bio/avatar updates when those mutations run.

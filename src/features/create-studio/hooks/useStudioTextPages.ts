@@ -14,11 +14,7 @@ import {
   type SetStateAction,
 } from "react";
 import type { CanvasSpec } from "@/features/canvas";
-import {
-  getComposerPages,
-  joinComposerPages,
-  MAX_STATUS_CHARS,
-} from "../lib/composer-pages";
+import { getComposerPages, joinComposerPages, MAX_STATUS_CHARS } from "../lib/composer-pages";
 import { suggestSize } from "../lib/size";
 import type { StudioPage } from "../types";
 

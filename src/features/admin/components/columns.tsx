@@ -129,9 +129,7 @@ export function createErrorColumns(options: {
     errorHelper.accessor("status", { header: "status" }),
     errorHelper.accessor("created_at", {
       header: "when",
-      cell: (info) => (
-        <span className="text-xs">{new Date(info.getValue()).toLocaleString()}</span>
-      ),
+      cell: (info) => <span className="text-xs">{new Date(info.getValue()).toLocaleString()}</span>,
     }),
     errorHelper.display({
       id: "actions",

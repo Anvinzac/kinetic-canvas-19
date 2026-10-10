@@ -193,7 +193,10 @@ export function getCanvasSceneTheme(id: string | null | undefined): CanvasSceneT
  * @param shiftPage - shiftPage argument
  * @returns Style object with color, image, size, position, and transition
  */
-export function getSceneBackgroundStyle(theme: CanvasSceneTheme, shiftPage: number): React.CSSProperties | Record<string, string> {
+export function getSceneBackgroundStyle(
+  theme: CanvasSceneTheme,
+  shiftPage: number,
+): React.CSSProperties | Record<string, string> {
   const x = theme.step.x * shiftPage;
   const y = theme.step.y * shiftPage;
   return {

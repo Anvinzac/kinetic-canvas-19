@@ -15,10 +15,7 @@ import { requireAdminContext } from "../lib/require-admin";
 import { readFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 
-const TEMPLATES_PATH = resolve(
-  process.cwd(),
-  "src/features/canvas/data/templates.json",
-);
+const TEMPLATES_PATH = resolve(process.cwd(), "src/features/canvas/data/templates.json");
 
 // ---------------------------------------------------------------------------
 // Types
@@ -157,9 +154,7 @@ export const listTemplates = createServerFn({ method: "GET" }).handler(
  */
 export const updateTemplateSection = createServerFn({ method: "POST" })
   .middleware([requireAdminAccess])
-  .inputValidator((d: unknown) =>
-    z.object({ section: sectionSchema, data: z.unknown() }).parse(d),
-  )
+  .inputValidator((d: unknown) => z.object({ section: sectionSchema, data: z.unknown() }).parse(d))
   .handler(async ({ data, context }) => {
     await requireAdminContext({ authUserId: context.userId });
     const templates = await readTemplates();
@@ -193,9 +188,7 @@ export const deleteTemplateItem = createServerFn({ method: "POST" })
  */
 export const addTemplateItem = createServerFn({ method: "POST" })
   .middleware([requireAdminAccess])
-  .inputValidator((d: unknown) =>
-    z.object({ section: sectionSchema, item: z.unknown() }).parse(d),
-  )
+  .inputValidator((d: unknown) => z.object({ section: sectionSchema, item: z.unknown() }).parse(d))
   .handler(async ({ data, context }) => {
     await requireAdminContext({ authUserId: context.userId });
     const templates = await readTemplates();

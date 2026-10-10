@@ -5,9 +5,4 @@
  * Depends on: features/session
  */
 
-export {
-  isDemoDataMode,
-  pickDataMode,
-  runDataMode,
-  type DataModeBranches,
-} from "./run-data-mode";
+export { isDemoDataMode, pickDataMode, runDataMode, type DataModeBranches } from "./run-data-mode";

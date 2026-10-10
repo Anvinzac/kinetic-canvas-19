@@ -61,11 +61,7 @@ export function BackgroundModeBody(props: BackgroundModeBodyProps): ReactElement
     );
   }
 
-  if (
-    backgroundMode === "photo" ||
-    backgroundMode === "upload" ||
-    backgroundMode === "video"
-  ) {
+  if (backgroundMode === "photo" || backgroundMode === "upload" || backgroundMode === "video") {
     return (
       <BackgroundMediaBody
         backgroundMode={backgroundMode}

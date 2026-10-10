@@ -170,7 +170,8 @@ export function usePostAutoAdvance({
     }
 
     const duration = storyFastMode
-      ? getFastStoryDuration(activeStory.text): getStoryPageDuration(storyPageText);
+      ? getFastStoryDuration(activeStory.text)
+      : getStoryPageDuration(storyPageText);
 
     const timer = window.setTimeout(() => {
       if (!storyFastMode && storyPage < storyPages.length - 1) {

@@ -145,4 +145,3 @@ export function getCommentLabel(chipId: string): string {
   if (chip) return `${chip.emoji} ${chip.label}`;
   return normalizeComment(chipId.replace(/_/g, " ")) || "comment";
 }
-

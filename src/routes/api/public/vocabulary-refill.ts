@@ -28,7 +28,8 @@ async function authorize(request: Request) {
   const expected = data?.secret ?? "";
   if (!expected || provided.length !== expected.length) return null;
   let mismatch = 0;
-  for (let i = 0; i < provided.length; i += 1) mismatch |= provided.charCodeAt(i) ^ expected.charCodeAt(i);
+  for (let i = 0; i < provided.length; i += 1)
+    mismatch |= provided.charCodeAt(i) ^ expected.charCodeAt(i);
   return mismatch === 0 ? supabaseAdmin : null;
 }
 
@@ -64,7 +65,9 @@ async function generateWords(count: number, avoid: string[]) {
   const text = body.choices?.[0]?.message?.content ?? "[]";
   const start = text.indexOf("[");
   const end = text.lastIndexOf("]");
-  const parsed: unknown = JSON.parse(start !== -1 && end > start ? text.slice(start, end + 1) : "[]");
+  const parsed: unknown = JSON.parse(
+    start !== -1 && end > start ? text.slice(start, end + 1) : "[]",
+  );
   if (!Array.isArray(parsed)) return [];
   return parsed.flatMap((raw) => {
     const result = wordSchema.safeParse(raw);

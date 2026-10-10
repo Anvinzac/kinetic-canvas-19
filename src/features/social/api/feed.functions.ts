@@ -52,7 +52,8 @@ export const getFeed = createServerFn({ method: "GET" })
       .maybeSingle();
 
     const { data: following } = viewer
-      ? await supabaseAdmin.from("follows").select("following_id").eq("follower_id", viewer.id): { data: [] as { following_id: string }[] };
+      ? await supabaseAdmin.from("follows").select("following_id").eq("follower_id", viewer.id)
+      : { data: [] as { following_id: string }[] };
     const followingIds = (following ?? []).map((follow) => follow.following_id);
     const { data: activeBots } = await supabaseAdmin
       .from("bot_agents")
@@ -71,7 +72,9 @@ export const getFeed = createServerFn({ method: "GET" })
     // Temporary vocab-only mode: hide non-vocabulary posts (reversible via src/lib/feature-flags.ts)
     if (VOCAB_ONLY_MODE) {
       const viewerId = viewer?.id ?? null;
-      poolPosts = poolPosts.filter((p) => isVocabularyPost(p) || (viewerId != null && p.author_id === viewerId));
+      poolPosts = poolPosts.filter(
+        (p) => isVocabularyPost(p) || (viewerId != null && p.author_id === viewerId),
+      );
     }
     const poolPostIds = poolPosts.map((post) => post.id);
     if (poolPostIds.length === 0) {
@@ -109,7 +112,8 @@ export const getFeed = createServerFn({ method: "GET" })
       ? await supabaseAdmin
           .from("profiles")
           .select("id, username, display_name, avatar_url")
-          .in("id", profileIds): { data: [] };
+          .in("id", profileIds)
+      : { data: [] };
 
     return {
       posts: rankedPosts,
@@ -209,4 +213,3 @@ function getFeedRankScore(
       : 0;
   return relationshipBoost + botRecencyBoost + popularity * 25 + recency;
 }
-

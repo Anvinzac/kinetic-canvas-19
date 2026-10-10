@@ -40,9 +40,7 @@ async function normalizeCatastrophicSsrResponse(response: Response): Promise<Res
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     try {
-      const { handleAdminTelemetryRequest } = await import(
-        "@/features/admin/api/telemetry.http"
-      );
+      const { handleAdminTelemetryRequest } = await import("@/features/admin/api/telemetry.http");
       const adminResponse = await handleAdminTelemetryRequest(request);
       if (adminResponse) return adminResponse;
 

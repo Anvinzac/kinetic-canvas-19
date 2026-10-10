@@ -25,10 +25,7 @@ export function feedQueryOptions(
   return buildFeedQueryOptions(mode, fetchLive);
 }
 
-function buildFeedQueryOptions(
-  mode: DataMode,
-  fetchLive: () => Promise<SocialFeedData>,
-) {
+function buildFeedQueryOptions(mode: DataMode, fetchLive: () => Promise<SocialFeedData>) {
   return queryOptions({
     queryKey: socialKeys.feed(mode),
     queryFn: (): Promise<SocialFeedData> =>

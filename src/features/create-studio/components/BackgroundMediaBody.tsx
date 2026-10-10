@@ -76,11 +76,7 @@ export function BackgroundMediaBody({
         </label>
         {uploadedPhoto && (
           <div className="mt-3 flex items-center gap-3 rounded-2xl bg-white/5 p-2 ring-1 ring-white/10">
-            <img
-              src={uploadedPhoto}
-              alt=""
-              className="aspect-[3/4] h-20 rounded-xl object-cover"
-            />
+            <img src={uploadedPhoto} alt="" className="aspect-[3/4] h-20 rounded-xl object-cover" />
             <div className="min-w-0 flex-1">
               <p className="text-sm font-bold">library photo loaded</p>
               <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">

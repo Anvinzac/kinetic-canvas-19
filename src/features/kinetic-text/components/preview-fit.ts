@@ -14,7 +14,8 @@ export const FULL_CANVAS_REFERENCE_WIDTH = FULL_CANVAS_MAX_HEIGHT * (9 / 16);
 export const TEXT_SAFE_MAX_WIDTH = "min(92%, calc(100% - 2rem))";
 export const MIN_TEXT_FIT_SCALE = 0.46;
 export const VIETNAMESE_SCALE_FIT_GUARD = 1.24;
-export const useIsomorphicLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
+export const useIsomorphicLayoutEffect =
+  typeof window === "undefined" ? useEffect : useLayoutEffect;
 
 /**
  * Compute previewfitfloor.

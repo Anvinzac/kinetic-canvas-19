@@ -43,7 +43,7 @@ export function resetMockRuntimeData(): void {
 export function getAllMockProfiles(): MockProfile[] {
   const patch = readJson<Partial<MockProfile>>(PROFILE_PATCH_KEY, {});
   return MOCK_PROFILES.map((profile) =>
-    profile.id === MOCK_ME_ID ? cloneProfile({ ...profile, ...patch }): cloneProfile(profile),
+    profile.id === MOCK_ME_ID ? cloneProfile({ ...profile, ...patch }) : cloneProfile(profile),
   );
 }
 

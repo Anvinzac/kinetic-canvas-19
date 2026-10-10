@@ -61,9 +61,7 @@ export function getVietnameseCharBudgetForLine(
 ): number {
   const indentEm = getVietnameseLineIndentEm(lineIndex);
   const availablePx =
-    canvasInnerWidthPx -
-    indentEm * fontSizePx -
-    fontSizePx * VIETNAMESE_LINE_SIDE_PAD_EM;
+    canvasInnerWidthPx - indentEm * fontSizePx - fontSizePx * VIETNAMESE_LINE_SIDE_PAD_EM;
   const charWidthPx = Math.max(fontSizePx * VIETNAMESE_AVG_CHAR_WIDTH_EM, 1);
   return Math.max(4, Math.floor(availablePx / charWidthPx));
 }
@@ -167,7 +165,8 @@ export function getVietnameseWordLines(
       // further to pull a partner up rather than leave a one-word line. The reach
       // is wider when a pair is being forced by the consecutive-solo cap.
       if (lineWords === 1) {
-        const reach = capacity + (forcePair ? VIETNAMESE_PAIR_FORCE_CHARS : VIETNAMESE_PAIR_RELAX_CHARS);
+        const reach =
+          capacity + (forcePair ? VIETNAMESE_PAIR_FORCE_CHARS : VIETNAMESE_PAIR_RELAX_CHARS);
         if (forcePair || projected <= reach) {
           lineSegments.push(segment);
           lineLength = projected;

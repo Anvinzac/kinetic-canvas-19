@@ -16,7 +16,13 @@ import { paginateText } from "@/features/post-player";
  * @param props - Component props
  * @returns Rendered UI
  */
-export function MasonryCard({ post, className }: { post: MockPost; className?: string }): ReactElement {
+export function MasonryCard({
+  post,
+  className,
+}: {
+  post: MockPost;
+  className?: string;
+}): ReactElement {
   const spec = parseCanvas(post.canvas_html);
   // Show only the first page — a single full sentence laid out exactly as it
   // looks after one run on the canvas — instead of cramming the whole poem into

@@ -5,7 +5,7 @@
  * Depends on: react, lucide-react
  */
 
-import type { ReactNode, ReactElement} from "react";
+import type { ReactNode, ReactElement } from "react";
 import { ChevronRight } from "lucide-react";
 
 /**

@@ -32,15 +32,15 @@ export function getCanvasBackgroundColors(
 ): RgbColor[] {
   const sources = [
     ...normalizeBackgroundInput(background),
-    ...(spec.backgroundStyle === "transition" ? (spec.gradientPath ?? []): []),
+    ...(spec.backgroundStyle === "transition" ? (spec.gradientPath ?? []) : []),
   ];
   const colors = sources.flatMap(extractCssColors).map(parseCssColor).filter(Boolean);
-  return colors.length > 0 ? (colors as RgbColor[]): [];
+  return colors.length > 0 ? (colors as RgbColor[]) : [];
 }
 
 function normalizeBackgroundInput(background: CanvasBackgroundInput) {
   if (!background) return [];
-  return Array.isArray(background) ? background.filter(Boolean): [background];
+  return Array.isArray(background) ? background.filter(Boolean) : [background];
 }
 
 /**
@@ -56,7 +56,7 @@ export function pickBestColor(
   options: { avoidYellowOnGreen?: boolean; avoidColor?: string } = {},
 ): string {
   const greenishBackground = isGreenishBackground(backgroundColors);
-  const avoidRgb = options.avoidColor ? parseCssColor(options.avoidColor): null;
+  const avoidRgb = options.avoidColor ? parseCssColor(options.avoidColor) : null;
 
   const ranked = candidates
     .map((color) => {

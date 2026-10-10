@@ -9,7 +9,16 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
-import { Check, ChevronRight, Loader2, Pencil, PlugZap, Plus, RefreshCw, Trash2 } from "lucide-react";
+import {
+  Check,
+  ChevronRight,
+  Loader2,
+  Pencil,
+  PlugZap,
+  Plus,
+  RefreshCw,
+  Trash2,
+} from "lucide-react";
 import {
   activateLlmProfile,
   deleteLlmProfile,
@@ -41,26 +50,49 @@ const EMPTY_DRAFT: Draft = { provider: "openrouter", label: "", model: "", apiKe
  */
 const RECOMMENDED: Record<LlmProvider, Array<{ id: string; label: string; note: string }>> = {
   openrouter: [
-    { id: "meta-llama/llama-3.3-70b-instruct", label: "Llama 3.3 70B", note: "Natural Vietnamese, fast — recommended" },
+    {
+      id: "meta-llama/llama-3.3-70b-instruct",
+      label: "Llama 3.3 70B",
+      note: "Natural Vietnamese, fast — recommended",
+    },
     { id: "deepseek/deepseek-chat", label: "DeepSeek V3", note: "Strong multilingual, low cost" },
-    { id: "google/gemini-flash-1.5", label: "Gemini 1.5 Flash", note: "Very fast, good everyday Vietnamese" },
+    {
+      id: "google/gemini-flash-1.5",
+      label: "Gemini 1.5 Flash",
+      note: "Very fast, good everyday Vietnamese",
+    },
     { id: "qwen/qwen-2.5-72b-instruct", label: "Qwen 2.5 72B", note: "Solid Vietnamese phrasing" },
     { id: "mistralai/mistral-large", label: "Mistral Large", note: "Higher quality, a bit slower" },
   ],
   together: [
-    { id: "meta-llama/Llama-3.3-70B-Instruct-Turbo", label: "Llama 3.3 70B Turbo", note: "Natural Vietnamese, fast — recommended" },
+    {
+      id: "meta-llama/Llama-3.3-70B-Instruct-Turbo",
+      label: "Llama 3.3 70B Turbo",
+      note: "Natural Vietnamese, fast — recommended",
+    },
     { id: "deepseek-ai/DeepSeek-V3", label: "DeepSeek V3", note: "Strong multilingual, low cost" },
-    { id: "Qwen/Qwen2.5-72B-Instruct-Turbo", label: "Qwen 2.5 72B Turbo", note: "Solid Vietnamese phrasing" },
+    {
+      id: "Qwen/Qwen2.5-72B-Instruct-Turbo",
+      label: "Qwen 2.5 72B Turbo",
+      note: "Solid Vietnamese phrasing",
+    },
     { id: "google/gemma-2-27b-it", label: "Gemma 2 27B", note: "Good quality mid-range" },
-    { id: "mistralai/Mixtral-8x22B-Instruct-v0.1", label: "Mixtral 8x22B", note: "Reliable, widely available" },
+    {
+      id: "mistralai/Mixtral-8x22B-Instruct-v0.1",
+      label: "Mixtral 8x22B",
+      note: "Reliable, widely available",
+    },
   ],
   anthropic: [
-    { id: "claude-3-5-sonnet-20241022", label: "Claude 3.5 Sonnet", note: "High quality (Vietnamese can read formal)" },
+    {
+      id: "claude-3-5-sonnet-20241022",
+      label: "Claude 3.5 Sonnet",
+      note: "High quality (Vietnamese can read formal)",
+    },
     { id: "claude-3-5-haiku-20241022", label: "Claude 3.5 Haiku", note: "Fast, lower cost" },
     { id: "claude-sonnet-4", label: "Claude Sonnet 4", note: "Newest Sonnet" },
   ],
 };
-
 
 /** Friendly labels for model-id namespaces used to group the live catalogue. */
 const VENDOR_LABELS: Record<string, string> = {
@@ -113,18 +145,34 @@ export function LlmSettingsPage(): React.ReactElement {
 
   const refresh = () => qc.invalidateQueries({ queryKey: adminKeys.llmSettings() });
 
-  const activateMut = useMutation({ mutationFn: (id: string) => activateLlmProfile({ data: { id } }), onSuccess: refresh });
-  const deleteMut = useMutation({ mutationFn: (id: string) => deleteLlmProfile({ data: { id } }), onSuccess: refresh });
+  const activateMut = useMutation({
+    mutationFn: (id: string) => activateLlmProfile({ data: { id } }),
+    onSuccess: refresh,
+  });
+  const deleteMut = useMutation({
+    mutationFn: (id: string) => deleteLlmProfile({ data: { id } }),
+    onSuccess: refresh,
+  });
   const saveMut = useMutation({
     mutationFn: (d: Draft & { setActive?: boolean }) =>
-      saveLlmProfile({ data: { id: d.id, label: d.label, provider: d.provider, model: d.model, apiKey: d.apiKey || undefined, setActive: d.setActive } }),
+      saveLlmProfile({
+        data: {
+          id: d.id,
+          label: d.label,
+          provider: d.provider,
+          model: d.model,
+          apiKey: d.apiKey || undefined,
+          setActive: d.setActive,
+        },
+      }),
     onSuccess: () => {
       closeForm();
       refresh();
     },
   });
   const modelsMut = useMutation({
-    mutationFn: (v: { provider: LlmProvider; apiKey?: string; id?: string }) => listProviderModels({ data: v }),
+    mutationFn: (v: { provider: LlmProvider; apiKey?: string; id?: string }) =>
+      listProviderModels({ data: v }),
     onSuccess: (list) => setModels(list),
   });
   const testMut = useMutation({
@@ -201,8 +249,8 @@ export function LlmSettingsPage(): React.ReactElement {
       <div>
         <h2 className="text-xl font-semibold">Generation Model</h2>
         <p className="text-sm text-muted-foreground">
-          Keys used by the vocabulary ⋮ "Regenerate with AI" action. Save several, switch the
-          active one, and the model list updates for that provider. Stored locally in
+          Keys used by the vocabulary ⋮ "Regenerate with AI" action. Save several, switch the active
+          one, and the model list updates for that provider. Stored locally in
           <code className="mx-1 rounded bg-muted px-1 py-0.5 text-xs">llm-config.json</code>
           (gitignored — never committed).
         </p>
@@ -237,7 +285,9 @@ export function LlmSettingsPage(): React.ReactElement {
                   type="button"
                   onClick={() => activateMut.mutate(p.id)}
                   className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${
-                    activeId === p.id ? "border-primary bg-primary text-primary-foreground" : "border-border"
+                    activeId === p.id
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "border-border"
                   }`}
                   aria-label={`Use ${p.label}`}
                   title={activeId === p.id ? "Active key" : "Set as active key"}
@@ -253,13 +303,22 @@ export function LlmSettingsPage(): React.ReactElement {
                     {p.provider} · {p.model} · {p.keyHint}
                   </p>
                 </div>
-                <IconBtn label="Test" onClick={() => testMut.mutate({ id: p.id })} busy={testMut.isPending && testMut.variables?.id === p.id}>
+                <IconBtn
+                  label="Test"
+                  onClick={() => testMut.mutate({ id: p.id })}
+                  busy={testMut.isPending && testMut.variables?.id === p.id}
+                >
                   <PlugZap size={14} />
                 </IconBtn>
                 <IconBtn label="Edit" onClick={() => editProfile(p)}>
                   <Pencil size={14} />
                 </IconBtn>
-                <IconBtn label="Delete" danger onClick={() => deleteMut.mutate(p.id)} busy={deleteMut.isPending && deleteMut.variables === p.id}>
+                <IconBtn
+                  label="Delete"
+                  danger
+                  onClick={() => deleteMut.mutate(p.id)}
+                  busy={deleteMut.isPending && deleteMut.variables === p.id}
+                >
                   <Trash2 size={14} />
                 </IconBtn>
               </li>
@@ -304,7 +363,9 @@ export function LlmSettingsPage(): React.ReactElement {
                   modelsMut.reset();
                 }}
                 className={`rounded-lg border p-2.5 text-left text-sm transition-colors ${
-                  draft.provider === pr ? "border-primary bg-primary/10" : "border-border hover:bg-muted/50"
+                  draft.provider === pr
+                    ? "border-primary bg-primary/10"
+                    : "border-border hover:bg-muted/50"
                 }`}
               >
                 {settings.data?.providerLabels[pr] ?? pr}
@@ -313,7 +374,9 @@ export function LlmSettingsPage(): React.ReactElement {
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-muted-foreground" htmlFor="llm-label">Label</label>
+            <label className="text-xs font-medium text-muted-foreground" htmlFor="llm-label">
+              Label
+            </label>
             <input
               id="llm-label"
               className="w-full rounded border border-border bg-background px-3 py-2 text-sm"
@@ -324,13 +387,17 @@ export function LlmSettingsPage(): React.ReactElement {
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-muted-foreground" htmlFor="llm-key">API key</label>
+            <label className="text-xs font-medium text-muted-foreground" htmlFor="llm-key">
+              API key
+            </label>
             <input
               id="llm-key"
               type="password"
               autoComplete="off"
               className="w-full rounded border border-border bg-background px-3 py-2 text-sm"
-              placeholder={draft.id ? "Saved — leave blank to keep" : "Paste your key (loads its models)"}
+              placeholder={
+                draft.id ? "Saved — leave blank to keep" : "Paste your key (loads its models)"
+              }
               value={draft.apiKey}
               onChange={(e) => setDraft((d) => ({ ...d, apiKey: e.target.value }))}
             />
@@ -349,7 +416,11 @@ export function LlmSettingsPage(): React.ReactElement {
                 }
                 disabled={modelBusy || (!draft.apiKey.trim() && !draft.id)}
               >
-                {modelBusy ? <Loader2 size={12} className="animate-spin" /> : <RefreshCw size={12} />}
+                {modelBusy ? (
+                  <Loader2 size={12} className="animate-spin" />
+                ) : (
+                  <RefreshCw size={12} />
+                )}
                 Load all {settings.data?.providerLabels[draft.provider] ?? draft.provider} models
               </button>
             </div>
@@ -362,16 +433,22 @@ export function LlmSettingsPage(): React.ReactElement {
                   type="button"
                   onClick={() => setDraft((d) => ({ ...d, model: r.id }))}
                   className={`flex items-start justify-between gap-2 rounded-md border px-3 py-1.5 text-left transition-colors ${
-                    draft.model === r.id ? "border-primary bg-primary/10" : "border-border hover:bg-muted/50"
+                    draft.model === r.id
+                      ? "border-primary bg-primary/10"
+                      : "border-border hover:bg-muted/50"
                   }`}
                 >
                   <span className="min-w-0">
-                    <span className={`block text-sm font-medium ${draft.model === r.id ? "text-primary" : ""}`}>
+                    <span
+                      className={`block text-sm font-medium ${draft.model === r.id ? "text-primary" : ""}`}
+                    >
                       {r.label}
                     </span>
                     <span className="block truncate text-xs text-muted-foreground">{r.id}</span>
                   </span>
-                  <span className="shrink-0 text-right text-xs text-muted-foreground">{r.note}</span>
+                  <span className="shrink-0 text-right text-xs text-muted-foreground">
+                    {r.note}
+                  </span>
                 </button>
               ))}
             </div>
@@ -408,7 +485,9 @@ export function LlmSettingsPage(): React.ReactElement {
                             {g.models.length}
                           </span>
                           {selectedHere && (
-                            <span className="ml-auto min-w-0 truncate text-xs text-primary">{selectedTail}</span>
+                            <span className="ml-auto min-w-0 truncate text-xs text-primary">
+                              {selectedTail}
+                            </span>
                           )}
                         </button>
                         {open && (
@@ -422,11 +501,15 @@ export function LlmSettingsPage(): React.ReactElement {
                                   draft.model === m.id ? "bg-primary/10" : ""
                                 }`}
                               >
-                                <span className={`font-medium ${draft.model === m.id ? "text-primary" : ""}`}>
+                                <span
+                                  className={`font-medium ${draft.model === m.id ? "text-primary" : ""}`}
+                                >
                                   {m.name !== m.id ? m.name : m.id}
                                 </span>
                                 {m.name !== m.id && (
-                                  <span className="truncate text-xs text-muted-foreground">{m.id}</span>
+                                  <span className="truncate text-xs text-muted-foreground">
+                                    {m.id}
+                                  </span>
                                 )}
                               </button>
                             ))}
@@ -436,7 +519,9 @@ export function LlmSettingsPage(): React.ReactElement {
                     );
                   })}
                   {groupedModels.length === 0 && (
-                    <p className="px-3 py-2 text-sm text-muted-foreground">No match — type a model id below.</p>
+                    <p className="px-3 py-2 text-sm text-muted-foreground">
+                      No match — type a model id below.
+                    </p>
                   )}
                 </div>
               </div>
@@ -446,7 +531,9 @@ export function LlmSettingsPage(): React.ReactElement {
               <p className="text-xs text-muted-foreground">Loading models for this key…</p>
             )}
             {modelsMut.isError && (
-              <p className="rounded px-3 py-2 text-sm bg-red-500/10 text-red-500">{modelsMut.error.message}</p>
+              <p className="rounded px-3 py-2 text-sm bg-red-500/10 text-red-500">
+                {modelsMut.error.message}
+              </p>
             )}
 
             <input
@@ -463,16 +550,30 @@ export function LlmSettingsPage(): React.ReactElement {
             <button
               type="button"
               className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-40"
-              disabled={!draft.label.trim() || !draft.model.trim() || (!draft.apiKey.trim() && !draft.id) || saveMut.isPending}
+              disabled={
+                !draft.label.trim() ||
+                !draft.model.trim() ||
+                (!draft.apiKey.trim() && !draft.id) ||
+                saveMut.isPending
+              }
               onClick={() => saveMut.mutate({ ...draft, setActive: profiles.length === 0 })}
             >
-              {saveMut.isPending ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
+              {saveMut.isPending ? (
+                <Loader2 size={14} className="animate-spin" />
+              ) : (
+                <Check size={14} />
+              )}
               Save
             </button>
             <button
               type="button"
               className="inline-flex items-center gap-2 rounded-md bg-primary/80 px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-40"
-              disabled={!draft.label.trim() || !draft.model.trim() || (!draft.apiKey.trim() && !draft.id) || saveMut.isPending}
+              disabled={
+                !draft.label.trim() ||
+                !draft.model.trim() ||
+                (!draft.apiKey.trim() && !draft.id) ||
+                saveMut.isPending
+              }
               onClick={() => saveMut.mutate({ ...draft, setActive: true })}
             >
               Save &amp; use now
@@ -483,13 +584,21 @@ export function LlmSettingsPage(): React.ReactElement {
               disabled={!draft.apiKey.trim() && !draft.id}
               onClick={() =>
                 draft.apiKey.trim()
-                  ? testMut.mutate({ provider: draft.provider, model: draft.model, apiKey: draft.apiKey.trim() })
+                  ? testMut.mutate({
+                      provider: draft.provider,
+                      model: draft.model,
+                      apiKey: draft.apiKey.trim(),
+                    })
                   : draft.id && testMut.mutate({ id: draft.id })
               }
             >
               <PlugZap size={14} /> Test
             </button>
-            <button type="button" className="ml-auto text-sm text-muted-foreground hover:text-foreground" onClick={closeForm}>
+            <button
+              type="button"
+              className="ml-auto text-sm text-muted-foreground hover:text-foreground"
+              onClick={closeForm}
+            >
               Cancel
             </button>
           </div>

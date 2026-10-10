@@ -58,7 +58,16 @@
   "count": 25,
 
   // [DERIVED] Sorted union of every word's `topics`. Feeds the topic filter UI.
-  "topics": ["attention", "character", "communication", "daily", "emotion", "thinking", "time", "work"],
+  "topics": [
+    "attention",
+    "character",
+    "communication",
+    "daily",
+    "emotion",
+    "thinking",
+    "time",
+    "work",
+  ],
 
   // [DERIVED] Only the CEFR levels actually present, in A1→C2 order. Feeds the level filter.
   "levels": ["A2", "B1", "B2"],
@@ -178,10 +187,10 @@
       "usage": [
         {
           "en": "She proved more _____ than anyone expected.",
-          "vi": "Cô ấy chứng tỏ mình mạnh mẽ hơn người ta tưởng."
-        }
-      ]
-    }
+          "vi": "Cô ấy chứng tỏ mình mạnh mẽ hơn người ta tưởng.",
+        },
+      ],
+    },
 
     // ── Minimal valid entry ────────────────────────────────────────────────────────
     // Only `id`, `word` and `defVi` are strictly required; everything else is optional or
@@ -191,7 +200,7 @@
     //   "word": "example",
     //   "defVi": "Một /trường hợp/ cụ thể minh hoạ cho điều gì đó."
     // }
-  ]
+  ],
 }
 
 /**

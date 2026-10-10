@@ -11,11 +11,7 @@ import { shouldFloatComment } from "../lib/comment-text";
 import { getUniformPageTextSize } from "../lib/playback-timing";
 import { getCommentFlightGeometry } from "../lib/post-comment-layout";
 import { getPostCanvasVisuals } from "../lib/post-canvas-visuals";
-import {
-  getArticlePreview,
-  getPostHashtags,
-  getPostViewCount,
-} from "../lib/post-meta";
+import { getArticlePreview, getPostHashtags, getPostViewCount } from "../lib/post-meta";
 import type { FlowComment, Post, Profile } from "../types";
 
 export type UsePostPlaybackDerivedArgs = {
@@ -65,10 +61,7 @@ export function usePostPlaybackDerived(args: UsePostPlaybackDerivedArgs) {
     () => getPostCanvasVisuals(post, spec, media, backgroundShiftPage),
     [post, spec, media, backgroundShiftPage],
   );
-  const commentLayout = useMemo(
-    () => getCommentFlightGeometry(canvasWidth),
-    [canvasWidth],
-  );
+  const commentLayout = useMemo(() => getCommentFlightGeometry(canvasWidth), [canvasWidth]);
   const postHashtags = useMemo(
     () => getPostHashtags(spec.text, post.post_type, textPages),
     [post.post_type, spec.text, textPages],
@@ -87,13 +80,8 @@ export function usePostPlaybackDerived(args: UsePostPlaybackDerivedArgs) {
     visuals,
     commentLayout,
     showingFlyingComment:
-      !isExporting &&
-      !isPaused &&
-      !!activeComment &&
-      shouldFloatComment(activeCommentLabel),
-    activeCommentAuthor: activeComment
-      ? profilesById.get(activeComment.user_id)
-      : undefined,
+      !isExporting && !isPaused && !!activeComment && shouldFloatComment(activeCommentLabel),
+    activeCommentAuthor: activeComment ? profilesById.get(activeComment.user_id) : undefined,
     postHashtags,
     viewCount,
     uniformPageSize,

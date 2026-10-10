@@ -36,10 +36,7 @@ type LlmStore = {
   profiles: LlmProfile[];
 };
 
-export const LLM_CONFIG_PATH = resolve(
-  process.cwd(),
-  "src/features/admin/data/llm-config.json",
-);
+export const LLM_CONFIG_PATH = resolve(process.cwd(), "src/features/admin/data/llm-config.json");
 
 const PROVIDER_BASE: Record<LlmProvider, string> = {
   together: "https://api.together.xyz/v1",
@@ -71,7 +68,7 @@ function migrateLegacy(parsed: Partial<LlmConfig> & Partial<LlmStore>): LlmStore
     const activeId =
       parsed.activeId && profiles.some((p) => p.id === parsed.activeId)
         ? parsed.activeId
-        : profiles[0]?.id ?? null;
+        : (profiles[0]?.id ?? null);
     return { version: 2, activeId, profiles };
   }
   if (parsed.apiKey && parsed.provider) {
@@ -247,7 +244,9 @@ export async function fetchProviderModels(cfg: LlmConfig): Promise<ProviderModel
   const res = await fetch(url, { headers });
   if (!res.ok) {
     const body = await res.text().catch(() => "");
-    throw new Error(`${PROVIDER_LABELS[cfg.provider]} models error ${res.status}: ${body}`.slice(0, 200));
+    throw new Error(
+      `${PROVIDER_LABELS[cfg.provider]} models error ${res.status}: ${body}`.slice(0, 200),
+    );
   }
   const json = (await res.json()) as Record<string, unknown>;
   const list = (Array.isArray(json.data) ? json.data : Array.isArray(json) ? json : []) as Array<
@@ -257,10 +256,17 @@ export async function fetchProviderModels(cfg: LlmConfig): Promise<ProviderModel
     .map((m) => {
       const id = typeof m.id === "string" ? m.id : "";
       const name =
-        typeof m.name === "string" ? m.name : typeof m.display_name === "string" ? m.display_name : id;
+        typeof m.name === "string"
+          ? m.name
+          : typeof m.display_name === "string"
+            ? m.display_name
+            : id;
       return { entry: m, model: { id, name } };
     })
-    .filter(({ entry, model }) => model.id && isTextGenerationModel(cfg.provider, entry, model.id, model.name))
+    .filter(
+      ({ entry, model }) =>
+        model.id && isTextGenerationModel(cfg.provider, entry, model.id, model.name),
+    )
     .map(({ model }) => model)
     .sort((a, b) => a.id.localeCompare(b.id));
 }

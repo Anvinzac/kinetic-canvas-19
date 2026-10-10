@@ -5,7 +5,7 @@
  * Depends on: react, lucide-react, @/features/canvas
  */
 
-import type { CSSProperties, ReactElement} from "react";
+import type { CSSProperties, ReactElement } from "react";
 import { Check, Video } from "lucide-react";
 import {
   SAFE_CANVAS_BACKGROUND,
@@ -62,10 +62,11 @@ export function TemplateButton({
 
 function TemplateBackdropThumbnail({ template }: { template: AnimationTemplate }) {
   const scene =
-    template.backdrop.mode === "scene" ? getCanvasSceneTheme(template.backdrop.sceneId): null;
+    template.backdrop.mode === "scene" ? getCanvasSceneTheme(template.backdrop.sceneId) : null;
   const pattern =
     template.backdrop.mode === "pattern"
-      ? getCanvasPatternTheme(template.backdrop.patternId): null;
+      ? getCanvasPatternTheme(template.backdrop.patternId)
+      : null;
 
   return (
     <span

@@ -107,8 +107,7 @@ export function buildManualFlyComment(
   userId: string,
   flyId: number,
 ): { comment: FlowComment; holdMs: number } {
-  const holdMs =
-    getCommentFlightDuration(getFloatingCommentLabel(getCommentLabel(chipId))) + 700;
+  const holdMs = getCommentFlightDuration(getFloatingCommentLabel(getCommentLabel(chipId))) + 700;
   return {
     comment: {
       key: `local-${flyId}`,

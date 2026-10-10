@@ -21,9 +21,7 @@ export async function prefetchFeed(queryClient: QueryClient): Promise<SocialFeed
   const mode = resolveDataMode();
   return queryClient.ensureQueryData(
     feedQueryOptions(mode, () =>
-      mode === "demo"
-        ? Promise.resolve(getMockFeed())
-        : (getFeed() as Promise<SocialFeedData>),
+      mode === "demo" ? Promise.resolve(getMockFeed()) : (getFeed() as Promise<SocialFeedData>),
     ),
   );
 }

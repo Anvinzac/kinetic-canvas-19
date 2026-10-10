@@ -65,14 +65,14 @@ export function NotificationsPage(): ReactElement {
         <div className="flex h-64 items-center justify-center">
           <div className="grad-aurora size-10 animate-pulse rounded-full" />
         </div>
-      ): data.items.length === 0 ? (
+      ) : data.items.length === 0 ? (
         <p className="py-16 text-center font-mono text-xs text-muted-foreground">
           no echoes yet — post some kinetics ✨
         </p>
-      ): (
+      ) : (
         <ul className="divide-y divide-white/5">
           {data.items.map((n, i) => {
-            const spec = n.post_preview ? parseCanvas(n.post_preview): null;
+            const spec = n.post_preview ? parseCanvas(n.post_preview) : null;
             return (
               <li key={i} className="flex items-center gap-3 px-4 py-3">
                 <div className="relative shrink-0">
@@ -101,7 +101,7 @@ export function NotificationsPage(): ReactElement {
                       >
                         @{n.actor.username}
                       </Link>
-                    ): (
+                    ) : (
                       <span className="font-bold">someone</span>
                     )}{" "}
                     <span className="text-muted-foreground">

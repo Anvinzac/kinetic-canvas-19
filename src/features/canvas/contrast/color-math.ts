@@ -74,7 +74,8 @@ export function parseHexColor(value: string): RgbColor | null {
           .slice(0, 3)
           .split("")
           .map((char) => char + char)
-          .join(""): hex.slice(0, 6);
+          .join("")
+      : hex.slice(0, 6);
   const int = Number.parseInt(normalized, 16);
   if (Number.isNaN(int)) return null;
   return { r: (int >> 16) & 255, g: (int >> 8) & 255, b: int & 255 };
@@ -132,7 +133,7 @@ export function hslToRgb({ h, s, l }: HslColor): RgbColor {
     const value = Math.round(l * 255);
     return { r: value, g: value, b: value };
   }
-  const q = l < 0.5 ? l * (1 + s): l + s - l * s;
+  const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
   const p = 2 * l - q;
   return {
     r: Math.round(hueToRgb(p, q, hue + 1 / 3) * 255),
@@ -173,7 +174,7 @@ export function rgbToHsl({ r, g, b }: RgbColor): HslColor {
   if (max === min) return { h: 0, s: 0, l: lightness };
 
   const delta = max - min;
-  const saturation = lightness > 0.5 ? delta / (2 - max - min): delta / (max + min);
+  const saturation = lightness > 0.5 ? delta / (2 - max - min) : delta / (max + min);
   let hue = 0;
   if (max === red) hue = (green - blue) / delta + (green < blue ? 6 : 0);
   else if (max === green) hue = (blue - red) / delta + 2;

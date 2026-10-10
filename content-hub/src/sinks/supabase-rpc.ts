@@ -25,7 +25,7 @@ export class SupabaseRpcSink implements Sink {
 
   private async getAccessToken(log: Logger): Promise<string | null> {
     if (this.accessToken) return this.accessToken;
-    
+
     try {
       const res = await fetch(this.authUrl, {
         method: "POST",
@@ -77,7 +77,11 @@ export class SupabaseRpcSink implements Sink {
         });
         if (!res.ok) {
           failed += 1;
-          log.error("enqueue failed", { contentKey: item.contentKey, status: res.status, body: await safeBody(res) });
+          log.error("enqueue failed", {
+            contentKey: item.contentKey,
+            status: res.status,
+            body: await safeBody(res),
+          });
           continue;
         }
         delivered += 1;

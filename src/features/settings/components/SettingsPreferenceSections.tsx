@@ -30,13 +30,7 @@ import {
 import type { Dispatch, ReactElement, SetStateAction } from "react";
 import { toast } from "sonner";
 import type { Preferences } from "../lib/preferences";
-import {
-  ControlRow,
-  PreferenceRow,
-  Row,
-  Section,
-  SegmentedControl,
-} from "./SettingsControls";
+import { ControlRow, PreferenceRow, Row, Section, SegmentedControl } from "./SettingsControls";
 
 type SettingsPreferenceSectionsProps = {
   prefs: Preferences;

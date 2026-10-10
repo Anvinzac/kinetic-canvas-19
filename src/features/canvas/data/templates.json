@@ -603,45 +603,12 @@
       "url": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
     }
   ],
-  "fonts": [
-    "Inter",
-    "Space Grotesk",
-    "Playfair Display",
-    "JetBrains Mono"
-  ],
-  "entrances": [
-    "fade",
-    "slide",
-    "scale",
-    "blur",
-    "split"
-  ],
-  "loops": [
-    "pulse",
-    "float",
-    "shake",
-    "none"
-  ],
-  "tempos": [
-    "slow",
-    "steady",
-    "snappy"
-  ],
-  "rhythms": [
-    "smooth",
-    "stagger",
-    "burst",
-    "poetic"
-  ],
-  "palette": [
-    "#ffffff",
-    "#FF006E",
-    "#06FFA5",
-    "#FFBE0B",
-    "#3A86FF",
-    "#8338EC",
-    "#000000"
-  ],
+  "fonts": ["Inter", "Space Grotesk", "Playfair Display", "JetBrains Mono"],
+  "entrances": ["fade", "slide", "scale", "blur", "split"],
+  "loops": ["pulse", "float", "shake", "none"],
+  "tempos": ["slow", "steady", "snappy"],
+  "rhythms": ["smooth", "stagger", "burst", "poetic"],
+  "palette": ["#ffffff", "#FF006E", "#06FFA5", "#FFBE0B", "#3A86FF", "#8338EC", "#000000"],
   "commentChips": [
     {
       "id": "fire",

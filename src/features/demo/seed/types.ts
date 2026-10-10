@@ -78,4 +78,3 @@ export type MockNotificationItem = SocialNotificationItem;
 /** @deprecated Prefer SocialNotificationsData from `@/shared/types`
  * @responsibility Bundle returned by getMockNotifications. */
 export type MockNotificationsData = SocialNotificationsData;
-

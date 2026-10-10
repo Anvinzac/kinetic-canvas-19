@@ -8,10 +8,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { Link } from "@tanstack/react-router";
 import type { Dispatch, ReactElement, SetStateAction } from "react";
-import {
-  getCommentFlightDuration,
-  getFloatingCommentLabel,
-} from "../lib/comment-text";
+import { getCommentFlightDuration, getFloatingCommentLabel } from "../lib/comment-text";
 import { formatShortDateTime } from "../lib/post-meta";
 import type { FlowComment, Profile } from "../types";
 
@@ -66,8 +63,7 @@ export function FlyingCommentChip({
               },
             }}
             onUpdate={(latest) => {
-              const x =
-                typeof latest.x === "number" ? latest.x : parseFloat(String(latest.x));
+              const x = typeof latest.x === "number" ? latest.x : parseFloat(String(latest.x));
               const overlapping = x <= commentOverlapEnterX && x >= commentOverlapExitX;
               setCommentOverlapsInfo((prev) => (prev === overlapping ? prev : overlapping));
             }}
@@ -85,7 +81,7 @@ export function FlyingCommentChip({
                 >
                   @{activeCommentAuthor.username}
                 </Link>
-              ): (
+              ) : (
                 <span className="drop-shadow">someone</span>
               )}
             </div>

@@ -89,7 +89,7 @@ export function EmbeddedCommentStoryCanvas({
                 </p>
               </div>
             </Link>
-          ): (
+          ) : (
             <div className="flex h-9 items-center gap-2">
               <span className="size-9 rounded-full border-2 border-white/40 bg-white/15" />
               <div className="leading-tight">
@@ -135,5 +135,4 @@ export function EmbeddedCommentStoryCanvas({
       )}
     </motion.div>
   );
-
 }

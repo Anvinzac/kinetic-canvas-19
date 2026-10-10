@@ -18,17 +18,22 @@ import { updateErrorStatus } from "./telemetry.core";
  */
 export const reportAdminError = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: { message: string; metadata?: Record<string, string | number | boolean | null>; severity?: string }) =>
-    z
-      .object({
-        message: z.string().min(1).max(2000),
-        metadata: z
-          .record(z.string(), z.union([z.string(), z.number(), z.boolean(), z.null()]))
-          .optional()
-          .default({}),
-        severity: z.enum(["info", "warn", "error", "critical"]).optional().default("error"),
-      })
-      .parse(d),
+  .inputValidator(
+    (d: {
+      message: string;
+      metadata?: Record<string, string | number | boolean | null>;
+      severity?: string;
+    }) =>
+      z
+        .object({
+          message: z.string().min(1).max(2000),
+          metadata: z
+            .record(z.string(), z.union([z.string(), z.number(), z.boolean(), z.null()]))
+            .optional()
+            .default({}),
+          severity: z.enum(["info", "warn", "error", "critical"]).optional().default("error"),
+        })
+        .parse(d),
   )
   .handler(async ({ data, context }) => {
     const event = await emitTelemetryEvent({
@@ -72,11 +77,10 @@ export const updateAdminErrorStatus = createServerFn({ method: "POST" })
  * Check whether the current user may access /admin.
  * @returns server function handle
  */
-export const checkAdminAccess = createServerFn({ method: "GET" })
-  .handler(async () => {
-    // Client passes demo via separate path; live uses bearer via optional middleware.
-    return { ok: false as const };
-  });
+export const checkAdminAccess = createServerFn({ method: "GET" }).handler(async () => {
+  // Client passes demo via separate path; live uses bearer via optional middleware.
+  return { ok: false as const };
+});
 
 /**
  * Live admin gate using auth middleware.

@@ -10,7 +10,10 @@
  * @param shiftPage - shiftPage argument
  * @returns Computed value
  */
-export function getComposerSlidingBackground(gradients: readonly string[], shiftPage: number): { background: string; width: string; x: string } | null {
+export function getComposerSlidingBackground(
+  gradients: readonly string[],
+  shiftPage: number,
+): { background: string; width: string; x: string } | null {
   const colors = getComposerTransitionColors(gradients);
   if (colors.length < 2) return null;
 
@@ -47,7 +50,7 @@ export function getComposerTransitionColors(gradients: readonly string[]): strin
   }, []);
 
   if (colors.length < 2) return [];
-  return colors[0] === colors[colors.length - 1] ? colors.slice(0, -1): colors;
+  return colors[0] === colors[colors.length - 1] ? colors.slice(0, -1) : colors;
 }
 
 /**

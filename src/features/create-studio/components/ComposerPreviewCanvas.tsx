@@ -5,7 +5,14 @@
  * Depends on: react
  */
 
-import { useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode, ReactElement} from "react";
+import {
+  useLayoutEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type ReactNode,
+  ReactElement,
+} from "react";
 
 const CANVAS_ASPECT_RATIO = 9 / 16;
 
@@ -79,7 +86,11 @@ export function ComposerPreviewCanvas({
  * @param ratio - ratio argument
  * @returns Computed value
  */
-export function fitCanvasFrame(containerWidth: number, containerHeight: number, ratio: number): { width: number; height: number } {
+export function fitCanvasFrame(
+  containerWidth: number,
+  containerHeight: number,
+  ratio: number,
+): { width: number; height: number } {
   const heightAtFullWidth = containerWidth / ratio;
   if (heightAtFullWidth <= containerHeight) {
     return { width: containerWidth, height: heightAtFullWidth };

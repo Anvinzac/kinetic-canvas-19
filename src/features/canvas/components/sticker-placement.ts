@@ -32,7 +32,7 @@ export function getWordAnchoredPlacement(
   anchor: Rect,
   compact: boolean,
 ): StickerPlacement {
-  const desiredSize = compact ? Math.min(sticker.size, 12): Math.min(sticker.size, 15);
+  const desiredSize = compact ? Math.min(sticker.size, 12) : Math.min(sticker.size, 15);
   const rightRoom = Math.max(0, 96 - anchor.right);
   const topRoom = Math.max(0, anchor.top - 4);
   const fitByRight = rightRoom > 0 ? rightRoom / 0.74 : desiredSize;
@@ -63,7 +63,7 @@ export function getEmptySpacePlacement(
   layout: Pick<CanvasSpec, "x" | "y" | "size"> | undefined,
   compact: boolean,
 ): StickerPlacement {
-  const size = compact ? Math.min(sticker.size, 14): sticker.size;
+  const size = compact ? Math.min(sticker.size, 14) : sticker.size;
   const avoidRect = getTextAvoidRect(text, layout, size);
   const seed = getStableNumber(`${sticker.word}-${index}`);
   const candidates = getStickerCandidates(compact, index);

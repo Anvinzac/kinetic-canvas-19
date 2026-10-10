@@ -190,7 +190,11 @@ export const testLlmConnection = createServerFn({ method: "POST" })
 
     const started = Date.now();
     const sample = await llmChat(
-      { provider: cfg.provider, model: cfg.model || DEFAULT_MODELS[cfg.provider], apiKey: cfg.apiKey },
+      {
+        provider: cfg.provider,
+        model: cfg.model || DEFAULT_MODELS[cfg.provider],
+        apiKey: cfg.apiKey,
+      },
       {
         system: "You are a connectivity check. Reply with exactly the requested word.",
         user: "Reply with exactly: OK",

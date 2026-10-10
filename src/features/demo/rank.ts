@@ -67,7 +67,11 @@ function getMockFeedRankScore(
  * @param comments - comments argument
  * @returns Computed value
  */
-export function buildEngagementByPost(posts: MockPost[], likes: MockLike[], comments: MockComment[]): Record<string, { likes: number; comments: number }> {
+export function buildEngagementByPost(
+  posts: MockPost[],
+  likes: MockLike[],
+  comments: MockComment[],
+): Record<string, { likes: number; comments: number }> {
   const engagementByPost: Record<string, { likes: number; comments: number }> = {};
   for (const post of posts) engagementByPost[post.id] = { likes: 0, comments: 0 };
   for (const likeItem of likes) {

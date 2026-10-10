@@ -5,7 +5,13 @@
  * Depends on: demo seed, demo-store, backfill-helpers
  */
 
-import { MOCK_ME_ID, MOCK_PROFILES, MOCK_POSTS, MOCK_LIKES, MOCK_COMMENTS } from "@/features/demo/seed";
+import {
+  MOCK_ME_ID,
+  MOCK_PROFILES,
+  MOCK_POSTS,
+  MOCK_LIKES,
+  MOCK_COMMENTS,
+} from "@/features/demo/seed";
 import { applyRollup, pushEvent } from "./backfill-helpers";
 import { emptyDemoStore, utcDateKey, writeDemoTelemetry } from "./demo-store";
 import { makeId } from "./emit";

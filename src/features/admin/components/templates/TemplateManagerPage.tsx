@@ -61,7 +61,11 @@ function Preview({ section, item }: { section: TemplateSection; item: unknown })
       </div>
     );
   }
-  if ((section === "patterns" || section === "scenes") && typeof item === "object" && item !== null) {
+  if (
+    (section === "patterns" || section === "scenes") &&
+    typeof item === "object" &&
+    item !== null
+  ) {
     const t = item as { base: string; image: string; size?: string | null };
     return (
       <div
@@ -96,12 +100,7 @@ function Preview({ section, item }: { section: TemplateSection; item: unknown })
   if ((section === "photos" || section === "videos") && typeof item === "object" && item !== null) {
     const t = item as { url: string };
     return (
-      <img
-        src={t.url}
-        alt=""
-        className="h-16 w-full rounded-md object-cover"
-        loading="lazy"
-      />
+      <img src={t.url} alt="" className="h-16 w-full rounded-md object-cover" loading="lazy" />
     );
   }
   if (section === "fonts" && typeof item === "string") {
@@ -147,7 +146,9 @@ function EditField({
         className="rounded border border-border bg-background px-2 py-1 text-sm"
         value={draft}
         onChange={(e) => setDraft(e.target.value)}
-        onBlur={() => { if (draft !== value) onSave(draft); }}
+        onBlur={() => {
+          if (draft !== value) onSave(draft);
+        }}
       />
     </label>
   );
@@ -196,22 +197,42 @@ function Card({
                 <EditField label="id" value={id} onSave={(v) => handleSaveField("id", v)} />
               )}
               {"label" in (item as object) && (
-                <EditField label="label" value={label} onSave={(v) => handleSaveField("label", v)} />
+                <EditField
+                  label="label"
+                  value={label}
+                  onSave={(v) => handleSaveField("label", v)}
+                />
               )}
               {"mood" in (item as object) && (
-                <EditField label="mood" value={String((item as Record<string, unknown>).mood ?? "")} onSave={(v) => handleSaveField("mood", v)} />
+                <EditField
+                  label="mood"
+                  value={String((item as Record<string, unknown>).mood ?? "")}
+                  onSave={(v) => handleSaveField("mood", v)}
+                />
               )}
               {section === "commentChips" && "emoji" in (item as object) && (
-                <EditField label="emoji" value={String((item as Record<string, unknown>).emoji ?? "")} onSave={(v) => handleSaveField("emoji", v)} />
+                <EditField
+                  label="emoji"
+                  value={String((item as Record<string, unknown>).emoji ?? "")}
+                  onSave={(v) => handleSaveField("emoji", v)}
+                />
               )}
               {(section === "photos" || section === "videos") && "url" in (item as object) && (
-                <EditField label="url" value={String((item as Record<string, unknown>).url ?? "")} onSave={(v) => handleSaveField("url", v)} />
+                <EditField
+                  label="url"
+                  value={String((item as Record<string, unknown>).url ?? "")}
+                  onSave={(v) => handleSaveField("url", v)}
+                />
               )}
               {section === "palette" && (
                 <EditField label="color" value={String(item)} onSave={(v) => onSave(v)} />
               )}
               {"base" in (item as object) && (
-                <EditField label="base" value={String((item as Record<string, unknown>).base ?? "")} onSave={(v) => handleSaveField("base", v)} />
+                <EditField
+                  label="base"
+                  value={String((item as Record<string, unknown>).base ?? "")}
+                  onSave={(v) => handleSaveField("base", v)}
+                />
               )}
             </div>
           ) : null}
@@ -224,7 +245,20 @@ function Card({
           className="shrink-0 rounded p-1 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
           title="Delete"
         >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M3 6h18" />
+            <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+            <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+          </svg>
         </button>
       </div>
     </div>
@@ -309,7 +343,15 @@ export function TemplateManagerPage() {
     addMut.mutate({ section: tab, item: val });
   };
 
-  const isStringArray = ["gradients", "fonts", "entrances", "loops", "tempos", "rhythms", "palette"].includes(tab);
+  const isStringArray = [
+    "gradients",
+    "fonts",
+    "entrances",
+    "loops",
+    "tempos",
+    "rhythms",
+    "palette",
+  ].includes(tab);
 
   if (isLoading) return <p className="text-muted-foreground">Loading templates…</p>;
 
@@ -317,9 +359,7 @@ export function TemplateManagerPage() {
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">Templates</h1>
-        <span className="text-xs text-muted-foreground">
-          {items.length} items
-        </span>
+        <span className="text-xs text-muted-foreground">{items.length} items</span>
       </div>
 
       {/* Tab bar */}

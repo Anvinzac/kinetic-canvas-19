@@ -37,12 +37,12 @@ Read **[ARCHITECTURE.md](./ARCHITECTURE.md)** first. It explains:
 
 ## Scripts
 
-| Command | Purpose |
-|---------|---------|
-| `npm run dev` | Local Vite/TanStack Start server |
-| `npm run build` | Production build |
-| `npm run typecheck` | `tsc --noEmit` |
-| `npm run lint` | ESLint |
+| Command             | Purpose                          |
+| ------------------- | -------------------------------- |
+| `npm run dev`       | Local Vite/TanStack Start server |
+| `npm run build`     | Production build                 |
+| `npm run typecheck` | `tsc --noEmit`                   |
+| `npm run lint`      | ESLint                           |
 
 ## Related
 

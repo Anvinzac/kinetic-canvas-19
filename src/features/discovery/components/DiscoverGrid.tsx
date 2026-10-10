@@ -16,7 +16,13 @@ import type { MockPost } from "@/features/demo";
  * @param className Optional grid wrapper class
  * @returns Grid of aspect-[3/4] canvas previews
  */
-export function PostGrid({ posts, className }: { posts: MockPost[]; className?: string }): ReactElement {
+export function PostGrid({
+  posts,
+  className,
+}: {
+  posts: MockPost[];
+  className?: string;
+}): ReactElement {
   return (
     <div className={`grid grid-cols-3 gap-1 ${className ?? ""}`}>
       {posts.map((p) => {

@@ -30,8 +30,7 @@ export function LiveIndicator(props: LiveIndicatorProps): React.ReactElement {
   if (props.sseConnected) state = "sse";
   if (props.lastUpdatedAt != null && now - props.lastUpdatedAt > 120_000) state = "stale";
 
-  const label =
-    state === "sse" ? "Live (SSE)" : state === "polling" ? "Polling" : "Stale (>2m)";
+  const label = state === "sse" ? "Live (SSE)" : state === "polling" ? "Polling" : "Stale (>2m)";
   const color =
     state === "sse" ? "bg-emerald-500" : state === "polling" ? "bg-amber-500" : "bg-red-500";
 

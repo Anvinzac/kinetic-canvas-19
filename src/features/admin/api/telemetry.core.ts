@@ -7,10 +7,5 @@
  */
 
 export type { CursorPage } from "./telemetry.list";
-export {
-  ensureDemoSeeded,
-  listDailyRollups,
-  listErrorReports,
-  listEvents,
-} from "./telemetry.list";
+export { ensureDemoSeeded, listDailyRollups, listErrorReports, listEvents } from "./telemetry.list";
 export { logAdminAccess, updateErrorStatus } from "./telemetry.mutations";

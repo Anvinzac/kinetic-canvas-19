@@ -77,7 +77,9 @@ function bumpDemoActive(
  * @param input - event payload
  * @returns inserted TelemetryEvent or null on failure
  */
-export async function emitTelemetryEvent(input: EmitTelemetryInput): Promise<TelemetryEvent | null> {
+export async function emitTelemetryEvent(
+  input: EmitTelemetryInput,
+): Promise<TelemetryEvent | null> {
   const mode = input.mode ?? (typeof window !== "undefined" ? "demo" : "live");
   const occurred_at = input.occurred_at ?? new Date().toISOString();
   const event: TelemetryEvent = {

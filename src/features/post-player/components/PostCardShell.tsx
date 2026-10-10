@@ -65,11 +65,7 @@ export function PostCardShell(props: PostCardProps): ReactElement {
       data-status-snap-item="true"
       className="relative flex h-[100dvh] w-full snap-start snap-always items-center justify-center overflow-hidden bg-background"
     >
-      {shouldRenderCard ? (
-        <PostCard {...props} />
-      ) : (
-        <PostCardPlaceholder post={props.post} />
-      )}
+      {shouldRenderCard ? <PostCard {...props} /> : <PostCardPlaceholder post={props.post} />}
     </section>
   );
 }
@@ -87,10 +83,7 @@ function PostCardPlaceholder({ post }: { post: PostCardProps["post"] }): ReactEl
     >
       {/* Static gradient backdrop — no animation, no canvas parsing */}
       {post.bg_gradient && (
-        <div
-          className="absolute inset-0"
-          style={{ background: post.bg_gradient }}
-        />
+        <div className="absolute inset-0" style={{ background: post.bg_gradient }} />
       )}
     </article>
   );

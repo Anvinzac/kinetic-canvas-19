@@ -5,12 +5,7 @@
  * Depends on: playback-timing getPageDuration, comment-text normalizeComment
  */
 
-import {
-  useEffect,
-  type Dispatch,
-  type RefObject,
-  type SetStateAction,
-} from "react";
+import { useEffect, type Dispatch, type RefObject, type SetStateAction } from "react";
 import type { CanvasSpec } from "@/features/canvas";
 import { normalizeComment } from "../lib/comment-text";
 import { getPageDuration } from "../lib/playback-timing";
@@ -112,9 +107,7 @@ export function usePostPageTiming({
     );
     setLocalComments((items) => {
       if (items.length === 0) return items;
-      const next = items.filter(
-        (item) => !serverCommentLabels.has(normalizeComment(item.chip_id)),
-      );
+      const next = items.filter((item) => !serverCommentLabels.has(normalizeComment(item.chip_id)));
       return next.length === items.length ? items : next;
     });
   }, [comments]);
@@ -163,7 +156,8 @@ export function usePostPageTiming({
     const timer = window.setTimeout(
       () => {
         const nextPage = isExporting
-          ? Math.min(textPage + 1, textPages.length - 1): (textPage + 1) % textPages.length;
+          ? Math.min(textPage + 1, textPages.length - 1)
+          : (textPage + 1) % textPages.length;
         setTextPage(nextPage);
         setBackgroundShiftPage((page) => page + 1);
         setPageRevealed(false);

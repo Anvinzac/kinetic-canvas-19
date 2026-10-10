@@ -8,7 +8,7 @@
 import { Link, useNavigate, useRouter } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import {type ReactElement, useState, useEffect } from "react";
+import { type ReactElement, useState, useEffect } from "react";
 import { resolveDataMode } from "@/features/session";
 import { type MockDiscoverData, type MockSearchData } from "@/features/demo";
 import { ChevronLeft, Search as SearchIcon } from "lucide-react";
@@ -40,8 +40,10 @@ export function DiscoverPage(): ReactElement {
     discoverQueryOptions(dataMode, () => fetchDiscover() as Promise<SocialDiscoverData>),
   );
   const results = useQuery(
-    searchQueryOptions(dataMode, debounced, () =>
-      searchFn({ data: { q: debounced } }) as Promise<SocialSearchData>,
+    searchQueryOptions(
+      dataMode,
+      debounced,
+      () => searchFn({ data: { q: debounced } }) as Promise<SocialSearchData>,
     ),
   );
 
@@ -82,7 +84,7 @@ export function DiscoverPage(): ReactElement {
 
       {showResults ? (
         <SearchResults data={results.data} loading={results.isLoading} />
-      ): (
+      ) : (
         <TrendingFeed data={discover.data} loading={discover.isLoading} />
       )}
     </div>

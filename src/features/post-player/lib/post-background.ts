@@ -115,12 +115,13 @@ export function getTransitionColorCycle(spec: CanvasSpec, fallback: string | nul
   }, []);
 
   const fallbackStops = fallback
-    ? extractGradientColors(fallback).filter((color) => !isTooDarkCanvasBackground(color)): [];
+    ? extractGradientColors(fallback).filter((color) => !isTooDarkCanvasBackground(color))
+    : [];
   const defaultStops = extractGradientColors(DEFAULT_CANVAS_BACKGROUND);
   const cycle =
     colors.length >= 2 ? colors : fallbackStops.length >= 2 ? fallbackStops : defaultStops;
   if (cycle.length < 2) return [];
-  return cycle[0] === cycle[cycle.length - 1] ? cycle.slice(0, -1): cycle;
+  return cycle[0] === cycle[cycle.length - 1] ? cycle.slice(0, -1) : cycle;
 }
 
 /**
@@ -135,4 +136,3 @@ export function extractGradientColors(value: string): string[] {
     ) ?? []
   );
 }
-

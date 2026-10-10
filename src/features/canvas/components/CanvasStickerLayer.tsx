@@ -5,15 +5,11 @@
  * Depends on: framer-motion, canvas sticker-placement, kinetic-text getWordAnchorKey
  */
 
-import {type ReactElement, useEffect, useRef, useState } from "react";
+import { type ReactElement, useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import type { CanvasSpec, CanvasSticker } from "../types";
 import { getWordAnchorKey } from "@/features/kinetic-text";
-import {
-  getEmptySpacePlacement,
-  getWordAnchoredPlacement,
-  type Rect,
-} from "./sticker-placement";
+import { getEmptySpacePlacement, getWordAnchoredPlacement, type Rect } from "./sticker-placement";
 
 /**
  * Render the CanvasStickerLayer UI.
@@ -89,7 +85,8 @@ export function CanvasStickerLayer({
       {visibleStickers.map((sticker, index) => {
         const anchor = wordAnchors[getWordAnchorKey(sticker.word)];
         const placement = anchor
-          ? getWordAnchoredPlacement(sticker, anchor, compact): getEmptySpacePlacement(sticker, index, text, layout, compact);
+          ? getWordAnchoredPlacement(sticker, anchor, compact)
+          : getEmptySpacePlacement(sticker, index, text, layout, compact);
         return (
           <div
             key={`${sticker.id}-${playKey}`}
@@ -136,7 +133,7 @@ export function CanvasStickerLayer({
                 >
                   {sticker.emoji}
                 </span>
-              ): sticker.url ? (
+              ) : sticker.url ? (
                 <img
                   src={sticker.url}
                   alt=""
@@ -144,7 +141,7 @@ export function CanvasStickerLayer({
                   loading="lazy"
                   draggable={false}
                 />
-              ): null}
+              ) : null}
             </motion.div>
           </div>
         );

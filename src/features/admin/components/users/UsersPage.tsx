@@ -50,9 +50,7 @@ export function UsersPage(): React.ReactElement {
 
   const rows = useMemo(
     () =>
-      (events.data?.items ?? [])
-        .filter((e) => e.event_type === "user.registered")
-        .map(toUserRow),
+      (events.data?.items ?? []).filter((e) => e.event_type === "user.registered").map(toUserRow),
     [events.data],
   );
 

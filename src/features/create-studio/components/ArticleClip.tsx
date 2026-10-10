@@ -14,7 +14,13 @@ import type { CanvasLinkPreview } from "@/features/canvas";
  * @param props - Component props
  * @returns Rendered UI
  */
-export function ArticleClip({ preview, className }: { preview: CanvasLinkPreview; className?: string }): ReactElement {
+export function ArticleClip({
+  preview,
+  className,
+}: {
+  preview: CanvasLinkPreview;
+  className?: string;
+}): ReactElement {
   return (
     <div
       className={`relative overflow-hidden rounded-md bg-[#f5f0df] p-3 text-[#17140f] shadow-[0_14px_35px_rgba(0,0,0,0.28)] ring-1 ring-black/10 ${

@@ -5,7 +5,15 @@
  * Depends on: demo seed, store, rank
  */
 
-import { MOCK_ME_ID, MOCK_PROFILES, type MockNotificationItem, type MockMeData, type MockNotificationsData, type MockProfile, type MockProfileData } from "../seed";
+import {
+  MOCK_ME_ID,
+  MOCK_PROFILES,
+  type MockNotificationItem,
+  type MockMeData,
+  type MockNotificationsData,
+  type MockProfile,
+  type MockProfileData,
+} from "../seed";
 import { buildEngagementByPost } from "../rank";
 import {
   getAllMockPosts,

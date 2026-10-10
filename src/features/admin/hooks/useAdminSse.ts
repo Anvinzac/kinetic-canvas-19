@@ -25,9 +25,7 @@ export function useAdminSse(mode: AdminMode): { connected: boolean } {
         // EventSource cannot set custom headers; demo uses query flag for handshake probe only.
         // Full auth SSE is best-effort; polling remains source of truth.
         const url =
-          mode === "demo"
-            ? "/api/admin/telemetry/stream?demo=1"
-            : "/api/admin/telemetry/stream";
+          mode === "demo" ? "/api/admin/telemetry/stream?demo=1" : "/api/admin/telemetry/stream";
         es = new EventSource(url);
         es.addEventListener("ready", () => {
           if (!cancelled) setConnected(true);

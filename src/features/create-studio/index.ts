@@ -6,12 +6,7 @@
  */
 
 export { CreateStudioPage } from "./CreateStudioPage";
-export type {
-  AnimationTemplate,
-  BackgroundMode,
-  StudioPage,
-  TemplateBackdrop,
-} from "./types";
+export type { AnimationTemplate, BackgroundMode, StudioPage, TemplateBackdrop } from "./types";
 export {
   createEmojiSticker,
   getAccentKeyword,

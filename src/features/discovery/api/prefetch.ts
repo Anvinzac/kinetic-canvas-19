@@ -9,11 +9,7 @@ import type { QueryClient } from "@tanstack/react-query";
 import { resolveDataMode } from "@/features/session";
 import { getMockDiscover, getMockMe, getMockProfile } from "@/features/demo";
 import type { SocialDiscoverData, SocialMeData, SocialProfileData } from "@/shared/types";
-import {
-  discoverQueryOptions,
-  meQueryOptions,
-  profileQueryOptions,
-} from "./queries";
+import { discoverQueryOptions, meQueryOptions, profileQueryOptions } from "./queries";
 import { getDiscover, getMe } from "./discovery.functions";
 import { getProfile } from "@/features/social";
 
@@ -22,9 +18,7 @@ import { getProfile } from "@/features/social";
  * @param queryClient - queryClient argument
  * @returns Promise that resolves when prefetch completes
  */
-export async function prefetchDiscover(
-  queryClient: QueryClient,
-): Promise<SocialDiscoverData> {
+export async function prefetchDiscover(queryClient: QueryClient): Promise<SocialDiscoverData> {
   const mode = resolveDataMode();
   return queryClient.ensureQueryData(
     discoverQueryOptions(mode, () =>
@@ -55,10 +49,7 @@ export async function prefetchMe(queryClient: QueryClient): Promise<SocialMeData
  * @param username - username argument
  * @returns Promise that resolves when prefetch completes
  */
-export async function prefetchProfile(
-  queryClient: QueryClient,
-  username: string,
-): Promise<void> {
+export async function prefetchProfile(queryClient: QueryClient, username: string): Promise<void> {
   const mode = resolveDataMode();
   await Promise.all([
     queryClient.ensureQueryData(

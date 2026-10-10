@@ -188,5 +188,5 @@ export const CREATOR_FEED_POSTS_B: MockPost[] = [
     ],
     bg_gradient: "linear-gradient(135deg,#3A86FF,#8338EC)",
     created_at: "2026-06-14T09:35:00.000Z",
-  }
+  },
 ];

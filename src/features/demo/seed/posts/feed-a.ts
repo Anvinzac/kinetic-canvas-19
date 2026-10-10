@@ -200,5 +200,5 @@ export const CREATOR_FEED_POSTS_A: MockPost[] = [
     media_urls: [DEMO_STATUS_PHOTOS.dinnerTable],
     bg_gradient: null,
     created_at: "2026-06-16T07:03:00.000Z",
-  }
+  },
 ];

@@ -61,7 +61,10 @@ export function SystemPage(): React.ReactElement {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Metric label="Status" value={snap?.status ?? "—"} />
         <Metric label="Uptime 24h" value={snap ? `${snap.uptime_pct_24h}%` : "—"} />
-        <Metric label="p50 / p95" value={snap ? `${snap.p50_latency_ms} / ${snap.p95_latency_ms} ms` : "—"} />
+        <Metric
+          label="p50 / p95"
+          value={snap ? `${snap.p50_latency_ms} / ${snap.p95_latency_ms} ms` : "—"}
+        />
         <Metric label="Error rate (5m)" value={snap ? `${snap.error_rate_pct}%` : "—"} />
       </div>
 

@@ -27,7 +27,10 @@ export const tempoConfig: Record<
  * @param rhythm? - rhythm? argument
  * @returns Function result
  */
-export function entranceVariants(entrance: CanvasSpec["entrance"], rhythm?: Rhythm): {
+export function entranceVariants(
+  entrance: CanvasSpec["entrance"],
+  rhythm?: Rhythm,
+): {
   initial: Record<string, number | string>;
   animate: Record<string, number | string>;
 } {

@@ -37,11 +37,7 @@ export function SettingsProfileCard({
   return (
     <section className="rounded-2xl bg-gradient-to-br from-white/10 to-white/5 p-4 ring-1 ring-white/10">
       <div className="flex items-center gap-3">
-        <Link
-          to="/u/$username"
-          params={{ username }}
-          className="grad-aurora rounded-full p-[2px]"
-        >
+        <Link to="/u/$username" params={{ username }} className="grad-aurora rounded-full p-[2px]">
           <img
             src={avatarUrl ?? ""}
             alt=""

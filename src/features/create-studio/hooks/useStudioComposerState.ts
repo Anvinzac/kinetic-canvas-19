@@ -55,9 +55,7 @@ export function useStudioComposerState(): StudioComposerState {
   const layoutSummary = getLayoutSummary(spec.y);
   const motionSummary = getMotionSummary(spec);
   const previewPaneHeight = "min(70dvh, 576px)";
-  const previewRowHeight = composerCanvasHeight
-    ? `${composerCanvasHeight}px`
-    : previewPaneHeight;
+  const previewRowHeight = composerCanvasHeight ? `${composerCanvasHeight}px` : previewPaneHeight;
 
   function previewSpec(currentTextPage: string): CanvasSpec {
     return { ...spec, text: currentTextPage, ...bgState.backgroundSpec };

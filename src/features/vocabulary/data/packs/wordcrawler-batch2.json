@@ -12,11 +12,7 @@
     "time",
     "work"
   ],
-  "levels": [
-    "A2",
-    "B1",
-    "B2"
-  ],
+  "levels": ["A2", "B1", "B2"],
   "words": [
     {
       "id": "curious",
@@ -27,9 +23,7 @@
       "pos": "adj",
       "ipa": "/ˈkjʊr.i.əs/",
       "topic": "character",
-      "topics": [
-        "character"
-      ],
+      "topics": ["character"],
       "level": "B1",
       "usage": [
         {
@@ -49,9 +43,7 @@
       "pos": "adj",
       "ipa": "/ˈpeɪ.ʃənt/",
       "topic": "character",
-      "topics": [
-        "character"
-      ],
+      "topics": ["character"],
       "level": "B1",
       "usage": [
         {
@@ -71,9 +63,7 @@
       "pos": "adj",
       "ipa": "/ˈdʒen.ər.əs/",
       "topic": "character",
-      "topics": [
-        "character"
-      ],
+      "topics": ["character"],
       "level": "B1",
       "usage": [
         {
@@ -93,9 +83,7 @@
       "pos": "adj",
       "ipa": "/ˈstʌb.ɚn/",
       "topic": "character",
-      "topics": [
-        "character"
-      ],
+      "topics": ["character"],
       "level": "B2",
       "usage": [
         {
@@ -115,9 +103,7 @@
       "pos": "adj",
       "ipa": "/ˈhʌm.bəl/",
       "topic": "character",
-      "topics": [
-        "character"
-      ],
+      "topics": ["character"],
       "level": "B2",
       "usage": [
         {
@@ -137,9 +123,7 @@
       "pos": "adj",
       "ipa": "/ˈɡreɪt.fəl/",
       "topic": "emotion",
-      "topics": [
-        "emotion"
-      ],
+      "topics": ["emotion"],
       "level": "B1",
       "usage": [
         {
@@ -159,9 +143,7 @@
       "pos": "adj",
       "ipa": "/ɪmˈber.əst/",
       "topic": "emotion",
-      "topics": [
-        "emotion"
-      ],
+      "topics": ["emotion"],
       "level": "B1",
       "usage": [
         {
@@ -181,9 +163,7 @@
       "pos": "adj",
       "ipa": "/ˈfrʌs.treɪ.t̬ɪd/",
       "topic": "emotion",
-      "topics": [
-        "emotion"
-      ],
+      "topics": ["emotion"],
       "level": "B1",
       "usage": [
         {
@@ -203,9 +183,7 @@
       "pos": "adj",
       "ipa": "/rɪˈliːvd/",
       "topic": "emotion",
-      "topics": [
-        "emotion"
-      ],
+      "topics": ["emotion"],
       "level": "B1",
       "usage": [
         {
@@ -225,9 +203,7 @@
       "pos": "verb",
       "ipa": "/əˈpɑː.lə.dʒaɪz/",
       "topic": "communication",
-      "topics": [
-        "communication"
-      ],
+      "topics": ["communication"],
       "level": "B1",
       "usage": [
         {
@@ -247,9 +223,7 @@
       "pos": "verb",
       "ipa": "/ˌɪn.t̬əˈrʌpt/",
       "topic": "communication",
-      "topics": [
-        "communication"
-      ],
+      "topics": ["communication"],
       "level": "B1",
       "usage": [
         {
@@ -269,9 +243,7 @@
       "pos": "verb",
       "ipa": "/ˈmen.ʃən/",
       "topic": "communication",
-      "topics": [
-        "communication"
-      ],
+      "topics": ["communication"],
       "level": "A2",
       "usage": [
         {
@@ -291,9 +263,7 @@
       "pos": "noun",
       "ipa": "/ˈskedʒ.uːl/",
       "topic": "time",
-      "topics": [
-        "time"
-      ],
+      "topics": ["time"],
       "level": "A2",
       "usage": [
         {
@@ -313,9 +283,7 @@
       "pos": "adj",
       "ipa": "/ˈpʌŋk.tʃu.əl/",
       "topic": "time",
-      "topics": [
-        "time"
-      ],
+      "topics": ["time"],
       "level": "B2",
       "usage": [
         {
@@ -335,9 +303,7 @@
       "pos": "verb",
       "ipa": "/dɪˈleɪ/",
       "topic": "time",
-      "topics": [
-        "time"
-      ],
+      "topics": ["time"],
       "level": "B1",
       "usage": [
         {
@@ -357,9 +323,7 @@
       "pos": "noun",
       "ipa": "/ˈkɑː.liːɡ/",
       "topic": "work",
-      "topics": [
-        "work"
-      ],
+      "topics": ["work"],
       "level": "B1",
       "usage": [
         {
@@ -379,9 +343,7 @@
       "pos": "verb",
       "ipa": "/əˈtʃiːv/",
       "topic": "work",
-      "topics": [
-        "work"
-      ],
+      "topics": ["work"],
       "level": "B1",
       "usage": [
         {
@@ -401,9 +363,7 @@
       "pos": "adj",
       "ipa": "/ɪˈfɪʃ.ənt/",
       "topic": "work",
-      "topics": [
-        "work"
-      ],
+      "topics": ["work"],
       "level": "B2",
       "usage": [
         {
@@ -423,9 +383,7 @@
       "pos": "verb",
       "ipa": "/ˈnoʊ.t̬ɪs/",
       "topic": "attention",
-      "topics": [
-        "attention"
-      ],
+      "topics": ["attention"],
       "level": "A2",
       "usage": [
         {
@@ -445,9 +403,7 @@
       "pos": "verb",
       "ipa": "/ɪɡˈnɔːr/",
       "topic": "attention",
-      "topics": [
-        "attention"
-      ],
+      "topics": ["attention"],
       "level": "B1",
       "usage": [
         {
@@ -467,9 +423,7 @@
       "pos": "verb",
       "ipa": "/kənˈsɪd.ɚ/",
       "topic": "thinking",
-      "topics": [
-        "thinking"
-      ],
+      "topics": ["thinking"],
       "level": "B1",
       "usage": [
         {
@@ -489,9 +443,7 @@
       "pos": "verb",
       "ipa": "/daʊt/",
       "topic": "thinking",
-      "topics": [
-        "thinking"
-      ],
+      "topics": ["thinking"],
       "level": "B1",
       "usage": [
         {
@@ -511,9 +463,7 @@
       "pos": "verb",
       "ipa": "/ɪˈmædʒ.ɪn/",
       "topic": "thinking",
-      "topics": [
-        "thinking"
-      ],
+      "topics": ["thinking"],
       "level": "A2",
       "usage": [
         {
@@ -533,9 +483,7 @@
       "pos": "noun",
       "ipa": "/tʃɔːr/",
       "topic": "daily",
-      "topics": [
-        "daily"
-      ],
+      "topics": ["daily"],
       "level": "B1",
       "usage": [
         {
@@ -555,9 +503,7 @@
       "pos": "noun",
       "ipa": "/kəˈmjuːt/",
       "topic": "daily",
-      "topics": [
-        "daily"
-      ],
+      "topics": ["daily"],
       "level": "B2",
       "usage": [
         {

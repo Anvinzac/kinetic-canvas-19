@@ -17,11 +17,7 @@ import {
 } from "@/features/canvas";
 import { getArticleTitle, getUrlHost, normalizeArticleUrl } from "../lib/article";
 import { getComposerSlidingBackground } from "../lib/sliding-background";
-import {
-  DEFAULT_TRANSITION_PATH,
-  PRELOADED_PHOTOS,
-  PRELOADED_VIDEOS,
-} from "../lib/templates";
+import { DEFAULT_TRANSITION_PATH, PRELOADED_PHOTOS, PRELOADED_VIDEOS } from "../lib/templates";
 import type { AnimationTemplate, BackgroundMode } from "../types";
 import type { StudioBackgroundState } from "./studio-background-state";
 

@@ -10,8 +10,29 @@ import { getStableNumber, getWords } from "@/features/kinetic-text";
 import type { Post } from "../types";
 
 const STOP_WORDS = new Set([
-  "a", "an", "and", "are", "as", "at", "be", "but", "by", "for", "from", "in",
-  "is", "it", "its", "of", "on", "or", "so", "the", "to", "you", "your",
+  "a",
+  "an",
+  "and",
+  "are",
+  "as",
+  "at",
+  "be",
+  "but",
+  "by",
+  "for",
+  "from",
+  "in",
+  "is",
+  "it",
+  "its",
+  "of",
+  "on",
+  "or",
+  "so",
+  "the",
+  "to",
+  "you",
+  "your",
 ]);
 
 /**
@@ -28,7 +49,7 @@ export function getPostHashtags(text: string, postType: string, pages?: string[]
   // Never derive a tag from the final page of a multi-page post — it is the
   // reveal/punchline (e.g. a guessing game's answer), and tagging it would spoil
   // the mystery right under the post.
-  const tagSource = pages && pages.length > 1 ? pages.slice(0, -1).join(" "): text;
+  const tagSource = pages && pages.length > 1 ? pages.slice(0, -1).join(" ") : text;
   const textTags = getWords(tagSource)
     .map(normalizeHashtag)
     .filter((tag) => tag.length >= 4 && !STOP_WORDS.has(tag));
@@ -194,4 +215,3 @@ function getMainDomain(hostname: string): string {
 
   return labels.slice(-2).join(".");
 }
-

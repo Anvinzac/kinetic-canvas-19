@@ -75,5 +75,4 @@ export function AnimatedCommentStoryText({
       entranceSeed={fullText}
     />
   );
-
 }

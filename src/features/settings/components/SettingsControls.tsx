@@ -16,13 +16,7 @@ import { Switch } from "@/components/ui/switch";
  * @param props.children - Row / PreferenceRow / ControlRow children
  * @returns Section wrapper
  */
-export function Section({
-  title,
-  children,
-}: {
-  title: string;
-  children: ReactNode;
-}): ReactElement {
+export function Section({ title, children }: { title: string; children: ReactNode }): ReactElement {
   return (
     <section>
       <h2 className="mb-2 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">

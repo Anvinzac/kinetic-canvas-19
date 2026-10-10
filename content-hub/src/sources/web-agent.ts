@@ -55,7 +55,11 @@ export class WebAgentSource implements SourceAdapter {
         const brief = await this.buildBrief(page);
         items.push(this.toContentItem(brief, page));
       } catch (err) {
-        ctx.log.warn("web target failed", { label: target.label, url: target.url, error: String(err) });
+        ctx.log.warn("web target failed", {
+          label: target.label,
+          url: target.url,
+          error: String(err),
+        });
       }
     }
 
@@ -234,7 +238,7 @@ function extractReadableText(html: string): string {
 function decodeHtml(input: string): string {
   return input
     .replace(/&amp;/g, "&")
-    .replace(/&quot;/g, "\"")
+    .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'")
     .replace(/&lt;/g, "<")
     .replace(/&gt;/g, ">")

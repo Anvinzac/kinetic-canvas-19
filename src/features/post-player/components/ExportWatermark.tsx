@@ -30,4 +30,3 @@ export function ExportWatermark({ author }: { author?: Profile }): ReactElement 
     </div>
   );
 }
-

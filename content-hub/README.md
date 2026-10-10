@@ -31,7 +31,7 @@ any adapter.
 - **`Sink`** (`src/sinks/types.ts`) — where items go. `SupabaseRpcSink` (default) or
   `HttpIngestSink` (app-owned endpoint). Swap with the `SINK` env var.
 - **`ContentItem`** (`src/contract.ts`) — the stable seam: `{ sourceKey, itemType,
-  contentKey, payload, availableAt? }`. The only thing both sides agree on.
+contentKey, payload, availableAt? }`. The only thing both sides agree on.
 
 The queue dedups on `(source_key, content_key)`, so delivery is idempotent — the Hub
 never needs perfect local memory.
@@ -90,10 +90,10 @@ Secrets live only in the host / Actions env — never in the app browser bundle.
 
 See `.env.example`. Key switches:
 
-| Var | Default | Meaning |
-|-----|---------|---------|
-| `SINK` | `supabase` | `supabase` (system-bot session) or `http` |
-| `SUPABASE_ANON_KEY` | — | Required for supabase sink (= app publishable key) |
-| `SYSTEM_BOT_EMAIL` / `SYSTEM_BOT_PASSWORD` | — | Auth user with `is_system` |
-| `VOCAB_GENERATOR` | `curated` | `curated` or `claude` |
-| `VOCAB_CRON` / `VOCAB_BATCH` | nightly / 5 | Producer cadence when using `serve` |
+| Var                                        | Default     | Meaning                                            |
+| ------------------------------------------ | ----------- | -------------------------------------------------- |
+| `SINK`                                     | `supabase`  | `supabase` (system-bot session) or `http`          |
+| `SUPABASE_ANON_KEY`                        | —           | Required for supabase sink (= app publishable key) |
+| `SYSTEM_BOT_EMAIL` / `SYSTEM_BOT_PASSWORD` | —           | Auth user with `is_system`                         |
+| `VOCAB_GENERATOR`                          | `curated`   | `curated` or `claude`                              |
+| `VOCAB_CRON` / `VOCAB_BATCH`               | nightly / 5 | Producer cadence when using `serve`                |

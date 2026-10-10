@@ -63,14 +63,14 @@ export class AnthropicJsonClient implements LlmClient {
         messages: [
           {
             role: "user",
-            content:
-              "Return valid JSON only. No markdown fences.\n\n" + prompt,
+            content: "Return valid JSON only. No markdown fences.\n\n" + prompt,
           },
         ],
       }),
     });
 
-    if (!res.ok) throw new Error(`Anthropic API ${res.status}: ${(await res.text()).slice(0, 300)}`);
+    if (!res.ok)
+      throw new Error(`Anthropic API ${res.status}: ${(await res.text()).slice(0, 300)}`);
     const data = (await res.json()) as { content?: Array<{ type: string; text?: string }> };
     const text = data.content?.find((c) => c.type === "text")?.text ?? "{}";
     return JSON.parse(extractJsonObject(text));
@@ -87,17 +87,17 @@ export class HeuristicBriefClient implements LlmClient {
     const text = (matchBlock(prompt, "Source text") || title).replace(/\s+/g, " ").trim();
     const sentences = splitSentences(text);
     const first = sentences[0] || title;
-    const second = sentences.find((s) => s !== first) || `A quick ${topic.toLowerCase()} update worth tracking today.`;
-    const third = sentences.find((s) => s !== first && s !== second) || "The bigger signal is still developing.";
+    const second =
+      sentences.find((s) => s !== first) ||
+      `A quick ${topic.toLowerCase()} update worth tracking today.`;
+    const third =
+      sentences.find((s) => s !== first && s !== second) ||
+      "The bigger signal is still developing.";
 
     return {
       title,
       sourceUrl,
-      pages: [
-        shorten(first, 96),
-        shorten(second, 96),
-        shorten(third, 96),
-      ],
+      pages: [shorten(first, 96), shorten(second, 96), shorten(third, 96)],
       hashtags: [`#${topic.replace(/\s+/g, "")}`, "#KineticBrief"],
       emphasis: pickEmphasis(`${title} ${first}`),
     };

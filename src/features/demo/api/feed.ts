@@ -119,4 +119,3 @@ export function searchMock(q: string): MockSearchData {
 
   return { users, posts };
 }
-

@@ -53,7 +53,11 @@ export function usePostPlayback(props: PostCardProps) {
   const media = post.media_urls ?? [];
 
   const commentFlow = useCommentFlow({
-    comments, postId: post.id, currentUserId, onComment, storyIndexApiRef,
+    comments,
+    postId: post.id,
+    currentUserId,
+    onComment,
+    storyIndexApiRef,
   });
   const commentStory = useCommentStory({
     chronologicalComments: commentFlow.chronologicalComments,
@@ -66,7 +70,9 @@ export function usePostPlayback(props: PostCardProps) {
   };
 
   const ring = usePostRingProgress({
-    onLike, setIsPaused, setActionMenuOpen,
+    onLike,
+    setIsPaused,
+    setActionMenuOpen,
     setShowChips: commentFlow.setShowChips,
     setActiveComment: commentFlow.setActiveComment,
   });
@@ -77,7 +83,9 @@ export function usePostPlayback(props: PostCardProps) {
     [spec.size, textPages, spec.text],
   );
   const showingFlyingComment =
-    !isExporting && !isPaused && !!commentFlow.activeComment &&
+    !isExporting &&
+    !isPaused &&
+    !!commentFlow.activeComment &&
     shouldFloatComment(commentFlow.activeCommentLabel);
 
   function showNextTextPage(revealed: boolean): void {
@@ -106,28 +114,65 @@ export function usePostPlayback(props: PostCardProps) {
   const entrance = usePostEntrance({
     showingFlyingComment,
     setCommentOverlapsInfo: commentFlow.setCommentOverlapsInfo,
-    isExporting, isPaused, pageRevealed, setIsPaused, setPageRevealed, setPlayKey,
+    isExporting,
+    isPaused,
+    pageRevealed,
+    setIsPaused,
+    setPageRevealed,
+    setPlayKey,
     setActiveComment: commentFlow.setActiveComment,
     setShowChips: commentFlow.setShowChips,
-    setActionMenuOpen, showNextTextPage, setTextPage, setBackgroundShiftPage, setSlide,
+    setActionMenuOpen,
+    showNextTextPage,
+    setTextPage,
+    setBackgroundShiftPage,
+    setSlide,
   });
 
   const textFit = useTextFitScale({ textPages, uniformPageSize, canvasWidth, currentText });
 
   const derived = usePostPlaybackDerived({
-    post, spec, textPages, media, textPage, backgroundShiftPage, canvasWidth, likes,
+    post,
+    spec,
+    textPages,
+    media,
+    textPage,
+    backgroundShiftPage,
+    canvasWidth,
+    likes,
     chronologicalCommentsLength: commentFlow.chronologicalComments.length,
-    isExporting, isPaused,
+    isExporting,
+    isPaused,
     activeComment: commentFlow.activeComment,
     activeCommentLabel: commentFlow.activeCommentLabel,
-    profilesById, displaySize: textFit.displaySize,
+    profilesById,
+    displaySize: textFit.displaySize,
   });
 
   usePostPageTiming({
-    post, spec, textPages, media, currentText, textPage, setTextPage,
-    setBackgroundShiftPage, setSlide, setPlayKey, isPaused, setIsPaused,
-    isVisible, setIsVisible, pageRevealed, setPageRevealed, isExporting, setIsExporting,
-    setActionMenuOpen, canvasEl, canvasRef, setCanvasWidth, comments,
+    post,
+    spec,
+    textPages,
+    media,
+    currentText,
+    textPage,
+    setTextPage,
+    setBackgroundShiftPage,
+    setSlide,
+    setPlayKey,
+    isPaused,
+    setIsPaused,
+    isVisible,
+    setIsVisible,
+    pageRevealed,
+    setPageRevealed,
+    isExporting,
+    setIsExporting,
+    setActionMenuOpen,
+    canvasEl,
+    canvasRef,
+    setCanvasWidth,
+    comments,
     setLocalComments: commentFlow.setLocalComments,
     setStoryOpen: commentStory.setStoryOpen,
     setStoryIndex: commentStory.setStoryIndex,
@@ -138,7 +183,9 @@ export function usePostPlayback(props: PostCardProps) {
   });
 
   usePostAutoAdvance({
-    isExporting, isPaused, isVisible,
+    isExporting,
+    isPaused,
+    isVisible,
     storyOpen: commentStory.storyOpen,
     commentFlowKey: commentFlow.commentFlowKey,
     floatingComments: commentFlow.floatingComments,
@@ -177,7 +224,12 @@ export function usePostPlayback(props: PostCardProps) {
   }, [isPaused, isVisible, post.post_type]);
 
   const { handleExportVideo } = usePostExport({
-    post, textPages, tempo: spec.tempo, rhythm: spec.rhythm, isExporting, setIsExporting,
+    post,
+    textPages,
+    tempo: spec.tempo,
+    rhythm: spec.rhythm,
+    isExporting,
+    setIsExporting,
     setActionMenuOpen,
     setShowChips: commentFlow.setShowChips,
     setShowQuickCommentChips: commentFlow.setShowQuickCommentChips,
@@ -185,15 +237,49 @@ export function usePostPlayback(props: PostCardProps) {
     setStoryOpen: commentStory.setStoryOpen,
     setActiveComment: commentFlow.setActiveComment,
     setCommentOverlapsInfo: commentFlow.setCommentOverlapsInfo,
-    setIsPaused, setPageRevealed, setTextPage, setBackgroundShiftPage, setSlide, setPlayKey,
+    setIsPaused,
+    setPageRevealed,
+    setTextPage,
+    setBackgroundShiftPage,
+    setSlide,
+    setPlayKey,
   });
 
   return buildPostPlaybackApi({
-    post, author, likes, liked, comments, profilesById, spec, textPages, slide, textPage,
-    playKey, backgroundShiftPage, actionMenuOpen, setActionMenuOpen, isPaused, isVisible,
-    pageRevealed, isExporting, canvasWidth, canvasRef, setCanvasEl, videoRef,
-    postUrl: getPostShareUrl(post.id), media, ring, entrance, derived, textFit, commentFlow,
-    commentStory, handleExportVideo, selectTextPage, setIsPaused, setPageRevealed,
+    post,
+    author,
+    likes,
+    liked,
+    comments,
+    profilesById,
+    spec,
+    textPages,
+    slide,
+    textPage,
+    playKey,
+    backgroundShiftPage,
+    actionMenuOpen,
+    setActionMenuOpen,
+    isPaused,
+    isVisible,
+    pageRevealed,
+    isExporting,
+    canvasWidth,
+    canvasRef,
+    setCanvasEl,
+    videoRef,
+    postUrl: getPostShareUrl(post.id),
+    media,
+    ring,
+    entrance,
+    derived,
+    textFit,
+    commentFlow,
+    commentStory,
+    handleExportVideo,
+    selectTextPage,
+    setIsPaused,
+    setPageRevealed,
   });
 }
 

@@ -148,8 +148,7 @@ function assemblePostPlaybackApi(a: BuildPostPlaybackApiArgs) {
       commentFlow.setShowQuickCommentChips(false);
       a.setIsPaused(true);
     },
-    closeCommentStories: () =>
-      commentStory.closeCommentStories(a.setIsPaused, a.setPageRevealed),
+    closeCommentStories: () => commentStory.closeCommentStories(a.setIsPaused, a.setPageRevealed),
   };
 }
 

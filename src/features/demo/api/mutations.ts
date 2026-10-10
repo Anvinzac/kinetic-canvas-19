@@ -162,4 +162,3 @@ export function addMockPost(input: {
   });
   return post;
 }
-

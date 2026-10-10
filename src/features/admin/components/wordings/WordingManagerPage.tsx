@@ -32,8 +32,12 @@ export function WordingManagerPage() {
   const invalidate = () => queryClient.invalidateQueries({ queryKey: QUERY_KEY });
 
   const saveMut = useMutation({
-    mutationFn: (wording: { id?: string; reveal_button: string; guess_lead: string | null; is_active?: boolean }) =>
-      saveVocabWording({ data: { wording } }),
+    mutationFn: (wording: {
+      id?: string;
+      reveal_button: string;
+      guess_lead: string | null;
+      is_active?: boolean;
+    }) => saveVocabWording({ data: { wording } }),
     onSuccess: () => {
       invalidate();
       setEditingId(null);
@@ -79,10 +83,7 @@ export function WordingManagerPage() {
       )}
 
       {/* Add new wording */}
-      <NewWordingForm
-        onSave={(wording) => saveMut.mutate(wording)}
-        isPending={saveMut.isPending}
-      />
+      <NewWordingForm onSave={(wording) => saveMut.mutate(wording)} isPending={saveMut.isPending} />
 
       {/* Error display */}
       {error && (
@@ -132,7 +133,11 @@ function NewWordingForm({
   onSave,
   isPending,
 }: {
-  onSave: (wording: { reveal_button: string; guess_lead: string | null; is_active: boolean }) => void;
+  onSave: (wording: {
+    reveal_button: string;
+    guess_lead: string | null;
+    is_active: boolean;
+  }) => void;
   isPending: boolean;
 }) {
   const [revealButton, setRevealButton] = useState("Ê, từ này biết nè");
@@ -255,9 +260,7 @@ function WordingRow({
           />
         </div>
         <div>
-          <label className="block text-xs font-medium text-muted-foreground mb-1">
-            Câu gợi ý
-          </label>
+          <label className="block text-xs font-medium text-muted-foreground mb-1">Câu gợi ý</label>
           <textarea
             value={guessLead}
             onChange={(e) => setGuessLead(e.target.value)}

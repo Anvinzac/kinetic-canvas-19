@@ -131,5 +131,5 @@ export const ANIMATION_TEMPLATES_A: AnimationTemplate[] = [
       y: 50,
       rotation: -1,
     },
-  }
+  },
 ];

@@ -46,7 +46,7 @@ The **content-hub** default sink (`SupabaseRpcSink`) does **not** use the servic
 role key. It:
 
 1. Password-logs in with `SYSTEM_BOT_EMAIL` / `SYSTEM_BOT_PASSWORD` and `SUPABASE_ANON_KEY`
-2. Calls `enqueue_agent_content_item` with that user’s JWT  
+2. Calls `enqueue_agent_content_item` with that user’s JWT
 3. Requires `profiles.is_system = true` for that user (RLS)
 
 Manual equivalent:

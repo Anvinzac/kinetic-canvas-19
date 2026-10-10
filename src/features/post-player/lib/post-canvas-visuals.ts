@@ -9,10 +9,7 @@ import { getPostPhotoUrl, hasPostPhotoBackdrop } from "@/lib/post-media";
 import type { CanvasSpec } from "@/features/canvas";
 import { getCanvasPatternTheme } from "@/features/canvas";
 import { getCanvasSceneTheme } from "@/features/canvas";
-import {
-  getResolvedPostBackground,
-  getSlidingCanvasBackground,
-} from "./post-background";
+import { getResolvedPostBackground, getSlidingCanvasBackground } from "./post-background";
 import type { Post } from "../types";
 
 export type PostCanvasVisuals = {
@@ -43,8 +40,7 @@ export function getPostCanvasVisuals(
   const patternTheme = getCanvasPatternTheme(spec.backgroundPattern);
   const photoUrl = post.post_type === "slideshow" ? null : getPostPhotoUrl(post);
   const hasPhotoBackdrop =
-    hasPostPhotoBackdrop(post) ||
-    (post.post_type === "video" && Boolean(media[0]) && !photoUrl);
+    hasPostPhotoBackdrop(post) || (post.post_type === "video" && Boolean(media[0]) && !photoUrl);
   const resolvedPostBackground = getResolvedPostBackground(post);
   const staticCanvasBackground = sceneTheme
     ? sceneTheme.base

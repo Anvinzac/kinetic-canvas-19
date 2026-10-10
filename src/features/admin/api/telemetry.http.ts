@@ -60,7 +60,8 @@ export async function handleAdminTelemetryRequest(request: Request): Promise<Res
   const url = new URL(request.url);
   if (!url.pathname.startsWith("/api/admin/telemetry")) return null;
 
-  const ip = request.headers.get("cf-connecting-ip") ?? request.headers.get("x-forwarded-for") ?? "anon";
+  const ip =
+    request.headers.get("cf-connecting-ip") ?? request.headers.get("x-forwarded-for") ?? "anon";
   if (!allowTelemetryRequest(ip)) {
     return json({ error: "Rate limit exceeded" }, 429);
   }
@@ -124,11 +125,15 @@ export async function handleAdminTelemetryRequest(request: Request): Promise<Res
       const stream = new ReadableStream({
         start(controller) {
           const enc = new TextEncoder();
-          controller.enqueue(enc.encode(`event: ready\ndata: ${JSON.stringify({ app_id: APP_ID })}\n\n`));
+          controller.enqueue(
+            enc.encode(`event: ready\ndata: ${JSON.stringify({ app_id: APP_ID })}\n\n`),
+          );
           const timer = setInterval(() => {
             try {
               controller.enqueue(
-                enc.encode(`event: heartbeat\ndata: ${JSON.stringify({ at: new Date().toISOString() })}\n\n`),
+                enc.encode(
+                  `event: heartbeat\ndata: ${JSON.stringify({ at: new Date().toISOString() })}\n\n`,
+                ),
               );
             } catch {
               clearInterval(timer);

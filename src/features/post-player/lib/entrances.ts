@@ -141,4 +141,3 @@ export function getEntranceTransition(
   const stretch = style === "focus" ? 1.12 : style === "drift" ? 1.05 : 1;
   return { delay, duration: duration * stretch, ease: [0.22, 1, 0.36, 1] };
 }
-

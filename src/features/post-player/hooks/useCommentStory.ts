@@ -7,11 +7,7 @@
 
 import { useMemo, useState, type Dispatch, type SetStateAction } from "react";
 import type { PanInfo } from "framer-motion";
-import {
-  getCommentLabel,
-  getCommentStoryPages,
-  shouldFloatComment,
-} from "../lib/comment-text";
+import { getCommentLabel, getCommentStoryPages, shouldFloatComment } from "../lib/comment-text";
 import type { Comment, CommentStory } from "../types";
 
 export type UseCommentStoryArgs = {
@@ -38,7 +34,10 @@ export type UseCommentStoryResult = {
   commentTrayStoryPlaying: boolean;
   storyPlayerActive: boolean;
   openCommentStories: () => void;
-  closeCommentStories: (setIsPaused: (v: boolean) => void, setPageRevealed: (v: boolean) => void) => void;
+  closeCommentStories: (
+    setIsPaused: (v: boolean) => void,
+    setPageRevealed: (v: boolean) => void,
+  ) => void;
   skipCommentStory: (direction: 1 | -1) => void;
   handleStoryDrag: (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => void;
 };
@@ -75,7 +74,7 @@ export function useCommentStory({
 
   const activeStory = commentStories[storyIndex] ?? null;
   const storyPages = useMemo(
-    () => (activeStory ? getCommentStoryPages(activeStory.text, storyFastMode): []),
+    () => (activeStory ? getCommentStoryPages(activeStory.text, storyFastMode) : []),
     [activeStory, storyFastMode],
   );
   const storyPageText = storyPages[storyPage] ?? storyPages[0] ?? "";
@@ -106,10 +105,7 @@ export function useCommentStory({
     setStoryPlayKey((key) => key + 1);
   }
 
-  function handleStoryDrag(
-    _: MouseEvent | TouchEvent | PointerEvent,
-    info: PanInfo,
-  ): void {
+  function handleStoryDrag(_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo): void {
     if (info.offset.x < -48 || info.velocity.x < -520) {
       skipCommentStory(1);
       return;

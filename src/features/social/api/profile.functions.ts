@@ -40,9 +40,11 @@ export const getProfile = createServerFn({ method: "GET" })
           .select("*", { count: "exact", head: true })
           .eq("follower_id", profile.id),
         postIds.length
-          ? supabaseAdmin.from("likes").select("post_id").in("post_id", postIds): Promise.resolve({ data: [] as { post_id: string }[] }),
+          ? supabaseAdmin.from("likes").select("post_id").in("post_id", postIds)
+          : Promise.resolve({ data: [] as { post_id: string }[] }),
         postIds.length
-          ? supabaseAdmin.from("comments").select("post_id").in("post_id", postIds): Promise.resolve({ data: [] as { post_id: string }[] }),
+          ? supabaseAdmin.from("comments").select("post_id").in("post_id", postIds)
+          : Promise.resolve({ data: [] as { post_id: string }[] }),
       ]);
 
     const engagementByPost: Record<string, { likes: number; comments: number }> = {};
@@ -120,4 +122,3 @@ export const ensureProfile = createServerFn({ method: "POST" })
 
     return created;
   });
-

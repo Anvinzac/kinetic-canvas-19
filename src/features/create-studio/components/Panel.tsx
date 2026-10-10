@@ -5,7 +5,7 @@
  * Depends on: react
  */
 
-import type { ReactNode, ReactElement} from "react";
+import type { ReactNode, ReactElement } from "react";
 
 /**
  * Render the Panel UI.

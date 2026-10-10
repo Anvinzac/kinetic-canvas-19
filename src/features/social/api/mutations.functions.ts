@@ -170,4 +170,3 @@ export const addComment = createServerFn({ method: "POST" })
 // Demo account is a single shared auth user seeded via migration
 // (email: demo@kinetic.local). The auth page signs in client-side with
 // supabase.auth.signInWithPassword — no server function needed.
-

@@ -3,7 +3,15 @@
     "name": "WordCrawler mock deck v1.1",
     "purpose": "Content fine-tune before app build — 8–11 word limit on defVi and leadVi",
     "locale": "vi",
-    "discoverPages": ["1_leadVi", "2_defVi", "3_chars", "4_usage", "5_initial", "6_anticipate", "7_reveal_en"],
+    "discoverPages": [
+      "1_leadVi",
+      "2_defVi",
+      "3_chars",
+      "4_usage",
+      "5_initial",
+      "6_anticipate",
+      "7_reveal_en"
+    ],
     "reversePages": ["1_word_en", "2_defVi", "3_leadVi", "4_usage_highlighted"],
     "wordCount": 25,
     "notes": "defVi and leadVi must each be 8–11 Vietnamese words. Page 6 (anticipate) is a pure-Vietnamese tease before the English reveal. Never include English words, slang, or the target word.",
@@ -20,7 +28,12 @@
       "initial": "R",
       "leadVi": "Ngã xuống rồi tự đứng dậy, chẳng cần ai kéo.",
       "defVi": "Khả năng bật dậy nhanh sau nghịch cảnh hay áp lực.",
-      "usage": [{ "en": "She proved more _____ than anyone expected.", "vi": "Cô ấy tỏ ra kiên cường hơn mọi người tưởng." }],
+      "usage": [
+        {
+          "en": "She proved more _____ than anyone expected.",
+          "vi": "Cô ấy tỏ ra kiên cường hơn mọi người tưởng."
+        }
+      ],
       "topic": "character",
       "level": "B2",
       "anticipateVi": "Thử nhắm mắt đoán xem…",
@@ -35,7 +48,12 @@
       "initial": "V",
       "leadVi": "Nói một hồi mà người nghe vẫn lơ mơ chẳng hiểu.",
       "defVi": "Không rõ ràng, thiếu chi tiết nên khó nắm bắt.",
-      "usage": [{ "en": "His plan was too _____ to follow.", "vi": "Kế hoạch của anh ấy quá mơ hồ, chẳng theo được." }],
+      "usage": [
+        {
+          "en": "His plan was too _____ to follow.",
+          "vi": "Kế hoạch của anh ấy quá mơ hồ, chẳng theo được."
+        }
+      ],
       "topic": "communication",
       "level": "B1",
       "anticipateVi": "Năm chữ cái — đoán đi!",
@@ -50,7 +68,12 @@
       "initial": "N",
       "leadVi": "Mỗi bên lùi một bước để cả hai cùng tiến.",
       "defVi": "Qua lại trao đổi nhằm đạt được thỏa thuận chung.",
-      "usage": [{ "en": "They refused to _____ with the rebels.", "vi": "Họ từ chối đàm phán với quân nổi dậy." }],
+      "usage": [
+        {
+          "en": "They refused to _____ with the rebels.",
+          "vi": "Họ từ chối đàm phán với quân nổi dậy."
+        }
+      ],
       "topic": "work",
       "level": "B1",
       "anticipateVi": "Bạn nghĩ ra chưa?",
@@ -80,7 +103,9 @@
       "initial": "O",
       "leadVi": "Mắt lướt qua rồi đi thẳng, chẳng dừng lại nhìn.",
       "defVi": "Vô tình bỏ sót điều gì vì không để ý.",
-      "usage": [{ "en": "It's easy to _____ small errors early on.", "vi": "Dễ bỏ sót lỗi nhỏ lúc đầu." }],
+      "usage": [
+        { "en": "It's easy to _____ small errors early on.", "vi": "Dễ bỏ sót lỗi nhỏ lúc đầu." }
+      ],
       "topic": "attention",
       "level": "B2",
       "anticipateVi": "Từ này có hai nghĩa lận.",
@@ -95,7 +120,9 @@
       "initial": "R",
       "leadVi": "Chân muốn bước nhưng lòng cứ dùng dằng mãi thôi.",
       "defVi": "Không thực sự muốn làm dù biết có lẽ nên làm.",
-      "usage": [{ "en": "He was _____ to admit his mistake.", "vi": "Anh ấy miễn cưỡng thừa nhận sai lầm." }],
+      "usage": [
+        { "en": "He was _____ to admit his mistake.", "vi": "Anh ấy miễn cưỡng thừa nhận sai lầm." }
+      ],
       "topic": "emotion",
       "level": "B2",
       "anticipateVi": "Cảm giác này ai cũng từng có.",
@@ -110,7 +137,12 @@
       "initial": "G",
       "leadVi": "Chẳng đeo mặt nạ, chẳng tô vẽ — chỉ chính mình.",
       "defVi": "Xuất phát từ cảm xúc thật lòng, không giả tạo.",
-      "usage": [{ "en": "Her smile looked completely _____.", "vi": "Nụ cười của cô ấy trông hoàn toàn chân thật." }],
+      "usage": [
+        {
+          "en": "Her smile looked completely _____.",
+          "vi": "Nụ cười của cô ấy trông hoàn toàn chân thật."
+        }
+      ],
       "topic": "character",
       "level": "B1",
       "anticipateVi": "Bảy chữ cái — đoán thử!",
@@ -125,7 +157,12 @@
       "initial": "C",
       "leadVi": "Chẳng ai thắng trọn — mỗi người nhường một nửa.",
       "defVi": "Hai bên cùng nhượng bộ để đạt thỏa thuận chung.",
-      "usage": [{ "en": "Marriage requires a lot of _____.", "vi": "Hôn nhân đòi hỏi rất nhiều sự nhượng bộ." }],
+      "usage": [
+        {
+          "en": "Marriage requires a lot of _____.",
+          "vi": "Hôn nhân đòi hỏi rất nhiều sự nhượng bộ."
+        }
+      ],
       "topic": "work",
       "level": "B2",
       "anticipateVi": "Mười chữ cái — dài nhất bài.",
@@ -140,7 +177,12 @@
       "initial": "S",
       "leadVi": "Có đấy nhưng mỏng đến mức phải tinh ý mới thấy.",
       "defVi": "Khó nhận ra ngay, đòi hỏi sự tinh tế mới thấy.",
-      "usage": [{ "en": "There's a _____ change in her tone.", "vi": "Có một thay đổi tinh tế trong giọng cô ấy." }],
+      "usage": [
+        {
+          "en": "There's a _____ change in her tone.",
+          "vi": "Có một thay đổi tinh tế trong giọng cô ấy."
+        }
+      ],
       "topic": "thinking",
       "level": "B2",
       "anticipateVi": "Nhắm mắt rồi mở ra xem.",
@@ -155,7 +197,12 @@
       "initial": "P",
       "leadVi": "Không phải bỏ cuộc, chỉ dời sang một ngày khác.",
       "defVi": "Chuyển sang thời điểm muộn hơn so với dự định.",
-      "usage": [{ "en": "Rain forced us to _____ the picnic.", "vi": "Mưa buộc chúng tôi dời chuyến dã ngoại." }],
+      "usage": [
+        {
+          "en": "Rain forced us to _____ the picnic.",
+          "vi": "Mưa buộc chúng tôi dời chuyến dã ngoại."
+        }
+      ],
       "topic": "time",
       "level": "B1",
       "anticipateVi": "Tám chữ cái — đoán xem!",
@@ -170,7 +217,12 @@
       "initial": "R",
       "leadVi": "Nói là làm, giao gì cũng xong, chẳng bao giờ lỡ.",
       "defVi": "Làm đúng cam kết nên hoàn toàn đáng tin tưởng.",
-      "usage": [{ "en": "He's the most _____ person I know.", "vi": "Anh ấy là người đáng tin nhất tôi quen." }],
+      "usage": [
+        {
+          "en": "He's the most _____ person I know.",
+          "vi": "Anh ấy là người đáng tin nhất tôi quen."
+        }
+      ],
       "topic": "character",
       "level": "B1",
       "anticipateVi": "Đừng lướt — nghĩ kỹ đã.",
@@ -185,7 +237,9 @@
       "initial": "A",
       "leadVi": "Đầu đã chốt xong nhưng miệng chẳng buồn hỏi lại.",
       "defVi": "Tự cho rằng đúng mà chẳng hề kiểm chứng.",
-      "usage": [{ "en": "I _____ you've read the brief.", "vi": "Tôi cứ ngỡ bạn đã đọc bản tóm tắt." }],
+      "usage": [
+        { "en": "I _____ you've read the brief.", "vi": "Tôi cứ ngỡ bạn đã đọc bản tóm tắt." }
+      ],
       "topic": "thinking",
       "level": "B1",
       "anticipateVi": "Chữ cái đầu dễ đoán lắm.",
@@ -200,7 +254,12 @@
       "initial": "F",
       "leadVi": "Gửi việc đi rồi chờ người ta nói lại: được chưa.",
       "defVi": "Lời nhận xét đánh giá giúp cải thiện kết quả.",
-      "usage": [{ "en": "Can I get your _____ on this draft?", "vi": "Cho tôi xin nhận xét về bản nháp này nhé?" }],
+      "usage": [
+        {
+          "en": "Can I get your _____ on this draft?",
+          "vi": "Cho tôi xin nhận xét về bản nháp này nhé?"
+        }
+      ],
       "topic": "work",
       "level": "A2",
       "anticipateVi": "Từ ghép hai phần — đoán thử.",
@@ -215,7 +274,9 @@
       "initial": "A",
       "leadVi": "Tim đập, tay hơi run mà chưa có gì xảy ra.",
       "defVi": "Cảm giác bồn chồn lo lắng về chuyện sắp xảy ra.",
-      "usage": [{ "en": "She felt _____ about the exam results.", "vi": "Cô ấy lo lắng về kết quả thi." }],
+      "usage": [
+        { "en": "She felt _____ about the exam results.", "vi": "Cô ấy lo lắng về kết quả thi." }
+      ],
       "topic": "emotion",
       "level": "B1",
       "anticipateVi": "Thở sâu nào — rồi đoán.",
@@ -230,7 +291,9 @@
       "initial": "C",
       "leadVi": "Đang mờ như sương, bỗng rõ từng nét một.",
       "defVi": "Nói rõ hơn để người nghe hiểu được vấn đề.",
-      "usage": [{ "en": "Could you _____ the last point?", "vi": "Bạn làm rõ ý cuối giúp tôi được không?" }],
+      "usage": [
+        { "en": "Could you _____ the last point?", "vi": "Bạn làm rõ ý cuối giúp tôi được không?" }
+      ],
       "topic": "communication",
       "level": "B1",
       "anticipateVi": "Nói to lên xem đúng không!",
@@ -245,7 +308,12 @@
       "initial": "P",
       "leadVi": "Giữa trăm việc, cái này phải xong trước tất cả.",
       "defVi": "Điều được xếp lên hàng đầu vì quan trọng hơn cả.",
-      "usage": [{ "en": "Health should be your top _____.", "vi": "Sức khỏe nên là ưu tiên hàng đầu của bạn." }],
+      "usage": [
+        {
+          "en": "Health should be your top _____.",
+          "vi": "Sức khỏe nên là ưu tiên hàng đầu của bạn."
+        }
+      ],
       "topic": "work",
       "level": "B1",
       "anticipateVi": "Nghe quen lắm phải không?",
@@ -260,7 +328,12 @@
       "initial": "H",
       "leadVi": "Tay chạm nắm cửa rồi rụt lại, chưa dám mở.",
       "defVi": "Cứ ngập ngừng, chưa quyết định hành động ngay được.",
-      "usage": [{ "en": "Don't _____ to call if you need help.", "vi": "Đừng ngần ngại gọi nếu bạn cần giúp." }],
+      "usage": [
+        {
+          "en": "Don't _____ to call if you need help.",
+          "vi": "Đừng ngần ngại gọi nếu bạn cần giúp."
+        }
+      ],
       "topic": "emotion",
       "level": "B1",
       "anticipateVi": "Bạn đã đoán ra chưa?",
@@ -275,7 +348,12 @@
       "initial": "A",
       "leadVi": "Không gần đúng — mà đúng đến từng con số.",
       "defVi": "Khớp hoàn toàn với sự thật, không chút sai lệch.",
-      "usage": [{ "en": "Is this data _____ enough to publish?", "vi": "Dữ liệu này đủ chính xác để công bố chưa?" }],
+      "usage": [
+        {
+          "en": "Is this data _____ enough to publish?",
+          "vi": "Dữ liệu này đủ chính xác để công bố chưa?"
+        }
+      ],
       "topic": "thinking",
       "level": "B1",
       "anticipateVi": "Đúng một chữ thôi!",
@@ -290,7 +368,12 @@
       "initial": "O",
       "leadVi": "Mọi thứ qua rồi, chỉ còn thứ đọng lại cuối cùng.",
       "defVi": "Điều thực sự xảy ra khi quá trình đã kết thúc.",
-      "usage": [{ "en": "The _____ surprised everyone in the room.", "vi": "Kết quả khiến cả phòng bất ngờ." }],
+      "usage": [
+        {
+          "en": "The _____ surprised everyone in the room.",
+          "vi": "Kết quả khiến cả phòng bất ngờ."
+        }
+      ],
       "topic": "thinking",
       "level": "B1",
       "anticipateVi": "Kết hay mở đây?",
@@ -305,7 +388,12 @@
       "initial": "P",
       "leadVi": "Không ép, chỉ dùng lời để người ta tự gật đầu.",
       "defVi": "Dùng lý lẽ hoặc tình cảm để người khác đồng ý.",
-      "usage": [{ "en": "I couldn't _____ her to change her mind.", "vi": "Tôi không thuyết phục được cô ấy đổi ý." }],
+      "usage": [
+        {
+          "en": "I couldn't _____ her to change her mind.",
+          "vi": "Tôi không thuyết phục được cô ấy đổi ý."
+        }
+      ],
       "topic": "communication",
       "level": "B1",
       "anticipateVi": "Sức mạnh của lời nói.",
@@ -320,7 +408,12 @@
       "initial": "R",
       "leadVi": "Sáng nào cũng y hệt, nhắm mắt cũng làm xong.",
       "defVi": "Chuỗi hành động lặp lại mỗi ngày thành nếp quen.",
-      "usage": [{ "en": "My morning _____ starts at six.", "vi": "Chuỗi thói quen sáng của tôi bắt đầu lúc sáu giờ." }],
+      "usage": [
+        {
+          "en": "My morning _____ starts at six.",
+          "vi": "Chuỗi thói quen sáng của tôi bắt đầu lúc sáu giờ."
+        }
+      ],
       "topic": "daily",
       "level": "A2",
       "anticipateVi": "Bạn làm nó mỗi ngày.",
@@ -335,7 +428,12 @@
       "initial": "A",
       "leadVi": "Không khí đặc quánh, chẳng ai biết mở lời sao.",
       "defVi": "Gây cảm giác lúng túng, ngượng ngùng, không tự nhiên.",
-      "usage": [{ "en": "The silence after his joke was _____.", "vi": "Khoảng lặng sau câu đùa thật ngượng ngùng." }],
+      "usage": [
+        {
+          "en": "The silence after his joke was _____.",
+          "vi": "Khoảng lặng sau câu đùa thật ngượng ngùng."
+        }
+      ],
       "topic": "emotion",
       "level": "B1",
       "anticipateVi": "Cảm giác này quen lắm.",
@@ -350,7 +448,12 @@
       "initial": "B",
       "leadVi": "Làm xong rồi nhìn lại, mình được gì nhỉ?",
       "defVi": "Điều tốt đẹp hoặc giá trị nhận từ một hành động.",
-      "usage": [{ "en": "One _____ of exercise is better sleep.", "vi": "Một lợi ích của tập thể dục là ngủ ngon hơn." }],
+      "usage": [
+        {
+          "en": "One _____ of exercise is better sleep.",
+          "vi": "Một lợi ích của tập thể dục là ngủ ngon hơn."
+        }
+      ],
       "topic": "daily",
       "level": "A2",
       "anticipateVi": "Ai cũng muốn có thêm.",
@@ -365,7 +468,12 @@
       "initial": "D",
       "leadVi": "Đang chăm chú bỗng điện thoại reo, đầu bay nơi khác.",
       "defVi": "Làm ai đó mất tập trung, hướng chú ý nơi khác.",
-      "usage": [{ "en": "Loud noises _____ me from reading.", "vi": "Tiếng ồn làm tôi mất tập trung khi đọc." }],
+      "usage": [
+        {
+          "en": "Loud noises _____ me from reading.",
+          "vi": "Tiếng ồn làm tôi mất tập trung khi đọc."
+        }
+      ],
       "topic": "attention",
       "level": "B1",
       "anticipateVi": "Đừng nhìn chỗ khác!",
@@ -380,7 +488,12 @@
       "initial": "E",
       "leadVi": "Thử bỏ ra xem, mọi thứ phía sau đổ sập hết.",
       "defVi": "Quan trọng đến mức không thể thiếu trong mọi tình huống.",
-      "usage": [{ "en": "Water is _____ for all living things.", "vi": "Nước là thứ không thể thiếu cho mọi sinh vật." }],
+      "usage": [
+        {
+          "en": "Water is _____ for all living things.",
+          "vi": "Nước là thứ không thể thiếu cho mọi sinh vật."
+        }
+      ],
       "topic": "thinking",
       "level": "B1",
       "anticipateVi": "Chín chữ cái. Đoán đi!",

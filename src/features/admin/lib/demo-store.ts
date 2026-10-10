@@ -20,7 +20,13 @@ export type DemoTelemetryStore = {
   rollups: DailyRollup[];
   errors: AdminErrorReport[];
   healthHistory: SystemHealthSnapshot[];
-  accessLog: Array<{ id: string; actor_user_id: string | null; path: string; method: string; occurred_at: string }>;
+  accessLog: Array<{
+    id: string;
+    actor_user_id: string | null;
+    path: string;
+    method: string;
+    occurred_at: string;
+  }>;
   activeActorsByDay: Record<string, string[]>;
 };
 

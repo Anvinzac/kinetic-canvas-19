@@ -5,17 +5,8 @@
  * Depends on: demo/api/feed, profile, mutations
  */
 
-export {
-  getMockDiscover,
-  getMockFeed,
-  getMockPost,
-  searchMock,
-} from "./feed";
-export {
-  getMockMe,
-  getMockNotifications,
-  getMockProfile,
-} from "./profile";
+export { getMockDiscover, getMockFeed, getMockPost, searchMock } from "./feed";
+export { getMockMe, getMockNotifications, getMockProfile } from "./profile";
 export {
   addMockComment,
   addMockPost,

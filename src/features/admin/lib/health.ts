@@ -6,11 +6,7 @@
  */
 
 import { readDemoTelemetry } from "./demo-store";
-import {
-  APP_ID,
-  type SystemHealthSnapshot,
-  type SystemHealthStatus,
-} from "../types/telemetry";
+import { APP_ID, type SystemHealthSnapshot, type SystemHealthStatus } from "../types/telemetry";
 
 /**
  * Build a current SystemHealthSnapshot (<50ms target for live DB ping).
@@ -46,7 +42,9 @@ export async function buildHealthSnapshot(mode: "demo" | "live"): Promise<System
 
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const t0 = performance.now();
-  const { error: pingError } = await supabaseAdmin.from("profiles").select("id", { count: "exact", head: true });
+  const { error: pingError } = await supabaseAdmin
+    .from("profiles")
+    .select("id", { count: "exact", head: true });
   const latency = performance.now() - t0;
 
   const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();

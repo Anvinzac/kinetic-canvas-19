@@ -25,12 +25,7 @@ export type FontPanelProps = {
  * @param props - Spec patcher, replay, and done navigation
  * @returns Font editor panel
  */
-export function FontPanel({
-  spec,
-  patch,
-  onReplay,
-  setActivePage,
-}: FontPanelProps): ReactElement {
+export function FontPanel({ spec, patch, onReplay, setActivePage }: FontPanelProps): ReactElement {
   return (
     <div className="space-y-4">
       <Panel icon={<Type />} title="font family">

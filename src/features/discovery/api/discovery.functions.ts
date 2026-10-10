@@ -201,7 +201,8 @@ export const getNotifications = createServerFn({ method: "GET" })
             .in("post_id", postIds)
             .neq("user_id", me.id)
             .order("created_at", { ascending: false })
-            .limit(40): Promise.resolve({
+            .limit(40)
+        : Promise.resolve({
             data: [] as { user_id: string; post_id: string; created_at: string }[],
           }),
       postIds.length
@@ -211,7 +212,8 @@ export const getNotifications = createServerFn({ method: "GET" })
             .in("post_id", postIds)
             .neq("user_id", me.id)
             .order("created_at", { ascending: false })
-            .limit(40): Promise.resolve({
+            .limit(40)
+        : Promise.resolve({
             data: [] as { user_id: string; post_id: string; chip_id: string; created_at: string }[],
           }),
       supabaseAdmin

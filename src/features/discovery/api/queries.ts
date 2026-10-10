@@ -37,10 +37,7 @@ export function discoverQueryOptions(
   return buildDiscoverQueryOptions(mode, fetchLive);
 }
 
-function buildDiscoverQueryOptions(
-  mode: DataMode,
-  fetchLive: () => Promise<SocialDiscoverData>,
-) {
+function buildDiscoverQueryOptions(mode: DataMode, fetchLive: () => Promise<SocialDiscoverData>) {
   return queryOptions({
     queryKey: discoveryKeys.discover(mode),
     queryFn: (): Promise<SocialDiscoverData> =>

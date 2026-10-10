@@ -63,7 +63,12 @@ function styleForTopic(topic?: string): VocabStyle {
   return TOPIC_STYLE[topic] ?? "minimal";
 }
 
-function buildStyleHints(word: string, letters: number, anticipateVi: string, style: VocabStyle): string[] {
+function buildStyleHints(
+  word: string,
+  letters: number,
+  anticipateVi: string,
+  style: VocabStyle,
+): string[] {
   const initial = word[0]!.toUpperCase();
   switch (style) {
     case "detective":
@@ -85,11 +90,7 @@ function buildStyleHints(word: string, letters: number, anticipateVi: string, st
         anticipateVi,
       ];
     case "minimal":
-      return [
-        `Từ này bắt đầu bằng chữ ${initial}.`,
-        `Cả từ gồm ${letters} chữ cái.`,
-        anticipateVi,
-      ];
+      return [`Từ này bắt đầu bằng chữ ${initial}.`, `Cả từ gồm ${letters} chữ cái.`, anticipateVi];
   }
 }
 
@@ -111,7 +112,8 @@ export class VocabularySource implements SourceAdapter {
         continue;
       }
       const style = w.style ?? styleForTopic(w.topic);
-      const anticipate = w.anticipateVi?.trim() || w.nudge?.trim() || "Đoán tiếp nào, bạn tìm ra chứ?";
+      const anticipate =
+        w.anticipateVi?.trim() || w.nudge?.trim() || "Đoán tiếp nào, bạn tìm ra chứ?";
       const hints = buildStyleHints(word, letters, anticipate, style);
       const emphasis = sanitizeEmphasisPhrases(w.emphasis, [
         w.viDefinition,
@@ -311,13 +313,37 @@ function deckToVocabularyWord(d: DeckWord): VocabularyWord {
 // Now backed by the 25-word WordCrawler deck (content-hub/data/wordcrawler-deck-mock-v0.json)
 // with mix & match styles by topic. Falls back to small seed if deck missing.
 const CURATED_FALLBACK: VocabularyWord[] = [
-  { word: "Petrichor", viDefinition: "Mùi đất thơm dịu sau cơn mưa đầu mùa.", difficulty: "medium" },
-  { word: "Serendipity", viDefinition: "Niềm vui bất ngờ khi gặp điều may mắn.", difficulty: "hard" },
-  { word: "Ephemeral", viDefinition: "Thứ tồn tại rất ngắn, thoáng qua rồi tan.", difficulty: "hard" },
+  {
+    word: "Petrichor",
+    viDefinition: "Mùi đất thơm dịu sau cơn mưa đầu mùa.",
+    difficulty: "medium",
+  },
+  {
+    word: "Serendipity",
+    viDefinition: "Niềm vui bất ngờ khi gặp điều may mắn.",
+    difficulty: "hard",
+  },
+  {
+    word: "Ephemeral",
+    viDefinition: "Thứ tồn tại rất ngắn, thoáng qua rồi tan.",
+    difficulty: "hard",
+  },
   { word: "Composure", viDefinition: "Sự bình tĩnh khi mọi thứ đang rối.", difficulty: "medium" },
-  { word: "Glimpse", viDefinition: "Một ý nghĩ hiện ra rất nhanh rồi biến mất.", difficulty: "easy" },
-  { word: "Dawn", viDefinition: "Ánh sáng dịu xuất hiện ngay trước bình minh.", difficulty: "easy" },
-  { word: "Curiosity", viDefinition: "Sự tò mò khiến bạn muốn tìm hiểu thêm.", difficulty: "medium" },
+  {
+    word: "Glimpse",
+    viDefinition: "Một ý nghĩ hiện ra rất nhanh rồi biến mất.",
+    difficulty: "easy",
+  },
+  {
+    word: "Dawn",
+    viDefinition: "Ánh sáng dịu xuất hiện ngay trước bình minh.",
+    difficulty: "easy",
+  },
+  {
+    word: "Curiosity",
+    viDefinition: "Sự tò mò khiến bạn muốn tìm hiểu thêm.",
+    difficulty: "medium",
+  },
   { word: "Resilience", viDefinition: "Khả năng bật dậy sau khi vấp ngã.", difficulty: "hard" },
 ];
 
@@ -326,7 +352,9 @@ export class CuratedVocabularyGenerator implements VocabularyGenerator {
 
   async generate(count: number): Promise<VocabularyWord[]> {
     const deck = loadDeck();
-    const source: VocabularyWord[] = deck.length ? deck.map(deckToVocabularyWord) : CURATED_FALLBACK;
+    const source: VocabularyWord[] = deck.length
+      ? deck.map(deckToVocabularyWord)
+      : CURATED_FALLBACK;
     const shuffled = [...source].sort(() => Math.random() - 0.5);
     return shuffled.slice(0, Math.min(count, shuffled.length));
   }
@@ -456,7 +484,8 @@ export class ClaudeVocabularyGenerator implements VocabularyGenerator {
       }),
     });
 
-    if (!res.ok) throw new Error(`Anthropic API ${res.status}: ${(await res.text()).slice(0, 300)}`);
+    if (!res.ok)
+      throw new Error(`Anthropic API ${res.status}: ${(await res.text()).slice(0, 300)}`);
 
     const data = (await res.json()) as { content?: Array<{ type: string; text?: string }> };
     const text = data.content?.find((c) => c.type === "text")?.text ?? "[]";
@@ -465,7 +494,11 @@ export class ClaudeVocabularyGenerator implements VocabularyGenerator {
 
     // Map crawler-contract field names → VocabularyWord field names,
     // validate required fields, drop unusable entries.
-    const levelToDiff: Record<string, Difficulty> = { easy: "easy", medium: "medium", hard: "hard" };
+    const levelToDiff: Record<string, Difficulty> = {
+      easy: "easy",
+      medium: "medium",
+      hard: "hard",
+    };
     return parsed
       .filter((w) => w && typeof w.word === "string" && typeof w.defVi === "string")
       .map((w) => {

@@ -129,5 +129,5 @@ export const ANIMATION_TEMPLATES_B: AnimationTemplate[] = [
       y: 46,
       rotation: 1,
     },
-  }
+  },
 ];

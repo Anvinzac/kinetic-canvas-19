@@ -39,7 +39,11 @@
   border-radius: 20px;
   /* A wash of the app's own accent, so sections are told apart before reading. */
   background:
-    radial-gradient(circle at 0 0, color-mix(in srgb, var(--eco-from) 18%, transparent), transparent 62%),
+    radial-gradient(
+      circle at 0 0,
+      color-mix(in srgb, var(--eco-from) 18%, transparent),
+      transparent 62%
+    ),
     #ffffff08;
 }
 
@@ -136,7 +140,11 @@
   border: 1px solid #ffffff1f;
   border-radius: 14px;
   background:
-    linear-gradient(170deg, color-mix(in srgb, var(--eco-from) 55%, transparent), color-mix(in srgb, var(--eco-to) 65%, transparent)),
+    linear-gradient(
+      170deg,
+      color-mix(in srgb, var(--eco-from) 55%, transparent),
+      color-mix(in srgb, var(--eco-to) 65%, transparent)
+    ),
     #0c0818;
   box-shadow: inset 0 1px 0 #ffffff2e;
 }

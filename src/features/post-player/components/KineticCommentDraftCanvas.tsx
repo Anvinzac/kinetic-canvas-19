@@ -61,5 +61,4 @@ export function KineticCommentDraftCanvas({
       )}
     </motion.div>
   );
-
 }

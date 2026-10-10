@@ -103,10 +103,7 @@ export const deleteVocabWording = createServerFn({ method: "POST" })
   .handler(async ({ data, context }): Promise<{ ok: boolean }> => {
     await requireAdminContext({ authUserId: context.userId });
     const supabase = await getAdminClient();
-    const { error } = await supabase
-      .from("vocab_wordings")
-      .delete()
-      .eq("id", data.id);
+    const { error } = await supabase.from("vocab_wordings").delete().eq("id", data.id);
     if (error) throw new Error(error.message);
     return { ok: true };
   });

@@ -79,4 +79,3 @@ export const MOCK_PROFILES: MockProfile[] = [
     created_at: "2026-05-30T05:00:00.000Z",
   },
 ];
-

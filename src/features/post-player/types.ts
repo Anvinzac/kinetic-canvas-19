@@ -5,7 +5,12 @@
  * Depends on: none
  */
 
-export type Profile = { id: string; username: string; display_name: string; avatar_url: string | null };
+export type Profile = {
+  id: string;
+  username: string;
+  display_name: string;
+  avatar_url: string | null;
+};
 
 export type Post = {
   id: string;

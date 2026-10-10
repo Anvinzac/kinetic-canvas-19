@@ -5,11 +5,7 @@
  * Depends on: features/canvas scene/pattern themes, create-studio PLACEMENTS + types
  */
 
-import {
-  getCanvasPatternTheme,
-  getCanvasSceneTheme,
-  type CanvasSpec,
-} from "@/features/canvas";
+import { getCanvasPatternTheme, getCanvasSceneTheme, type CanvasSpec } from "@/features/canvas";
 import { PLACEMENTS } from "./templates";
 import type { BackgroundMode } from "../types";
 
@@ -62,8 +58,6 @@ export function getLayoutSummary(y: number): string {
  * @param spec - Canvas spec providing motion fields
  * @returns Motion summary string
  */
-export function getMotionSummary(
-  spec: Pick<CanvasSpec, "entrance" | "tempo" | "rhythm">,
-): string {
+export function getMotionSummary(spec: Pick<CanvasSpec, "entrance" | "tempo" | "rhythm">): string {
   return `${spec.entrance} · ${spec.tempo} · ${spec.rhythm}`;
 }

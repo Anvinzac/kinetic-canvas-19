@@ -173,5 +173,4 @@ export function CollectionPicker({
       </motion.div>
     </motion.div>
   );
-
 }

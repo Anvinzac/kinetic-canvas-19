@@ -54,7 +54,9 @@ export function ErrorsPage(): React.ReactElement {
       series.reduce((a, b) => a + (b - mean) ** 2, 0) / Math.max(series.length - 1, 1);
     const std = Math.sqrt(variance);
     const threshold = mean + 2 * std;
-    return new Set((rollups.data ?? []).filter((r) => r.errors_total > threshold).map((r) => r.date));
+    return new Set(
+      (rollups.data ?? []).filter((r) => r.errors_total > threshold).map((r) => r.date),
+    );
   }, [rollups.data]);
 
   const mutation = useMutation({
