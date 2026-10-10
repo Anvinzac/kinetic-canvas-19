@@ -35,6 +35,15 @@ const argv = process.argv.slice(2);
 // the `--pack` index below.
 const staged = argv.includes("--staged");
 if (staged) argv.splice(argv.indexOf("--staged"), 1);
+// `--locale <code>` routes a pack into data/<code>/ — a separate deck served only on that
+// language's domain (lib/target-language.ts), never merged into the English feed.
+const localeAt = argv.indexOf("--locale");
+let locale: string | undefined;
+if (localeAt !== -1) {
+  locale = argv[localeAt + 1];
+  argv.splice(localeAt, locale ? 2 : 1);
+  if (!locale || !/^(zh|ko|ja)$/.test(locale)) throw new Error("--locale must be zh, ko or ja");
+}
 const packAt = argv.indexOf("--pack");
 let packName: string | undefined;
 if (packAt !== -1) {
@@ -74,7 +83,9 @@ if (!source || argv.length !== 1 || (packAt !== -1 && !packName)) {
     const output = fileURLToPath(
       new URL(
         slug
-          ? `../src/features/vocabulary/data/packs/${staged ? "incoming/" : ""}${slug}.json`
+          ? locale
+            ? `../src/features/vocabulary/data/${locale}/${slug}.json`
+            : `../src/features/vocabulary/data/packs/${staged ? "incoming/" : ""}${slug}.json`
           : "../src/features/vocabulary/data/catalog.json",
         import.meta.url,
       ),
