@@ -1,36 +1,48 @@
 /**
- * Single source of truth for the vocabulary catalog the app serves and reads.
+ * Single source of truth for the vocabulary catalogs the app serves and reads.
  *
- * Merges the admin-editable base `data/catalog.json` with every compiled third-party
- * pack in `data/packs/*.json` into one in-memory `Catalog`. Both the server read
- * boundary (`api/catalog.server.ts`) and the client-side saved-word lookups
- * (`lib/saved-words.ts`) import from here, so there is exactly one merge and the feed
- * and the saved list can never disagree about which words exist.
+ * English = admin-editable `data/catalog.json` merged with every `data/packs/*.json`.
+ * Other answer languages live in `data/<locale>/*.json` (compiled with
+ * `vocab:import -- <deck> --pack <name> --locale zh`) and are served only on that
+ * language's domain (see ./target-language). Locales without a deck fall back to English.
  *
- * Adding a provider pack is a no-code operation: compile the deck with
- * `npm run vocab:import -- <deck.json> --pack <name>` (which validates it through
- * `normalizeDeck` and writes `data/packs/<name>.json`), then rebuild/restart. The base
- * `catalog.json` stays the only admin-editable store; packs are read-only and are
- * de-duplicated against it (base wins) by `mergeCatalogs`.
- *
- * Exports: catalog
- * Depends on: ../data/catalog.json, ../data/packs/*.json, ./schema
+ * Exports: catalog (English), catalogFor
+ * Depends on: ../data/catalog.json, ../data/packs/*.json, ../data/<locale>/*.json, ./schema
  */
 import baseCatalog from "../data/catalog.json";
 import type { Catalog } from "./schema";
 import { mergeCatalogs } from "./schema";
+import type { TargetLocale } from "./target-language";
 
-// Vite eagerly inlines every compiled pack at build time (works for the SSR/Nitro bundle
-// too). Keys are sorted so merge order — and therefore the derived revision, the
-// deterministic pagination and the saved-word lookups — never depends on how the
-// filesystem happens to enumerate the directory. An empty/absent packs folder simply
-// yields no packs, leaving the base catalog untouched.
-const packModules = import.meta.glob<{ default: Catalog }>("../data/packs/*.json", {
-  eager: true,
-});
-const packs = Object.keys(packModules)
-  .sort()
-  .map((path) => packModules[path]!.default);
+function sorted(modules: Record<string, { default: Catalog }>): Catalog[] {
+  return Object.keys(modules)
+    .sort()
+    .map((path) => modules[path]!.default);
+}
 
-/** The merged catalog: base `catalog.json` plus every compiled provider pack. */
-export const catalog: Catalog = mergeCatalogs(baseCatalog as Catalog, ...packs);
+const enPacks = sorted(
+  import.meta.glob<{ default: Catalog }>("../data/packs/*.json", { eager: true }),
+);
+const zhPacks = sorted(import.meta.glob<{ default: Catalog }>("../data/zh/*.json", { eager: true }));
+const koPacks = sorted(import.meta.glob<{ default: Catalog }>("../data/ko/*.json", { eager: true }));
+const jaPacks = sorted(import.meta.glob<{ default: Catalog }>("../data/ja/*.json", { eager: true }));
+
+/** The English catalog: base `catalog.json` plus every compiled provider pack. */
+export const catalog: Catalog = mergeCatalogs(baseCatalog as Catalog, ...enPacks);
+
+const byLocale: Partial<Record<TargetLocale, Catalog>> = { en: catalog };
+const sources: Record<Exclude<TargetLocale, "en">, Catalog[]> = {
+  zh: zhPacks,
+  ko: koPacks,
+  ja: jaPacks,
+};
+
+/** @param locale Answer language. @returns That language's catalog, or English when none exists. */
+export function catalogFor(locale: TargetLocale): Catalog {
+  const cached = byLocale[locale];
+  if (cached) return cached;
+  const packs = sources[locale as Exclude<TargetLocale, "en">] ?? [];
+  const result = packs.length ? mergeCatalogs(packs[0]!, ...packs.slice(1)) : catalog;
+  byLocale[locale] = result;
+  return result;
+}
