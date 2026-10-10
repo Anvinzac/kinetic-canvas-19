@@ -1,5 +1,5 @@
 /** Public vocabulary page orchestration. Exports: VocabularyFeedPage. Depends on: controls, stream, reduced-motion preference, font readiness, track rotation. */
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useReducedMotion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { useScreenWakeLock } from "@/hooks/use-screen-wake-lock";
@@ -15,6 +15,9 @@ import { getActiveVocabWording } from "@/features/admin/api/wording.functions";
 import { FeedControls } from "./FeedControls";
 import { VocabularyStream } from "./VocabularyStream";
 import { SavedDrawer } from "./SavedDrawer";
+import { DifficultyOnboarding } from "./DifficultyOnboarding";
+import { fetchVocabularyPage } from "../api/feed";
+import { readDifficultyChoice, writeDifficultyChoice } from "../lib/difficulty-choice";
 import "../vocabulary.css";
 
 function newSeed(): string {
@@ -36,6 +39,40 @@ export function VocabularyFeedPage() {
     autoplay: true,
   });
   const [metadata, setMetadata] = useState<FeedPage>();
+  // "pending" until the stored choice has been read (storage is not readable while the
+  // page is server-rendered), then either the first-load level picker or the feed. The
+  // stream is not mounted before that, so it never starts on "every level" only to be
+  // thrown away a moment later for the level the reader actually keeps.
+  const [stage, setStage] = useState<"pending" | "onboarding" | "feed">("pending");
+  useEffect(() => {
+    const stored = readDifficultyChoice();
+    if (stored === null) {
+      setStage("onboarding");
+      return;
+    }
+    setFilters((current) => ({ ...current, difficulty: stored }));
+    setStage("feed");
+  }, []);
+  // The picker needs the catalog's level counts and sample words before any stream exists.
+  // They ride on every feed page, so one small, unfiltered request supplies them.
+  const { data: ladder } = useQuery({
+    queryKey: ["vocab-level-ladder"],
+    queryFn: ({ signal }) =>
+      fetchVocabularyPage({
+        seed: "level-ladder",
+        filters: ALL_FILTERS,
+        cursor: { position: 0 },
+        signal,
+      }),
+    enabled: stage === "onboarding",
+    staleTime: Infinity,
+  });
+  const pickDifficulty = useCallback((difficulty: string) => {
+    writeDifficultyChoice(difficulty);
+    setFilters((current) => ({ ...current, difficulty }));
+    setSeed(newSeed());
+    setStage("feed");
+  }, []);
   // The saved drawer suspends the feed behind it rather than navigating away.
   const [savedOpen, setSavedOpen] = useState(false);
   const [optionsOpen, setOptionsOpen] = useState(false);
@@ -79,6 +116,16 @@ export function VocabularyFeedPage() {
     setSeed(newSeed());
     setOptionsOpen(false);
   };
+  if (stage !== "feed") {
+    return (
+      <main className="vocabulary-shell">
+        <OrientationGate show={orientationGated} />
+        {stage === "onboarding" && (
+          <DifficultyOnboarding metadata={ladder} onPick={pickDifficulty} />
+        )}
+      </main>
+    );
+  }
   return (
     <main className="vocabulary-shell">
       <OrientationGate show={orientationGated} />
@@ -97,6 +144,8 @@ export function VocabularyFeedPage() {
             value.difficulty === filters.difficulty
           )
             return;
+          // The level chosen here is the one the next visit opens on.
+          if (value.difficulty !== filters.difficulty) writeDifficultyChoice(value.difficulty);
           setFilters(value);
           setSeed(newSeed());
         }}
@@ -125,7 +174,10 @@ export function VocabularyFeedPage() {
         onClearHistory={viewHistory.clear}
         onMetadata={setMetadata}
         onRestart={shuffle}
-        onClearFilters={() => setFilters(ALL_FILTERS)}
+        onClearFilters={() => {
+          writeDifficultyChoice(ALL_FILTERS.difficulty);
+          setFilters(ALL_FILTERS);
+        }}
         revealButtonLabel={activeWording?.reveal_button}
       />
     </main>

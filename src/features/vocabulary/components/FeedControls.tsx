@@ -20,9 +20,8 @@ import { STYLES, THEMES } from "../lib/presets";
 import {
   DIFFICULTY_ALL,
   DIFFICULTY_TRACKS,
-  MOCK_TOTAL_WORDS,
   formatLevelBand,
-  mockTrackWordCount,
+  countTrackWords,
 } from "../lib/difficulty";
 import { LEVELS, type NarrativeStyle } from "../lib/schema";
 import type { HistoryStats } from "../lib/history";
@@ -251,16 +250,14 @@ type DifficultyOption = {
   label: string;
   hint: string;
   band: string;
-  /** Illustrative word count for this track's band (mock, shown at the row's right). */
-  words: number;
 };
 
 /**
  * The dropdown's rows: an explicit "all" escape hatch ahead of the ten tracks. In the
  * multi-select the "all" row means an EMPTY selection (no restriction), so clearing
  * every track returns to it. Each row shows its CEFR band as a chip ahead of the name
- * and a mock total word count at the trailing edge. The list is static, so it renders
- * before the first feed page resolves.
+ * and its real word count at the trailing edge. The rows are static, so the list renders
+ * before the first feed page resolves; the counts arrive with that page.
  */
 const DIFFICULTY_OPTIONS: DifficultyOption[] = [
   {
@@ -271,14 +268,12 @@ const DIFFICULTY_OPTIONS: DifficultyOption[] = [
     // span if the CEFR list ever gains or loses an end. Empty here left the one row in the
     // list without a chip, which broke the column the other ten line up on.
     band: formatLevelBand(LEVELS),
-    words: MOCK_TOTAL_WORDS,
   },
   ...DIFFICULTY_TRACKS.map((track) => ({
     id: track.id,
     label: track.label,
     hint: track.hint,
     band: formatLevelBand(track.levels),
-    words: mockTrackWordCount(track.id),
   })),
 ];
 
@@ -325,11 +320,20 @@ function DifficultyDropdown({
   onChange,
   open,
   onOpenChange,
+  levelCounts,
+  catalogLevels,
+  total,
 }: {
   value: string;
   onChange: (next: string) => void;
   open: boolean;
   onOpenChange: (next: boolean) => void;
+  /** Words per CEFR level from the feed; undefined until the first page has loaded. */
+  levelCounts?: FeedPage["levelCounts"];
+  /** Levels the catalog has any word for: decides which tracks are on offer at all. */
+  catalogLevels?: FeedPage["levels"];
+  /** Every word under the current topic; undefined until the first page has loaded. */
+  total?: number;
 }) {
   const listId = useId();
   const committed = useMemo(() => parseDifficulty(value), [value]);
@@ -354,7 +358,19 @@ function DifficultyDropdown({
       return next;
     });
   const selectAll = () => setDraft(new Set());
+  // Every figure in the list is the catalog's own count — what the stream will actually
+  // serve for that choice — not a placeholder. A row's number is the words at its levels;
+  // the "tất cả" row shows the size of whatever is picked so far (the UNION of the picked
+  // tracks' levels: tracks overlap, so adding their sizes would double-count), and the
+  // whole topic again once nothing is picked. undefined = the first page has not arrived.
+  const countFor = (id: string): number | undefined => {
+    if (!levelCounts || !catalogLevels) return undefined;
+    if (id !== DIFFICULTY_ALL) return countTrackWords([id], levelCounts, catalogLevels);
+    return draft.size > 0 ? countTrackWords(draft, levelCounts, catalogLevels) : total;
+  };
   const pickRow = (id: string) => {
+    // Shared by tap and keyboard: an empty track cannot be chosen by either.
+    if (id !== DIFFICULTY_ALL && countFor(id) === 0) return;
     setTouched(true);
     if (id === DIFFICULTY_ALL) selectAll();
     else toggle(id);
@@ -373,14 +389,6 @@ function DifficultyDropdown({
     setTouched(false);
     onOpenChange(true);
   };
-
-  // Sum of the packs (tracks) picked so far this session. The "tất cả" row borrows this
-  // figure while a selection is pending, so it reads the combined size of the chosen
-  // packs; once the selection is cleared (tapping "tất cả") it falls back to MOCK_TOTAL.
-  const selectedTotal = useMemo(
-    () => [...draft].reduce((sum, id) => sum + mockTrackWordCount(id), 0),
-    [draft],
-  );
 
   // Move focus into the list once it mounts so arrow keys work without a tab stop.
   useEffect(() => {
@@ -474,10 +482,10 @@ function DifficultyDropdown({
             {DIFFICULTY_OPTIONS.map((option, index) => {
               const isSelected =
                 option.id === DIFFICULTY_ALL ? draft.size === 0 : draft.has(option.id);
-              // "tất cả" reports the combined size of the packs just chosen; with no
-              // selection pending it shows the whole library again.
-              const count =
-                option.id === DIFFICULTY_ALL && draft.size > 0 ? selectedTotal : option.words;
+              const count = countFor(option.id);
+              // A track the catalog cannot serve yet (its defining level has no words) shows
+              // 0 and is greyed: it stays on the ladder as a promise, but cannot be picked.
+              const unavailable = count === 0 && option.id !== DIFFICULTY_ALL;
               return (
                 <li
                   key={option.id}
@@ -486,6 +494,7 @@ function DifficultyDropdown({
                   aria-selected={isSelected}
                   data-active={isSelected || undefined}
                   data-cursor={index === cursor || undefined}
+                  aria-disabled={unavailable || undefined}
                   className="vocab-difficulty-option"
                   onClick={() => {
                     pickRow(option.id);
@@ -512,7 +521,7 @@ function DifficultyDropdown({
                   {/* key=count re-mounts the figure whenever the sum moves, which is what
                       (re)triggers the spring-and-flash CSS entrance on it. */}
                   <span className="vocab-difficulty-count" aria-hidden="true" key={count}>
-                    {count.toLocaleString()}
+                    {count === undefined ? "–" : count.toLocaleString("vi-VN")}
                   </span>
                 </li>
               );
@@ -679,6 +688,9 @@ export function FeedControls({
             onChange={(difficulty) => onFilters({ ...filters, difficulty })}
             open={difficultyOpen}
             onOpenChange={setDifficultyOpen}
+            levelCounts={metadata?.levelCounts}
+            catalogLevels={metadata?.levels}
+            total={metadata?.topicTotal}
           />
         </div>
         {/* Centre: the three transport controls as bare icons split by two hairlines,
