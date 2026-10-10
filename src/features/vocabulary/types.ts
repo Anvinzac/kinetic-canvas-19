@@ -35,6 +35,8 @@ export type FeedPage = {
   levelCounts: Partial<Record<VocabularyLevel, number>>;
   /** A few representative words per level, for the onboarding picker's samples. */
   levelSamples: Partial<Record<VocabularyLevel, { word: string; defVi: string }[]>>;
+  /** Total words under the page's topic filter, unlevelled words included. */
+  topicTotal: number;
 };
 export type FeedCursor = { position: number; revision?: string };
 /**
