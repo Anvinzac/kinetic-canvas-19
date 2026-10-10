@@ -1,0 +1,1 @@
+- Answer language is chosen per request from the Host header (lib/target-language.ts; decks in data/<locale>/); one deployment serves every language domain because Lovable has no per-project build vars.

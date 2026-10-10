@@ -2,7 +2,8 @@
 import { z } from "zod";
 import { LEVELS } from "../lib/schema";
 import { DIFFICULTY_IDS } from "../lib/difficulty";
-import { catalog, MAX_POSITION, readVocabularyPage } from "./catalog.server";
+import { catalogFor, MAX_POSITION, readVocabularyPage } from "./catalog.server";
+import { resolveTarget } from "../lib/target-language";
 
 const unsigned = (fallback: string, max: number) =>
   z
@@ -76,14 +77,15 @@ export function vocabularyResponse(request: Request): Response {
       },
       { status: 400, headers },
     );
-  if (parsed.data.revision && parsed.data.revision !== catalog.revision) {
+  const locale = resolveTarget(request.headers.get("host") ?? url.host);
+  if (parsed.data.revision && parsed.data.revision !== catalogFor(locale).revision) {
     return Response.json(
       { code: "CATALOG_CHANGED", error: "The vocabulary catalog changed. Start a fresh stream." },
       { status: 409, headers },
     );
   }
   try {
-    return Response.json(readVocabularyPage(parsed.data), { headers });
+    return Response.json(readVocabularyPage(parsed.data, locale), { headers });
   } catch {
     return Response.json(
       { code: "UNAVAILABLE", error: "Vocabulary is temporarily unavailable. Please retry." },

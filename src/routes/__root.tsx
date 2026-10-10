@@ -11,20 +11,28 @@ import { ErrorComponent } from "@/features/shell/components/ErrorComponent";
 import { NotFoundComponent } from "@/features/shell/components/NotFoundComponent";
 import { RootApp, RootShell } from "@/features/shell/components/RootDocument";
 import appCss from "../styles.css?url";
+import { getSiteLocale } from "@/features/vocabulary/api/site-locale.functions";
+import { resolveTarget, siteTitle } from "@/features/vocabulary/lib/target-language";
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
-  head: () => ({
+  // The visited address picks the answer language (hoa.* → Chinese, etc.).
+  loader: async () => ({
+    locale: typeof window === "undefined" ? await getSiteLocale() : resolveTarget(window.location.host),
+  }),
+  head: ({ loaderData }) => {
+    const title = siteTitle(loaderData?.locale ?? "en");
+    return {
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
       { name: "theme-color", content: "#0a0014" },
-      { title: "Chay Lá - Anh" },
+      { title },
       { name: "description", content: "Thêm xíu năng lượng cho câu chữ nè" },
-      { property: "og:title", content: "Chay Lá - Anh" },
+      { property: "og:title", content: title },
       { property: "og:description", content: "Thêm xíu năng lượng cho câu chữ nè" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "Chay Lá - Anh" },
+      { name: "twitter:title", content: title },
       { name: "twitter:description", content: "Thêm xíu năng lượng cho câu chữ nè" },
       {
         property: "og:image",
@@ -50,7 +58,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         href: "https://fonts.googleapis.com/css2?family=Inter:wght@400..900&family=Space+Grotesk:wght@400..700&family=Playfair+Display:ital,wght@0,400..900;1,700&family=JetBrains+Mono:wght@400..800&family=Dancing+Script:wght@400..700&family=Playpen+Sans:wght@400..800&family=Shantell+Sans:wght@400..800&family=Charm:wght@400;700&display=swap",
       },
     ],
-  }),
+    };
+  },
   shellComponent: RootShell,
   component: RootComponent,
   notFoundComponent: NotFoundComponent,

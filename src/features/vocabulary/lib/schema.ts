@@ -35,9 +35,11 @@ const wordSchema = z.object({
   word: z
     .string()
     .trim()
-    .min(2)
+    .min(1)
     .max(64)
-    .regex(/^[a-zA-Z]+(?:['’-][a-zA-Z]+)*$/),
+    // An English headword (2+ chars, letters with inner ' or -) or a Chinese one
+    // (one or more Han characters) for a locale deck served on its own domain.
+    .regex(/^(?:(?=.{2})[a-zA-Z]+(?:['’-][a-zA-Z]+)*|\p{Script=Han}+)$/u),
   defVi: z.string().trim().min(2).max(400),
   leadVi: optionalText(240),
   anticipateVi: optionalText(180),

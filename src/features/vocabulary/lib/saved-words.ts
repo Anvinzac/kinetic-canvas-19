@@ -8,13 +8,22 @@
  * Depends on: ./catalog-source, ./schema, ./history, ./reactions
  */
 
-import { catalog } from "./catalog-source";
+import { catalogFor } from "./catalog-source";
+import { resolveTarget } from "./target-language";
 import type { VocabularyWord } from "./schema";
 import { loadHistory } from "./history";
 import { getReactionSnapshot, getReactionWordIds, type ReactionKind } from "./reactions";
 
 /** Stable id → word index so reaction lookups never rescan the deck. */
-const wordsById = new Map<string, VocabularyWord>(catalog.words.map((word) => [word.id, word]));
+// Resolved lazily: saved lists are per-address (localStorage), so the deck is this host's.
+let byId: Map<string, VocabularyWord> | undefined;
+function wordsByIdMap(): Map<string, VocabularyWord> {
+  if (!byId) {
+    const host = typeof window === "undefined" ? "" : window.location.host;
+    byId = new Map(catalogFor(resolveTarget(host)).words.map((word) => [word.id, word]));
+  }
+  return byId;
+}
 
 /** One word on a saved page, plus the state that put it there. */
 export type SavedWord = {
@@ -46,7 +55,7 @@ function resolveSavedAt(
 
 /** Resolve a catalog word by id (undefined when the deck no longer holds it). */
 export function lookupWord(id: string): VocabularyWord | undefined {
-  return wordsById.get(id);
+  return wordsByIdMap().get(id);
 }
 
 /**
@@ -60,7 +69,7 @@ export function getWordsWithReaction(kind: ReactionKind): SavedWord[] {
   const history = loadHistory();
   const list: SavedWord[] = [];
   for (const id of getReactionWordIds(kind)) {
-    const word = wordsById.get(id);
+    const word = wordsByIdMap().get(id);
     if (!word) continue;
     const entry = getReactionSnapshot(id);
     list.push({
@@ -85,5 +94,5 @@ export function getFavoriteWords(): SavedWord[] {
 
 /** How many catalog words this device currently has on for one reaction. */
 export function countWordsWithReaction(kind: ReactionKind): number {
-  return getReactionWordIds(kind).filter((id) => wordsById.has(id)).length;
+  return getReactionWordIds(kind).filter((id) => wordsByIdMap().has(id)).length;
 }

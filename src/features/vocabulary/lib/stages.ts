@@ -93,9 +93,26 @@ export function buildStages(word: VocabularyWord, style: NarrativeStyle): Learni
       dataEmphasis: markers.length ? markers : undefined,
     });
   }
+  const hanCount = (word.word.match(/\p{Script=Han}/gu) ?? []).length;
+  if (hanCount > 0) {
+    // Chinese: the first character would give away half a 2-character word, so the
+    // clue is the character count plus the first pinyin letter.
+    const pinyinInitial = (word.ipa?.trim()[0] ?? "").toUpperCase();
+    stages.push({
+      id: "letters",
+      label: "Đếm chữ Hán",
+      text: pinyinInitial
+        ? `Gồm ${hanCount} chữ Hán, pinyin bắt đầu bằng ${pinyinInitial}`
+        : `Gồm ${hanCount} chữ Hán`,
+      lang: "vi",
+      secondaryEmphasis: pinyinInitial
+        ? { phrase: pinyinInitial, variant: INITIAL_EMPHASIS_VARIANT }
+        : undefined,
+    });
+  }
   const count = (word.word.match(/\p{L}/gu) ?? []).length;
   const initial = word.word[0].toUpperCase();
-  stages.push({
+  if (hanCount === 0) stages.push({
     id: "letters",
     label: "Đếm chữ cái",
     text: `Gồm ${count} chữ cái, bắt đầu bằng ${initial}`,
