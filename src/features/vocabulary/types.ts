@@ -31,6 +31,10 @@ export type FeedPage = {
   name: string;
   topics: string[];
   levels: VocabularyLevel[];
+  /** Words per CEFR level under the page's topic filter; sizes the difficulty picker. */
+  levelCounts: Partial<Record<VocabularyLevel, number>>;
+  /** A few representative words per level, for the onboarding picker's samples. */
+  levelSamples: Partial<Record<VocabularyLevel, { word: string; defVi: string }[]>>;
 };
 export type FeedCursor = { position: number; revision?: string };
 /**
