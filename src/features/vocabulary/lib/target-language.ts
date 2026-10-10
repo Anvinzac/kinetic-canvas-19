@@ -25,7 +25,7 @@ export function resolveTarget(host: string | null | undefined): TargetLocale {
 }
 
 const TITLES: Record<TargetLocale, string> = {
-  en: "Chay Lá - Anh",
+  en: "anh.chayLá",
   zh: "hoa.chayLá",
   ko: "hàn.chayLá",
   ja: "nhật.chayLá",
@@ -34,4 +34,21 @@ const TITLES: Record<TargetLocale, string> = {
 /** @param locale Deck locale. @returns Page title for that address. */
 export function siteTitle(locale: TargetLocale): string {
   return TITLES[locale];
+}
+
+/** Shared leaf metadata keeps browser and sharing titles aligned with the domain. */
+export function sitePageHead(locale: TargetLocale = "en", section = "", description = "Thêm xíu năng lượng cho câu chữ nè") {
+  const title = section ? `${section} — ${siteTitle(locale)}` : siteTitle(locale);
+  return {
+    meta: [
+      { title },
+      { name: "description", content: description },
+      { property: "og:title", content: title },
+      { property: "og:description", content: description },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: title },
+      { name: "twitter:description", content: description },
+    ],
+  };
 }

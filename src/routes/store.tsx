@@ -1,15 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { StorePage } from "@/features/ecosystem/components/StorePage";
+import { getSiteLocale } from "@/features/vocabulary/api/site-locale.functions";
+import { sitePageHead } from "@/features/vocabulary/lib/target-language";
 
 export const Route = createFileRoute("/store")({
-  head: () => ({
-    meta: [
-      { title: "Cửa hàng Chay Lá — anh.chayLá" },
-      {
-        name: "description",
-        content: "Mọi app trong hệ sinh thái Chay Lá, kèm ảnh màn hình và mô tả.",
-      },
-    ],
-  }),
+  loader: async () => ({ locale: await getSiteLocale() }),
+  head: ({ loaderData }) => sitePageHead(loaderData?.locale, "Cửa hàng Chay Lá", "Mọi app trong hệ sinh thái Chay Lá, kèm ảnh màn hình và mô tả."),
   component: StorePage,
 });
