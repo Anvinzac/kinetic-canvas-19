@@ -11,7 +11,7 @@
  * renders an empty stream.
  *
  * Exports: DifficultyTrack, DIFFICULTY_TRACKS, DIFFICULTY_IDS, DIFFICULTY_ALL,
- *          LEVEL_SAMPLE_PRIORITY,
+ *          LEVEL_SAMPLE_PRIORITY, MOCK_TOTAL_WORDS, mockTrackWordCount,
  *          difficultyLevels, formatLevelBand, countTrackWords,
  *          trackCeiling, isTrackAvailable
  * Depends on: ./schema
@@ -41,6 +41,37 @@ export type DifficultyTrack = {
 
 /** Sentinel for "no track chosen" — the endpoint accepts it alongside a track id. */
 export const DIFFICULTY_ALL = "";
+
+/**
+ * Illustrative pack sizes shown in the difficulty dropdown before the first feed page
+ * resolves (the real per-level counts arrive with the page metadata). These are
+ * aspirational targets for the deck, not a live tally — the feed endpoint's
+ * levelCounts replace them once loaded.
+ */
+export const MOCK_TOTAL_WORDS = 1200;
+
+const MOCK_TRACK_WORDS: Record<string, number> = {
+  "vo-long": 150,
+  "co-ban": 120,
+  "du-lich": 220,
+  "doc-hieu": 260,
+  "giao-tiep": 300,
+  "chuyen-sau": 180,
+  "nang-cao": 240,
+  "viet-lach": 200,
+  "du-hoc": 320,
+  "van-chuong": 210,
+};
+
+/**
+ * Illustrative word count for one track's dropdown row.
+ * @param trackId A difficulty track id
+ * @returns The mock pack size, 0 for an unknown id
+ * @pure true
+ */
+export function mockTrackWordCount(trackId: string): number {
+  return MOCK_TRACK_WORDS[trackId] ?? 0;
+}
 
 /**
  * Words that should appear first in the onboarding sample pool for each level.
