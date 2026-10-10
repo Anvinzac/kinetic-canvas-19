@@ -34,16 +34,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: title },
       { name: "twitter:description", content: "Thêm xíu năng lượng cho câu chữ nè" },
-      {
-        property: "og:image",
-        content:
-          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/48c8c6cc-2bcd-4632-9ca9-af6bf0155e74/id-preview-97829ef5--3adaf7f2-6c4c-403a-8f08-06ccb4e95507.lovable.app-1781719307239.png",
-      },
-      {
-        name: "twitter:image",
-        content:
-          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/48c8c6cc-2bcd-4632-9ca9-af6bf0155e74/id-preview-97829ef5--3adaf7f2-6c4c-403a-8f08-06ccb4e95507.lovable.app-1781719307239.png",
-      },
     ],
     links: [
       { rel: "stylesheet", href: appCss },

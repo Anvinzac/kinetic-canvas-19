@@ -1,1 +1,2 @@
 - Answer language is chosen per request from the Host header (lib/target-language.ts; decks in data/<locale>/); one deployment serves every language domain because Lovable has no per-project build vars.
+- Public leaf page metadata uses the shared sitePageHead helper with request-resolved locale; browser-only pages use data-only SSR so domain titles are correct before hydration.

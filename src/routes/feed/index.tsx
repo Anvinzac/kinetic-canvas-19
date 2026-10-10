@@ -1,17 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { VocabularyFeedPage } from "@/features/vocabulary/components/VocabularyFeedPage";
+import { getSiteLocale } from "@/features/vocabulary/api/site-locale.functions";
+import { sitePageHead } from "@/features/vocabulary/lib/target-language";
 
 export const Route = createFileRoute("/feed/")({
-  ssr: false,
-  head: () => ({
-    meta: [
-      { title: "anh.chayLá — A little English, endlessly" },
-      {
-        name: "description",
-        content:
-          "Discover English vocabulary through Vietnamese clues. A free, endlessly shuffled word feed with no sign-in required.",
-      },
-    ],
-  }),
+  ssr: "data-only",
+  loader: async () => ({ locale: await getSiteLocale() }),
+  head: ({ loaderData }) => sitePageHead(loaderData?.locale),
   component: VocabularyFeedPage,
 });

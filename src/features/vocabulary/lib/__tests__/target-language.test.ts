@@ -5,6 +5,8 @@ import { readVocabularyPage } from "../../api/catalog.server";
 describe("resolveTarget", () => {
   it("hoa.chayla.app serves Chinese", () => expect(resolveTarget("hoa.chayla.app")).toBe("zh"));
   it("anh.chayla.app serves English", () => expect(resolveTarget("anh.chayla.app")).toBe("en"));
+  it("han.chayla.app serves Korean", () => expect(resolveTarget("han.chayla.app")).toBe("ko"));
+  it("nhat.chayla.app serves Japanese", () => expect(resolveTarget("nhat.chayla.app")).toBe("ja"));
   it("unknown host falls back to English", () => expect(resolveTarget("foo.lovable.app")).toBe("en"));
   it("tolerates port and case", () => expect(resolveTarget("HOA.chayla.app:8080")).toBe("zh"));
   it("missing host falls back to English", () => expect(resolveTarget(null)).toBe("en"));
