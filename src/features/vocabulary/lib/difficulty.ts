@@ -11,7 +11,7 @@
  * renders an empty stream.
  *
  * Exports: DifficultyTrack, DIFFICULTY_TRACKS, DIFFICULTY_IDS, DIFFICULTY_ALL,
- *          LEVEL_SAMPLE_PRIORITY,
+ *          LEVEL_SAMPLE_PRIORITY, MOCK_TOTAL_WORDS, mockTrackWordCount,
  *          difficultyLevels, formatLevelBand, countTrackWords,
  *          trackCeiling, isTrackAvailable
  * Depends on: ./schema
