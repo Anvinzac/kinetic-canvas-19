@@ -251,6 +251,28 @@ function OptionPicker({
   );
 }
 
+/**
+ * Topic and answer-style pickers are temporarily out of the options sheet, leaving the
+ * theme picker on its own there. Nothing about them is deleted and neither filter is
+ * reset — whatever the reader already chose stays in effect — so flipping this back to
+ * true restores both controls exactly as they were.
+ */
+const SHOW_TOPIC_AND_STYLE_PICKERS: boolean = false;
+
+/**
+ * The theme picker's tone shortcut. "all" is the resting state; the other two keep only
+ * the pale or only the deep backdrops, which is a one-tap way to drop half the pool
+ * instead of unticking a dozen rows. A theme's tone is measured from its own gradient
+ * (presets.ts classifyBackdropTone), so these follow what a card actually paints.
+ */
+const TONE_TABS = [
+  { id: "all", label: "Tất cả" },
+  { id: "light", label: "Sáng" },
+  { id: "dark", label: "Tối" },
+] as const;
+
+type ToneTab = (typeof TONE_TABS)[number]["id"];
+
 function ThemePicker({
   value,
   onChange,
@@ -275,6 +297,24 @@ function ThemePicker({
     return new Set(ids.length && !ids.includes("mix") ? ids : allIds);
   }, [value, allIds]);
   const isAll = selected.size === allIds.length;
+  const lightIds = useMemo(
+    () => pool.filter((theme) => theme.tone === "light").map((theme) => theme.id),
+    [pool],
+  );
+  const darkIds = useMemo(
+    () => pool.filter((theme) => theme.tone === "dark").map((theme) => theme.id),
+    [pool],
+  );
+  // Derived, never stored: the tab reads the selection rather than keeping a second copy
+  // of it, so unticking one row by hand drops the tab back to no active state instead of
+  // leaving it claiming a filter that is no longer what is selected.
+  const tone: ToneTab | null = isAll
+    ? "all"
+    : lightIds.length === selected.size && lightIds.every((id) => selected.has(id))
+      ? "light"
+      : darkIds.length === selected.size && darkIds.every((id) => selected.has(id))
+        ? "dark"
+        : null;
   // Pool order keeps the chips and the joined value stable across toggles.
   const pickedThemes = useMemo(
     () => pool.filter((theme) => selected.has(theme.id)),
@@ -304,6 +344,14 @@ function ThemePicker({
     onChange(next.size === allIds.length ? "mix" : allIds.filter((id2) => next.has(id2)).join(","));
   }
 
+  function pickTone(next: ToneTab) {
+    const ids = next === "all" ? allIds : next === "light" ? lightIds : darkIds;
+    // The stream must always have something to wear, same rule toggle() keeps. A pool
+    // with no theme of that tone leaves the tab disabled, so this is belt and braces.
+    if (!ids.length) return;
+    onChange(ids.length === allIds.length ? "mix" : ids.join(","));
+  }
+
   const summary = isAll
     ? "Trộn giao diện"
     : pickedThemes.length === 1
@@ -318,9 +366,34 @@ function ThemePicker({
         if (event.key === "Escape") setOpen(false);
       }}
     >
-      <span className="vocab-picker-label" id={labelId}>
-        Giao diện
-      </span>
+      <div className="vocab-picker-head">
+        <span className="vocab-picker-label" id={labelId}>
+          Giao diện
+        </span>
+        <div
+          className="vocab-tone-tabs"
+          role="group"
+          aria-label="Lọc giao diện theo nền sáng hoặc tối"
+        >
+          {TONE_TABS.map((tab) => {
+            const empty =
+              tab.id === "light" ? !lightIds.length : tab.id === "dark" && !darkIds.length;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                className="vocab-tone-tab"
+                data-on={tone === tab.id || undefined}
+                aria-pressed={tone === tab.id}
+                disabled={empty}
+                onClick={() => pickTone(tab.id)}
+              >
+                {tab.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
       <button
         type="button"
         className="vocab-picker-trigger"
@@ -966,42 +1039,50 @@ export function FeedControls({
             Xem hết mọi từ, bạn có thể xóa lịch sử xem để bắt đầu lại.
           </p>
           <div className="vocab-options-secondary">
-            <span className="vocab-group-label">Chủ đề, giao diện và cách hiện đáp án</span>
+            {/* With only the theme picker left, the picker carries its own label and this
+                heading would just say the same word twice. */}
+            {SHOW_TOPIC_AND_STYLE_PICKERS && (
+              <span className="vocab-group-label">Chủ đề, giao diện và cách hiện đáp án</span>
+            )}
             <div className="vocab-select-grid">
-              <OptionPicker
-                label="Chủ đề"
-                value={filters.topic}
-                options={[
-                  { id: "", label: "Mọi chủ đề" },
-                  ...(metadata?.topics ?? []).map((topic) => ({
-                    id: topic,
-                    label: topicLabelVi(topic),
-                  })),
-                ]}
-                onChange={(topic) => onFilters({ ...filters, topic })}
-              />
+              {SHOW_TOPIC_AND_STYLE_PICKERS && (
+                <OptionPicker
+                  label="Chủ đề"
+                  value={filters.topic}
+                  options={[
+                    { id: "", label: "Mọi chủ đề" },
+                    ...(metadata?.topics ?? []).map((topic) => ({
+                      id: topic,
+                      label: topicLabelVi(topic),
+                    })),
+                  ]}
+                  onChange={(topic) => onFilters({ ...filters, topic })}
+                />
+              )}
               <ThemePicker
                 value={presentation.theme}
                 onChange={(theme) => onPresentation({ ...presentation, theme })}
                 dialect={presentation.dialect}
               />
-              <OptionPicker
-                label="Cách hiện"
-                value={presentation.style}
-                options={[
-                  { id: "mix", label: "Trộn cách hiện" },
-                  ...stylePool(presentation.dialect).map((style) => ({
-                    id: style.id,
-                    label:
-                      presentation.dialect === "douyin"
-                        ? douyinStyleLabelVi(style.id, style.label)
-                        : styleLabelVi(style.id, style.label),
-                  })),
-                ]}
-                onChange={(style) =>
-                  onPresentation({ ...presentation, style: style as NarrativeStyle | "mix" })
-                }
-              />
+              {SHOW_TOPIC_AND_STYLE_PICKERS && (
+                <OptionPicker
+                  label="Cách hiện"
+                  value={presentation.style}
+                  options={[
+                    { id: "mix", label: "Trộn cách hiện" },
+                    ...stylePool(presentation.dialect).map((style) => ({
+                      id: style.id,
+                      label:
+                        presentation.dialect === "douyin"
+                          ? douyinStyleLabelVi(style.id, style.label)
+                          : styleLabelVi(style.id, style.label),
+                    })),
+                  ]}
+                  onChange={(style) =>
+                    onPresentation({ ...presentation, style: style as NarrativeStyle | "mix" })
+                  }
+                />
+              )}
             </div>
           </div>
           <label className="vocab-autoplay">

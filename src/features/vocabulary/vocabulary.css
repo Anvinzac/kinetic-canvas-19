@@ -758,6 +758,13 @@
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 16px;
 }
+/* The topic and answer-style pickers are temporarily out of the sheet, which leaves the
+   theme picker as the grid's only child; it takes the whole row rather than sitting in a
+   half-width column with dead space beside it. Keyed on the child count, not on a flag,
+   so putting the other two back needs no change here. */
+.vocab-select-grid:has(> :only-child) {
+  grid-template-columns: minmax(0, 1fr);
+}
 .vocab-select-grid label {
   display: flex;
   flex-direction: column;
@@ -809,6 +816,53 @@
   font-weight: 600;
   color: var(--shell-text-soft);
   align-self: start;
+}
+/* The picker's own heading: its label, and immediately beside it the tone shortcut. */
+.vocab-picker-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.vocab-tone-tabs {
+  display: inline-flex;
+  flex: none;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid var(--shell-line);
+  border-radius: 999px;
+  background: var(--shell-well);
+}
+.vocab-tone-tab {
+  padding: 4px 10px;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: var(--shell-text-mute);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 650;
+  line-height: 1.3;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color var(--dur-quick) var(--ease-out),
+    color var(--dur-quick) var(--ease-out);
+}
+.vocab-tone-tab:hover:not(:disabled):not([data-on]) {
+  color: var(--shell-text);
+}
+.vocab-tone-tab[data-on] {
+  background: var(--vocab-accent);
+  color: var(--vocab-button-ink);
+}
+/* No theme of that tone in this pool — the stream would have nothing to wear. */
+.vocab-tone-tab:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.vocab-tone-tab:focus-visible {
+  outline: 2px solid var(--vocab-accent);
+  outline-offset: 1px;
 }
 .vocab-picker-trigger {
   display: flex;
