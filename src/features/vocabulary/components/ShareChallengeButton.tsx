@@ -2,9 +2,13 @@
  * The "challenge a friend" button on the meaning panel.
  *
  * Sends the word's share link (`/w/<code>`), never the word: the whole point is
- * that the message gives nothing away, so the receiver has to guess. Uses the
- * native share sheet where there is one — on a phone that is the fastest route
- * into a chat thread — and falls back to the clipboard everywhere else.
+ * that the message gives nothing away, so the receiver has to guess. The link is
+ * always put on the clipboard first — so there is a fallback even if the sheet is
+ * dismissed — and on a phone the native share sheet is then raised on top of it as
+ * the fastest route into a chat thread.
+ *
+ * The shape — a tab cropped flush into the panel's bottom-right corner — is entirely
+ * vocabulary.css's; this file only supplies the boxes it paints.
  *
  * Exports: ShareChallengeButton
  * Depends on: lucide icons, vocabulary.css
@@ -29,7 +33,6 @@ function challengeText(url: string): string {
 export function ShareChallengeButton({ code }: { code?: string }): React.ReactElement | null {
   const [done, setDone] = useState(false);
   const timer = useRef<number | null>(null);
-
   useEffect(
     () => () => {
       if (timer.current !== null) window.clearTimeout(timer.current);
@@ -48,18 +51,27 @@ export function ShareChallengeButton({ code }: { code?: string }): React.ReactEl
   async function share() {
     const url = `${window.location.origin}/w/${code}`;
     const text = challengeText(url);
+    // Copy the bare link first, always: no teaser text, just the URL, so a paste
+    // anywhere is clean. This guarantees the link survives even when the share
+    // sheet is cancelled or the platform has no sheet at all. clipboard.writeText
+    // does not consume the tap's transient activation, so navigator.share below
+    // is still allowed to open.
     try {
-      // The share sheet is the point on a phone; `share` resolves when the sheet
-      // closes, and rejects on cancel — which is not an error worth reporting.
-      if (navigator.share) {
-        await navigator.share({ title: "Đoán từ này đi!", text });
-        return;
-      }
-      await navigator.clipboard.writeText(text);
+      await navigator.clipboard.writeText(url);
       confirm();
     } catch {
-      // Cancelled, or a browser that refuses both. Leave the card untouched
-      // rather than claiming something was copied.
+      // Clipboard blocked (insecure context / permission denied): fall through to
+      // the share sheet, which carries the same link, rather than doing nothing.
+    }
+    // Then raise the native sheet where there is one, with the teaser message.
+    // It resolves on close and rejects on cancel — neither is worth reporting,
+    // since the link is already copied.
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: "Đoán từ này đi!", text });
+      } catch {
+        // Dismissed by the user; the clipboard already has the link.
+      }
     }
   }
 
@@ -73,8 +85,11 @@ export function ShareChallengeButton({ code }: { code?: string }): React.ReactEl
         aria-label={done ? "Đã chép link thách đố" : "Chia sẻ để thách bạn bè đoán từ này"}
         title="Thách bạn bè đoán từ này"
       >
-        {done ? <Check size={17} /> : <Share2 size={17} />}
-        <span className="vocab-share-label">{done ? "Đã chép!" : "Chia sẻ"}</span>
+        <span className="vocab-share-face-bg" aria-hidden="true" />
+        <span className="vocab-share-face">
+          {done ? <Check size={15} /> : <Share2 size={15} />}
+          <span className="vocab-share-label">{done ? "Đã chép!" : "Chia sẻ"}</span>
+        </span>
       </button>
     </div>
   );

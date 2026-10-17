@@ -259,11 +259,10 @@ export function VocabularyStage({
             reducedMotion ? { duration: 0 } : { ...SPRING.gentle, delay: DETAILS_DELAY_SECONDS }
           }
         >
-          {/* The text scrolls in here, not on the panel itself, so the share badge
-              below can hang off the panel's bottom edge: a child of a scroll
-              container is clipped by it and could never straddle the border.
-              `details` follows the scroller, because its one job is resetting
-              scrollTop when the word changes. */}
+          {/* The text scrolls in here, not on the panel itself, so the share leaf
+              seated in the panel's corner stays put instead of scrolling away with
+              the definition. `details` follows the scroller, because its one job is
+              resetting scrollTop when the word changes. */}
           <div className="vocab-reveal-scroll" ref={details}>
             {(word.ipa || word.pos) && (
               <p className="vocab-pronunciation" lang="en">

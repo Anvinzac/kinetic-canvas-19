@@ -8,6 +8,10 @@
   --vocab-accent-alt: var(--citrus);
   --vocab-button-ink: #14101f;
 
+  /* The share tab's seat in the meaning panel's bottom-right corner. Its height is
+     also what the panel reserves above itself, so the two cannot disagree. */
+  --vocab-share-h: 40px;
+
   /* Bottom chrome, as one stack measured from the card's bottom edge: the clearance under
      the button row, the row's own height, the gap up to the page-progress row, and that
      row's height. `--vocab-chrome-progress-bottom` and `--vocab-chrome-top` are derived, so
@@ -1765,13 +1769,19 @@
   font-size: clamp(16px, 1.9vw, 21px);
   line-height: 1.6;
   --vocab-reveal-pad-y: 14px;
-  /* The share badge's upper ~45% sits inside this box; the room for it is reserved
-     on .vocab-reveal-scroll below, NOT by this padding — two responsive tiers
-     re-declare the `padding` shorthand, so anything set here is wiped at exactly
-     the sizes where the panel hugs its content and the slack is needed most. */
-  --vocab-reveal-badge-room: 20px;
+  /* Keeps the last line of the definition out from under the share leaf seated in the
+     corner. The leaf stands on the padding box's bottom edge, so only the part of it
+     above this panel's own bottom padding has to be cleared — and that padding differs
+     per tier, which is why this is derived from the tier's variable instead of being a
+     fixed number. Kept off the `padding` shorthand for the same reason: two responsive
+     tiers re-declare it, which would wipe a value set here at exactly the sizes where
+     the panel hugs its content and the slack is needed most. */
+  --vocab-reveal-badge-room: calc(var(--vocab-share-h) - var(--vocab-reveal-pad-y) + 10px);
   padding: var(--vocab-reveal-pad-y) 18px;
-  border-radius: 20px;
+  /* Named, because the share leaf's corner is clipped to this same arc one border in.
+     A literal in both places would let the nest drift the moment one of them changed. */
+  --vocab-reveal-radius: 20px;
+  border-radius: var(--vocab-reveal-radius);
   border: 1px solid color-mix(in srgb, var(--vocab-ink) 14%, transparent);
   box-shadow: 0 18px 50px -18px #0007;
   /* The veil uses the palette's contrasting neutral, so it deepens behind light ink
@@ -4516,7 +4526,11 @@
 }
 /* The clear zone is shorter than a phone screen, so the meaning panel takes the
    compact rhythm and never shows a scrollbar in a video. */
+.vocab-card[data-export] .vocab-share-dock {
+  display: none;
+}
 .vocab-card[data-export] .vocab-reveal-details {
+  --vocab-reveal-badge-room: 0px;
   width: 94%;
   max-height: calc(50% - var(--export-stage-bottom-band));
   padding: 2.6cqi 3.6cqi;
@@ -7093,91 +7107,124 @@
   scrollbar-width: thin;
 }
 
-/* ── Share-a-challenge button ────────────────────────────────────────────────
-   Sits in the meaning panel's bottom-right corner. Sticky rather than absolute:
-   the panel scrolls when a definition is long, and an absolutely positioned
-   child would scroll away with the text instead of staying in the corner. */
-/* A badge on the panel's bottom edge: mostly outside, so it reads as attached to
-   the panel rather than as another line of its content. Absolute against the
-   panel (which is itself positioned), and the panel's overflow is visible so the
-   overhanging half is not clipped. */
+/* ── Share-a-challenge button ──────────────────────────────
+   A tab set into the meaning panel's bottom-right corner. Two of its four corners are
+   drawn, both on the panel's own radius: the top-left one, and the bottom-right one —
+   which is literally the panel's arc rather than a radius of the tab's. The other two
+   are not corners at all, just where the tab runs off the panel's right and bottom
+   edges.
+
+   The dock is what buys that. It sits on the panel's inner corner and clips to the
+   panel's own arc, so the tab's right and bottom edges are shaped by the panel itself
+   rather than by radii guessed to match it — the face bleeds past both and never draws
+   them. What it does draw, the top edge and the rounded top-left, stays inside the
+   dock's padding, which is why the dock is padded wider and taller than the button. */
 .vocab-share-dock {
   position: absolute;
-  right: 16px;
+  /* An absolute child is offset from the panel's PADDING box, so zero on both of
+     these already means flush against the inner edge of the panel's border. */
+  right: 0;
   bottom: 0;
-  /* Just over half of the badge sits below the panel's edge. */
-  transform: translateY(58%);
-  pointer-events: none;
-}
-.vocab-share-button {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  min-height: 36px;
-  padding: 0 14px;
-  border: 0;
-  border-radius: 999px;
-  background: var(--vocab-accent);
-  color: var(--vocab-button-ink);
-  font-family: "Inter", sans-serif;
-  font-size: 12.5px;
-  font-weight: 750;
-  letter-spacing: -0.01em;
-  pointer-events: auto;
-  box-shadow:
-    0 6px 18px #0000005c,
-    inset 0 1px 0 #ffffff4d;
-  transition:
-    transform var(--dur-move) var(--ease-spring),
-    background var(--dur-quick) var(--ease-out);
-}
-/* One ring that breathes outward: enough to catch the eye on arrival without
-   competing with the answer word for attention. */
-.vocab-share-button::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  border: 2px solid var(--vocab-accent);
-  animation: vocab-share-ring 2800ms var(--ease-out) infinite;
+  /* Room for the tab's shadow, which falls up and to the left — the two sides that
+     are not against the panel's border. Padding, so the button itself stays in the
+     corner. */
+  padding: 12px 0 0 9px;
+  /* The panel's arc, one border in from its outer one. */
+  border-bottom-right-radius: calc(var(--vocab-reveal-radius) - 1px);
+  overflow: hidden;
   pointer-events: none;
 }
 .vocab-share-button {
   position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  height: var(--vocab-share-h);
+  padding: 0 15px;
+  border: 0;
+  background: none;
+  color: var(--vocab-button-ink);
+  font-family: "Inter", sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.011em;
+  white-space: nowrap;
+  pointer-events: auto;
+  /* Pinned at the corner it is set into: pressing from the default centre origin
+     would lift the tab off the panel's edges and open a hairline gap along them. */
+  transform-origin: bottom right;
+  transition: transform var(--dur-move) var(--ease-spring);
 }
-.vocab-share-button:hover {
-  transform: translateY(-1px);
+
+/* The tab's face. Bled past the dock on the two edges the panel is to crop, and
+   square there for the same reason — nothing of those corners can ever show, and the
+   one place a curve does meet the panel's corner it is the panel's arc that draws it,
+   exactly rather than approximately. */
+.vocab-share-face-bg {
+  position: absolute;
+  inset: 0 -2px -2px 0;
+  /* The same arc the dock crops the opposite corner to, so the tab's two drawn
+     corners are the panel's own radius and read as a pair. */
+  border-radius: calc(var(--vocab-reveal-radius) - 1px) 0 0 0;
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--vocab-accent) 86%, #fff),
+    var(--vocab-accent) 58%,
+    color-mix(in srgb, var(--vocab-accent) 88%, #000)
+  );
+  /* The outer shadow only falls up and to the left: the other two edges are against
+     the panel's own border, where there is nothing to cast onto. */
+  box-shadow:
+    -2px -3px 11px -5px #00000066,
+    inset 0 1.5px 0 #ffffff8a,
+    inset 0 -7px 10px -9px #0000004d,
+    inset 0 0 0 1px #ffffff2b;
+  transition:
+    background var(--dur-quick) var(--ease-out),
+    filter var(--dur-quick) var(--ease-out);
+}
+.vocab-share-face {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.vocab-share-face svg {
+  display: block;
+  flex: none;
+}
+.vocab-share-button:hover .vocab-share-face-bg {
+  filter: brightness(1.06);
 }
 .vocab-share-button:active {
-  transform: scale(0.95);
+  transform: scale(0.97);
   transition-duration: var(--dur-press);
 }
+/* The ring is drawn INSIDE the face: an outline would be cut off by the dock's clip
+   on the two edges that sit against the panel's border. */
 .vocab-share-button:focus-visible {
-  outline: 2px solid var(--shell-text);
-  outline-offset: 3px;
+  outline: none;
 }
-/* Confirmed: the ring stops, because the call to action has been answered. */
-.vocab-share-button[data-done] {
-  background: var(--mint);
+.vocab-share-button:focus-visible .vocab-share-face-bg {
+  box-shadow:
+    -2px -3px 11px -5px #00000066,
+    inset 0 0 0 2px var(--vocab-button-ink);
 }
-.vocab-share-button[data-done]::after {
-  animation: none;
-  opacity: 0;
-}
-@keyframes vocab-share-ring {
-  0% {
-    opacity: 0.55;
-    transform: scale(1);
-  }
-  70%,
-  100% {
-    opacity: 0;
-    transform: scale(1.35);
-  }
+/* Confirmed: the same accent, settled a step toward the ink, so a dark card and a
+   light card both shift without introducing a second hue. */
+.vocab-share-button[data-done] .vocab-share-face-bg {
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--vocab-accent) 74%, var(--vocab-button-ink)),
+    color-mix(in srgb, var(--vocab-accent) 82%, var(--vocab-button-ink)) 58%,
+    color-mix(in srgb, var(--vocab-accent) 70%, var(--vocab-button-ink))
+  );
 }
 @media (prefers-reduced-motion: reduce) {
-  .vocab-share-button::after {
-    animation: none;
-    opacity: 0;
+  .vocab-share-button {
+    transition: none;
   }
 }
