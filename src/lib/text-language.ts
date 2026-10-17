@@ -10,6 +10,7 @@ export {
   getDataEmphasisWordIndexes,
   getDataEmphasisWordSpans,
   getEmphasisPhraseKeysForLayout,
+  getEmphasizedRunLayoutPhraseKeys,
   getEmphasizedRunPhraseKeys,
   getSpecialPoeticWordIndexes,
   getTextPageWordLimit,

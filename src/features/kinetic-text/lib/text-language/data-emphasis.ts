@@ -1,7 +1,7 @@
 /**
  * Upstream (data-provided) emphasis phrase matching.
  *
- * Exports: getDataEmphasisWordIndexes, getDataEmphasisWordSpans, getEmphasisPhraseKeysForLayout, getEmphasizedRunPhraseKeys
+ * Exports: getDataEmphasisWordIndexes, getDataEmphasisWordSpans, getEmphasisPhraseKeysForLayout, getEmphasizedRunPhraseKeys, getEmphasizedRunLayoutPhraseKeys
  * Depends on: text-language/vietnamese-phrases (compound token keys)
  */
 
@@ -140,4 +140,26 @@ export function getEmphasizedRunPhraseKeys(words: string[], emphasized: Set<numb
   if (run.length >= 2) runs.push(run);
 
   return runs;
+}
+
+/**
+ * The run keys the LINE PACKER may treat as unbreakable: runs of at most two tokens.
+ *
+ * A run of three or more highlighted tokens is a sweep of a sentence, not a compound.
+ * Glued whole it becomes an unbreakable block eight or ten em wide that no number of
+ * extra lines can fit at reading size — the very cram the measured layout exists to
+ * avoid. Splitting one across lines costs only its shared emphasis effect, which the
+ * full keys keep anyway: every syllable still hashes one effect whether or not they
+ * share a line. Words the data authored long ("Phan_Xi_Păng") reach the packer through
+ * `boundPhrases`, at any length, and stay unbreakable.
+ * @param words - tokenized page text
+ * @param emphasized - highlighted token indexes
+ * @returns The run keys of two tokens or fewer
+ * @pure true
+ */
+export function getEmphasizedRunLayoutPhraseKeys(
+  words: string[],
+  emphasized: Set<number>,
+): string[][] {
+  return getEmphasizedRunPhraseKeys(words, emphasized).filter((keys) => keys.length <= 2);
 }

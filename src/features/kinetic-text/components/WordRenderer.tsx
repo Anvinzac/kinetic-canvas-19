@@ -12,6 +12,7 @@ import {
   getAuraColor,
   getEmphasisInnerAnimation,
   getEmphasisTextShadow,
+  EMPHASIS_FONT_SCALE,
   getEmphasisVariant,
   isDimEmphasisColor,
   type EmphasisVariant,
@@ -141,7 +142,10 @@ export function AnimatedWord({
         textAlign: spotlightWord ? "center" : undefined,
         color: wordColor,
         fontWeight: important ? 900 : spec.weight,
-        fontSize: important ? "1.08em" : undefined,
+        // NOT the emphasis scale — it is on the glyph span below, so that the `em`
+        // lengths in the effect CSS (the frame's padding, the underline's bar) mean the
+        // same length here as anywhere else on the line. Declaring it here stretched
+        // every one of them by the scale.
         overflowWrap: "normal",
         whiteSpace: "nowrap",
         wordBreak: "normal",
@@ -182,7 +186,17 @@ export function AnimatedWord({
             : undefined,
         }}
       >
-        {word}
+        {/* The emphasis scale lives here, on the glyphs alone. An inline-block sizes
+            itself to the larger text and grows the line box with it, so nothing is
+            cropped, while the spacing outside keeps the line's own em. */}
+        <span
+          style={{
+            display: "inline-block",
+            fontSize: important ? `${EMPHASIS_FONT_SCALE}em` : undefined,
+          }}
+        >
+          {word}
+        </span>
       </span>
     </motion.span>
   );

@@ -7,6 +7,20 @@
 
 import { getStableNumber } from "./stable-hash";
 
+/**
+ * How much larger an emphasised word is drawn than the text around it.
+ *
+ * Applied via `font-size` rather than `transform: scale`, so the extra width occupies
+ * real layout space and an enlarged word cannot overlap its neighbours. It is declared
+ * on the GLYPH span alone — never on a box that also carries spacing — or every `em`
+ * length on that box (a margin, an effect's padding, an underline's thickness) would
+ * silently come out this much longer than it was written.
+ *
+ * One definition on purpose: the feed and the preview each used to carry their own
+ * literal, 1.12 and 1.08, which is the same design idea written twice and drifted.
+ */
+export const EMPHASIS_FONT_SCALE = 1.12;
+
 export const EMPHASIS_VARIANTS = [
   "color",
   "sweep",
@@ -29,8 +43,10 @@ export const EMPHASIS_VARIANTS = [
 // outline, fringe and flash are NOT auras and belong in this set: outline is a stroke
 // plus a text-clipped fill (nothing blurred behind the word), fringe is a drop-shadow
 // offset that decays to zero, flash is a brightness swell capped at 1.55. Leaving them
-// out would let the dim-palette filter erase a style's own signature effect — the
-// authored `outline` on the storytelling reveal — and quietly fall back to something else.
+// out would let the dim-palette filter erase a style's own effect and quietly fall back
+// to something else. `outline` stays listed here because this set is about LUMINOSITY
+// only; whether it may be drawn at all is a separate question about the script, decided
+// by the glyph-stroke gate in getEmphasisVariant.
 export const NON_LUMINOUS_EMPHASIS_VARIANTS = [
   "color",
   "sweep",
@@ -46,9 +62,45 @@ export const NON_LUMINOUS_EMPHASIS_VARIANTS = [
 export type EmphasisVariant = (typeof EMPHASIS_VARIANTS)[number];
 
 /**
+ * Effects drawn by stroking the glyph's own contours (-webkit-text-stroke).
+ *
+ * These only read as "one hollow character filling in" when a character IS one shape.
+ * A Han glyph is: it is drawn as a single dense block. Latin — and Vietnamese most of
+ * all — is not. `ế` is a base `e` plus a circumflex plus an acute, three separate
+ * contours, and the stroke outlines every one of them, so a tone mark grows its own
+ * halo and the counters of `ổ` `ể` `đ` close up. The effect is not broken; it is being
+ * asked to do something the script cannot support.
+ */
+export const GLYPH_STROKE_EMPHASIS_VARIANTS: readonly EmphasisVariant[] = ["outline"];
+
+/** A Han character — the one script whose glyphs are a single unified shape. */
+const HAN_GLYPH = /\p{Script=Han}/u;
+/** Every Han glyph, so what is left can be tested for letters of any other script.
+ *  Written as a strip-then-test rather than a set-difference class: the `v` flag that
+ *  would express the difference directly is a parse error on older Safari, and a regex
+ *  literal that fails to parse takes the whole module down with it. */
+const HAN_GLYPHS = /\p{Script=Han}/gu;
+const ANY_LETTER = /\p{L}/u;
+
+/**
+ * Whether text may be drawn with a contour-stroking effect.
+ *
+ * Deliberately strict rather than "mostly Han": the stroke is applied to the glyphs in
+ * front of the reader, so ONE Latin letter in the run is one letter drawn badly. A run
+ * qualifies only when it has a Han glyph and no letter of any other script.
+ * @param text - the text the effect would be drawn on
+ * @returns true when every letter in it is Han
+ * @pure true
+ */
+export function isGlyphStrokeSafeText(text: string): boolean {
+  return HAN_GLYPH.test(text) && !ANY_LETTER.test(text.replace(HAN_GLYPHS, ""));
+}
+
+/**
  * Pick a stable emphasis visual variant for a word/phrase anchor.
  * @param text - text argument
- * @param emphasisSeed - emphasisSeed argument
+ * @param emphasisSeed - the run's own text. It seeds the hash AND is the text the
+ *   effect will be drawn on, so the glyph-stroke gate reads its script from here
  * @param anchorIndex - anchorIndex argument
  * @param allowLuminous - allowLuminous argument
  * @param pool - the effects a surface has authored for this slot; the luminous gate
@@ -66,8 +118,17 @@ export function getEmphasisVariant(
   const requested: readonly EmphasisVariant[] =
     pool && pool.length > 0 ? pool : allowLuminous ? EMPHASIS_VARIANTS : nonLuminous;
   const allowed = allowLuminous ? requested : requested.filter((v) => nonLuminous.includes(v));
+  // The script gate FILTERS, exactly as the luminous gate does, so neither an authored
+  // pool nor the fallback below can hand a contour-stroking effect to a script whose
+  // characters are not one shape. `emphasisSeed` is the run's own text at every call
+  // site, which is what the effect would be drawn on.
+  const drawable = (list: readonly EmphasisVariant[]) =>
+    isGlyphStrokeSafeText(emphasisSeed)
+      ? list
+      : list.filter((v) => !GLYPH_STROKE_EMPHASIS_VARIANTS.includes(v));
+  const usable = drawable(allowed);
   // A pool authored entirely out of auras still has to draw something on a dim color.
-  const final = allowed.length > 0 ? allowed : nonLuminous;
+  const final = usable.length > 0 ? usable : drawable(nonLuminous);
   return final[getStableNumber(`${text}|${emphasisSeed}|${anchorIndex}`) % final.length];
 }
 

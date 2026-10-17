@@ -6,6 +6,8 @@
  */
 
 import {
+  CLOSING_PUNCTUATION_CLASS,
+  endsWithPunctuation,
   getPunctuationPhraseEdges,
   getTextPageWordLimit,
   getWords,
@@ -34,6 +36,35 @@ type ClauseBreakKind = "strong" | "weak" | "none";
 const MIN_STANDALONE_PAGE_WORDS = 3;
 
 /**
+ * The fewest real syllables a page may hold when it is NOT the only page of its block.
+ *
+ * This is an invariant on the RESULT, not one more rule about where to cut. Every guard
+ * in this file before it decides whether to make a particular break — and each only
+ * covers the way of making a bad page that was known when it was written, which is how a
+ * scene containing a single `”` reached a reader. This one looks at the finished pages
+ * and refuses any that are not worth showing, whatever produced them.
+ *
+ * "Real" means a token with a letter or digit in it: pure punctuation counts for nothing,
+ * so a page made only of closing marks is always below the floor and always merged.
+ */
+const MIN_PAGE_SYLLABLES = 4;
+
+/** A token carries a syllable only if something in it is a letter or a digit. */
+const HAS_GLYPH = /[\p{L}\p{N}]/u;
+
+/**
+ * A full stop between two digits (`1.000`) is part of a number, not the end of a
+ * sentence. The splitter below masks these before it looks for sentence ends — the
+ * phrase-edge detector already honours the same rule, and the two must agree.
+ */
+const DECIMAL_POINT = /(\d)\.(\d)/g;
+/** Stand-in for a masked decimal point. Deck and post text never contains a NUL. */
+const DECIMAL_MASK = "\u0000";
+
+/** Sentence, through any closing punctuation that rides on its final word. */
+const SENTENCE = new RegExp(`[^.!?]+[.!?]+${CLOSING_PUNCTUATION_CLASS}*|[^.!?]+$`, "gu");
+
+/**
  * A sentence only earns a clause break once it reaches this multiple of the
  * page word budget (Vietnamese 20+ words, English 14+ words). The budget
  * itself is a soft preference — text is never split at an arbitrary word count.
@@ -44,13 +75,13 @@ const LONG_SENTENCE_WORD_MULTIPLIER = 2;
 const COMPOUND_HYPHEN_PATTERN = /^[-–]+$/;
 
 /** Strong clause endings (`;`, `:`, em-dash) that may end a page on a long sentence. */
-const STRONG_CLAUSE_ENDING_PATTERN = /(?:[;:]|—+|--+)["')\]]*$/;
+const STRONG_CLAUSE_ENDING_PATTERN = endsWithPunctuation("[;:]|—+|--+");
 
 /** Weak clause endings (`,`): never a page end — commas sit inside clauses. */
-const WEAK_CLAUSE_ENDING_PATTERN = /,["')\]]*$/;
+const WEAK_CLAUSE_ENDING_PATTERN = endsWithPunctuation(",");
 
 /** Vietnamese colon intros (e.g. `Nhỏ thôi:`) stay glued to their clause. */
-const VIETNAMESE_COLON_ENDING_PATTERN = /:["')\]]*$/;
+const VIETNAMESE_COLON_ENDING_PATTERN = endsWithPunctuation(":");
 
 /** Vietnamese conjunctions that may open a page in a very long sentence. */
 const VIETNAMESE_CLAUSE_CONJUNCTIONS = [
@@ -89,7 +120,11 @@ export function paginateText(text: string, options: PaginateOptions = {}): strin
     .filter(Boolean);
   if (blocks.length === 0) return [""];
 
-  return mergeShortTextPages(blocks.flatMap((block) => paginateTextBlock(block, options)));
+  // Per block, not across: a block boundary is the author's own line break, and nothing
+  // here may pull text through one.
+  return blocks.flatMap((block) =>
+    enforceMinimumPageSize(mergeShortTextPages(paginateTextBlock(block, options))),
+  );
 }
 
 /**
@@ -103,7 +138,12 @@ export function paginateText(text: string, options: PaginateOptions = {}): strin
 function paginateTextBlock(text: string, options: PaginateOptions): RawTextPage[] {
   const wordLimit = getTextPageWordLimit(text);
   const isVietnamese = isLikelyVietnameseText(text);
-  const sentences = text.match(/[^.!?]+[.!?]+["')\]]*|[^.!?]+$/g) ?? [text];
+  // Mask decimal points so a number is never mistaken for a sentence end, then restore
+  // them before anything else reads the text.
+  const masked = text.replace(DECIMAL_POINT, `$1${DECIMAL_MASK}$2`);
+  const sentences = (masked.match(SENTENCE) ?? [masked]).map((sentence) =>
+    sentence.split(DECIMAL_MASK).join("."),
+  );
   return sentences
     .flatMap((sentence) =>
       splitSentenceIntoPages(sentence.trim(), wordLimit, isVietnamese, options),
@@ -315,7 +355,49 @@ function mergeShortTextPages(pages: RawTextPage[]) {
     merged.push({ text: normalized, mergeable: page.mergeable });
   }
 
-  return merged.map((page) => page.text);
+  return merged;
+}
+
+/** Syllables on a page that a reader can actually read; punctuation counts for nothing. */
+function countRealSyllables(text: string): number {
+  return getWords(text).filter((word) => HAS_GLYPH.test(word)).length;
+}
+
+/**
+ * The invariant: within one block, no page opens a scene on less than a phrase.
+ *
+ * A block that makes a single page is left exactly as it is — a whole short clue like
+ * "Được chưa ạ?" is a page because that is all there is, and there is nothing to
+ * merge it with. The floor applies only where a page sits BESIDE another one, which is
+ * the case the reader experiences as "a new scene arrived carrying nothing".
+ *
+ * A thin page joins the page before it, so the scrap rejoins the phrase it came from;
+ * a thin FIRST page joins the one after it, for want of anything earlier.
+ * @param pages - one block's pages, after the overflow merge
+ * @returns The same pages with every thin one absorbed
+ */
+function enforceMinimumPageSize(pages: RawTextPage[]): string[] {
+  const texts = pages.map((page) => page.text);
+  // Nothing to merge with, so nothing to enforce.
+  if (texts.length < 2) return texts;
+
+  let index = texts.length - 1;
+  while (index >= 0 && texts.length > 1) {
+    if (countRealSyllables(texts[index]!) >= MIN_PAGE_SYLLABLES) {
+      index -= 1;
+      continue;
+    }
+    if (index > 0) {
+      texts[index - 1] = joinTextPages(texts[index - 1]!, texts[index]!);
+      texts.splice(index, 1);
+      index -= 1;
+    } else {
+      texts[1] = joinTextPages(texts[0]!, texts[1]!);
+      texts.splice(0, 1);
+      break;
+    }
+  }
+  return texts;
 }
 
 function joinTextPages(left: string, right: string) {

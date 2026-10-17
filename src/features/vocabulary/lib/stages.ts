@@ -13,6 +13,34 @@ import { splitWordJoiners, stripWordJoiners } from "./word-joiner";
  */
 const INITIAL_EMPHASIS_VARIANT: EmphasisVariant = "frame";
 
+/**
+ * Shortest answer that earns the start-and-end letter shape. Showing both ends alongside the
+ * length already given spells a short word right out (`hot` → h … t, three letters), so only
+ * long-enough answers may frame first-and-last; shorter ones fall back to the count shape.
+ */
+const EDGES_HINT_MIN_LETTERS = 6;
+
+/**
+ * One-in-this-many eligible words keep the older count-and-start clue instead of the new
+ * start-and-end one. The variety is deliberate: the hash is deterministic, so a word always
+ * rolls the same clue, but neighbouring cards differ and the ladder never reads as the same
+ * sentence every time. Raise it to lean harder toward the edges shape, lower for more count.
+ */
+const LETTER_CLUE_VARIETY_ODDS = 4;
+
+/**
+ * Deterministic 31-based string hash — the same convention `pickSpellingVariant` uses — so a
+ * stable word id maps to a stable clue choice across renders.
+ * @param seed Stable per-word string. @returns A non-negative integer.
+ */
+function hashWord(seed: string): number {
+  let hash = 0;
+  for (let index = 0; index < seed.length; index += 1) {
+    hash = (hash * 31 + seed.charCodeAt(index)) | 0;
+  }
+  return Math.abs(hash);
+}
+
 export type LearningStage = {
   id: string;
   label: string;
@@ -125,20 +153,45 @@ export function buildStages(word: VocabularyWord, style: NarrativeStyle): Learni
         : undefined,
     });
   }
-  const count = (word.word.match(/\p{L}/gu) ?? []).length;
+  const latinLetters = word.word.match(/\p{L}/gu) ?? [];
+  const count = latinLetters.length;
   const initial = word.word[0].toUpperCase();
-  if (hanCount === 0)
-    stages.push({
-      id: "letters",
-      label: "Đếm chữ cái",
-      text: `Gồm ${count} chữ cái, bắt đầu bằng ${initial}`,
-      lang: "vi",
-      // The count keeps the primary mark on purpose — getWordImportance scores a
-      // standalone number above everything so the digits always win this sentence.
-      // The initial is added as a second, differently-drawn mark rather than
-      // replacing it, so one page carries both facts.
-      secondaryEmphasis: { phrase: initial, variant: INITIAL_EMPHASIS_VARIANT },
-    });
+  const final = (latinLetters[count - 1] ?? "").toUpperCase();
+  if (hanCount === 0) {
+    // One letter-shape clue per word, chosen deterministically from its id so the ladder varies
+    // from card to card but never reshuffles for the same word. Two shapes today:
+    //   · count — how many letters, plus the opening one (the original clue);
+    //   · edges — the whole word framed from first letter to last (no count).
+    // `edges` needs a genuine far end: skipped on short answers, where count + first + last
+    // would spell the word out, and when both ends are the same glyph (`level` → l … l).
+    const canUseEdges = count >= EDGES_HINT_MIN_LETTERS && !!final && final !== initial;
+    const edges = canUseEdges && hashWord(word.id) % LETTER_CLUE_VARIETY_ODDS !== 0;
+    if (!edges) {
+      stages.push({
+        id: "letters",
+        label: "Đếm chữ cái",
+        text: `Gồm ${count} chữ cái, bắt đầu bằng ${initial}`,
+        lang: "vi",
+        // The count keeps the primary mark on purpose — getWordImportance scores a
+        // standalone number above everything so the digits always win this sentence.
+        // The initial is added as a second, differently-drawn mark rather than
+        // replacing it, so one page carries both facts.
+        secondaryEmphasis: { phrase: initial, variant: INITIAL_EMPHASIS_VARIANT },
+      });
+    } else {
+      stages.push({
+        id: "letters",
+        label: "Đầu & cuối",
+        text: `Bắt đầu bằng ${initial}, kết thúc bằng ${final}`,
+        lang: "vi",
+        // Two letters, two marks: the opening letter is the primary annotation (an explicit
+        // mark beats the importance heuristic on this numberless page), and the closing letter
+        // is drawn with the same boxed `frame` effect the count shape uses for its initial.
+        dataEmphasis: [initial],
+        secondaryEmphasis: { phrase: final, variant: INITIAL_EMPHASIS_VARIANT },
+      });
+    }
+  }
   const example = word.usage[0];
   if (example) {
     const { clean: enClean, markers: enMarkers, bound: enBound } = parseEmphasisMarkers(example.en);

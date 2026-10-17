@@ -377,8 +377,10 @@ export const STYLES: StylePreset[] = [
     loop: "float",
     tempo: "steady",
     rhythm: "smooth",
-    // Soft and luminous: the hollow word that fills is this style's signature.
-    emphasis: ["outline", "glow", "halo", "underline"],
+    // Soft and luminous. `outline` is deliberately absent: the hollow-word draw strokes
+    // glyph contours, and a Vietnamese syllable is a base letter plus its tone marks,
+    // each outlined separately. It belongs to the Han dialect, which keeps it below.
+    emphasis: ["glow", "halo", "underline"],
   },
   {
     id: "minimal",
@@ -410,7 +412,9 @@ export const DOUYIN_STYLES: StylePreset[] = [
     loop: "none",
     tempo: "steady",
     rhythm: "smooth",
-    // The hollow word fills as the blur lifts: one slow reveal, no jitter.
+    // The hollow word fills as the blur lifts: one slow reveal, no jitter. `outline` is
+    // kept here because a Han glyph IS one contour — the one script the stroke suits.
+    // The gate in getEmphasisVariant still drops it on any Latin run this pool dresses.
     emphasis: ["outline", "halo", "underline"],
   },
   {

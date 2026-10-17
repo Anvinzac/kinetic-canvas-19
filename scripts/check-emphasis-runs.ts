@@ -17,7 +17,11 @@ import { DEFAULT_CANVAS } from "../src/features/canvas";
 import { VietnameseLineBlock } from "../src/features/kinetic-text/components/VietnameseLineBlock";
 import { entranceVariants } from "../src/features/kinetic-text/components/preview-tempo";
 import {
+  GLYPH_STROKE_EMPHASIS_VARIANTS,
+  EMPHASIS_VARIANTS,
+  isGlyphStrokeSafeText,
   getEmphasisPhraseKeysForLayout,
+  getEmphasizedRunLayoutPhraseKeys,
   getEmphasizedRunPhraseKeys,
   getEmphasisVariant,
   getVietnameseLayoutMetrics,
@@ -65,6 +69,14 @@ function pageKeys(words: string[], emphasized: Set<number>, dataEmphasis?: strin
   return [
     ...getEmphasisPhraseKeysForLayout(dataEmphasis),
     ...getEmphasizedRunPhraseKeys(words, emphasized),
+  ];
+}
+
+/** Exactly what WordSequenceText feeds the packer: only compound-sized run keys bind. */
+function pageLayoutKeys(words: string[], emphasized: Set<number>, dataEmphasis?: string[]) {
+  return [
+    ...getEmphasisPhraseKeysForLayout(dataEmphasis),
+    ...getEmphasizedRunLayoutPhraseKeys(words, emphasized),
   ];
 }
 
@@ -163,7 +175,8 @@ function pageKeys(words: string[], emphasized: Set<number>, dataEmphasis?: strin
   const entries = (catalog as unknown as { words: VocabularyWord[] }).words;
   let runs = 0;
   let disagreeing = 0;
-  let splitAcrossLines = 0;
+  let splitPairs = 0;
+  let splitSweeps = 0;
   const offenders: string[] = [];
 
   for (const entry of entries) {
@@ -181,6 +194,7 @@ function pageKeys(words: string[], emphasized: Set<number>, dataEmphasis?: strin
           )
         : undefined;
       const keys = pageKeys(words, emphasized, stage.dataEmphasis);
+      const layoutKeys = pageLayoutKeys(words, emphasized, stage.dataEmphasis);
 
       for (const run of runsOf(emphasized, words)) {
         runs += 1;
@@ -203,14 +217,19 @@ function pageKeys(words: string[], emphasized: Set<number>, dataEmphasis?: strin
           offenders.push(`${entry.id}/${stage.id}: ${JSON.stringify(styles)}`);
         }
 
-        // A run split over two lines would never be drawn as one group at all.
-        const lines = getVietnameseLayoutMetrics(words, 390, 64, 1, keys).lines;
+        // A highlighted pair is a compound: the packer must never split it. A sweep of
+        // three or more tokens may split across lines so the page keeps a readable size —
+        // it still owes every syllable one shared effect, checked above.
+        const lines = getVietnameseLayoutMetrics(words, 390, 64, 1, layoutKeys).lines;
         for (const line of lines) {
           for (const segment of line.segments) {
             const inSegment = run.filter((index) =>
               segment.words.some((word) => word.index === index),
             );
-            if (inSegment.length > 0 && inSegment.length < run.length) splitAcrossLines += 1;
+            if (inSegment.length > 0 && inSegment.length < run.length) {
+              if (run.length === 2) splitPairs += 1;
+              else splitSweeps += 1;
+            }
           }
         }
       }
@@ -221,7 +240,8 @@ function pageKeys(words: string[], emphasized: Set<number>, dataEmphasis?: strin
     `every highlighted run of the deck agrees on one effect (${runs} runs, ${disagreeing} bad)`,
     disagreeing === 0,
   );
-  check(`no highlighted run is packed apart (${splitAcrossLines} split)`, splitAcrossLines === 0);
+  check(`no highlighted pair is packed apart (${splitPairs} split)`, splitPairs === 0);
+  console.log(`   (${splitSweeps} longer sweeps split for reading size, one effect kept)`);
   if (offenders.length) console.error(offenders.join("\n"));
 }
 
@@ -301,7 +321,12 @@ function pageKeys(words: string[], emphasized: Set<number>, dataEmphasis?: strin
     for (let index = 0; index < words.length; index += 1) {
       for (const color of [EMPHASIS_COLOR, "#3a0ca3"]) {
         const shared = { words, text, emphasized: new Set([index]), emphasisColor: color };
-        const lone = resolveWordEmphasisVariant({ ...shared, word: words[index]!, index, inRun: false });
+        const lone = resolveWordEmphasisVariant({
+          ...shared,
+          word: words[index]!,
+          index,
+          inRun: false,
+        });
         const boxless = resolveWordEmphasisVariant({
           ...shared,
           word: words[index]!,
@@ -363,6 +388,79 @@ function pageKeys(words: string[], emphasized: Set<number>, dataEmphasis?: strin
     `no deck page with a blank underlines a word (${blankPages} pages, ${offending} bad)`,
     blankPages > 0 && offending === 0,
   );
+}
+
+// ── A contour-stroking effect never reaches a script whose glyphs are not one shape ──
+//
+// `outline` draws with -webkit-text-stroke, which strokes EVERY contour it is handed.
+// A Han glyph is one; a Vietnamese syllable is a base letter plus a diacritic plus a
+// tone mark, so the stroke halos each mark separately. This is the guard that keeps the
+// effect off Latin text however it is reached — a seeded pick, an authored pool, or the
+// dim-colour fallback — rather than trusting each of those paths to remember.
+{
+  const strokes = GLYPH_STROKE_EMPHASIS_VARIANTS;
+  check(`there is at least one contour-stroking effect to guard`, strokes.length > 0);
+
+  // The predicate itself.
+  const script: [string, boolean][] = [
+    ["\u6c34\u679c", true],
+    ["\u6c34\u679c\u3002", true],
+    ["n\u1ebfu", false],
+    ["\u0111\u1ea7u ti\u00ean", false],
+    ["\u6c34 ok", false],
+    ["8", false],
+    ["T", false],
+  ];
+  const wrong = script.filter(([text, want]) => isGlyphStrokeSafeText(text) !== want);
+  check(
+    `stroke-safe is Han-only (${script.length} cases, ${wrong.length} wrong)`,
+    wrong.length === 0,
+  );
+
+  // Every path into the picker, on Vietnamese text, across many seeds. The pools cover
+  // the default (no pool), one authored entirely out of stroke effects, and the dim
+  // colour that collapses to the non-luminous fallback.
+  const viWords = [
+    "n\u1ebfu",
+    "c\u00e2y",
+    "nghe",
+    "nh\u1ea1c",
+    "l\u1edbn",
+    "nhanh",
+    "h\u01a1n",
+    "\u0111\u1ea7u",
+    "ti\u00ean",
+  ];
+  const pools = [undefined, strokes, [...strokes, "underline" as const], EMPHASIS_VARIANTS];
+  let leaked = 0;
+  let picks = 0;
+  for (const pool of pools) {
+    for (const luminous of [true, false]) {
+      for (const word of viWords) {
+        for (let anchor = 0; anchor < 12; anchor += 1) {
+          const got = getEmphasisVariant(viWords.join(" "), word, anchor, luminous, pool);
+          picks += 1;
+          if (strokes.includes(got)) leaked += 1;
+        }
+      }
+    }
+  }
+  check(
+    `no stroke effect on Vietnamese by any path (${picks} picks, ${leaked} leaked)`,
+    leaked === 0,
+  );
+
+  // ... and it is still reachable where it belongs, or the gate has simply deleted it.
+  const hanWords = ["\u6c34", "\u679c", "\u5c71", "\u6797", "\u98ce", "\u96e8", "\u4e91", "\u6708"];
+  let reached = 0;
+  for (const word of hanWords) {
+    for (let anchor = 0; anchor < 12; anchor += 1) {
+      if (strokes.includes(getEmphasisVariant(hanWords.join(""), word, anchor, true, strokes))) {
+        reached += 1;
+      }
+    }
+  }
+  check(`a Han run can still be given one (${reached} of ${hanWords.length * 12})`, reached > 0);
 }
 
 console.log(checks.join("\n"));

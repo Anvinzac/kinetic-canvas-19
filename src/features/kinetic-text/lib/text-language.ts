@@ -6,6 +6,7 @@
  */
 
 export {
+  CLOSING_PUNCTUATION_CLASS,
   DEFAULT_TEXT_PAGE_WORD_LIMIT,
   VIETNAMESE_TEXT_PAGE_WORD_LIMIT,
   expandEmphasisToBoundPhrases,
@@ -14,6 +15,7 @@ export {
   getDataEmphasisWordIndexes,
   getDataEmphasisWordSpans,
   getEmphasisPhraseKeysForLayout,
+  getEmphasizedRunLayoutPhraseKeys,
   getEmphasizedRunPhraseKeys,
   getHanCharBudgetForLine,
   getHanLayoutMetrics,
@@ -25,6 +27,7 @@ export {
   getVietnameseLayoutMetrics,
   getVietnameseWordLines,
   isLikelyChineseText,
+  endsWithPunctuation,
   isLikelyVietnameseText,
   repairSplitCompoundEmphasis,
   SHORT_SENTENCE_MAX_WORDS,

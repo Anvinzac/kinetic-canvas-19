@@ -5,6 +5,8 @@
  * Depends on: none
  */
 
+import { endsWithPunctuation } from "./closing-punctuation";
+
 const VIETNAMESE_BOUND_PHRASES = [
   "ý tưởng",
   "y tuong",
@@ -338,7 +340,7 @@ const VIETNAMESE_STOP_WORDS = new Set([
 // Sentence and clause punctuation can never sit inside a compound word. When
 // the left token of a pair closes with one of these marks (quotes or brackets
 // may follow), the next token opens a new clause instead of completing a pair.
-const COMPOUND_JOIN_BREAKER = /[.!?…,;:]["'”’»)\]]*$/u;
+const COMPOUND_JOIN_BREAKER = endsWithPunctuation("[.!?…,;:]");
 
 /**
  * Lowercase, punctuation-free key for single-token matching. Diacritics are

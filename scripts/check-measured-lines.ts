@@ -391,4 +391,84 @@ function linesFor(items: MeasuredSegment[], mask: number) {
   );
 }
 
+// ── Long pages: >9 syllables spread to a readable size instead of cramming small. ──
+{
+  const items = segments(
+    ["Mưa", 2.4],
+    ["rơi", 2.2],
+    ["ngoài", 2.6],
+    ["hiên,", 2.5],
+    ["gió", 2.1],
+    ["lùa", 2.0],
+    ["lá", 1.9],
+    ["khô", 2.2],
+    ["bay", 2.1],
+    ["đi", 1.8],
+    ["lặng", 2.5],
+    ["lẽ.", 2.7],
+  );
+  const syllables = items.reduce((n, s) => n + s.segment.words.length, 0);
+  assert.ok(syllables > 9, `test needs a long page, got ${syllables} syllables`);
+  const solved = assertInBounds("long page spread", items, BOUNDS);
+  // The largest font any sub-4-line cram could reach, for comparison.
+  let cramFont = 0;
+  for (let mask = 0; mask < 1 << (items.length - 1); mask += 1) {
+    if (linesFor(items, mask).length >= 4) continue;
+    cramFont = Math.max(cramFont, fontFor(items, mask, BOUNDS));
+  }
+  assert.ok(
+    solved.lines.length >= 4,
+    `a >9-syllable page must spread to at least 4 lines: ${show(solved.lines)}`,
+  );
+  assert.ok(
+    solved.fontPx >= cramFont - 1e-6,
+    `spreading must never set the page smaller than the best cram (${solved.fontPx.toFixed(1)} < ${cramFont.toFixed(1)})`,
+  );
+  console.log(
+    `OK — long page spreads to ${solved.lines.length} lines at ${solved.fontPx.toFixed(1)}px, never below the best 3-line cram ${cramFont.toFixed(1)}px: ${show(solved.lines)}`,
+  );
+}
+
+// ── Live inversion: a clean cram outscores the top spread candidate, yet another
+// spread reads larger. That bigger one must win — a small spread must not veto it.
+// Reconstructed from a shipped lead (11 syllables, two comma edges, joined "các=em",
+// "im_lặng") at the bounds a live card measured; the old pick kept 3 lines at ~47px.
+{
+  const items = segments(
+    ["Chia", 2.32],
+    ["đất,", 2.32],
+    ["anh", 1.74],
+    ["cả", 1.16],
+    ["phần", 2.32],
+    ["to,", 1.74],
+    ["các em", 3.18],
+    ["im lặng", 3.86],
+    ["mãi", 1.74],
+  );
+  const live = {
+    lineWidthPx: 486,
+    hardHeightPx: 606,
+    budgetHeightPx: 520,
+    budgetLineEm: 1.6,
+    maxFontPx: 89,
+    floorFontPx: 64,
+    gapEm: 0.24,
+    lineGapEm: 0.06,
+  };
+  const edges = getPunctuationPhraseEdges(tokensOf(items));
+  const solved = solveMeasuredLines(items, live, { phraseEdges: edges });
+  assert.ok(solved, "live inversion: expected a layout");
+  assert.ok(
+    solved.lines.length >= 4,
+    `the larger spread must not be vetoed by a smaller one: ${show(solved.lines)}`,
+  );
+  assert.ok(
+    phraseViolations(solved.lines, edges).length === 0,
+    `spreading must not break the phrase rule on the way: ${show(solved.lines)}`,
+  );
+  console.log(
+    `OK — spread bigger than the cram it replaces, phrases kept: ${show(solved.lines)} @ ${solved.fontPx.toFixed(1)}px`,
+  );
+}
+
 console.log("\nAll measured-line checks passed.");

@@ -276,12 +276,11 @@
     transform: scaleX(1);
   }
 }
-/* A run draws ONE bar under every syllable, on the run itself. The run sits at the
-   page's base size while its syllables are enlarged by EMPHASIS_FONT_SCALE (1.12), so
-   the bar is thickened to match a single emphasised word's. */
-.kinetic-emphasis-run.kinetic-emph-underline::after {
-  height: 0.09em;
-}
+/* A run draws ONE bar under every syllable, on the run itself. It needs no thickness
+   of its own: the emphasis scale is on the glyph spans, not on the boxes the effects
+   are drawn in, so a run's bar and a single word's bar are both 0.08em of the page's
+   base size and already match. (This rule used to carry 0.09em by hand, compensating
+   for a single word's box being 12% larger than the run's.) */
 
 /* HALO — a soft luminous aura blooming behind the word (no box). */
 .kinetic-emph-halo {
@@ -449,7 +448,11 @@
 
 /* ── outline: a hollow word that fills with ink ───────────────────────────────────
    The stroke is drawn with -webkit-text-stroke and painted BEHIND the fill
-   (`paint-order: stroke fill`), so each glyph is one unified contour. The fill is the
+   (`paint-order: stroke fill`), so a glyph that IS one contour reads as one shape.
+   That is the catch, and it is why this effect is gated to Han text in emphasis.ts:
+   -webkit-text-stroke strokes every contour it is given, and a Vietnamese syllable is
+   a base letter plus a diacritic plus a tone mark — three of them, each outlined on its
+   own. No amount of paint-order fixes that; only not using the effect does. The fill is the
    text colour itself, driven through -webkit-text-fill-color: at rest it is solid ink,
    and the one-shot draw fades it in from transparent (hollow) to solid (filled).
 

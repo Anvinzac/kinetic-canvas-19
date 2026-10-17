@@ -24,9 +24,9 @@ export const TEXT_SAFE_BOTTOM_PX = 132;
 export const MIN_TEXT_FIT_SCALE = 0.46;
 export const MIN_ENGLISH_TEXT_FIT_SCALE = 0.72;
 export const EMPHASIS_SCALE_FIT_GUARD = 1.14;
-// Emphasized words render this many times larger than the base font. Applied via
-// fontSize (not transform: scale) so the extra width occupies real layout space.
-export const EMPHASIS_FONT_SCALE = 1.12;
+// Defined in the shared text layer beside the rest of the emphasis vocabulary, and
+// re-exported here so this module stays the one place the player reads its numbers from.
+export { EMPHASIS_FONT_SCALE } from "@/features/kinetic-text";
 export const VIETNAMESE_SCALE_FIT_GUARD = 1.24;
 export const MIN_FONT_SIZE = 64;
 

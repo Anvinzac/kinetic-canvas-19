@@ -213,9 +213,12 @@ export function WordSequenceWord({
         flexBasis: spotlightWord ? "100%" : undefined,
         justifyContent: spotlightWord ? "center" : undefined,
         textAlign: spotlightWord ? "center" : undefined,
-        // Emphasized words render larger via fontSize so the extra width is
-        // reserved in the flex flow (transform: scale would overlap neighbors).
-        fontSize: important ? `${EMPHASIS_FONT_SCALE}em` : undefined,
+        // NOT the emphasis font scale — that lives on the innermost glyph span, below.
+        // Every `em` written on this element (the breathing margins) and on the effect
+        // span inside it (the frame's padding, the underline's bar) has to mean the same
+        // length as an `em` anywhere else on the line. Declaring the scale here made all
+        // of them 12% longer than they were written, which is the extra air that showed
+        // up around a highlighted word mid-sentence.
         fontWeight: important ? 900 : spec.weight,
         overflowWrap: "normal",
         whiteSpace: "nowrap",
@@ -225,12 +228,17 @@ export function WordSequenceWord({
           : "0 4px 40px rgba(0,0,0,0.45)",
         animationPlayState: paused ? "paused" : "running",
         transformOrigin: leftAnchoredText && !spotlightWord ? "left center" : "center",
-        // Small breathing room on top of the reserved fontSize width so the
-        // bolder glyphs never kiss the adjacent words.
+        // A spotlight word is on its own line, so these open space above and below it,
+        // not between words.
         marginTop: spotlightWord ? "0.08em" : undefined,
         marginBottom: spotlightWord ? "0.08em" : undefined,
-        marginLeft: important && !spotlightWord && !skipFrame && !isSolo ? "0.04em" : undefined,
-        marginRight: important && !spotlightWord && !skipFrame && !isSolo ? "0.04em" : undefined,
+        // No horizontal breathing margin. An emphasised word used to claim 0.04em on each
+        // side ON TOP of the line's word gap, which is what made the space around a
+        // highlight read wider than a space anywhere else in the sentence. It is not
+        // needed: the glyphs are set EMPHASIS_FONT_SCALE larger, so their own side
+        // bearings grow with them and the separation already scales. The line's 0.24em
+        // gap is the one rule for the space between two words, and it now governs every
+        // pair of them, highlighted or not.
       }}
     >
       <span
@@ -272,14 +280,25 @@ export function WordSequenceWord({
               : undefined,
           }}
         >
-          {blank ? (
-            <>
-              <span data-kinetic-blank="">{blank[1]}</span>
-              {blank[2]}
-            </>
-          ) : (
-            word
-          )}
+          {/* The emphasis scale lives here, on the glyphs alone, and nowhere above:
+              an inline-block sizes itself to the larger text and grows the line box
+              with it, so nothing is cropped, while every spacing length outside it
+              keeps resolving against the line's own font size. */}
+          <span
+            style={{
+              display: "inline-block",
+              fontSize: important ? `${EMPHASIS_FONT_SCALE}em` : undefined,
+            }}
+          >
+            {blank ? (
+              <>
+                <span data-kinetic-blank="">{blank[1]}</span>
+                {blank[2]}
+              </>
+            ) : (
+              word
+            )}
+          </span>
         </span>
       </span>
     </motion.span>

@@ -15,8 +15,10 @@
 import {
   getBoundPhraseEmphasisSeed,
   getBoundPhraseStartIndex,
+  GLYPH_STROKE_EMPHASIS_VARIANTS,
   getEmphasisVariant,
   getRunEmphasisStyle,
+  isGlyphStrokeSafeText,
   isDimEmphasisColor,
   type EmphasisVariant,
 } from "@/features/kinetic-text";
@@ -44,6 +46,16 @@ const BLANK_TOKEN = /_{2,}/;
 
 /** What an underline becomes on a page that carries a blank: a shine, not another line. */
 const BLANK_PAGE_UNDERLINE_SUBSTITUTE: EmphasisVariant = "sweep";
+
+/**
+ * True when this effect strokes glyph contours and the text cannot carry one.
+ * @param variant - the effect a caller named outright
+ * @param text - the text it would be drawn on
+ * @pure true
+ */
+function isStrokeUnsafe(variant: EmphasisVariant, text: string): boolean {
+  return GLYPH_STROKE_EMPHASIS_VARIANTS.includes(variant) && !isGlyphStrokeSafeText(text);
+}
 
 /**
  * Keep a page with an answer blank free of underline emphasis. The blank's slot bar and
@@ -105,16 +117,22 @@ export function resolveWordEmphasisVariant(input: WordEmphasisInput): EmphasisVa
   const primary = emphasized.has(index);
   const secondary = !primary && (secondaryEmphasized?.has(index) ?? false);
   if (!primary && !secondary) return null;
-  const variant =
-    secondary && secondaryVariant
+  // A caller-named secondary effect skips the seeded pick, so the script gate has to be
+  // applied here as well; otherwise an authored `outline` would reach Latin glyphs by
+  // the one path that never consults the pool.
+  const forced =
+    secondary && secondaryVariant && !isStrokeUnsafe(secondaryVariant, word)
       ? secondaryVariant
-      : getEmphasisVariant(
-          input.text,
-          getBoundPhraseEmphasisSeed(words, index, phraseKeys),
-          getBoundPhraseStartIndex(words, index, phraseKeys),
-          !isDimEmphasisColor(input.emphasisColor),
-          input.pool,
-        );
+      : null;
+  const variant =
+    forced ??
+    getEmphasisVariant(
+      input.text,
+      getBoundPhraseEmphasisSeed(words, index, phraseKeys),
+      getBoundPhraseStartIndex(words, index, phraseKeys),
+      !isDimEmphasisColor(input.emphasisColor),
+      input.pool,
+    );
   const boxed = variant === "frame" && !input.inRun && input.allowFrame !== false;
   return avoidBlankUnderline(variant === "frame" && !boxed ? "underline" : variant, words);
 }

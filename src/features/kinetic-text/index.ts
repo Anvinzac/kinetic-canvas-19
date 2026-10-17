@@ -16,6 +16,7 @@ export {
   getDataEmphasisWordIndexes,
   getDataEmphasisWordSpans,
   getEmphasisPhraseKeysForLayout,
+  getEmphasizedRunLayoutPhraseKeys,
   getEmphasizedRunPhraseKeys,
   getHanCharBudgetForLine,
   getHanLayoutMetrics,
@@ -33,6 +34,8 @@ export {
   countSentenceWords,
   limitShortSentenceEmphasis,
   MAX_MEASURED_SEGMENTS,
+  CLOSING_PUNCTUATION_CLASS,
+  endsWithPunctuation,
   getPunctuationPhraseEdges,
   isBreakOneWordFromEdge,
   solveMeasuredLines,
@@ -60,7 +63,9 @@ export {
 export type { KineticTextLayoutMode } from "./lib/layout";
 export { getLoopAnimation, TEMPO_LOOP_SECONDS } from "./lib/loop";
 export {
+  EMPHASIS_FONT_SCALE,
   EMPHASIS_VARIANTS,
+  GLYPH_STROKE_EMPHASIS_VARIANTS,
   NON_LUMINOUS_EMPHASIS_VARIANTS,
   getAuraColor,
   getEmphasisInnerAnimation,
@@ -68,6 +73,7 @@ export {
   getEmphasisVariant,
   getRunEmphasisStyle,
   isDimEmphasisColor,
+  isGlyphStrokeSafeText,
   isWhiteLikeColor,
 } from "./lib/emphasis";
 export type { EmphasisVariant } from "./lib/emphasis";

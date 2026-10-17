@@ -2,7 +2,8 @@
  * Quick sanity check for text page-break rules.
  * Run: npx tsx scripts/check-text-pagination.ts
  */
-import { paginateText } from "../src/components/PostCard";
+import { paginateText } from "../src/features/post-player/lib/paginate";
+import { getWords } from "../src/features/kinetic-text";
 
 let failures = 0;
 
@@ -133,6 +134,90 @@ check(
     JSON.stringify(paginateText(farFromComma)),
   paginateText(farFromComma, { keepPhraseEdges: true }),
 );
+
+// ── Every page is worth a scene ───────────────────────────────────────
+//
+// The defect these cover: a Vietnamese deck writes typographic quotes, the page splitter
+// allowed only ASCII ones after a full stop, and the closing mark became a sentence —
+// and then a scene — of its own. The line layout had known about curly quotes all along;
+// only the page splitter had not, because the class was re-typed at each site.
+const Q = {
+  ldq: "\u201C",
+  rdq: "\u201D",
+  lsq: "\u2018",
+  rsq: "\u2019",
+  laq: "\u00AB",
+  raq: "\u00BB",
+};
+const realSyllables = (page: string) =>
+  getWords(page).filter((word) => /[\p{L}\p{N}]/u.test(word)).length;
+
+const closingCases: [string, string][] = [
+  [
+    "typographic double quotes",
+    `Gh\u00e9 tai b\u1ea1n th\u00e2n n\u00f3i nh\u1ecf: ${Q.ldq}\u0110\u1eebng k\u1ec3 v\u1edbi ai nh\u00e9.${Q.rdq}`,
+  ],
+  [
+    "after a question mark",
+    `${Q.ldq}M\u1eb9 \u01a1i, cho con \u0111i ch\u01a1i \u0111\u1ebfn m\u01b0\u1eddi gi\u1edd nh\u00e9?${Q.rdq}`,
+  ],
+  ["after an exclamation", `Xua tay lia l\u1ecba: ${Q.ldq}Th\u00f4i, th\u00f4i!${Q.rdq}`],
+  ["single typographic quotes", `Anh \u1ea5y b\u1ea3o: ${Q.lsq}th\u00f4i \u0111i.${Q.rsq}`],
+  [
+    "guillemets",
+    `B\u00e0 c\u1ee5 k\u1ec3: ${Q.laq}ng\u00e0y x\u01b0a c\u00f3 m\u1ed9t con m\u00e8o.${Q.raq}`,
+  ],
+  ["CJK corner brackets", "\u4ed6\u8bf4\u300C\u4e0d\u8981\u544a\u8bc9\u522b\u4eba\u300D\u3002"],
+  [
+    "straight quotes (unchanged)",
+    `Anh \u1ea5y n\u00f3i: "\u0110\u1eebng k\u1ec3 v\u1edbi ai nh\u00e9."`,
+  ],
+];
+for (const [label, text] of closingCases) {
+  const pages = paginateText(text, { keepPhraseEdges: true });
+  check(`a closing mark never becomes its own page \u2014 ${label}`, pages.length === 1, pages);
+}
+
+{
+  // The same root cause, still latent: the phrase-edge detector honours `1.000`, and
+  // until now the page splitter did not.
+  const pages = paginateText(
+    "Gi\u00e1 l\u00e0 1.000 \u0111\u1ed3ng. R\u1ebb th\u1eadt nh\u00e9 b\u1ea1n \u01a1i!",
+    {
+      keepPhraseEdges: true,
+    },
+  );
+  check(
+    "a decimal point does not end a sentence",
+    pages.length === 2 && pages[0] === "Gi\u00e1 l\u00e0 1.000 \u0111\u1ed3ng.",
+    pages,
+  );
+}
+{
+  const pages = paginateText(
+    "N\u1ebfu c\u00e2y nghe nh\u1ea1c c\u00f3 l\u1edbn nhanh h\u01a1n kh\u00f4ng? Th\u1eed xem.",
+  );
+  check("a short trailing sentence is absorbed, not left a scene", pages.length === 1, pages);
+}
+{
+  const pages = paginateText("Kh\u00f3 qu\u00e1? C\u1ee9 th\u1edf d\u00e0i \u0111i!");
+  check("two short sentences on one line make one page", pages.length === 1, pages);
+}
+{
+  // The floor is about a page BESIDE another page. A whole short field is a page because
+  // that is all there is, and an author's own line break is never crossed.
+  check(
+    "a whole short text keeps its single page",
+    paginateText("\u0110\u01b0\u1ee3c ch\u01b0a \u1ea1?").length === 1,
+    [],
+  );
+  const pages = paginateText("Kh\u00f3 qu\u00e1?\nC\u1ee9 th\u1edf d\u00e0i \u0111i!");
+  check(
+    "an author's line break is kept even when thin",
+    pages.length === 2 && realSyllables(pages[0]!) === 2,
+    pages,
+  );
+}
 
 if (failures > 0) {
   console.error(`${failures} pagination check(s) failed.`);

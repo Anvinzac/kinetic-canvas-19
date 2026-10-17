@@ -27,6 +27,7 @@
 
 import { getVietnameseLineIndentEm } from "./page-metrics";
 import type { WordLine, WordSegment } from "./types";
+import { endsWithPunctuation } from "./closing-punctuation";
 
 /** One unbreakable segment and the size it is drawn at, in em of the page font. */
 export type MeasuredSegment = {
@@ -91,6 +92,15 @@ const LONE_SCRAP_FACTOR = 0.68;
 /** How much uneven lines count against an arrangement — a tie-breaker, not a driver. */
 const RAGGED_WEIGHT = 0.1;
 /**
+ * A page with more than this many syllables, crammed onto too few lines, is set small enough
+ * to strain the eye. It is then spread wider — but only when the wider break reads at strictly
+ * larger type, which is the case the score alone can get wrong: a clean 3-line cram with no
+ * stranded word can outscore a 4-line one that is genuinely bigger to read.
+ */
+const LONG_PAGE_SYLLABLES = 9;
+/** The fewest lines such a long page is spread to, whenever spreading costs nothing in size. */
+const LONG_PAGE_MIN_LINES = 4;
+/**
  * A break one word away from a phrase edge. The rule says "never"; the layout keeps one
  * escape for a page that cannot be set any other way, so such a break is only taken when
  * every arrangement without one would have to be set at less than about half the size.
@@ -99,7 +109,7 @@ const PHRASE_SPLIT_FACTOR = 0.45;
 /** Any other break inside a phrase, against one on an edge: an edge wins close calls. */
 const INSIDE_PHRASE_FACTOR = 0.98;
 /** A word that ends a phrase: it carries a comma, full stop or semicolon, perhaps inside closing quotes. */
-const PHRASE_END = /[,.;]["'\u201D\u2019\u00BB)\]]*$/u;
+const PHRASE_END = endsWithPunctuation("[,.;]");
 const HAS_GLYPH = /\p{L}|\p{N}/u;
 
 /**
@@ -216,8 +226,29 @@ export function solveMeasuredLines(
   // Widths of the lines that hold one lone word, refilled for every arrangement.
   const loneWidths: number[] = [];
   const breakFactors = getBreakFactors(segments, options.phraseEdges);
+  // A long page may be worth spreading even where the score would rather cram it. Count the
+  // syllables across every segment — a bound phrase is two, a lone token is one.
+  const syllables = segments.reduce((total, { segment }) => total + segment.words.length, 0);
+  const minLines = syllables > LONG_PAGE_SYLLABLES ? LONG_PAGE_MIN_LINES : 0;
 
-  let best: { mask: number; fontPx: number; score: number; lines: number } | null = null;
+  let best: {
+    mask: number;
+    fontPx: number;
+    score: number;
+    lines: number;
+    edgeSplit: boolean;
+  } | null = null;
+  // Every arrangement that reaches the minimum line count. The pick among them waits
+  // until the winner's size is known: the top-scoring spread can itself be smaller than
+  // a clean cram it lost to, and choosing only among the spreads that read LARGER keeps
+  // a bigger 4-line layout from being vetoed by a smaller one.
+  const spreads: {
+    mask: number;
+    fontPx: number;
+    score: number;
+    lines: number;
+    edgeSplit: boolean;
+  }[] = [];
   // Bit i set = the line breaks after segment i.
   const arrangements = 1 << (count - 1);
   for (let mask = 0; mask < arrangements; mask += 1) {
@@ -229,6 +260,7 @@ export function solveMeasuredLines(
     let widthSum = 0;
     let blockHeight = 0;
     let phrasing = 1;
+    let edgeSplit = false;
     loneWidths.length = 0;
     for (let index = 0; index < count; index += 1) {
       const item = segments[index]!;
@@ -244,7 +276,13 @@ export function solveMeasuredLines(
       blockHeight += lineHeight + (lineIndex > 0 ? bounds.lineGapEm : 0);
       // A segment of several words is a whole phrase on its line, not a stranded word.
       if (lineSegments === 1 && item.segment.words.length === 1) loneWidths.push(lineWidth);
-      if (!last) phrasing *= breakFactors[index]!;
+      if (!last) {
+        const factor = breakFactors[index]!;
+        phrasing *= factor;
+        // A break one word from a phrase edge — the rule the phrase policy guards, as
+        // distinct from the 0.98 tie-breaker for any other break inside a phrase.
+        if (factor === PHRASE_SPLIT_FACTOR) edgeSplit = true;
+      }
       lineIndex += 1;
       lineWidth = 0;
       lineHeight = 0;
@@ -267,6 +305,7 @@ export function solveMeasuredLines(
     );
     const ragged = 1 - widthSum / lines / widest;
     const score = fontPx * penalty * (1 - RAGGED_WEIGHT * ragged);
+    const candidate = { mask, fontPx, score, lines, edgeSplit };
     // On an exact tie the arrangement with fewer lines stands, then the earlier one, so
     // the same page always breaks the same way.
     if (
@@ -274,19 +313,41 @@ export function solveMeasuredLines(
       score > best.score + 1e-9 ||
       (Math.abs(score - best.score) <= 1e-9 && lines < best.lines)
     ) {
-      best = { mask, fontPx, score, lines };
+      best = candidate;
     }
+    // Gather every layout that spreads the long page to `minLines`; the winner is picked
+    // after the loop, once it is known which of them read larger than the score winner.
+    if (minLines > 0 && lines >= minLines) spreads.push(candidate);
   }
   if (!best) return null;
+  // Spread the long page only when a layout at `minLines` or more reads at strictly larger
+  // type than the score winner; among those, the score — phrase edges and stranded
+  // syllables included — still decides. If the winner already meets the minimum line
+  // count, or no spread keeps the size, the winner stands.
+  let chosen = best;
+  for (const candidate of spreads) {
+    // A spread that splits a phrase one word from its edge pays the same admission the
+    // score contest charges it: it only displaces the winner by a margin the phrase
+    // factor gives back, not by any size at all. Soft preferences cost nothing here.
+    const size = candidate.fontPx * (candidate.edgeSplit ? PHRASE_SPLIT_FACTOR : 1);
+    if (size <= best.fontPx + 1e-9) continue;
+    if (
+      chosen === best ||
+      candidate.score > chosen.score + 1e-9 ||
+      (Math.abs(candidate.score - chosen.score) <= 1e-9 && candidate.lines < chosen.lines)
+    ) {
+      chosen = candidate;
+    }
+  }
 
   const lines: WordLine[] = [];
   let current: WordSegment[] = [];
   segments.forEach(({ segment }, index) => {
     current.push(segment);
-    if (index === count - 1 || best!.mask & (1 << index)) {
+    if (index === count - 1 || chosen.mask & (1 << index)) {
       lines.push({ indentEm: getVietnameseLineIndentEm(lines.length), segments: current });
       current = [];
     }
   });
-  return { lines, fontPx: best.fontPx };
+  return { lines, fontPx: chosen.fontPx };
 }

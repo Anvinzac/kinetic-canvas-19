@@ -28,7 +28,9 @@
     "build:hanzi": "npx tsx scripts/build-hanzi-strokes.ts",
     "mock:saved": "npx tsx scripts/mock-saved-words.ts",
     "share:codes": "npx tsx scripts/assign-share-codes.ts",
-    "check:share-codes": "npx tsx scripts/check-share-codes.ts"
+    "check:share-codes": "npx tsx scripts/check-share-codes.ts",
+    "check:text-pagination": "npx tsx scripts/check-text-pagination.ts",
+    "check:deck-pages": "npx tsx scripts/check-deck-pages.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

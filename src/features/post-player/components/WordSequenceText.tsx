@@ -19,6 +19,7 @@ import {
   getPunctuationPhraseEdges,
   getDataEmphasisWordSpans,
   getEmphasisPhraseKeysForLayout,
+  getEmphasizedRunLayoutPhraseKeys,
   getEmphasizedRunPhraseKeys,
   getHanLayoutMetrics,
   getHanTokens,
@@ -190,6 +191,19 @@ export function WordSequenceText({
     ],
     [dataEmphasis, boundPhrases, words, emphasized],
   );
+  // What the packer may not break. The full keys above keep the shared effect for every
+  // syllable of a run; a highlighted sweep of three or more tokens is not a compound
+  // though, and gluing it whole can leave an eight-em block no page can set at reading
+  // size. Those runs may split across lines — one effect either way. Authored joins
+  // ("Phan_Xi_Păng") stay unbreakable at any length.
+  const layoutPhraseKeys = useMemo(
+    () => [
+      ...getEmphasisPhraseKeysForLayout(dataEmphasis),
+      ...getEmphasisPhraseKeysForLayout(boundPhrases),
+      ...getEmphasizedRunLayoutPhraseKeys(words, emphasized),
+    ],
+    [dataEmphasis, boundPhrases, words, emphasized],
+  );
   const isSolo = words.length <= 1;
   const visualScaleGuard = Math.max(
     hasEmphasis && !isSolo ? EMPHASIS_SCALE_FIT_GUARD : 1,
@@ -199,10 +213,16 @@ export function WordSequenceText({
     () =>
       isPackedLines
         ? isHan
-          ? getHanLayoutMetrics(words, canvasWidth, spec.size, visualScaleGuard, phraseKeys)
-          : getVietnameseLayoutMetrics(words, canvasWidth, spec.size, visualScaleGuard, phraseKeys)
+          ? getHanLayoutMetrics(words, canvasWidth, spec.size, visualScaleGuard, layoutPhraseKeys)
+          : getVietnameseLayoutMetrics(
+              words,
+              canvasWidth,
+              spec.size,
+              visualScaleGuard,
+              layoutPhraseKeys,
+            )
         : { lines: [], suggestedFitScale: 1 },
-    [isPackedLines, isHan, words, canvasWidth, spec.size, visualScaleGuard, phraseKeys],
+    [isPackedLines, isHan, words, canvasWidth, spec.size, visualScaleGuard, layoutPhraseKeys],
   );
   const entranceStyle = getEntranceStyle(entranceSeed ?? spec.text, spec.rhythm, entrance);
   const layoutMode = getKineticTextLayoutMode(spec.text, isPackedLines, words.length, emphasized);

@@ -11,6 +11,7 @@ import { getCanvasEmphasisColor, getCanvasTextColor, type CanvasSpec } from "@/f
 import { getKineticTextLayoutMode, hasVisibleStickerAccent } from "../lib/layout";
 import { getLoopAnimation } from "../lib/loop";
 import {
+  getEmphasizedRunLayoutPhraseKeys,
   getEmphasizedRunPhraseKeys,
   getHanTokens,
   isLikelyChineseText,
@@ -91,9 +92,11 @@ export function KineticText({
   const isVietnamese = !isHan && isLikelyVietnameseText(spec.text);
   const isPackedLines = isVietnamese || isHan;
   const emphasized = getPreviewEmphasizedWordIndexes(words);
-  // A highlighted run reads as one word, so register it as a bound phrase: line packing then
-  // keeps it together and every syllable hashes the same emphasis effect.
+  // A highlighted run reads as one word, so register it as a bound phrase: every syllable
+  // hashes the same emphasis effect. The packer only glues runs that are compounds — a
+  // sweep of three or more tokens may split across lines, or its width starves the page.
   const phraseKeys = getEmphasizedRunPhraseKeys(words, emphasized);
+  const layoutPhraseKeys = getEmphasizedRunLayoutPhraseKeys(words, emphasized);
   const visualScaleGuard = isPackedLines ? VIETNAMESE_SCALE_FIT_GUARD : 1;
   const layoutMode = getKineticTextLayoutMode(spec.text, isPackedLines, words.length, emphasized);
   const leftAnchoredText = layoutMode !== "center";
@@ -107,7 +110,7 @@ export function KineticText({
     visualScaleGuard,
     leftAnchoredText,
     spec,
-    phraseKeys,
+    phraseKeys: layoutPhraseKeys,
   });
   const textColor = getCanvasTextColor(spec, background);
   const emphasisColor = getCanvasEmphasisColor({ ...spec, color: textColor }, background);
