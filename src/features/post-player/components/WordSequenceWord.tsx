@@ -18,7 +18,7 @@ import {
 } from "@/features/kinetic-text";
 import { resolveWordEmphasisVariant } from "../lib/emphasis-variant";
 import {
-  ENTRANCE_REST,
+  getEntranceRest,
   getEntranceHidden,
   getEntranceTransition,
   type ResolvedEntranceStyle,
@@ -202,7 +202,9 @@ export function WordSequenceWord({
         // is applied via fontSize (not scale), so settling to scale 1 keeps the
         // enlarged word from overlapping its neighbors.
         hidden: safeHidden,
-        show: ENTRANCE_REST,
+        // Carries `filter` only when this entrance actually blurred, so a word that never
+        // blurred is not left sitting under a filter that clips its own shadow.
+        show: getEntranceRest(safeHidden),
       }}
       transition={entranceTransition}
       className={important ? "relative inline-flex" : "inline-flex"}

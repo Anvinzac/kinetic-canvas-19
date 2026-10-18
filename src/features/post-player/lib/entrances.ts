@@ -1,7 +1,7 @@
 /**
  * Auto-picked word entrance personalities for the feed player.
  *
- * Exports: ENTRANCE_REST, getEntranceStyle, getEntranceHidden, getEntranceTransition
+ * Exports: ENTRANCE_REST, getEntranceRest, getEntranceStyle, getEntranceHidden, getEntranceTransition
  * Depends on: framer-motion TargetAndTransition/Transition, canvas Entrance/Rhythm, kinetic-text getStableNumber
  */
 
@@ -33,16 +33,38 @@ const AUTHORED_ENTRANCE_STYLES: Record<Entrance, EntranceStyle> = {
   split: "tilt",
 };
 
-// Shared resting state — resets every transform any hidden state touches (x, y,
-// scale, rotate, blur) so words always land in the same place.
+// Shared resting state — resets every transform any hidden state touches (x, y, scale,
+// rotate) so words always land in the same place.
+//
+// `filter` is deliberately NOT here; getEntranceRest adds it only for the entrances that
+// actually blur. See that function for why a resting `blur(0px)` is not free.
 export const ENTRANCE_REST: TargetAndTransition = {
   opacity: 1,
   x: 0,
   y: 0,
   scale: 1,
   rotate: 0,
-  filter: "blur(0px)",
 };
+
+/**
+ * The resting state for one word, given the hidden state it is coming from.
+ *
+ * Three of the eight entrances blur; the other five never touch `filter`. Landing all of
+ * them on `filter: blur(0px)` meant five-eighths of the app's words sat under a filter they
+ * never needed — and a zero-radius blur is not a no-op. A filter establishes a filter
+ * region clipped to the element's border box, so everything painted outside that box by
+ * anything inside it is cut off: the emphasis underline's glow, a word's own text-shadow.
+ * The artefact is a shadow that renders as a hard rectangle and then vanishes.
+ *
+ * An entrance that does blur still rests on `blur(0px)`, because `none` is not an
+ * interpolable filter value and animating toward it would snap rather than ease.
+ * @param hidden - the hidden state this word animates from
+ * @returns The resting target, carrying `filter` only when it has something to reset
+ * @pure true
+ */
+export function getEntranceRest(hidden: TargetAndTransition): TargetAndTransition {
+  return hidden.filter === undefined ? ENTRANCE_REST : { ...ENTRANCE_REST, filter: "blur(0px)" };
+}
 
 /**
  * Compute entrancestyle.

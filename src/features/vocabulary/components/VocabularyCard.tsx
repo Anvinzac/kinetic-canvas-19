@@ -113,9 +113,14 @@ const stripVariants: Variants = {
     transition: { when: "afterChildren", staggerChildren: STRIP_STAGGER_S, duration: 0.01 },
   },
 };
+// `filter` is absent from both resting states on purpose. Nothing blurs these buttons on
+// the way IN — only the leave wave does, and it names its own `blur(0px)` start — so
+// resting on one meant every button in the strip sat under a filter for its whole visible
+// life. A zero-radius blur still establishes a filter region clipped to the element's box,
+// which cuts anything a child paints outside it (a glow, a text-shadow).
 const stripItemVariants: Variants = {
-  hidden: { opacity: 1, y: 0, scale: 1, rotate: 0, filter: "blur(0px)" },
-  shown: { opacity: 1, y: 0, scale: 1, rotate: 0, filter: "blur(0px)" },
+  hidden: { opacity: 1, y: 0, scale: 1, rotate: 0 },
+  shown: { opacity: 1, y: 0, scale: 1, rotate: 0 },
   leave: (index: number) => ({
     opacity: [1, 1, 0],
     y: [0, -7, 46],
