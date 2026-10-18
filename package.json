@@ -30,7 +30,8 @@
     "share:codes": "npx tsx scripts/assign-share-codes.ts",
     "check:share-codes": "npx tsx scripts/check-share-codes.ts",
     "check:text-pagination": "npx tsx scripts/check-text-pagination.ts",
-    "check:deck-pages": "npx tsx scripts/check-deck-pages.ts"
+    "check:deck-pages": "npx tsx scripts/check-deck-pages.ts",
+    "check:word-block": "npx tsx scripts/check-word-block.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

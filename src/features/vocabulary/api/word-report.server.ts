@@ -7,6 +7,8 @@
 
 import { wordReportSchema, toReportStage } from "../lib/word-report";
 import { catalog } from "./catalog.server";
+import { reporterDigest } from "./reporter-digest.server";
+import { invalidateBlockedWordIds } from "./word-block.server";
 import { addWordReport } from "./word-report-store.server";
 
 const headers = { "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff" };
@@ -17,8 +19,10 @@ const MAX_PER_WINDOW = 12;
 const recent = new Map<string, number[]>();
 
 /**
- * Sliding-window limit per caller. The address is only ever a key in this
- * in-memory map — it is not written to the report or to any log.
+ * Sliding-window limit per caller. The address is only ever a key in this in-memory map.
+ * It is not written to the report and not logged; what IS stored alongside the report is a
+ * salted one-way digest of it (reporter-digest.server.ts), which exists solely so the block
+ * rule can count separate readers.
  */
 function allow(key: string): boolean {
   const now = Date.now();
@@ -67,9 +71,12 @@ export async function wordReportPostResponse(request: Request): Promise<Response
   const parsed = wordReportSchema.safeParse(body);
   if (!parsed.success) return refuse(400, "INVALID_REQUEST", "Invalid report");
 
+  // The FULL catalog on purpose: a word already blocked is still reportable, so the
+  // reports keep accruing for the admin who will read them.
   const word = catalog.words.find((entry) => entry.id === parsed.data.id);
   if (!word) return refuse(404, "UNKNOWN_WORD", "That word is not in the catalog");
-  if (!allow(callerKey(request))) {
+  const caller = callerKey(request);
+  if (!allow(caller)) {
     return refuse(429, "RATE_LIMITED", "Too many reports. Try again later.");
   }
 
@@ -79,9 +86,13 @@ export async function wordReportPostResponse(request: Request): Promise<Response
       word: word.word,
       reasons: parsed.data.reasons,
       stage: toReportStage(parsed.data.stage ?? null),
+      reporter: reporterDigest(caller, word.id),
     });
   } catch {
     return refuse(503, "UNAVAILABLE", "Could not save the report. Please retry.");
   }
+  // This report may be the one that crosses the threshold; drop the cached blocklist so the
+  // next page does not hand the reader back the word they just reported.
+  invalidateBlockedWordIds();
   return Response.json({ ok: true }, { headers });
 }

@@ -2,7 +2,8 @@
 import { z } from "zod";
 import { LEVELS } from "../lib/schema";
 import { DIFFICULTY_IDS } from "../lib/difficulty";
-import { catalogFor, MAX_POSITION, readVocabularyPage } from "./catalog.server";
+import { MAX_POSITION, readVocabularyPage, servedCatalogFor } from "./catalog.server";
+import { refreshBlockedWordIds } from "./word-block.server";
 import { resolveTarget } from "../lib/target-language";
 
 const unsigned = (fallback: string, max: number) =>
@@ -60,7 +61,7 @@ const requestSchema = z
 const headers = { "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff" };
 
 /** Serve bounded pages without authentication. @param request Incoming GET. @returns JSON response. */
-export function vocabularyResponse(request: Request): Response {
+export async function vocabularyResponse(request: Request): Promise<Response> {
   const url = new URL(request.url);
   if (url.search.length > 512)
     return Response.json(
@@ -78,7 +79,10 @@ export function vocabularyResponse(request: Request): Response {
       { status: 400, headers },
     );
   const locale = resolveTarget(request.headers.get("host") ?? url.host);
-  if (parsed.data.revision && parsed.data.revision !== catalogFor(locale).revision) {
+  // Before the revision is compared or a page is cut: both have to be taken against the
+  // same pool, and the pool is whatever is not currently blocked.
+  await refreshBlockedWordIds();
+  if (parsed.data.revision && parsed.data.revision !== servedCatalogFor(locale).revision) {
     return Response.json(
       { code: "CATALOG_CHANGED", error: "The vocabulary catalog changed. Start a fresh stream." },
       { status: 409, headers },

@@ -10,10 +10,16 @@
  *   src/features/vocabulary/data/word-reports.json, written atomically like the
  *   other local data files.
  *
- * Nothing about the reader is stored in either: no account, no address, no device.
+ * No account, no device and no address is stored in either. One thing about the reader IS:
+ * an opaque per-word reporter key (reporter-digest.server.ts), which exists only so the
+ * block rule can tell three readers from one reader reporting three times. It is a salted
+ * one-way digest and cannot be read back as an address — see that module for what it does
+ * and does not protect.
  *
- * Exports: addWordReport, listWordReports, setWordReportStatus, wordReportStoreKind
- * Depends on: node:fs/promises, Supabase admin client (lazy), ../lib/word-report
+ * Exports: addWordReport, listWordReports, listWordReportSignals, setWordReportStatus,
+ *   wordReportStoreKind
+ * Depends on: node:fs/promises, Supabase admin client (lazy), ../lib/word-report,
+ *   ../lib/word-block
  */
 
 import { randomUUID } from "node:crypto";
@@ -26,6 +32,7 @@ import {
   type WordReport,
   type WordReportStatus,
 } from "../lib/word-report";
+import type { WordReportSignal } from "../lib/word-block";
 
 const STORE_PATH = resolve(process.cwd(), "src/features/vocabulary/data/word-reports.json");
 /** Oldest reports fall off the local file past this; it is a notebook, not an archive. */
@@ -33,7 +40,13 @@ const FILE_CAP = 5000;
 const REPORT_KIND = "word_report";
 const APP_ID = "kinetic-canvas";
 
-type NewReport = Pick<WordReport, "wordId" | "word" | "reasons" | "stage">;
+type NewReport = Pick<WordReport, "wordId" | "word" | "reasons" | "stage"> & {
+  /** Opaque per-word reporter key, or null when the caller could not be distinguished. */
+  reporter: string | null;
+};
+
+/** A stored report, as kept in the local file. The reporter key rides alongside. */
+type StoredReport = WordReport & { reporter?: string | null };
 
 /** Which home is in use, for the admin page to say where it is reading from. */
 export function wordReportStoreKind(): "supabase" | "file" {
@@ -42,17 +55,17 @@ export function wordReportStoreKind(): "supabase" | "file" {
 
 // ── Local file ───────────────────────────────────────────────────────────────
 
-async function readFileStore(): Promise<WordReport[]> {
+async function readFileStore(): Promise<StoredReport[]> {
   try {
     const parsed = JSON.parse(await readFile(STORE_PATH, "utf8")) as unknown;
-    return Array.isArray(parsed) ? (parsed as WordReport[]) : [];
+    return Array.isArray(parsed) ? (parsed as StoredReport[]) : [];
   } catch {
     // No file yet simply means no reports yet.
     return [];
   }
 }
 
-async function writeFileStore(reports: WordReport[]): Promise<void> {
+async function writeFileStore(reports: StoredReport[]): Promise<void> {
   const temporary = `${STORE_PATH}.${randomUUID()}.tmp`;
   await writeFile(temporary, `${JSON.stringify(reports, null, 2)}\n`, "utf8");
   await rename(temporary, STORE_PATH);
@@ -120,6 +133,7 @@ export async function addWordReport(report: NewReport): Promise<string> {
           word: report.word,
           reasons: report.reasons.join(","),
           stage: report.stage,
+          reporter: report.reporter,
         },
       })
       .select("id")
@@ -129,7 +143,7 @@ export async function addWordReport(report: NewReport): Promise<string> {
   }
   return queued(async () => {
     const reports = await readFileStore();
-    const stored: WordReport = {
+    const stored: StoredReport = {
       id: randomUUID(),
       ...report,
       status: "new",
@@ -156,6 +170,42 @@ export async function listWordReports(): Promise<WordReport[]> {
     return (data ?? []).map(fromRow);
   }
   return readFileStore();
+}
+
+/**
+ * Just what the block rule needs: one row per report, no word text, no reasons.
+ *
+ * Kept separate from listWordReports because it is read on the feed's path rather than an
+ * admin page — it must stay a narrow projection, and it must never become a reason to pull
+ * report bodies into the request that serves a reader their next word.
+ * @returns Every stored report reduced to {wordId, reporter, status}
+ */
+export async function listWordReportSignals(): Promise<WordReportSignal[]> {
+  if (wordReportStoreKind() === "supabase") {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data, error } = await supabaseAdmin
+      .from("admin_error_reports")
+      .select("status, metadata")
+      .eq("app_id", APP_ID)
+      .contains("metadata", { kind: REPORT_KIND })
+      .eq("status", "new")
+      .order("created_at", { ascending: false })
+      .limit(5000);
+    if (error) throw new Error(error.message);
+    return (data ?? []).map((row) => {
+      const metadata = (row.metadata ?? {}) as Record<string, unknown>;
+      return {
+        wordId: String(metadata.word_id ?? ""),
+        reporter: typeof metadata.reporter === "string" ? metadata.reporter : null,
+        status: row.status === "resolved" ? ("resolved" as const) : ("new" as const),
+      };
+    });
+  }
+  return (await readFileStore()).map((report) => ({
+    wordId: report.wordId,
+    reporter: report.reporter ?? null,
+    status: report.status,
+  }));
 }
 
 /**
