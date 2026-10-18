@@ -221,18 +221,26 @@
 .kinetic-emph-underline {
   padding-bottom: 0.08em;
 }
+/* The bar is drawn by WIDTH, not by `transform: scaleX()`.
+   A box-shadow is part of an element's rendering, so a transform takes the shadow with
+   it: at scaleX(0.3) the glow was squashed to a third of its blur horizontally while
+   staying full height, and it read as a hard-edged rectangle that only softened as the
+   draw finished. Growing the width instead leaves the shadow rendered at its true blur
+   on every frame. The cost is laying out one absolutely positioned pseudo-element, which
+   affects nothing around it.
+   `--kinetic-underline-width` exists so the keyframes can animate to the resting width
+   without restating it — the joined variant below overrides it and inherits the draw. */
 .kinetic-emph-underline::after {
   content: "";
   position: absolute;
+  --kinetic-underline-width: calc(100% + 0.04em);
   left: -0.02em;
-  right: -0.02em;
   bottom: -0.02em;
+  width: var(--kinetic-underline-width);
   height: 0.08em;
   border-radius: 999px;
   background: currentColor;
   box-shadow: 0 0 0.24em color-mix(in srgb, currentColor 42%, transparent);
-  transform: scaleX(1);
-  transform-origin: left center;
 }
 .kinetic-emph-underline.is-animated::after {
   animation: kinetic-emph-underline-draw 0.82s cubic-bezier(0.22, 1, 0.36, 1)
@@ -241,14 +249,14 @@
 @keyframes kinetic-emph-underline-draw {
   from {
     opacity: 0;
-    transform: scaleX(0);
+    width: 0;
   }
   60% {
     opacity: 1;
   }
   to {
     opacity: 1;
-    transform: scaleX(1);
+    width: var(--kinetic-underline-width);
   }
 }
 /* A Vietnamese compound word is written as separate syllables, and inside a shared
@@ -260,8 +268,8 @@
    drawing from its own left edge — two strokes growing side by side would reopen the
    gap for the length of the animation. */
 .kinetic-emph-underline.is-joined::after {
+  --kinetic-underline-width: calc(100% + 0.28em);
   left: -0.14em;
-  right: -0.14em;
 }
 .kinetic-emph-underline.is-joined.is-animated::after {
   animation: kinetic-emph-underline-join 0.82s ease-out var(--kinetic-emphasis-delay, 0.68s) both;
@@ -269,11 +277,9 @@
 @keyframes kinetic-emph-underline-join {
   from {
     opacity: 0;
-    transform: scaleX(1);
   }
   to {
     opacity: 1;
-    transform: scaleX(1);
   }
 }
 /* A run draws ONE bar under every syllable, on the run itself. It needs no thickness
