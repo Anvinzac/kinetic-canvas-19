@@ -92,7 +92,10 @@
      Default unchanged, so nothing moves for anyone who does not set it. The bottom chrome
      already had its knob: --vocab-chrome-inset on the shell, which the progress row, the
      button row and the meaning panel's cap all derive from. */
-  top: max(var(--vocab-chrome-head, 12px), env(safe-area-inset-top));
+  /* One definition of how far down the bar sits; the scrim below reads the same value
+     to work out how far back UP it has to reach. */
+  --vocab-chrome-top-offset: max(var(--vocab-chrome-head, 12px), env(safe-area-inset-top));
+  top: var(--vocab-chrome-top-offset);
   left: max(16px, env(safe-area-inset-left));
   right: max(16px, env(safe-area-inset-right));
   color: var(--chrome-ink);
@@ -105,7 +108,13 @@
   content: "";
   position: absolute;
   z-index: -1;
-  inset: -14px -18px -26px;
+  /* The scrim is pinned to the TOP EDGE and grows downward, rather than travelling with
+     the bar. It is positioned against the toolbar, so reaching the edge means coming back
+     up by exactly however far the bar was pushed down — plus 2px, so antialiasing at the
+     boundary cannot leave a hairline of card showing. Pushing the bar further down
+     therefore makes the scrim taller instead of detaching it, and the gradient still
+     fades out below the controls because the bottom inset is unchanged. */
+  inset: calc(-1 * var(--vocab-chrome-top-offset, 14px) - 2px) -18px -26px;
   /* Square on top, rounded only on the bottom two corners: the scrim sits flush against
      the top edge of the viewport, so rounded top corners would let the card background
      leak through the gaps. The bottom edge still fades over the content, so it keeps its
