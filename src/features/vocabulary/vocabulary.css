@@ -3955,7 +3955,12 @@
   top: calc((var(--rung-index) + 0.5) * 100% / var(--rung-count));
   width: 30px;
   height: 30px;
-  margin: -15px 0 0 -15px;
+  /* Centred on its own coordinates, not by a hand-computed half-size. `left`/`top` put
+     the knob's CORNER on the rung; this pulls it back by half of whatever the knob
+     actually measures. A negative margin has to be re-derived every time the size
+     changes, and the landscape rule carried -22.5px — half of 45 — against a knob that
+     is and always was 30px, so it sat 7.5px up and left of its dot. */
+  transform: translate(-50%, -50%);
   border: 3px solid #ffffff;
   border-radius: 50%;
   background: var(--rung);
@@ -4234,7 +4239,7 @@
   .vocab-onboard[data-landscape] .vocab-onboard-knob {
     left: calc((var(--rung-index) + 0.5) * 100% / var(--rung-count));
     top: 50%;
-    margin: -22.5px 0 0 -22.5px;
+    /* No margin override: the base rule's transform centres it at any size. */
     transition:
       left var(--dur-move) var(--ease-spring),
       background var(--dur-move) var(--ease-out),
