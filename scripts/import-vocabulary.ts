@@ -25,6 +25,7 @@ import { mkdir, readFile, rename, stat, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { normalizeDeck } from "../src/features/vocabulary/lib/schema.ts";
+import { toDeck } from "../src/features/vocabulary/lib/custom-pack.ts";
 
 const USAGE = "Usage: npm run vocab:import -- <WordCrawler JSON path> [--pack <name>]";
 
@@ -42,7 +43,8 @@ let locale: string | undefined;
 if (localeAt !== -1) {
   locale = argv[localeAt + 1];
   argv.splice(localeAt, locale ? 2 : 1);
-  if (!locale || !/^(zh|ko|ja)$/.test(locale)) throw new Error("--locale must be zh, ko or ja");
+  if (!locale || !/^(zh|ko|ja|fr|de|es)$/.test(locale))
+    throw new Error("--locale must be zh, ko, ja, fr, de or es");
 }
 const packAt = argv.indexOf("--pack");
 let packName: string | undefined;
@@ -74,7 +76,10 @@ if (!source || argv.length !== 1 || (packAt !== -1 && !packName)) {
     const input = resolve(source);
     if ((await stat(input)).size > 100 * 1024 * 1024)
       throw new Error("Deck exceeds the 100 MiB import limit");
-    const catalog = normalizeDeck(JSON.parse(await readFile(input, "utf8")));
+    const raw: unknown = JSON.parse(await readFile(input, "utf8"));
+    // Bare word arrays (the docs/Batches decks) go through the same toDeck cleanup
+    // the library importer uses: ids, dedupe, level from the file name.
+    const catalog = normalizeDeck(Array.isArray(raw) ? toDeck(raw, source) : raw);
     const revision = createHash("sha256")
       .update(JSON.stringify(catalog))
       .digest("hex")

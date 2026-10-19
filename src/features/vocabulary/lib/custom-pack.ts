@@ -45,7 +45,7 @@ function levelFromSource(source: string): string | undefined {
  * compiled packs (data/packs/*.json — { revision, words: [...] }). Both become the
  * schema's word shape before validation.
  */
-function toDeck(json: unknown, source: string): { meta?: { name: string }; words: RawWord[] } {
+export function toDeck(json: unknown, source: string): { meta?: { name: string }; words: RawWord[] } {
   const list = (Array.isArray(json) ? json : (json as { words?: unknown })?.words) as unknown;
   if (!Array.isArray(list)) throw new Error("Không tìm thấy danh sách từ trong gói.");
   const root = Array.isArray(json) ? {} : (json as { name?: unknown; meta?: { name?: unknown } });
@@ -61,6 +61,7 @@ function toDeck(json: unknown, source: string): { meta?: { name: string }; words
     "Gói của bạn";
   const fallbackLevel = levelFromSource(source);
   const seen = new Set<string>();
+  const usedIds = new Set<string>();
   const words: RawWord[] = [];
   for (const item of list as RawWord[]) {
     if (!item || typeof item !== "object" || typeof item.word !== "string") continue;
@@ -82,12 +83,21 @@ function toDeck(json: unknown, source: string): { meta?: { name: string }; words
           ? [{ en: usageEn, vi: usageVi ?? "" }]
           : [];
     const exams = Array.isArray(rest.exams) && rest.exams.length ? rest.exams : undefined;
+    // Accents are stripped before slugging (schützen → schutzen); when two words
+    // still collide (schützen/schätzen), the later one gets a numeric suffix.
+    let id =
+      typeof rest.id === "string" && rest.id
+        ? rest.id
+        : head
+            .normalize("NFD")
+            .replace(/[̀-ͯ]/g, "")
+            .replace(/[^a-z0-9_-]+/g, "-")
+            .replace(/^-+|-+$/g, "") || `w${words.length}`;
+    while (usedIds.has(id)) id = `${id.replace(/-\d+$/, "")}-${words.length}`;
+    usedIds.add(id);
     words.push({
       ...rest,
-      id:
-        typeof rest.id === "string" && rest.id
-          ? rest.id
-          : head.replace(/[^a-z0-9_-]+/g, "-").replace(/^-+|-+$/g, "") || `w${words.length}`,
+      id,
       usage,
       exams,
       emphasis: rest.emphasis ?? emphasisVi,

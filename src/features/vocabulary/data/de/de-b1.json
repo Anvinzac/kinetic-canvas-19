@@ -1,0 +1,3147 @@
+{
+  "revision": "c69343516492329d5856f532",
+  "name": "deck-de-B1",
+  "count": 113,
+  "topics": [
+    "attention",
+    "character",
+    "communication",
+    "daily",
+    "emotion",
+    "food",
+    "general",
+    "health",
+    "money",
+    "nature",
+    "perception",
+    "society",
+    "study",
+    "technology",
+    "thinking",
+    "time",
+    "travel",
+    "work"
+  ],
+  "levels": [
+    "B1"
+  ],
+  "words": [
+    {
+      "id": "entscheiden",
+      "word": "entscheiden",
+      "meaningVi": "quyết_định",
+      "defVi": "Cân_nhắc xong | thì dứt_khoát | chọn một hướng đi.",
+      "leadVi": "Trà_sữa hay cà_phê? | Đứng phân_vân | mười phút rồi.",
+      "anticipateVi": "Chốt đơn đi bạn ơi!",
+      "emphasis": [
+        "dứt khoát",
+        "phân vân"
+      ],
+      "pos": "verb",
+      "ipa": "/ɛntˈʃaɪ̯dn̩/",
+      "topic": "thinking",
+      "topics": [
+        "thinking"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Ich kann mich nicht _____, welches Kleid ich nehme.",
+          "vi": "Tôi không quyết_định được | nên lấy | chiếc_váy nào."
+        }
+      ],
+      "chars": 11,
+      "initial": "E"
+    },
+    {
+      "id": "hungrig",
+      "word": "hungrig",
+      "meaningVi": "đói",
+      "defVi": "Thấy đói_bụng | và muốn=ăn | vì lâu chưa=ăn gì.",
+      "leadVi": "Mới mười giờ sáng | mà bụng réo | ầm_ầm rồi.",
+      "anticipateVi": "Ăn tạm | chữ_cái nhé?",
+      "emphasis": [
+        "đói bụng",
+        "bụng réo"
+      ],
+      "pos": "adj",
+      "ipa": "/ˈhʊŋʁɪç/",
+      "topic": "food",
+      "topics": [
+        "food",
+        "health"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Nach dem Schwimmen sind die Kinder immer sehr _____.",
+          "vi": "Bơi xong | bọn trẻ | lúc_nào cũng rất đói."
+        }
+      ],
+      "chars": 7,
+      "initial": "H"
+    },
+    {
+      "id": "durstig",
+      "word": "durstig",
+      "meaningVi": "khát",
+      "defVi": "Cổ_họng khô rát, | rất muốn=uống ngay | một ly_nước.",
+      "leadVi": "Chạy_bộ trưa nắng, | về tu cạn | cả=bình nước.",
+      "anticipateVi": "Một ly trà_đá không?",
+      "emphasis": [
+        "khô rát",
+        "tu cạn"
+      ],
+      "pos": "adj",
+      "ipa": "/ˈdʊʁstɪç/",
+      "topic": "food",
+      "topics": [
+        "food",
+        "health"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Nach dem Fußballspiel war ich total _____.",
+          "vi": "Đá bóng xong | tôi khát kinh_khủng."
+        }
+      ],
+      "chars": 7,
+      "initial": "D"
+    },
+    {
+      "id": "wutend",
+      "word": "wütend",
+      "meaningVi": "tức_giận",
+      "defVi": "Thấy tức_giận, nổi_nóng | vì ai=đó làm=điều sai.",
+      "leadVi": "Bị giành mất | chỗ đậu=xe, | mặt đỏ phừng_phừng.",
+      "anticipateVi": "Hít sâu, | đếm đến mười!",
+      "emphasis": [
+        "tức giận",
+        "phừng phừng"
+      ],
+      "pos": "adj",
+      "ipa": "/ˈvyːtn̩t/",
+      "topic": "emotion",
+      "topics": [
+        "emotion"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Mein Chef war richtig _____, weil ich zu spät kam.",
+          "vi": "Sếp tôi giận lắm | vì tôi đến muộn."
+        }
+      ],
+      "chars": 6,
+      "initial": "W"
+    },
+    {
+      "id": "beschaftigt",
+      "word": "beschäftigt",
+      "meaningVi": "bận",
+      "defVi": "Đang bận_rộn | vì có quá nhiều việc | phải=làm.",
+      "leadVi": "Rủ cà_phê, | lần nào cũng từ_chối | vì kẹt việc.",
+      "anticipateVi": "Rảnh thì đoán giùm!",
+      "emphasis": [
+        "bận rộn",
+        "kẹt việc"
+      ],
+      "pos": "adj",
+      "ipa": "/bəˈʃɛftɪçt/",
+      "topic": "work",
+      "topics": [
+        "work",
+        "daily"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Papa ist gerade _____, er telefoniert mit einem Kunden.",
+          "vi": "Bố đang bận | bố đang nói_chuyện với khách."
+        }
+      ],
+      "chars": 11,
+      "initial": "B"
+    },
+    {
+      "id": "lecker",
+      "word": "lecker",
+      "meaningVi": "ngon",
+      "defVi": "Có vị ngon tuyệt, | ăn xong | vẫn muốn ăn thêm.",
+      "leadVi": "Húp một ngụm nước_lèo, | ai cũng gật_gù khen.",
+      "anticipateVi": "Thơm quá, chảy nước_miếng!",
+      "emphasis": [
+        "ngon tuyệt",
+        "gật gù"
+      ],
+      "pos": "adj",
+      "ipa": "/ˈlɛkɐ/",
+      "topic": "food",
+      "topics": [
+        "food"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Die Suppe von Oma ist immer _____.",
+          "vi": "Súp bà nấu | lúc_nào cũng ngon."
+        }
+      ],
+      "chars": 6,
+      "initial": "L"
+    },
+    {
+      "id": "rat",
+      "word": "rat",
+      "meaningVi": "lời_khuyên",
+      "defVi": "Lời góp_ý | giúp ai=đó | biết nên làm gì.",
+      "leadVi": "Phân_vân chuyện nghỉ việc, | gọi ngay | hỏi ý chị_gái.",
+      "anticipateVi": "Nghe mình nói nè!",
+      "emphasis": [
+        "góp ý",
+        "hỏi ý"
+      ],
+      "pos": "noun",
+      "ipa": "/ʁaːt/",
+      "topic": "communication",
+      "topics": [
+        "communication"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Ich brauche deinen _____: Welches Handy soll ich kaufen?",
+          "vi": "Mình cần lời_khuyên của=bạn | nên mua điện_thoại nào?"
+        }
+      ],
+      "chars": 3,
+      "initial": "R"
+    },
+    {
+      "id": "klettern",
+      "word": "klettern",
+      "meaningVi": "leo, trèo",
+      "defVi": "Dùng cả tay lẫn chân | để leo lên | chỗ cao.",
+      "leadVi": "Chinh_phục Phan_Xi_Păng, | lên đỉnh | thở không ra hơi.",
+      "anticipateVi": "Lên cao chút nữa!",
+      "emphasis": [
+        "leo lên",
+        "lên đỉnh"
+      ],
+      "pos": "verb",
+      "ipa": "/ˈklɛtɐn/",
+      "topic": "travel",
+      "topics": [
+        "travel",
+        "health"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Am Wochenende gehen wir in den Bergen _____.",
+          "vi": "Cuối_tuần | chúng_tôi đi leo núi."
+        }
+      ],
+      "chars": 8,
+      "initial": "K"
+    },
+    {
+      "id": "aussuchen",
+      "word": "aussuchen",
+      "meaningVi": "chọn",
+      "defVi": "Cân_nhắc rồi lấy | thứ mình thích nhất | trong nhiều thứ.",
+      "leadVi": "Đứng trước tủ_kính, | chỉ tay: | \"Cho em cái_bánh này.\"",
+      "anticipateVi": "Một, hai hay ba?",
+      "emphasis": [
+        "thích nhất",
+        "chỉ tay"
+      ],
+      "pos": "verb",
+      "ipa": "/ˈaʊ̯sˌzuːxn̩/",
+      "topic": "thinking",
+      "topics": [
+        "thinking",
+        "daily"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Du darfst dir ein Eis _____.",
+          "vi": "Con được chọn | một cây_kem."
+        }
+      ],
+      "chars": 9,
+      "initial": "A"
+    },
+    {
+      "id": "genie-en",
+      "word": "genießen",
+      "meaningVi": "tận_hưởng",
+      "defVi": "Thấy vui_thích, | tận_hưởng trọn_vẹn | điều mình đang=làm.",
+      "leadVi": "Nằm võng, | gió biển mát_rượi, | tay cầm trái_dừa.",
+      "anticipateVi": "Sướng chưa nè!",
+      "emphasis": [
+        "tận hưởng",
+        "mát rượi"
+      ],
+      "pos": "verb",
+      "ipa": "/ɡəˈniːsn̩/",
+      "topic": "emotion",
+      "topics": [
+        "emotion",
+        "daily"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Im Urlaub will ich einfach die Sonne _____.",
+          "vi": "Đi nghỉ | tôi chỉ muốn | tận_hưởng ánh nắng."
+        }
+      ],
+      "chars": 8,
+      "initial": "G"
+    },
+    {
+      "id": "entspannen",
+      "word": "entspannen",
+      "meaningVi": "thư_giãn",
+      "defVi": "Nghỉ_ngơi, | thả_lỏng | cho đầu_óc | nhẹ_nhõm hơn.",
+      "leadVi": "Tắt điện_thoại, | bật nhạc nhẹ, | ngâm=chân nước ấm.",
+      "anticipateVi": "Thả lỏng vai ra nào!",
+      "emphasis": [
+        "nhẹ nhõm",
+        "nhạc nhẹ"
+      ],
+      "pos": "verb",
+      "ipa": "/ɛntˈʃpanən/",
+      "topic": "health",
+      "topics": [
+        "health",
+        "daily"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Am Sonntag möchte ich mich nur _____.",
+          "vi": "Chủ_nhật | tôi chỉ muốn thư_giãn."
+        }
+      ],
+      "chars": 10,
+      "initial": "E"
+    },
+    {
+      "id": "aufwachen",
+      "word": "aufwachen",
+      "meaningVi": "thức_dậy",
+      "defVi": "Thôi ngủ và tỉnh_giấc, | mở mắt ra | đón ngày mới.",
+      "leadVi": "Tiếng gà gáy | ngoài sân, | mắt nhắm mắt mở | bò dậy.",
+      "anticipateVi": "Reng reng reng!",
+      "emphasis": [
+        "tỉnh giấc",
+        "bò dậy"
+      ],
+      "pos": "verb",
+      "ipa": "/ˈaʊ̯fˌvaxn̩/",
+      "topic": "daily",
+      "topics": [
+        "daily",
+        "time"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Ohne Wecker kann ich morgens nicht _____.",
+          "vi": "Không có đồng_hồ báo_thức | sáng ra | tôi không dậy nổi."
+        }
+      ],
+      "chars": 9,
+      "initial": "A"
+    },
+    {
+      "id": "bemerken",
+      "word": "bemerken",
+      "meaningVi": "để_ý",
+      "defVi": "Chợt để_ý thấy điều gì | bằng mắt | hay cảm_nhận.",
+      "leadVi": "Bạn vừa cắt tóc, | chỉ mình cô=ấy | nhận_ra ngay.",
+      "anticipateVi": "Tinh mắt | ghê ta!",
+      "emphasis": [
+        "để ý",
+        "nhận ra"
+      ],
+      "pos": "verb",
+      "ipa": "/bəˈmɛʁkn̩/",
+      "topic": "attention",
+      "topics": [
+        "attention",
+        "perception"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Ohne Brille kann ich so kleine Fehler nicht _____.",
+          "vi": "Không đeo kính | tôi không để_ý được | lỗi nhỏ như_vậy."
+        }
+      ],
+      "chars": 8,
+      "initial": "B"
+    },
+    {
+      "id": "hoflich",
+      "word": "höflich",
+      "meaningVi": "lịch_sự",
+      "defVi": "Cư_xử lịch_sự, | biết chào_hỏi | và nói cảm_ơn.",
+      "leadVi": "Gặp người_lớn | là khoanh tay, | cúi=đầu chào ạ.",
+      "anticipateVi": "Mời bạn | đoán trước ạ!",
+      "emphasis": [
+        "lịch sự",
+        "khoanh tay"
+      ],
+      "pos": "adj",
+      "ipa": "/ˈhøːflɪç/",
+      "topic": "character",
+      "topics": [
+        "character",
+        "society"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Der Kellner war sehr _____ und hilfsbereit.",
+          "vi": "Anh phục_vụ | rất lịch_sự | và nhiệt_tình."
+        }
+      ],
+      "chars": 7,
+      "initial": "H"
+    },
+    {
+      "id": "versprechen",
+      "word": "versprechen",
+      "meaningVi": "hứa",
+      "defVi": "Nói chắc với ai | rằng mình nhất_định | sẽ=làm.",
+      "leadVi": "Ngoéo tay rồi nhé, | ai nuốt_lời | là thua!",
+      "anticipateVi": "Đoán đúng, | mình bao trà sữa!",
+      "emphasis": [
+        "nhất định",
+        "nuốt lời"
+      ],
+      "pos": "verb",
+      "ipa": "/fɛɐ̯ˈʃpʁɛçn̩/",
+      "topic": "communication",
+      "topics": [
+        "communication"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Kannst du mir _____, dass du vorsichtig fährst?",
+          "vi": "Bạn hứa với mình | là sẽ lái xe | cẩn_thận nhé?"
+        }
+      ],
+      "chars": 11,
+      "initial": "V"
+    },
+    {
+      "id": "gewohnheit",
+      "word": "gewohnheit",
+      "meaningVi": "thói_quen",
+      "defVi": "Việc làm | lặp_lại đều_đặn | đến mức | chẳng cần nghĩ.",
+      "leadVi": "Vừa mở=mắt, | tay đã tự tìm | điện_thoại.",
+      "anticipateVi": "Ngày nào | cũng vậy mà!",
+      "emphasis": [
+        "lặp lại",
+        "tự tìm"
+      ],
+      "pos": "noun",
+      "ipa": "/ɡəˈvoːnhaɪ̯t/",
+      "topic": "daily",
+      "topics": [
+        "daily"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Früh aufstehen ist für mich eine gute _____.",
+          "vi": "Với tôi | dậy sớm | là một thói_quen tốt."
+        }
+      ],
+      "chars": 10,
+      "initial": "G"
+    },
+    {
+      "id": "ausleihen",
+      "word": "ausleihen",
+      "meaningVi": "mượn",
+      "defVi": "Xin dùng tạm | đồ của=người khác | rồi trả lại sau.",
+      "leadVi": "\"Cho mình | dùng ké cây_bút, | xíu trả liền nha!\"",
+      "anticipateVi": "Cái gì đi rồi | phải về?",
+      "emphasis": [
+        "dùng tạm",
+        "dùng ké"
+      ],
+      "pos": "verb",
+      "ipa": "/ˈaʊ̯sˌlaɪ̯ən/",
+      "topic": "daily",
+      "topics": [
+        "daily",
+        "money"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Darf ich mir dein Fahrrad kurz _____?",
+          "vi": "Mình mượn xe_đạp của=bạn | một lát | được không?"
+        }
+      ],
+      "chars": 9,
+      "initial": "A"
+    },
+    {
+      "id": "unhoflich",
+      "word": "unhöflich",
+      "meaningVi": "thô_lỗ, bất lịch_sự",
+      "defVi": "Ăn_nói, cư_xử thô_lỗ, | thiếu tôn_trọng | người khác.",
+      "leadVi": "Chen ngang hàng, | bị nhắc | còn quay lại trợn mắt.",
+      "anticipateVi": "Ăn_nói | cho đàng_hoàng!",
+      "emphasis": [
+        "thô lỗ",
+        "trợn mắt"
+      ],
+      "pos": "adj",
+      "ipa": "/ˈʊnhøːflɪç/",
+      "topic": "character",
+      "topics": [
+        "character",
+        "society"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Der Taxifahrer war ziemlich _____ zu uns.",
+          "vi": "Bác tài taxi | khá thô_lỗ với chúng_tôi."
+        }
+      ],
+      "chars": 9,
+      "initial": "U"
+    },
+    {
+      "id": "seltsam",
+      "word": "seltsam",
+      "meaningVi": "lạ, kỳ_lạ",
+      "defVi": "Thật kỳ_lạ, | khác_thường đến mức | khiến ta khó_hiểu.",
+      "leadVi": "Nửa_đêm, | chuông_cửa reo | mà ngoài kia | chẳng có ai.",
+      "anticipateVi": "Hơi sai sai nhỉ?",
+      "emphasis": [
+        "kỳ lạ",
+        "chuông cửa"
+      ],
+      "pos": "adj",
+      "ipa": "/ˈzɛltzaːm/",
+      "topic": "perception",
+      "topics": [
+        "perception",
+        "thinking"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Das Essen schmeckt heute irgendwie _____.",
+          "vi": "Hôm nay | đồ ăn | có vị gì lạ lạ."
+        }
+      ],
+      "chars": 7,
+      "initial": "S"
+    },
+    {
+      "id": "riesig",
+      "word": "riesig",
+      "meaningVi": "khổng_lồ",
+      "defVi": "To_lớn khổng_lồ, | hơn hẳn | mức bình_thường | rất nhiều.",
+      "leadVi": "Tô_phở | to_tướng như chậu, | hai người | ăn không hết.",
+      "anticipateVi": "To cỡ nào nhỉ?",
+      "emphasis": [
+        "khổng lồ",
+        "to tướng"
+      ],
+      "pos": "adj",
+      "ipa": "/ˈʁiːzɪç/",
+      "topic": "daily",
+      "topics": [
+        "daily",
+        "general"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Der Elefant im Zoo war wirklich _____.",
+          "vi": "Con_voi | trong sở_thú | thật_sự khổng_lồ."
+        }
+      ],
+      "chars": 6,
+      "initial": "R"
+    },
+    {
+      "id": "uberrascht",
+      "word": "überrascht",
+      "meaningVi": "ngạc_nhiên",
+      "defVi": "Sững_sờ, ngạc_nhiên | trước điều | mình hoàn_toàn không ngờ.",
+      "leadVi": "Mở cửa ra, | cả nhóm bạn | hét lên | cùng bánh_kem.",
+      "anticipateVi": "Há hốc mồm chưa?",
+      "emphasis": [
+        "ngạc nhiên",
+        "hét lên"
+      ],
+      "pos": "adj",
+      "ipa": "/yːbɐˈʁaʃt/",
+      "topic": "emotion",
+      "topics": [
+        "emotion"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Ich war _____, wie gut das Essen war.",
+          "vi": "Tôi ngạc_nhiên | vì món_ăn | ngon đến_thế."
+        }
+      ],
+      "chars": 10,
+      "initial": "Ü"
+    },
+    {
+      "id": "ordentlich",
+      "word": "ordentlich",
+      "meaningVi": "gọn_gàng",
+      "defVi": "Mọi thứ | xếp đúng chỗ, | gọn_gàng | và ngăn_nắp.",
+      "leadVi": "Bàn_học | không một tờ_giấy lệch, | bút xếp thẳng_hàng.",
+      "anticipateVi": "Mọi thứ | vào nếp nào!",
+      "emphasis": [
+        "gọn gàng",
+        "thẳng hàng"
+      ],
+      "pos": "adj",
+      "ipa": "/ˈɔʁdn̩tlɪç/",
+      "topic": "daily",
+      "topics": [
+        "daily",
+        "character"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Sein Schreibtisch ist immer sehr _____.",
+          "vi": "Bàn làm_việc | của=anh=ấy | lúc_nào cũng rất gọn_gàng."
+        }
+      ],
+      "chars": 10,
+      "initial": "O"
+    },
+    {
+      "id": "abenteuer",
+      "word": "abenteuer",
+      "meaningVi": "cuộc=phiêu_lưu",
+      "defVi": "Chuyến phiêu_lưu thú_vị, | có chút mạo_hiểm.",
+      "leadVi": "Ba ngày băng rừng | chỉ với tấm bản_đồ, | la_bàn.",
+      "anticipateVi": "Sẵn_sàng khám_phá chưa?",
+      "emphasis": [
+        "mạo hiểm",
+        "băng rừng"
+      ],
+      "pos": "noun",
+      "ipa": "/ˈaːbn̩tɔʏ̯ɐ/",
+      "topic": "travel",
+      "topics": [
+        "travel"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Die Reise durch die Berge war ein echtes _____.",
+          "vi": "Chuyến_đi qua núi | là một cuộc phiêu_lưu | thật_sự."
+        }
+      ],
+      "chars": 9,
+      "initial": "A"
+    },
+    {
+      "id": "erinnerung",
+      "word": "erinnerung",
+      "meaningVi": "kỷ_niệm",
+      "defVi": "Điều mình còn nhớ, | những kỷ_niệm | từ ngày xưa.",
+      "leadVi": "Lật xấp ảnh cũ, | thấy mình ngày bé | mặc áo_dài.",
+      "anticipateVi": "Nhớ hồi đó không?",
+      "emphasis": [
+        "kỷ niệm",
+        "ảnh cũ"
+      ],
+      "pos": "noun",
+      "ipa": "/ɛɐ̯ˈʔɪnəʁʊŋ/",
+      "topic": "thinking",
+      "topics": [
+        "thinking",
+        "emotion"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Ich habe eine schöne _____ an meinen ersten Schultag.",
+          "vi": "Tôi có một kỷ_niệm đẹp | về ngày đầu_tiên | đi học."
+        }
+      ],
+      "chars": 10,
+      "initial": "E"
+    },
+    {
+      "id": "geheimnis",
+      "word": "geheimnis",
+      "meaningVi": "bí_mật",
+      "defVi": "Điều giấu kín | mà mình không muốn | ai khác biết.",
+      "leadVi": "Ghé tai bạn_thân | nói nhỏ: | “Đừng kể với ai nhé.”",
+      "anticipateVi": "Chỉ mình bạn biết thôi!",
+      "emphasis": [
+        "giấu kín",
+        "nói nhỏ"
+      ],
+      "pos": "noun",
+      "ipa": "/ɡəˈhaɪ̯mnɪs/",
+      "topic": "communication",
+      "topics": [
+        "communication",
+        "society"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Sie hat mir ein großes _____ erzählt.",
+          "vi": "Cô=ấy | đã kể cho tôi | một bí_mật lớn."
+        }
+      ],
+      "chars": 9,
+      "initial": "G"
+    },
+    {
+      "id": "spiegel",
+      "word": "spiegel",
+      "meaningVi": "cái=gương",
+      "defVi": "Tấm_kính phản_chiếu | để soi mặt | hay ngắm dáng mình.",
+      "leadVi": "Trước khi ra khỏi nhà, | xoay trái xoay phải | ngắm_nghía.",
+      "anticipateVi": "Ai đẹp nhất | thế_gian?",
+      "emphasis": [
+        "phản chiếu",
+        "ngắm nghía"
+      ],
+      "pos": "noun",
+      "ipa": "/ˈʃpiːɡl̩/",
+      "topic": "daily",
+      "topics": [
+        "daily"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Im Badezimmer hängt ein großer _____.",
+          "vi": "Trong phòng tắm | có treo | một cái_gương lớn."
+        }
+      ],
+      "chars": 7,
+      "initial": "S"
+    },
+    {
+      "id": "uniform",
+      "word": "uniform",
+      "meaningVi": "đồng_phục",
+      "defVi": "Quần_áo giống nhau | mà trường hay công_ty | quy_định.",
+      "leadVi": "Sáng thứ_Hai, | cả trường | áo trắng quần xanh đồng_loạt.",
+      "anticipateVi": "Mặc giống nhau ghê!",
+      "emphasis": [
+        "giống nhau",
+        "áo trắng"
+      ],
+      "pos": "noun",
+      "ipa": "/uniˈfɔʁm/",
+      "topic": "study",
+      "topics": [
+        "study",
+        "work",
+        "daily"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Der Polizist trägt eine blaue _____.",
+          "vi": "Viên cảnh_sát | mặc đồng_phục | màu xanh."
+        }
+      ],
+      "chars": 7,
+      "initial": "U"
+    },
+    {
+      "id": "dieb",
+      "word": "dieb",
+      "meaningVi": "kẻ=trộm",
+      "defVi": "Kẻ lén_lút | lấy đồ của người khác | mà không xin.",
+      "leadVi": "Chen giữa chợ đông, | quay lại | đã mất ví.",
+      "anticipateVi": "Bắt lấy hắn!",
+      "emphasis": [
+        "lén lút",
+        "mất ví"
+      ],
+      "pos": "noun",
+      "ipa": "/diːp/",
+      "topic": "society",
+      "topics": [
+        "society",
+        "daily"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Der _____ hat mein Fahrrad mitgenommen.",
+          "vi": "Tên trộm | đã lấy mất | xe_đạp của=tôi."
+        }
+      ],
+      "chars": 4,
+      "initial": "D"
+    },
+    {
+      "id": "haustier",
+      "word": "haustier",
+      "meaningVi": "thú_cưng",
+      "defVi": "Thú_cưng, | con vật_nuôi trong nhà | để làm bạn.",
+      "leadVi": "Đi làm về, | vừa mở cửa | đã có đứa vẫy đuôi.",
+      "anticipateVi": "Meo meo, | gâu gâu!",
+      "emphasis": [
+        "vật nuôi",
+        "vẫy đuôi"
+      ],
+      "pos": "noun",
+      "ipa": "/ˈhaʊ̯sˌtiːɐ̯/",
+      "topic": "daily",
+      "topics": [
+        "daily",
+        "nature"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Unser _____ ist ein kleiner Hase.",
+          "vi": "Thú_cưng nhà tôi | là một con_thỏ nhỏ."
+        }
+      ],
+      "chars": 8,
+      "initial": "H"
+    },
+    {
+      "id": "vermeiden",
+      "word": "vermeiden",
+      "meaningVi": "tránh",
+      "defVi": "Cố tránh xa, | không gặp | hay không làm điều gì đó.",
+      "leadVi": "Thấy chủ nợ đầu ngõ, | lập_tức rẽ sang | đường khác.",
+      "anticipateVi": "Né được | thì né!",
+      "emphasis": [
+        "tránh xa",
+        "rẽ sang"
+      ],
+      "pos": "verb",
+      "ipa": "/fɛɐ̯ˈmaɪ̯dn̩/",
+      "topic": "daily",
+      "topics": [
+        "daily",
+        "health"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Ich versuche, Zucker zu _____.",
+          "vi": "Tôi cố tránh | ăn đường."
+        }
+      ],
+      "chars": 9,
+      "initial": "V"
+    },
+    {
+      "id": "verstecken",
+      "word": "verstecken",
+      "meaningVi": "trốn, giấu",
+      "defVi": "Giấu đồ hay trốn đi | để người khác | không tìm thấy.",
+      "leadVi": "Chơi trốn_tìm, | chui tọt vào gầm giường | nín thở.",
+      "anticipateVi": "Ú òa, | thấy rồi nhé!",
+      "emphasis": [
+        "trốn đi",
+        "chui tọt"
+      ],
+      "pos": "verb",
+      "ipa": "/fɛɐ̯ˈʃtɛkn̩/",
+      "topic": "daily",
+      "topics": [
+        "daily"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Der Hund versucht immer, sich unter dem Tisch zu _____.",
+          "vi": "Con_chó | lúc_nào cũng | cố trốn | dưới gầm bàn."
+        }
+      ],
+      "chars": 10,
+      "initial": "V"
+    },
+    {
+      "id": "stehlen",
+      "word": "stehlen",
+      "meaningVi": "ăn_trộm",
+      "defVi": "Lén lấy_trộm đồ | của người khác | khi họ không biết.",
+      "leadVi": "Máy_quay ghi lại cảnh | ai đó lén dắt xe đi.",
+      "anticipateVi": "Giữ chặt đồ nha!",
+      "emphasis": [
+        "lấy trộm",
+        "dắt xe"
+      ],
+      "pos": "verb",
+      "ipa": "/ˈʃteːlən/",
+      "topic": "society",
+      "topics": [
+        "society",
+        "daily"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Jemand hat versucht, mein Handy zu _____.",
+          "vi": "Có người | đã cố ăn_trộm | điện_thoại của=tôi."
+        }
+      ],
+      "chars": 7,
+      "initial": "S"
+    },
+    {
+      "id": "ablehnen",
+      "word": "ablehnen",
+      "meaningVi": "từ_chối",
+      "defVi": "Không chấp_nhận, | khước_từ lời mời | hay yêu_cầu.",
+      "leadVi": "Được mời thêm chén nữa, | xua tay lia_lịa: | “Thôi, thôi!”",
+      "anticipateVi": "Lắc đầu nguầy_nguậy!",
+      "emphasis": [
+        "khước từ",
+        "xua tay"
+      ],
+      "pos": "verb",
+      "ipa": "/ˈapˌleːnən/",
+      "topic": "communication",
+      "topics": [
+        "communication",
+        "society"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Warum willst du die Einladung _____?",
+          "vi": "Sao bạn muốn | từ_chối lời mời?"
+        }
+      ],
+      "chars": 8,
+      "initial": "A"
+    },
+    {
+      "id": "schreien",
+      "word": "schreien",
+      "meaningVi": "hét",
+      "defVi": "Nói thật to, | la_hét | để người khác | nghe thấy.",
+      "leadVi": "Đứng dưới sân | gọi vọng lên tầng năm: | “Xuống ăn cơm!”",
+      "anticipateVi": "Nói to lên coi!",
+      "emphasis": [
+        "la hét",
+        "gọi vọng"
+      ],
+      "pos": "verb",
+      "ipa": "/ˈʃʁaɪ̯ən/",
+      "topic": "communication",
+      "topics": [
+        "communication"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Du musst nicht so laut _____, ich höre dich.",
+          "vi": "Bạn không cần | hét to thế, | tôi nghe thấy mà."
+        }
+      ],
+      "chars": 8,
+      "initial": "S"
+    },
+    {
+      "id": "verschwinden",
+      "word": "verschwinden",
+      "meaningVi": "biến_mất",
+      "defVi": "Bỗng_nhiên biến_mất, | không còn thấy đâu nữa.",
+      "leadVi": "Đặt đĩa bánh xuống, | quay đi quay lại | đã sạch trơn.",
+      "anticipateVi": "Ơ, đâu mất rồi?",
+      "emphasis": [
+        "biến mất",
+        "sạch trơn"
+      ],
+      "pos": "verb",
+      "ipa": "/fɛɐ̯ˈʃvɪndn̩/",
+      "topic": "daily",
+      "topics": [
+        "daily"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Meine Brille scheint immer zu _____, wenn ich sie brauche.",
+          "vi": "Kính của=tôi | lúc_nào cũng biến_mất | khi tôi cần."
+        }
+      ],
+      "chars": 12,
+      "initial": "V"
+    },
+    {
+      "id": "dankbar",
+      "word": "dankbar",
+      "meaningVi": "biết_ơn",
+      "defVi": "Thấy biết_ơn | vì điều tốt | người khác dành cho mình.",
+      "leadVi": "Nhận hoa | từ học_trò cũ, | thầy rưng_rưng | nước_mắt.",
+      "anticipateVi": "Cảm_ơn bao_nhiêu | cho đủ?",
+      "emphasis": [
+        "biết ơn",
+        "rưng rưng"
+      ],
+      "pos": "adj",
+      "ipa": "/ˈdaŋkbaːɐ̯/",
+      "topic": "emotion",
+      "topics": [
+        "emotion"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Ich bin meinen Eltern sehr _____.",
+          "vi": "Tôi rất | biết_ơn bố_mẹ."
+        }
+      ],
+      "chars": 7,
+      "initial": "D"
+    },
+    {
+      "id": "einsam",
+      "word": "einsam",
+      "meaningVi": "cô_đơn",
+      "defVi": "Buồn và cô_đơn | vì không có ai | bên_cạnh.",
+      "leadVi": "Tết ở lại thành_phố, | cả dãy=trọ | vắng_tanh.",
+      "anticipateVi": "Có mình ở đây rồi mà!",
+      "emphasis": [
+        "cô đơn",
+        "vắng tanh"
+      ],
+      "pos": "adj",
+      "ipa": "/ˈaɪ̯nzaːm/",
+      "topic": "emotion",
+      "topics": [
+        "emotion"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Im Ausland habe ich mich am Anfang oft _____ gefühlt.",
+          "vi": "Hồi mới ra nước_ngoài, | tôi thường thấy cô_đơn."
+        }
+      ],
+      "chars": 6,
+      "initial": "E"
+    },
+    {
+      "id": "stolz",
+      "word": "stolz",
+      "meaningVi": "tự_hào",
+      "defVi": "Thấy tự_hào | vì mình hay người_thân | làm nên chuyện.",
+      "leadVi": "Con nhận giấy_khen, | bố_mẹ rạng_rỡ | khoe khắp xóm.",
+      "anticipateVi": "Ưỡn ngực lên nào!",
+      "emphasis": [
+        "tự hào",
+        "rạng rỡ"
+      ],
+      "pos": "adj",
+      "ipa": "/ʃtɔlt͡s/",
+      "topic": "emotion",
+      "topics": [
+        "emotion"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Ich bin _____ auf meine kleine Schwester.",
+          "vi": "Tôi tự_hào | về em gái mình."
+        }
+      ],
+      "chars": 5,
+      "initial": "S"
+    },
+    {
+      "id": "erschopft",
+      "word": "erschöpft",
+      "meaningVi": "kiệt_sức",
+      "defVi": "Mệt đến kiệt_sức, | chẳng còn muốn | làm gì nữa.",
+      "leadVi": "Thức trắng ba đêm, | vừa chạm=gối | là ngủ say.",
+      "anticipateVi": "Ráng thêm chút, | sắp xong rồi!",
+      "emphasis": [
+        "kiệt sức",
+        "ngủ say"
+      ],
+      "pos": "adj",
+      "ipa": "/ɛɐ̯ˈʃœpft/",
+      "topic": "health",
+      "topics": [
+        "health",
+        "emotion"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Nach der Nachtschicht ist er völlig _____.",
+          "vi": "Sau ca đêm, | anh=ấy hoàn_toàn kiệt_sức."
+        }
+      ],
+      "chars": 9,
+      "initial": "E"
+    },
+    {
+      "id": "ehrlich",
+      "word": "ehrlich",
+      "meaningVi": "trung_thực",
+      "defVi": "Sống thật_thà, | không=nói_dối hay gian_lận | với ai.",
+      "leadVi": "Nhặt=được ví đầy tiền, | liền đem trả lại | người mất.",
+      "anticipateVi": "Nói thật đi, | bạn biết rồi!",
+      "emphasis": [
+        "thật thà",
+        "trả lại"
+      ],
+      "pos": "adj",
+      "ipa": "/ˈeːɐ̯lɪç/",
+      "topic": "character",
+      "topics": [
+        "character"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Sei bitte _____: Gefällt dir mein Kleid?",
+          "vi": "Hãy trung_thực nhé: | bạn có thích | váy của=tôi không?"
+        }
+      ],
+      "chars": 7,
+      "initial": "E"
+    },
+    {
+      "id": "mutig",
+      "word": "mutig",
+      "meaningVi": "dũng_cảm",
+      "defVi": "Có lòng dũng_cảm, | dám làm điều khó | dù đang=sợ.",
+      "leadVi": "Run cầm_cập, | nhưng vẫn bước lên | sân_khấu hát.",
+      "anticipateVi": "Gan lì | thì đoán đi!",
+      "emphasis": [
+        "dũng cảm",
+        "bước lên"
+      ],
+      "pos": "adj",
+      "ipa": "/ˈmuːtɪç/",
+      "topic": "character",
+      "topics": [
+        "character"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Die Feuerwehrleute waren unglaublich _____.",
+          "vi": "Những người lính cứu_hỏa | đã vô_cùng dũng_cảm."
+        }
+      ],
+      "chars": 5,
+      "initial": "M"
+    },
+    {
+      "id": "leisten",
+      "word": "leisten",
+      "meaningVi": "đủ tiền mua",
+      "defVi": "Có đủ tiền | để mua hay chi_trả | cho thứ gì.",
+      "leadVi": "Ngắm đôi_giày mãi, | liếc thấy giá, | lặng_lẽ đặt xuống.",
+      "anticipateVi": "Đoán miễn phí, | khỏi trả tiền!",
+      "emphasis": [
+        "đủ tiền",
+        "lặng lẽ"
+      ],
+      "pos": "verb",
+      "ipa": "/ˈlaɪ̯stn̩/",
+      "topic": "money",
+      "topics": [
+        "money"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Wir können uns dieses Jahr keinen Urlaub _____.",
+          "vi": "Năm nay | chúng_tôi | không đủ tiền | đi nghỉ."
+        }
+      ],
+      "chars": 7,
+      "initial": "L"
+    },
+    {
+      "id": "neugierig",
+      "word": "neugierig",
+      "meaningVi": "tò_mò",
+      "defVi": "Luôn muốn tìm_hiểu | những điều | mình chưa=từng biết.",
+      "leadVi": "Thấy cái gì lạ | cũng hỏi tại_sao, | mở ra xem.",
+      "anticipateVi": "Sao lại thế nhỉ?",
+      "emphasis": [
+        "tìm hiểu",
+        "tại sao"
+      ],
+      "pos": "adj",
+      "ipa": "/ˈnɔɪ̯ˌɡiːʁɪç/",
+      "topic": "character",
+      "topics": [
+        "character",
+        "thinking"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Ich bin _____, wie der Film endet.",
+          "vi": "Tôi tò_mò | không biết bộ_phim | kết_thúc thế_nào."
+        }
+      ],
+      "chars": 9,
+      "initial": "N"
+    },
+    {
+      "id": "erleichtert",
+      "word": "erleichtert",
+      "meaningVi": "nhẹ_nhõm",
+      "defVi": "Thấy nhẹ_nhõm | khi điều lo_lắng | cuối_cùng đã qua.",
+      "leadVi": "Tưởng mất hộ_chiếu, | hóa_ra | nó nằm | trong túi áo.",
+      "anticipateVi": "Phù… thở ra được rồi!",
+      "emphasis": [
+        "nhẹ nhõm",
+        "hóa ra"
+      ],
+      "pos": "adj",
+      "ipa": "/ɛɐ̯ˈlaɪ̯çtɐt/",
+      "topic": "emotion",
+      "topics": [
+        "emotion"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Nach der Prüfung war ich total _____.",
+          "vi": "Sau kỳ thi, | tôi thấy hoàn_toàn nhẹ_nhõm."
+        }
+      ],
+      "chars": 11,
+      "initial": "E"
+    },
+    {
+      "id": "unterbrechen",
+      "word": "unterbrechen",
+      "meaningVi": "ngắt lời",
+      "defVi": "Bỗng chen ngang | khi người khác | đang=nói hoặc làm việc.",
+      "leadVi": "Thầy giảng chưa hết câu, | cậu đã=giơ tay | cắt_lời.",
+      "anticipateVi": "Xen vô | làm chi?",
+      "emphasis": [
+        "chen ngang",
+        "cắt lời"
+      ],
+      "pos": "verb",
+      "ipa": "/ʊntɐˈbʁɛçn̩/",
+      "topic": "communication",
+      "topics": [
+        "communication"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Entschuldigung, ich wollte Sie nicht _____.",
+          "vi": "Xin_lỗi, | tôi không định | ngắt lời anh."
+        }
+      ],
+      "chars": 12,
+      "initial": "U"
+    },
+    {
+      "id": "bauernhof",
+      "word": "bauernhof",
+      "meaningVi": "trang_trại",
+      "defVi": "Vùng đất | để=trồng cây | và nuôi gia_súc.",
+      "leadVi": "Gà gáy sáng, | bò gặm cỏ, | lúa xanh mướt.",
+      "anticipateVi": "Đồng ruộng | có gì vui?",
+      "emphasis": [
+        "gia súc",
+        "xanh mướt"
+      ],
+      "pos": "noun",
+      "ipa": "/ˈbaʊ̯ɐnˌhoːf/",
+      "topic": "nature",
+      "topics": [
+        "nature",
+        "work"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Auf dem _____ gibt es Kühe, Schweine und Hühner.",
+          "vi": "Ở trang_trại | có bò, lợn và gà."
+        }
+      ],
+      "chars": 9,
+      "initial": "B"
+    },
+    {
+      "id": "hut",
+      "word": "hut",
+      "meaningVi": "cái=mũ",
+      "defVi": "Đồ đội trên đầu | để che nắng | hoặc giữ ấm.",
+      "leadVi": "Trưa hè | ra đồng, | bác nông_dân | đội nón lá.",
+      "anticipateVi": "Đội gì | cho đỡ nắng?",
+      "emphasis": [
+        "che nắng",
+        "nón lá"
+      ],
+      "pos": "noun",
+      "ipa": "/huːt/",
+      "topic": "daily",
+      "topics": [
+        "daily"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Bei der Hochzeit trug sie einen großen weißen _____.",
+          "vi": "Ở đám_cưới | cô=ấy đội | một chiếc_mũ trắng to."
+        }
+      ],
+      "chars": 3,
+      "initial": "H"
+    },
+    {
+      "id": "zuhause",
+      "word": "zuhause",
+      "meaningVi": "nhà",
+      "defVi": "Nơi mình sống | cùng những người | thân_yêu.",
+      "leadVi": "Đi đâu xa | rồi cũng=mong | được trở về đây.",
+      "anticipateVi": "Đi xa | nhớ đâu nhất?",
+      "emphasis": [
+        "thân yêu",
+        "trở về"
+      ],
+      "pos": "noun",
+      "ipa": "/tsuˈhaʊ̯zə/",
+      "topic": "daily",
+      "topics": [
+        "daily"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Nach dem Umzug ist die neue Wohnung schnell mein _____ geworden.",
+          "vi": "Sau khi chuyển đến, | căn_hộ mới | nhanh_chóng thành nhà của=tôi."
+        }
+      ],
+      "chars": 7,
+      "initial": "Z"
+    },
+    {
+      "id": "mond",
+      "word": "mond",
+      "meaningVi": "mặt_trăng",
+      "defVi": "Vật sáng tròn | trên bầu_trời ban_đêm.",
+      "leadVi": "Rằm tháng tám, | chị Hằng soi sáng sân đình.",
+      "anticipateVi": "Ai sáng | giữa đêm?",
+      "emphasis": [
+        "bầu trời",
+        "soi sáng"
+      ],
+      "pos": "noun",
+      "ipa": "/moːnt/",
+      "topic": "nature",
+      "topics": [
+        "nature"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Der _____ scheint heute hell durchs Fenster.",
+          "vi": "Đêm nay | trăng chiếu sáng | qua cửa_sổ."
+        }
+      ],
+      "chars": 4,
+      "initial": "M"
+    },
+    {
+      "id": "nase",
+      "word": "nase",
+      "meaningVi": "cái=mũi",
+      "defVi": "Bộ_phận giữa mặt | giúp ta hít_thở | và ngửi mùi.",
+      "leadVi": "Đi qua tiệm bánh, | hít hà | mùi thơm phức.",
+      "anticipateVi": "Ngửi bằng gì đây?",
+      "emphasis": [
+        "hít thở",
+        "hít hà"
+      ],
+      "pos": "noun",
+      "ipa": "/ˈnaːzə/",
+      "topic": "health",
+      "topics": [
+        "health",
+        "perception"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Meine _____ läuft, ich brauche ein Taschentuch.",
+          "vi": "Tôi bị sổ mũi, | cần một tờ khăn_giấy."
+        }
+      ],
+      "chars": 4,
+      "initial": "N"
+    },
+    {
+      "id": "rennen",
+      "word": "rennen",
+      "meaningVi": "chạy",
+      "defVi": "Di_chuyển rất=nhanh | bằng hai chân, | hơn cả đi_bộ.",
+      "leadVi": "Tiếng còi | vang lên, | cả đám | lao về đích.",
+      "anticipateVi": "Ai về đích trước?",
+      "emphasis": [
+        "Di chuyển",
+        "về đích"
+      ],
+      "pos": "verb",
+      "ipa": "/ˈʁɛnən/",
+      "topic": "health",
+      "topics": [
+        "health"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Wir müssen _____, sonst verpassen wir den Bus!",
+          "vi": "Phải chạy thôi, | không là lỡ xe_buýt!"
+        }
+      ],
+      "chars": 6,
+      "initial": "R"
+    },
+    {
+      "id": "stern",
+      "word": "stern",
+      "meaningVi": "ngôi=sao",
+      "defVi": "Điểm sáng nhỏ | lấp_lánh | trên bầu_trời đêm.",
+      "leadVi": "Nằm trên sân_thượng, | đếm mãi không=hết.",
+      "anticipateVi": "Đếm mãi | có hết không?",
+      "emphasis": [
+        "lấp lánh",
+        "sân thượng"
+      ],
+      "pos": "noun",
+      "ipa": "/ʃtɛʁn/",
+      "topic": "nature",
+      "topics": [
+        "nature"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Am Himmel leuchtet ein heller _____.",
+          "vi": "Trên bầu_trời | một ngôi_sao | sáng lấp_lánh."
+        }
+      ],
+      "chars": 5,
+      "initial": "S"
+    },
+    {
+      "id": "fullen",
+      "word": "füllen",
+      "meaningVi": "làm đầy",
+      "defVi": "Cho thêm vào | đến khi đầy, | không còn chỗ trống.",
+      "leadVi": "Rót nước | cho đến khi tràn mép ly.",
+      "anticipateVi": "Đầy tràn chưa?",
+      "emphasis": [
+        "chỗ trống",
+        "tràn mép"
+      ],
+      "pos": "verb",
+      "ipa": "/ˈfʏlən/",
+      "topic": "daily",
+      "topics": [
+        "daily"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Kannst du bitte die Gläser mit Wasser _____?",
+          "vi": "Bạn rót đầy nước | vào mấy cái_ly | giúp tôi nhé?"
+        }
+      ],
+      "chars": 6,
+      "initial": "F"
+    },
+    {
+      "id": "wachsen",
+      "word": "wachsen",
+      "meaningVi": "lớn lên",
+      "defVi": "Lớn lên | và phát_triển | theo thời_gian.",
+      "leadVi": "Hạt_đậu nhỏ | nhú mầm | rồi vươn cao | từng ngày.",
+      "anticipateVi": "Cao thêm chút nào?",
+      "emphasis": [
+        "phát triển",
+        "nhú mầm"
+      ],
+      "pos": "verb",
+      "ipa": "/ˈvaksn̩/",
+      "topic": "nature",
+      "topics": [
+        "nature"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Ohne Wasser kann die Pflanze nicht _____.",
+          "vi": "Không có nước | cây không_thể lớn lên."
+        }
+      ],
+      "chars": 7,
+      "initial": "W"
+    },
+    {
+      "id": "krankenhaus",
+      "word": "krankenhaus",
+      "meaningVi": "bệnh_viện",
+      "defVi": "Nơi bác_sĩ chữa bệnh | và chăm_sóc | người ốm.",
+      "leadVi": "Xe cứu_thương hú còi | lao thẳng | vào cổng.",
+      "anticipateVi": "Xe hú còi | đi đâu?",
+      "emphasis": [
+        "chữa bệnh",
+        "cứu thương"
+      ],
+      "pos": "noun",
+      "ipa": "/ˈkʁaŋkn̩ˌhaʊ̯s/",
+      "topic": "health",
+      "topics": [
+        "health"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Nach dem Unfall musste er ins _____.",
+          "vi": "Sau tai_nạn | anh=ấy phải | vào bệnh_viện."
+        }
+      ],
+      "chars": 11,
+      "initial": "K"
+    },
+    {
+      "id": "mahlzeit",
+      "word": "mahlzeit",
+      "meaningVi": "bữa=ăn",
+      "defVi": "Lần ăn | vào một thời_điểm | trong ngày.",
+      "leadVi": "Sáu giờ chiều, | cả nhà ngồi quanh mâm cơm.",
+      "anticipateVi": "Đến giờ cơm chưa?",
+      "emphasis": [
+        "thời điểm",
+        "mâm cơm"
+      ],
+      "pos": "noun",
+      "ipa": "/ˈmaːlˌtsaɪ̯t/",
+      "topic": "food",
+      "topics": [
+        "food"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Das Frühstück ist meine liebste _____ des Tages.",
+          "vi": "Bữa sáng | là bữa ăn | tôi thích nhất | trong ngày."
+        }
+      ],
+      "chars": 8,
+      "initial": "M"
+    },
+    {
+      "id": "bereit",
+      "word": "bereit",
+      "meaningVi": "sẵn_sàng",
+      "defVi": "Đã chuẩn_bị xong, | có_thể bắt_đầu ngay.",
+      "leadVi": "Giày đã buộc, | ba_lô đã đeo, | chỉ chờ xuất_phát.",
+      "anticipateVi": "Xuất phát | được chưa?",
+      "emphasis": [
+        "bắt đầu",
+        "xuất phát"
+      ],
+      "pos": "adj",
+      "ipa": "/bəˈʁaɪ̯t/",
+      "topic": "daily",
+      "topics": [
+        "daily"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Ich bin _____, wir können losfahren.",
+          "vi": "Tôi sẵn_sàng rồi, | mình đi được rồi."
+        }
+      ],
+      "chars": 6,
+      "initial": "B"
+    },
+    {
+      "id": "obwohl",
+      "word": "obwohl",
+      "meaningVi": "mặc_dù",
+      "defVi": "Dùng để=nối | hai ý trái_ngược nhau | trong=cùng câu.",
+      "leadVi": "Trời mưa to, | vậy_mà | cô=ấy | vẫn=đi chạy.",
+      "anticipateVi": "Dù thế nào | vẫn=làm?",
+      "emphasis": [
+        "trái ngược",
+        "mưa to"
+      ],
+      "pos": "conj",
+      "ipa": "/ɔpˈvoːl/",
+      "topic": "communication",
+      "topics": [
+        "communication",
+        "general"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "_____ es regnet, gehen wir spazieren.",
+          "vi": "Mặc_dù trời mưa, | chúng_tôi vẫn=đi dạo."
+        }
+      ],
+      "chars": 6,
+      "initial": "O"
+    },
+    {
+      "id": "herausforderung",
+      "word": "herausforderung",
+      "meaningVi": "thử_thách",
+      "defVi": "Việc khó_khăn | đòi_hỏi nhiều nỗ_lực | mới vượt qua.",
+      "leadVi": "Ngọn_núi cao trước mặt | khiến ai cũng=muốn | chinh_phục.",
+      "anticipateVi": "Dám thử sức không?",
+      "emphasis": [
+        "khó khăn",
+        "chinh phục"
+      ],
+      "pos": "noun",
+      "ipa": "/hɛˈʁaʊ̯sˌfɔʁdəʁʊŋ/",
+      "topic": "work",
+      "topics": [
+        "work",
+        "study"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Der Umzug ins Ausland war eine große _____.",
+          "vi": "Chuyển ra nước_ngoài | là một thử_thách lớn."
+        }
+      ],
+      "chars": 15,
+      "initial": "H"
+    },
+    {
+      "id": "klima",
+      "word": "klima",
+      "meaningVi": "khí_hậu",
+      "defVi": "Kiểu thời_tiết | thường thấy ở=vùng | trong=thời_gian dài.",
+      "leadVi": "Nơi này | quanh_năm nắng ấm, | nơi kia | lạnh giá.",
+      "anticipateVi": "Nóng quanh năm | hay lạnh?",
+      "emphasis": [
+        "thời tiết",
+        "nắng ấm"
+      ],
+      "pos": "noun",
+      "ipa": "/ˈkliːma/",
+      "topic": "nature",
+      "topics": [
+        "nature"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Das _____ hier ist warm und trocken.",
+          "vi": "Khí_hậu ở đây | ấm và khô."
+        }
+      ],
+      "chars": 5,
+      "initial": "K"
+    },
+    {
+      "id": "uberzeugen",
+      "word": "überzeugen",
+      "meaningVi": "thuyết_phục",
+      "defVi": "Dùng lý_lẽ | khiến người khác tin | điều mình nói.",
+      "leadVi": "Sau nhiều lời=giải_thích, | bố cuối_cùng | cũng gật_gù.",
+      "anticipateVi": "Nói sao | cho=xuôi tai?",
+      "emphasis": [
+        "lý lẽ",
+        "gật gù"
+      ],
+      "pos": "verb",
+      "ipa": "/yːbɐˈtsɔɪ̯ɡn̩/",
+      "topic": "communication",
+      "topics": [
+        "communication",
+        "thinking"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Ich konnte meinen Vater nicht _____, zum Arzt zu gehen.",
+          "vi": "Tôi không_thể thuyết_phục bố | đi khám bác_sĩ."
+        }
+      ],
+      "chars": 10,
+      "initial": "Ü"
+    },
+    {
+      "id": "reiseziel",
+      "word": "reiseziel",
+      "meaningVi": "điểm_đến",
+      "defVi": "Nơi mà người hoặc vật | được=đưa tới | cuối hành_trình.",
+      "leadVi": "Vé đã=cầm, | ba_lô đã=đeo, | chỉ=còn chọn nơi.",
+      "anticipateVi": "Chuyến này đi đâu?",
+      "emphasis": [
+        "hành trình",
+        "chọn nơi"
+      ],
+      "pos": "noun",
+      "ipa": "/ˈʁaɪ̯zəˌtsiːl/",
+      "topic": "travel",
+      "topics": [
+        "travel"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Italien ist ein beliebtes _____ für Familien.",
+          "vi": "Nước Ý | là điểm_đến | được các gia_đình ưa_chuộng."
+        }
+      ],
+      "chars": 9,
+      "initial": "R"
+    },
+    {
+      "id": "enttauscht",
+      "word": "enttäuscht",
+      "meaningVi": "thất_vọng",
+      "defVi": "Buồn vì=điều | mình mong_đợi | đã=không xảy ra.",
+      "leadVi": "Mở hộp_quà ra, | nụ cười | bỗng tắt ngấm.",
+      "anticipateVi": "Sao mặt xụ thế kia?",
+      "emphasis": [
+        "mong đợi",
+        "tắt ngấm"
+      ],
+      "pos": "adj",
+      "ipa": "/ɛntˈtɔɪ̯ʃt/",
+      "topic": "emotion",
+      "topics": [
+        "emotion"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Er war sehr _____ über seine Note.",
+          "vi": "Anh=ấy | rất=thất_vọng | về điểm số của=mình."
+        }
+      ],
+      "chars": 10,
+      "initial": "E"
+    },
+    {
+      "id": "entdecken",
+      "word": "entdecken",
+      "meaningVi": "phát_hiện",
+      "defVi": "Lần đầu tìm ra | điều trước đây | chưa ai biết.",
+      "leadVi": "Lật tảng đá lên, | bạn thấy | cả một thế_giới nhỏ.",
+      "anticipateVi": "Bất_ngờ thấy gì đây?",
+      "emphasis": [
+        "tìm ra",
+        "thế giới"
+      ],
+      "pos": "verb",
+      "ipa": "/ɛntˈdɛkn̩/",
+      "topic": "study",
+      "topics": [
+        "study",
+        "nature"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Im Urlaub möchte ich neue Orte _____.",
+          "vi": "Trong kỳ nghỉ | tôi muốn khám_phá | những nơi mới."
+        }
+      ],
+      "chars": 9,
+      "initial": "E"
+    },
+    {
+      "id": "umwelt",
+      "word": "umwelt",
+      "meaningVi": "môi_trường",
+      "defVi": "Không_khí, đất, nước | và mọi thứ | quanh nơi ta sống.",
+      "leadVi": "Rừng xanh, sông trong, | chim hót, | ta cần giữ_gìn.",
+      "anticipateVi": "Nhà chung | của=muôn loài?",
+      "emphasis": [
+        "Không khí",
+        "giữ gìn"
+      ],
+      "pos": "noun",
+      "ipa": "/ˈʊmvɛlt/",
+      "topic": "nature",
+      "topics": [
+        "nature",
+        "society"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Wir fahren Fahrrad, um die _____ zu schonen.",
+          "vi": "Chúng_tôi | đi xe_đạp | để bảo_vệ | môi_trường."
+        }
+      ],
+      "chars": 6,
+      "initial": "U"
+    },
+    {
+      "id": "verzeihen",
+      "word": "verzeihen",
+      "meaningVi": "tha_thứ",
+      "defVi": "Thôi giận | và bỏ qua | lỗi_lầm của=người khác.",
+      "leadVi": "Bạn thân lỡ lời, | bạn mỉm cười | cho=qua.",
+      "anticipateVi": "Giận mấy | rồi cũng=thôi?",
+      "emphasis": [
+        "bỏ qua",
+        "mỉm cười"
+      ],
+      "pos": "verb",
+      "ipa": "/fɛɐ̯ˈtsaɪ̯ən/",
+      "topic": "emotion",
+      "topics": [
+        "emotion",
+        "character"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Kannst du mir das jemals _____?",
+          "vi": "Liệu bạn có bao_giờ | tha_thứ cho tôi | chuyện đó không?"
+        }
+      ],
+      "chars": 9,
+      "initial": "V"
+    },
+    {
+      "id": "verbessern",
+      "word": "verbessern",
+      "meaningVi": "cải_thiện",
+      "defVi": "Làm cho=điều gì đó | trở_nên tốt hơn trước.",
+      "leadVi": "Tháng trước điểm năm, | tháng này | đã lên điểm tám.",
+      "anticipateVi": "Hôm nay hơn hôm qua?",
+      "emphasis": [
+        "tốt hơn",
+        "lên điểm"
+      ],
+      "pos": "verb",
+      "ipa": "/fɛɐ̯ˈbɛsɐn/",
+      "topic": "study",
+      "topics": [
+        "study",
+        "work"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Ich übe jeden Tag, um meine Aussprache zu _____.",
+          "vi": "Tôi luyện mỗi ngày | để cải_thiện | phát_âm."
+        }
+      ],
+      "chars": 10,
+      "initial": "V"
+    },
+    {
+      "id": "zutat",
+      "word": "zutat",
+      "meaningVi": "nguyên_liệu",
+      "defVi": "Một trong những thứ | được trộn lại | để=nấu món_ăn.",
+      "leadVi": "Trứng, bột, | sữa, đường | đã bày sẵn | trên bàn bếp.",
+      "anticipateVi": "Món này | cần những gì?",
+      "emphasis": [
+        "trộn lại",
+        "bày sẵn"
+      ],
+      "pos": "noun",
+      "ipa": "/ˈtsuːtaːt/",
+      "topic": "food",
+      "topics": [
+        "food"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Für diese Suppe fehlt mir nur noch eine _____.",
+          "vi": "Món súp này | tôi chỉ còn thiếu | một nguyên_liệu."
+        }
+      ],
+      "chars": 5,
+      "initial": "Z"
+    },
+    {
+      "id": "verletzung",
+      "word": "verletzung",
+      "meaningVi": "chấn_thương",
+      "defVi": "Tổn_thương | trên cơ_thể | do tai_nạn | hoặc va_chạm.",
+      "leadVi": "Ngã xe, | đầu_gối trầy xước | và chảy máu.",
+      "anticipateVi": "Đau chỗ nào đấy?",
+      "emphasis": [
+        "Tổn thương",
+        "trầy xước"
+      ],
+      "pos": "noun",
+      "ipa": "/fɛɐ̯ˈlɛtsʊŋ/",
+      "topic": "health",
+      "topics": [
+        "health"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Wegen einer _____ am Fuß kann sie nicht laufen.",
+          "vi": "Vì chấn_thương ở chân, | cô=ấy | không chạy được."
+        }
+      ],
+      "chars": 10,
+      "initial": "V"
+    },
+    {
+      "id": "vorstellungsgesprach",
+      "word": "vorstellungsgespräch",
+      "meaningVi": "buổi=phỏng_vấn",
+      "defVi": "Cuộc_gặp hỏi_đáp | để đánh_giá | người xin việc.",
+      "leadVi": "Áo sơ_mi phẳng_phiu, | tim đập nhanh | trước cửa phòng.",
+      "anticipateVi": "Hồi_hộp | trước cửa phòng?",
+      "emphasis": [
+        "đánh giá",
+        "tim đập"
+      ],
+      "pos": "noun",
+      "ipa": "/ˈfoːɐ̯ʃtɛlʊŋsɡəˌʃpʁɛːç/",
+      "topic": "work",
+      "topics": [
+        "work",
+        "communication"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Für das _____ hat er sich einen neuen Anzug gekauft.",
+          "vi": "Anh=ấy | đã mua bộ com_lê mới | cho buổi phỏng_vấn xin việc."
+        }
+      ],
+      "chars": 20,
+      "initial": "V"
+    },
+    {
+      "id": "wissen",
+      "word": "wissen",
+      "meaningVi": "kiến_thức",
+      "defVi": "Những gì một người | hiểu và biết | nhờ học_hỏi.",
+      "leadVi": "Ông đọc hết | cả thư_viện, | hỏi gì cũng=trả_lời.",
+      "anticipateVi": "Đầu óc | chứa gì thế?",
+      "emphasis": [
+        "học hỏi",
+        "thư viện"
+      ],
+      "pos": "noun",
+      "ipa": "/ˈvɪsn̩/",
+      "topic": "study",
+      "topics": [
+        "study",
+        "thinking"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Mein Opa hat ein großes _____ über Pflanzen.",
+          "vi": "Ông tôi | có kiến_thức sâu_rộng | về cây_cối."
+        }
+      ],
+      "chars": 6,
+      "initial": "W"
+    },
+    {
+      "id": "leiten",
+      "word": "leiten",
+      "meaningVi": "quản_lý",
+      "defVi": "Điều_hành, sắp_đặt | công_việc và con_người | trôi_chảy.",
+      "leadVi": "Một_mình lo | cả cửa_hàng, | mọi việc | vẫn suôn_sẻ.",
+      "anticipateVi": "Ai cầm trịch | ở=đây?",
+      "emphasis": [
+        "Điều hành",
+        "suôn sẻ"
+      ],
+      "pos": "verb",
+      "ipa": "/ˈlaɪ̯tn̩/",
+      "topic": "work",
+      "topics": [
+        "work"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Sie wird ab Montag die Filiale in Hamburg _____.",
+          "vi": "Từ thứ Hai | cô=ấy | sẽ quản_lý chi_nhánh | ở Hamburg."
+        }
+      ],
+      "chars": 6,
+      "initial": "L"
+    },
+    {
+      "id": "gelegenheit",
+      "word": "gelegenheit",
+      "meaningVi": "cơ_hội",
+      "defVi": "Thời_điểm thuận_lợi | để=làm được=điều | mình mong_muốn.",
+      "leadVi": "Cánh_cửa | chỉ=hé mở một lần, | phải nắm lấy ngay.",
+      "anticipateVi": "Lỡ dịp này thì tiếc?",
+      "emphasis": [
+        "thuận lợi",
+        "nắm lấy"
+      ],
+      "pos": "noun",
+      "ipa": "/ɡəˈleːɡn̩haɪ̯t/",
+      "topic": "work",
+      "topics": [
+        "work",
+        "general"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Das Praktikum ist eine gute _____, Erfahrung zu sammeln.",
+          "vi": "Kỳ thực_tập | là cơ_hội tốt | để tích_lũy kinh_nghiệm."
+        }
+      ],
+      "chars": 11,
+      "initial": "G"
+    },
+    {
+      "id": "verhindern",
+      "word": "verhindern",
+      "meaningVi": "ngăn_ngừa",
+      "defVi": "Ngăn không=cho điều xấu | xảy ra | hoặc tiếp_diễn.",
+      "leadVi": "Rửa tay thường_xuyên | để vi_khuẩn | không=có cơ_hội.",
+      "anticipateVi": "Chặn trước kẻo muộn?",
+      "emphasis": [
+        "điều xấu",
+        "vi khuẩn"
+      ],
+      "pos": "verb",
+      "ipa": "/fɛɐ̯ˈhɪndɐn/",
+      "topic": "health",
+      "topics": [
+        "health"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Ein Helm kann schwere Kopfverletzungen _____.",
+          "vi": "Mũ bảo_hiểm | có_thể ngăn_ngừa | chấn_thương nặng | ở đầu."
+        }
+      ],
+      "chars": 10,
+      "initial": "V"
+    },
+    {
+      "id": "schutzen",
+      "word": "schützen",
+      "meaningVi": "bảo_vệ",
+      "defVi": "Giữ người hoặc vật | an_toàn | trước nguy_hiểm, tổn_hại.",
+      "leadVi": "Gà mẹ | xòe cánh | che đàn con dưới cơn_mưa.",
+      "anticipateVi": "Ai che chở | cho=ai?",
+      "emphasis": [
+        "an toàn",
+        "xòe cánh"
+      ],
+      "pos": "verb",
+      "ipa": "/ˈʃʏtsn̩/",
+      "topic": "health",
+      "topics": [
+        "health",
+        "nature"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Eine Mütze kann dich vor der Sonne _____.",
+          "vi": "Mũ có_thể bảo_vệ bạn | khỏi nắng."
+        }
+      ],
+      "chars": 8,
+      "initial": "S"
+    },
+    {
+      "id": "zweck",
+      "word": "zweck",
+      "meaningVi": "mục_đích",
+      "defVi": "Lý_do hay mục_tiêu | ta nhắm tới | khi=hành_động.",
+      "leadVi": "Trước_khi bắt_đầu, | hãy tự hỏi: | làm để=làm gì?",
+      "anticipateVi": "Làm thế để=chi?",
+      "emphasis": [
+        "mục tiêu",
+        "tự hỏi"
+      ],
+      "pos": "noun",
+      "ipa": "/tsvɛk/",
+      "topic": "thinking",
+      "topics": [
+        "thinking",
+        "general"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Der _____ des Treffens ist, einen Plan für den Sommer zu machen.",
+          "vi": "Mục_đích của buổi_gặp | là lập kế_hoạch | cho mùa hè."
+        }
+      ],
+      "chars": 5,
+      "initial": "Z"
+    },
+    {
+      "id": "reduzieren",
+      "word": "reduzieren",
+      "meaningVi": "giảm",
+      "defVi": "Làm cho=số_lượng, | kích_thước hay mức_độ | nhỏ đi.",
+      "leadVi": "Mỗi tuần | bớt một ly trà sữa, | vòng eo | thon dần.",
+      "anticipateVi": "Bớt đi một_chút nhé?",
+      "emphasis": [
+        "nhỏ đi",
+        "thon dần"
+      ],
+      "pos": "verb",
+      "ipa": "/ʁeduˈtsiːʁən/",
+      "topic": "general",
+      "topics": [
+        "general",
+        "nature"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Wir müssen unseren Stromverbrauch _____.",
+          "vi": "Chúng_ta | phải giảm | lượng điện tiêu_thụ."
+        }
+      ],
+      "chars": 10,
+      "initial": "R"
+    },
+    {
+      "id": "beziehung",
+      "word": "beziehung",
+      "meaningVi": "mối=quan_hệ",
+      "defVi": "Sự gắn_bó | hoặc liên_hệ | giữa hai hay nhiều người.",
+      "leadVi": "Bao năm qua, | hai người | vẫn=luôn bên nhau.",
+      "anticipateVi": "Hai người | là=gì của=nhau?",
+      "emphasis": [
+        "gắn bó",
+        "bên nhau"
+      ],
+      "pos": "noun",
+      "ipa": "/bəˈtsiːʊŋ/",
+      "topic": "society",
+      "topics": [
+        "society",
+        "emotion"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Er hat eine enge _____ zu seiner Großmutter.",
+          "vi": "Anh=ấy | có mối=quan_hệ thân_thiết | với bà."
+        }
+      ],
+      "chars": 9,
+      "initial": "B"
+    },
+    {
+      "id": "zuverlassig",
+      "word": "zuverlässig",
+      "meaningVi": "đáng tin_cậy",
+      "defVi": "Có_thể tin_tưởng | vì=luôn làm đúng | như đã=hứa.",
+      "leadVi": "Hẹn bảy giờ, | đúng bảy giờ | anh=ấy có_mặt.",
+      "anticipateVi": "Gửi gắm được=không?",
+      "emphasis": [
+        "tin tưởng",
+        "có mặt"
+      ],
+      "pos": "adj",
+      "ipa": "/ˈtsuːfɛɐ̯ˌlɛsɪç/",
+      "topic": "character",
+      "topics": [
+        "character",
+        "work"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Unser Babysitter ist sehr _____ und immer pünktlich.",
+          "vi": "Người trông trẻ nhà tôi | rất đáng tin_cậy | và luôn đúng giờ."
+        }
+      ],
+      "chars": 11,
+      "initial": "Z"
+    },
+    {
+      "id": "verantwortlich",
+      "word": "verantwortlich",
+      "meaningVi": "chịu trách_nhiệm",
+      "defVi": "Có nhiệm_vụ | lo một việc | và chịu hậu_quả.",
+      "leadVi": "Hỏng việc ai cũng=né, | riêng cô=ấy | đứng ra nhận.",
+      "anticipateVi": "Ai gánh vác đây?",
+      "emphasis": [
+        "nhiệm vụ",
+        "đứng ra"
+      ],
+      "pos": "adj",
+      "ipa": "/fɛɐ̯ˈʔantvɔʁtlɪç/",
+      "topic": "work",
+      "topics": [
+        "work",
+        "character"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Wer ist heute für das Abendessen _____?",
+          "vi": "Hôm_nay | ai chịu trách_nhiệm | bữa tối?"
+        }
+      ],
+      "chars": 14,
+      "initial": "V"
+    },
+    {
+      "id": "geeignet",
+      "word": "geeignet",
+      "meaningVi": "phù_hợp",
+      "defVi": "Phù_hợp với=người, | mục_đích | hoặc hoàn_cảnh cụ_thể.",
+      "leadVi": "Đi biển | thì mặc đồ nhẹ, | đi tiệc | thì váy dài.",
+      "anticipateVi": "Vừa vặn chưa đây?",
+      "emphasis": [
+        "Phù hợp",
+        "đồ nhẹ"
+      ],
+      "pos": "adj",
+      "ipa": "/ɡəˈʔaɪ̯ɡnət/",
+      "topic": "general",
+      "topics": [
+        "general",
+        "daily"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Dieses Spiel ist für kleine Kinder nicht _____.",
+          "vi": "Trò chơi này | không phù_hợp | với trẻ nhỏ."
+        }
+      ],
+      "chars": 8,
+      "initial": "G"
+    },
+    {
+      "id": "unterstutzen",
+      "word": "unterstützen",
+      "meaningVi": "ủng_hộ",
+      "defVi": "Giúp_đỡ, | động_viên ai đó | khi=họ gặp khó_khăn.",
+      "leadVi": "Thi trượt, | bạn_bè vẫn=ở bên | vỗ vai an_ủi.",
+      "anticipateVi": "Bên cạnh bạn | là=ai?",
+      "emphasis": [
+        "động viên",
+        "vỗ vai"
+      ],
+      "pos": "verb",
+      "ipa": "/ʊntɐˈʃtʏtsn̩/",
+      "topic": "society",
+      "topics": [
+        "society",
+        "emotion"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Meine Eltern wollen mich bei meinem Studium _____.",
+          "vi": "Bố_mẹ | muốn ủng_hộ tôi | trong việc học đại_học."
+        }
+      ],
+      "chars": 12,
+      "initial": "U"
+    },
+    {
+      "id": "tradition",
+      "word": "tradition",
+      "meaningVi": "truyền_thống",
+      "defVi": "Phong_tục | được=truyền | từ=đời này sang đời khác.",
+      "leadVi": "Tết nào | cả nhà | cũng quây_quần | gói bánh chưng.",
+      "anticipateVi": "Ông bà | để=lại gì?",
+      "emphasis": [
+        "Phong tục",
+        "quây quần"
+      ],
+      "pos": "noun",
+      "ipa": "/tʁadiˈtsi̯oːn/",
+      "topic": "society",
+      "topics": [
+        "society"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Bei uns ist es _____, am Heiligabend Karpfen zu essen.",
+          "vi": "Ở nhà tôi, | ăn cá chép | đêm Giáng_sinh | là truyền_thống."
+        }
+      ],
+      "chars": 9,
+      "initial": "T"
+    },
+    {
+      "id": "warnen",
+      "word": "warnen",
+      "meaningVi": "cảnh_báo",
+      "defVi": "Báo trước | cho=ai | về=nguy_hiểm | có_thể xảy ra.",
+      "leadVi": "Biển đỏ bên đường: | đá lở, | xin đi chậm.",
+      "anticipateVi": "Coi chừng đấy nha!",
+      "emphasis": [
+        "Báo trước",
+        "đá lở"
+      ],
+      "pos": "verb",
+      "ipa": "/ˈvaʁnən/",
+      "topic": "communication",
+      "topics": [
+        "communication",
+        "health"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Ich muss dich vor diesem Hund _____.",
+          "vi": "Tôi phải cảnh_báo bạn | về con_chó này."
+        }
+      ],
+      "chars": 6,
+      "initial": "W"
+    },
+    {
+      "id": "annehmen",
+      "word": "annehmen",
+      "meaningVi": "cho rằng",
+      "defVi": "Cho là đúng | mà chưa có | bằng_chứng chắc_chắn.",
+      "leadVi": "Thấy đèn tắt, | tưởng ngay cả nhà đã ngủ.",
+      "anticipateVi": "Tưởng vậy | mà sai?",
+      "emphasis": [
+        "bằng chứng",
+        "tưởng ngay"
+      ],
+      "pos": "verb",
+      "ipa": "/ˈanˌneːmən/",
+      "topic": "thinking",
+      "topics": [
+        "thinking"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Ich würde _____, dass der Laden sonntags geschlossen ist.",
+          "vi": "Tôi cho rằng | cửa_hàng đóng_cửa | vào Chủ_nhật."
+        }
+      ],
+      "chars": 8,
+      "initial": "A"
+    },
+    {
+      "id": "vorteil",
+      "word": "vorteil",
+      "meaningVi": "lợi_ích",
+      "defVi": "Điều tốt đẹp | mà ai đó nhận được | từ việc gì.",
+      "leadVi": "Đi bộ mỗi sáng, | ngủ ngon hơn, | đầu_óc minh_mẫn.",
+      "anticipateVi": "Được gì | từ chuyện này?",
+      "emphasis": [
+        "tốt đẹp",
+        "minh mẫn"
+      ],
+      "pos": "noun",
+      "ipa": "/ˈfoːɐ̯taɪ̯l/",
+      "topic": "health",
+      "topics": [
+        "health",
+        "money"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Ein großer _____ dieser Wohnung ist der Balkon.",
+          "vi": "Lợi_ích lớn của căn_hộ này | là ban_công."
+        }
+      ],
+      "chars": 7,
+      "initial": "V"
+    },
+    {
+      "id": "kompromiss",
+      "word": "kompromiss",
+      "meaningVi": "sự=thỏa_hiệp",
+      "defVi": "Thỏa_thuận | mà mỗi bên nhường nhau một chút.",
+      "leadVi": "Anh muốn biển, | em muốn núi, | đành chọn hồ | ở giữa.",
+      "anticipateVi": "Mỗi bên | lùi một bước?",
+      "emphasis": [
+        "Thỏa thuận",
+        "ở giữa"
+      ],
+      "pos": "noun",
+      "ipa": "/kɔmpʁoˈmɪs/",
+      "topic": "communication",
+      "topics": [
+        "communication",
+        "work"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Wir haben uns auf einen _____ geeinigt: Pizza und Salat.",
+          "vi": "Chúng_tôi | đã thỏa_hiệp với nhau: | pizza và salad."
+        }
+      ],
+      "chars": 10,
+      "initial": "K"
+    },
+    {
+      "id": "folge",
+      "word": "folge",
+      "meaningVi": "hậu_quả",
+      "defVi": "Kết_quả, | thường không hay, | do một hành_động gây ra.",
+      "leadVi": "Thức trắng mấy đêm, | sáng ra mắt thâm_quầng, | choáng_váng.",
+      "anticipateVi": "Gieo gió | thì gặt gì?",
+      "emphasis": [
+        "hành động",
+        "thâm quầng"
+      ],
+      "pos": "noun",
+      "ipa": "/ˈfɔlɡə/",
+      "topic": "thinking",
+      "topics": [
+        "thinking",
+        "society"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Der Stau war eine _____ des Unfalls.",
+          "vi": "Tắc đường | là hậu_quả | của vụ tai_nạn."
+        }
+      ],
+      "chars": 5,
+      "initial": "F"
+    },
+    {
+      "id": "zurechtkommen",
+      "word": "zurechtkommen",
+      "meaningVi": "xoay_xở, đương_đầu",
+      "defVi": "Xoay_xở | để vượt qua | tình_huống khó_khăn.",
+      "leadVi": "Một mình | nuôi ba con, | chị vẫn lo đủ | cơm áo.",
+      "anticipateVi": "Xoay xở nổi không?",
+      "emphasis": [
+        "Xoay xở",
+        "cơm áo"
+      ],
+      "pos": "verb",
+      "ipa": "/tsuˈʁɛçtˌkɔmən/",
+      "topic": "emotion",
+      "topics": [
+        "emotion",
+        "character"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Nach der Trennung musste sie allein mit zwei Kindern _____.",
+          "vi": "Sau khi chia_tay, | cô=ấy phải một_mình | xoay_xở | với hai đứa_con."
+        }
+      ],
+      "chars": 13,
+      "initial": "Z"
+    },
+    {
+      "id": "sinken",
+      "word": "sinken",
+      "meaningVi": "suy_giảm",
+      "defVi": "Giảm dần | về số_lượng, | chất_lượng | hay sức_mạnh.",
+      "leadVi": "Biểu_đồ doanh_số | cứ đi xuống | từng tháng.",
+      "anticipateVi": "Đi xuống dốc rồi?",
+      "emphasis": [
+        "Giảm dần",
+        "đi xuống"
+      ],
+      "pos": "verb",
+      "ipa": "/ˈzɪŋkn̩/",
+      "topic": "money",
+      "topics": [
+        "money",
+        "work"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Die Zahl der Touristen wird dieses Jahr wohl _____.",
+          "vi": "Số khách du_lịch | năm nay | có_lẽ sẽ suy_giảm."
+        }
+      ],
+      "chars": 6,
+      "initial": "S"
+    },
+    {
+      "id": "nachfrage",
+      "word": "nachfrage",
+      "meaningVi": "nhu_cầu",
+      "defVi": "Mức người mua | muốn có | một loại hàng nào đó.",
+      "leadVi": "Hè nóng đỉnh_điểm, | quạt máy | cháy hàng khắp chợ.",
+      "anticipateVi": "Cháy hàng vì đâu?",
+      "emphasis": [
+        "người mua",
+        "cháy hàng"
+      ],
+      "pos": "noun",
+      "ipa": "/ˈnaːxˌfʁaːɡə/",
+      "topic": "money",
+      "topics": [
+        "money",
+        "work"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Vor Weihnachten ist die _____ nach Spielzeug sehr groß.",
+          "vi": "Trước Giáng_sinh, | nhu_cầu về đồ chơi | rất lớn."
+        }
+      ],
+      "chars": 9,
+      "initial": "N"
+    },
+    {
+      "id": "schatzen",
+      "word": "schätzen",
+      "meaningVi": "ước_tính",
+      "defVi": "Đoán gần đúng | số_lượng hay giá_trị | từ thông_tin.",
+      "leadVi": "Nhìn đám_đông, | anh nhẩm chắc | tầm ngàn người.",
+      "anticipateVi": "Tầm bao nhiêu nhỉ?",
+      "emphasis": [
+        "gần đúng",
+        "nhẩm chắc"
+      ],
+      "pos": "verb",
+      "ipa": "/ˈʃɛt͡sn̩/",
+      "topic": "thinking",
+      "topics": [
+        "thinking",
+        "money"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Kannst du _____, wie viele Leute heute kommen?",
+          "vi": "Bạn có_thể ước_tính | hôm_nay | bao_nhiêu người đến không?"
+        }
+      ],
+      "chars": 8,
+      "initial": "S"
+    },
+    {
+      "id": "beweis",
+      "word": "beweis",
+      "meaningVi": "bằng_chứng",
+      "defVi": "Thứ chứng_minh | một điều là thật hoặc đúng.",
+      "leadVi": "Dấu vân tay trên ly | khiến nghi_phạm | hết đường chối.",
+      "anticipateVi": "Lấy gì làm chứng?",
+      "emphasis": [
+        "chứng minh",
+        "hết đường"
+      ],
+      "pos": "noun",
+      "ipa": "/bəˈvaɪ̯s/",
+      "topic": "thinking",
+      "topics": [
+        "thinking",
+        "society"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Ohne einen klaren _____ kann man ihn nicht verurteilen.",
+          "vi": "Không có bằng_chứng rõ_ràng | thì không_thể | kết_án anh=ta."
+        }
+      ],
+      "chars": 6,
+      "initial": "B"
+    },
+    {
+      "id": "ubertreiben",
+      "word": "übertreiben",
+      "meaningVi": "phóng_đại",
+      "defVi": "Nói quá lên, | làm sự_việc to hơn | sự_thật.",
+      "leadVi": "Câu được cá | bằng bàn_tay, | kể thành | bằng cái_thuyền.",
+      "anticipateVi": "Thêm mắm thêm muối à?",
+      "emphasis": [
+        "Nói quá",
+        "cái thuyền"
+      ],
+      "pos": "verb",
+      "ipa": "/yːbɐˈtʁaɪ̯bn̩/",
+      "topic": "communication",
+      "topics": [
+        "communication"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Du solltest nicht so _____, es war nur eine kleine Maus.",
+          "vi": "Đừng phóng_đại thế, | đó chỉ là | con_chuột nhỏ."
+        }
+      ],
+      "chars": 11,
+      "initial": "Ü"
+    },
+    {
+      "id": "flexibel",
+      "word": "flexibel",
+      "meaningVi": "linh_hoạt",
+      "defVi": "Dễ thay_đổi, | thích_ứng được | với nhiều tình_huống.",
+      "leadVi": "Sáng ở nhà, | chiều lên văn_phòng, | giờ_giấc tùy ý.",
+      "anticipateVi": "Co giãn được chứ?",
+      "emphasis": [
+        "thích ứng",
+        "giờ giấc"
+      ],
+      "pos": "adj",
+      "ipa": "/flɛˈksiːbl̩/",
+      "topic": "work",
+      "topics": [
+        "work"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Meine Arbeitszeiten sind zum Glück sehr _____.",
+          "vi": "May là | giờ làm của=tôi | rất=linh_hoạt."
+        }
+      ],
+      "chars": 8,
+      "initial": "F"
+    },
+    {
+      "id": "garantieren",
+      "word": "garantieren",
+      "meaningVi": "bảo_đảm",
+      "defVi": "Cam_đoan chắc_chắn | điều gì sẽ xảy ra | hoặc đúng.",
+      "leadVi": "Hỏng trong một năm, | cửa_hàng đổi mới | không tính tiền.",
+      "anticipateVi": "Chắc_chắn trăm phần?",
+      "emphasis": [
+        "Cam đoan",
+        "đổi mới"
+      ],
+      "pos": "verb",
+      "ipa": "/ɡaʁanˈtiːʁən/",
+      "topic": "work",
+      "topics": [
+        "work",
+        "money"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Wir können nicht _____, dass das Paket morgen ankommt.",
+          "vi": "Chúng_tôi | không_thể bảo_đảm | ngày_mai | gói_hàng sẽ tới."
+        }
+      ],
+      "chars": 11,
+      "initial": "G"
+    },
+    {
+      "id": "einfluss",
+      "word": "einfluss",
+      "meaningVi": "ảnh_hưởng",
+      "defVi": "Sức tác_động | làm thay_đổi | suy_nghĩ hay hành_vi.",
+      "leadVi": "Một câu nói của=thầy | theo cậu | suốt cả đời.",
+      "anticipateVi": "Ai định_hướng bạn?",
+      "emphasis": [
+        "hành vi",
+        "cả đời"
+      ],
+      "pos": "noun",
+      "ipa": "/ˈaɪ̯nflʊs/",
+      "topic": "society",
+      "topics": [
+        "society",
+        "thinking"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Meine Großmutter hatte großen _____ auf meine Erziehung.",
+          "vi": "Bà tôi | có ảnh_hưởng lớn | đến việc dạy_dỗ tôi."
+        }
+      ],
+      "chars": 8,
+      "initial": "E"
+    },
+    {
+      "id": "geschehen",
+      "word": "geschehen",
+      "meaningVi": "xảy ra",
+      "defVi": "Xảy ra | hoặc diễn_ra | vào một thời_điểm nào đó.",
+      "leadVi": "Đang yên_ổn, | bỗng một tiếng nổ lớn | vang lên.",
+      "anticipateVi": "Chuyện gì vừa xảy ra?",
+      "emphasis": [
+        "diễn ra",
+        "tiếng nổ"
+      ],
+      "pos": "verb",
+      "ipa": "/ɡəˈʃeːən/",
+      "topic": "general",
+      "topics": [
+        "general",
+        "time"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "So ein Unfall kann jedem _____.",
+          "vi": "Tai_nạn như thế | có_thể xảy ra | với bất_kỳ ai."
+        }
+      ],
+      "chars": 9,
+      "initial": "G"
+    },
+    {
+      "id": "gewinn",
+      "word": "gewinn",
+      "meaningVi": "lợi_nhuận, tiền lời",
+      "defVi": "Tiền lời | sau khi trừ hết | các chi_phí.",
+      "leadVi": "Bán hết lô hàng, | đếm tiền | thấy dư ra kha_khá.",
+      "anticipateVi": "Lãi bao nhiêu nào?",
+      "emphasis": [
+        "Tiền lời",
+        "dư ra"
+      ],
+      "pos": "noun",
+      "ipa": "/ɡəˈvɪn/",
+      "topic": "money",
+      "topics": [
+        "money",
+        "work"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Der kleine Laden macht kaum _____.",
+          "vi": "Cửa_hàng nhỏ | hầu_như không có | lợi_nhuận."
+        }
+      ],
+      "chars": 6,
+      "initial": "G"
+    },
+    {
+      "id": "verlassen",
+      "word": "verlassen",
+      "meaningVi": "trông_cậy, dựa vào",
+      "defVi": "Dựa vào | và tin rằng | ai đó sẽ giúp mình.",
+      "leadVi": "Hễ gặp khó, | cậu lại gọi ngay | cho anh trai.",
+      "anticipateVi": "Tựa vào | ai đây?",
+      "emphasis": [
+        "Dựa vào",
+        "gọi ngay"
+      ],
+      "pos": "verb",
+      "ipa": "/fɛɐ̯ˈlasn̩/",
+      "topic": "society",
+      "topics": [
+        "society",
+        "character"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Du kannst dich immer auf mich _____.",
+          "vi": "Bạn luôn có_thể | trông_cậy vào tôi."
+        }
+      ],
+      "chars": 9,
+      "initial": "V"
+    },
+    {
+      "id": "losen",
+      "word": "lösen",
+      "meaningVi": "giải_quyết",
+      "defVi": "Tìm cách giải_quyết | dứt_điểm | vấn_đề hay mâu_thuẫn.",
+      "leadVi": "Ngồi lại uống trà, | hai nhà làm hòa | sau mười năm.",
+      "anticipateVi": "Gỡ rối được chưa?",
+      "emphasis": [
+        "dứt điểm",
+        "làm hòa"
+      ],
+      "pos": "verb",
+      "ipa": "/ˈløːzn̩/",
+      "topic": "thinking",
+      "topics": [
+        "thinking",
+        "communication"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Wir müssen diesen Streit friedlich _____.",
+          "vi": "Chúng_ta phải giải_quyết | cuộc cãi_vã này | trong hòa_bình."
+        }
+      ],
+      "chars": 5,
+      "initial": "L"
+    },
+    {
+      "id": "verraten",
+      "word": "verraten",
+      "meaningVi": "tiết_lộ, để lộ",
+      "defVi": "Tiết_lộ | hoặc để lộ | điều trước đó | còn giấu kín.",
+      "leadVi": "Tấm_màn kéo lên, | bức_tượng hiện ra | trước đám_đông.",
+      "anticipateVi": "Màn kéo lên chưa?",
+      "emphasis": [
+        "giấu kín",
+        "màn kéo"
+      ],
+      "pos": "verb",
+      "ipa": "/fɛɐ̯ˈʁaːtn̩/",
+      "topic": "communication",
+      "topics": [
+        "communication"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Kannst du mir dein Geheimnis _____?",
+          "vi": "Bạn có_thể tiết_lộ | bí_mật của=bạn | cho tôi không?"
+        }
+      ],
+      "chars": 8,
+      "initial": "V"
+    },
+    {
+      "id": "ausreichend",
+      "word": "ausreichend",
+      "meaningVi": "đủ",
+      "defVi": "Đủ về số_lượng | để đáp_ứng | điều cần thiết.",
+      "leadVi": "Gạo trong kho | đủ cho cả làng | qua mùa đông.",
+      "anticipateVi": "Đủ dùng | không đó?",
+      "emphasis": [
+        "số lượng",
+        "cả làng"
+      ],
+      "pos": "adj",
+      "ipa": "/ˈaʊ̯sˌʁaɪ̯çn̩t/",
+      "topic": "general",
+      "topics": [
+        "general"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Ist das Geld für die Reise _____?",
+          "vi": "Số tiền này | có đủ cho chuyến_đi không?"
+        }
+      ],
+      "chars": 11,
+      "initial": "A"
+    },
+    {
+      "id": "zeuge",
+      "word": "zeuge",
+      "meaningVi": "nhân_chứng",
+      "defVi": "Người tận_mắt | chứng_kiến | một sự_việc xảy ra.",
+      "leadVi": "Đứng ở góc phố, | ông kể lại | từng chi_tiết.",
+      "anticipateVi": "Ai đã tận mắt thấy?",
+      "emphasis": [
+        "tận mắt",
+        "góc phố"
+      ],
+      "pos": "noun",
+      "ipa": "/ˈt͡sɔɪ̯ɡə/",
+      "topic": "society",
+      "topics": [
+        "society"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Ein _____ hat den Unfall genau gesehen.",
+          "vi": "Một nhân_chứng | đã thấy rõ | vụ tai_nạn."
+        }
+      ],
+      "chars": 5,
+      "initial": "Z"
+    },
+    {
+      "id": "behaupten",
+      "word": "behaupten",
+      "meaningVi": "khẳng_định",
+      "defVi": "Khẳng_định mạnh_mẽ | một quan_điểm | hay quyền của=mình.",
+      "leadVi": "Giữa phòng họp, | cô đứng dậy | dõng_dạc nêu ý.",
+      "anticipateVi": "Nói chắc như đinh?",
+      "emphasis": [
+        "Khẳng định",
+        "dõng dạc"
+      ],
+      "pos": "verb",
+      "ipa": "/bəˈhaʊ̯ptn̩/",
+      "topic": "communication",
+      "topics": [
+        "communication"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Er wird bestimmt wieder _____, dass er nichts wusste.",
+          "vi": "Chắc anh=ta | lại khẳng_định | mình không biết gì."
+        }
+      ],
+      "chars": 9,
+      "initial": "B"
+    },
+    {
+      "id": "mangel",
+      "word": "mangel",
+      "meaningVi": "sự thiếu_hụt",
+      "defVi": "Sự thiếu_hụt | chất cần_thiết cho cơ_thể.",
+      "leadVi": "Da xanh_xao, | hay chóng_mặt, | bác_sĩ bảo thiếu sắt.",
+      "anticipateVi": "Thiếu chất gì đây?",
+      "emphasis": [
+        "thiếu hụt",
+        "xanh xao"
+      ],
+      "pos": "noun",
+      "ipa": "/ˈmaŋl̩/",
+      "topic": "health",
+      "topics": [
+        "health"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Im Winter haben viele Menschen einen _____ an Vitamin D.",
+          "vi": "Vào mùa đông, | nhiều người | bị thiếu_hụt | vitamin D."
+        }
+      ],
+      "chars": 6,
+      "initial": "M"
+    },
+    {
+      "id": "darstellen",
+      "word": "darstellen",
+      "meaningVi": "miêu_tả, khắc_họa",
+      "defVi": "Khắc_họa người hay cảnh_vật | bằng tranh | hoặc lời văn.",
+      "leadVi": "Vài nét bút, | cả làng quê | hiện lên | sống_động.",
+      "anticipateVi": "Vẽ ra cảnh gì?",
+      "emphasis": [
+        "Khắc họa",
+        "sống động"
+      ],
+      "pos": "verb",
+      "ipa": "/ˈdaːɐ̯ʃtɛlən/",
+      "topic": "study",
+      "topics": [
+        "study",
+        "society"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Der Künstler wollte in seinem Bild eine alte Stadt _____.",
+          "vi": "Người họa_sĩ | muốn khắc_họa | một thành_phố cổ | trong tranh."
+        }
+      ],
+      "chars": 10,
+      "initial": "D"
+    },
+    {
+      "id": "erleichtern",
+      "word": "erleichtern",
+      "meaningVi": "tạo điều_kiện, giúp dễ_dàng",
+      "defVi": "Tạo điều_kiện | để việc gì | diễn_ra dễ_dàng hơn.",
+      "leadVi": "Có cầu mới, | hàng_hóa hai bờ | qua lại thuận_tiện.",
+      "anticipateVi": "Ai mở đường đây?",
+      "emphasis": [
+        "điều kiện",
+        "cầu mới"
+      ],
+      "pos": "verb",
+      "ipa": "/ɛɐ̯ˈlaɪ̯çtɐn/",
+      "topic": "work",
+      "topics": [
+        "work",
+        "technology"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Eine gute Karte kann die Reise sehr _____.",
+          "vi": "Một tấm bản_đồ tốt | có_thể giúp chuyến_đi | dễ_dàng hơn nhiều."
+        }
+      ],
+      "chars": 11,
+      "initial": "E"
+    },
+    {
+      "id": "fordern",
+      "word": "fördern",
+      "meaningVi": "nuôi_dưỡng, thúc_đẩy",
+      "defVi": "Nuôi_dưỡng, | khuyến_khích | cho một điều tốt | phát_triển.",
+      "leadVi": "Cô giáo khen đúng lúc, | gieo vào trò | niềm say_mê.",
+      "anticipateVi": "Vun_đắp | điều gì?",
+      "emphasis": [
+        "Nuôi dưỡng",
+        "say mê"
+      ],
+      "pos": "verb",
+      "ipa": "/ˈfœʁdɐn/",
+      "topic": "society",
+      "topics": [
+        "society",
+        "study"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Die Schule möchte die Kreativität der Kinder _____.",
+          "vi": "Nhà_trường muốn | nuôi_dưỡng | sự sáng_tạo của trẻ_em."
+        }
+      ],
+      "chars": 7,
+      "initial": "F"
+    },
+    {
+      "id": "behindern",
+      "word": "behindern",
+      "meaningVi": "cản_trở",
+      "defVi": "Cản_trở, | làm chậm | hoặc gây khó | cho tiến_trình.",
+      "leadVi": "Mưa lớn kéo dài, | công_trình đành dừng | giữa chừng.",
+      "anticipateVi": "Vướng chân | ở đâu?",
+      "emphasis": [
+        "Cản trở",
+        "giữa chừng"
+      ],
+      "pos": "verb",
+      "ipa": "/bəˈhɪndɐn/",
+      "topic": "general",
+      "topics": [
+        "general"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Die Baustelle wird den Verkehr eine Woche lang _____.",
+          "vi": "Công_trường | sẽ cản_trở giao_thông | trong một tuần."
+        }
+      ],
+      "chars": 9,
+      "initial": "B"
+    },
+    {
+      "id": "vorstellung",
+      "word": "vorstellung",
+      "meaningVi": "khái_niệm, ý_niệm",
+      "defVi": "Ý_niệm | hay quan_niệm chung | về một điều.",
+      "leadVi": "Cứ nghĩ ở thành_phố | ai cũng giàu, | thực ra không.",
+      "anticipateVi": "Bạn hình_dung thế nào?",
+      "emphasis": [
+        "quan niệm",
+        "thực ra"
+      ],
+      "pos": "noun",
+      "ipa": "/ˈfoːɐ̯ʃtɛlʊŋ/",
+      "topic": "thinking",
+      "topics": [
+        "thinking"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Ich habe keine _____, wie teuer das Ticket ist.",
+          "vi": "Tôi không có | chút khái_niệm nào | vé đắt thế_nào."
+        }
+      ],
+      "chars": 11,
+      "initial": "V"
+    },
+    {
+      "id": "begrundung",
+      "word": "begründung",
+      "meaningVi": "lý_do, cơ_sở",
+      "defVi": "Cơ_sở lý_lẽ | giải_thích | cho một quyết_định.",
+      "leadVi": "Sếp trình_bày từng bước, | ai cũng hiểu vì sao.",
+      "anticipateVi": "Lý_do sâu_xa là gì?",
+      "emphasis": [
+        "lý lẽ",
+        "từng bước"
+      ],
+      "pos": "noun",
+      "ipa": "/bəˈɡʁʏndʊŋ/",
+      "topic": "thinking",
+      "topics": [
+        "thinking",
+        "work"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Was ist die _____ für diese neue Regel?",
+          "vi": "Lý_do của quy_định mới này | là gì?"
+        }
+      ],
+      "chars": 10,
+      "initial": "B"
+    },
+    {
+      "id": "vorlaufig",
+      "word": "vorläufig",
+      "meaningVi": "tạm_thời, dự_kiến",
+      "defVi": "Tạm_thời, | chưa chắc_chắn | và còn có_thể | thay_đổi.",
+      "leadVi": "Lịch họp ghi bút_chì, | sửa được | bất_cứ lúc nào.",
+      "anticipateVi": "Chốt hẳn chưa nhỉ?",
+      "emphasis": [
+        "Tạm thời",
+        "bút chì"
+      ],
+      "pos": "adj",
+      "ipa": "/ˈfoːɐ̯lɔɪ̯fɪç/",
+      "topic": "thinking",
+      "topics": [
+        "thinking",
+        "work"
+      ],
+      "level": "B1",
+      "usage": [
+        {
+          "en": "Der Termin ist nur _____, ich bestätige ihn morgen.",
+          "vi": "Lịch hẹn | chỉ là tạm_thời, | mai tôi sẽ xác_nhận."
+        }
+      ],
+      "chars": 9,
+      "initial": "V"
+    }
+  ]
+}
