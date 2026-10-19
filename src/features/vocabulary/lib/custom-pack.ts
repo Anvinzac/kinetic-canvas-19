@@ -61,6 +61,7 @@ export function toDeck(json: unknown, source: string): { meta?: { name: string }
     "Gói của bạn";
   const fallbackLevel = levelFromSource(source);
   const seen = new Set<string>();
+  const usedIds = new Set<string>();
   const words: RawWord[] = [];
   for (const item of list as RawWord[]) {
     if (!item || typeof item !== "object" || typeof item.word !== "string") continue;
