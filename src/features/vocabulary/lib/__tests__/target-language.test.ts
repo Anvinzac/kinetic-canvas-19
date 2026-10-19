@@ -15,6 +15,8 @@ describe("resolveTarget", () => {
   it("tolerates port and case", () => expect(resolveTarget("HOA.chayla.app:8080")).toBe("zh"));
   it("missing host falls back to English", () => expect(resolveTarget(null)).toBe("en"));
   it("Chinese title is hoa.chayLá", () => expect(siteTitle("zh")).toBe("hoa.chayLá"));
+  it("French title is pháp.chayLá", () => expect(siteTitle("fr")).toBe("pháp.chayLá"));
+  it("German title is đức.chayLá", () => expect(siteTitle("de")).toBe("đức.chayLá"));
   it("brand splits lead from the accent span", () => {
     expect(siteBrand("zh")).toEqual({ lead: "hoa.chay", accent: "Lá" });
     expect(siteBrand("en")).toEqual({ lead: "anh.chay", accent: "Lá" });
