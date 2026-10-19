@@ -101,6 +101,21 @@ const LONG_PAGE_SYLLABLES = 9;
 /** The fewest lines such a long page is spread to, whenever spreading costs nothing in size. */
 const LONG_PAGE_MIN_LINES = 4;
 /**
+ * Past this many syllables a page may NOT be set on two lines.
+ *
+ * Unlike the spread above, this is a floor rather than a preference. Two lines holding
+ * eight syllables are two long lines, and a long line is set small because its WIDTH is
+ * what binds — so that page arrives noticeably smaller than its neighbours, and the type
+ * size jumps from scene to scene. Keeping the page on three lines keeps the lines short
+ * enough to be set at a size the rest of the deck is also set at.
+ *
+ * "Chương reo inh ỏi, vươn vai ngồi dậy" is the case this was written for: eight
+ * syllables that the score was happy to cram onto two.
+ */
+const TWO_LINE_MAX_SYLLABLES = 6;
+/** What such a page is set on instead. */
+const CROWDED_PAGE_MIN_LINES = 3;
+/**
  * A break one word away from a phrase edge. The rule says "never"; the layout keeps one
  * escape for a page that cannot be set any other way, so such a break is only taken when
  * every arrangement without one would have to be set at less than about half the size.
@@ -242,14 +257,24 @@ export function solveMeasuredLines(
   // syllables across every segment — a bound phrase is two, a lone token is one.
   const syllables = segments.reduce((total, { segment }) => total + segment.words.length, 0);
   const minLines = syllables > LONG_PAGE_SYLLABLES ? LONG_PAGE_MIN_LINES : 0;
+  // The floor is a bar, not a weight: an arrangement below it does not compete. A page
+  // with too few segments to reach it is exempt, because no arrangement of three segments
+  // makes four lines and refusing them all would leave the page unset.
+  const floorLines =
+    syllables > TWO_LINE_MAX_SYLLABLES && count >= CROWDED_PAGE_MIN_LINES
+      ? CROWDED_PAGE_MIN_LINES
+      : 0;
 
-  let best: {
+  type Candidate = {
     mask: number;
     fontPx: number;
     score: number;
     lines: number;
     edgeSplit: boolean;
-  } | null = null;
+  };
+  let best: Candidate | null = null;
+  /** The best arrangement ignoring the floor, for a page that cannot satisfy it. */
+  let fallback: Candidate | null = null;
   // Every arrangement that reaches the minimum line count. The pick among them waits
   // until the winner's size is known: the top-scoring spread can itself be smaller than
   // a clean cram it lost to, and choosing only among the spreads that read LARGER keeps
@@ -318,6 +343,18 @@ export function solveMeasuredLines(
     const ragged = 1 - widthSum / lines / widest;
     const score = fontPx * penalty * (1 - RAGGED_WEIGHT * ragged);
     const candidate = { mask, fontPx, score, lines, edgeSplit };
+    // Kept whatever the floor says, so a page that cannot reach the floor still has a
+    // layout to fall back to rather than none at all.
+    if (
+      !fallback ||
+      score > fallback.score + 1e-9 ||
+      (Math.abs(score - fallback.score) <= 1e-9 && lines < fallback.lines)
+    ) {
+      fallback = candidate;
+    }
+    // Below the floor the arrangement is not considered at all — that is what makes this
+    // a cap rather than one more thing the score can outvote.
+    if (lines < floorLines) continue;
     // On an exact tie the arrangement with fewer lines stands, then the earlier one, so
     // the same page always breaks the same way.
     if (
@@ -331,6 +368,9 @@ export function solveMeasuredLines(
     // after the loop, once it is known which of them read larger than the score winner.
     if (minLines > 0 && lines >= minLines) spreads.push(candidate);
   }
+  // Only when nothing at or above the floor could be set does the floor give way, so a
+  // page is never left unrendered by it.
+  if (!best) best = fallback;
   if (!best) return null;
   // Spread the long page only when a layout at `minLines` or more reads at strictly larger
   // type than the score winner; among those, the score — phrase edges and stranded

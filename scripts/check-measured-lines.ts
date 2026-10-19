@@ -522,4 +522,87 @@ function linesFor(items: MeasuredSegment[], mask: number) {
   );
 }
 
+// ── A crowded page is never set on two lines ──────────────────────────────────
+//
+// Two lines holding eight syllables are two LONG lines, and a long line is set small
+// because its width is what binds — so that page lands noticeably smaller than the scenes
+// either side of it. Past six syllables the layout must use three lines or more. This is a
+// floor, not a preference: unlike the spread rule above it cannot be outvoted by score.
+{
+  // The page this was written for, at the widths a real card measures.
+  const items = segments(
+    ["Chuông", 3.0],
+    ["reo", 2.0],
+    ["inh", 1.9],
+    ["ỏi,", 1.6],
+    ["vươn", 2.5],
+    ["vai", 1.9],
+    ["ngồi", 2.3],
+    ["dậy", 2.4],
+  );
+  const count = items.reduce((total, item) => total + item.segment.words.length, 0);
+  assert.equal(count, 8, "the example page is eight syllables");
+
+  let twoLiners = 0;
+  let widths = 0;
+  for (let width = 240; width <= 560; width += 10) {
+    const solved = solveMeasuredLines(items, { ...BOUNDS, lineWidthPx: width });
+    if (!solved) continue;
+    widths += 1;
+    if (solved.lines.length < 3) {
+      twoLiners += 1;
+      console.error(`      ${width}px -> ${show(solved.lines)}`);
+    }
+  }
+  assert.ok(widths > 0, "no width produced a layout; the check would pass vacuously");
+  assert.equal(
+    twoLiners,
+    0,
+    `an 8-syllable page was set on fewer than 3 lines at ${twoLiners} width(s)`,
+  );
+  const sample = solveMeasuredLines(items, { ...BOUNDS, lineWidthPx: 346 })!;
+  console.log(
+    `OK — 8 syllables never on two lines across ${widths} widths: ${show(sample.lines)} @ ${sample.fontPx.toFixed(1)}px`,
+  );
+}
+
+// Six or fewer is still free to use two lines — the cap must not creep downward. The
+// comma case asserted earlier in this file is exactly that: six syllables, two lines,
+// "Mở cửa ra, / ồ đẹp quá!". It is still passing above, so the boundary is covered from
+// the allowed side; this checks the first syllable PAST it, which is where the cap bites.
+{
+  const items = segments(
+    ["Mở", 2.0],
+    ["cửa", 2.3],
+    ["ra,", 1.8],
+    ["ồ", 1.2],
+    ["đẹp", 2.2],
+    ["quá", 2.4],
+    ["nhỉ!", 2.5],
+  );
+  const count = items.reduce((total, item) => total + item.segment.words.length, 0);
+  assert.equal(count, 7, "one syllable past the cap");
+  let belowFloor = 0;
+  let widths = 0;
+  for (let width = 240; width <= 560; width += 10) {
+    const solved = solveMeasuredLines(items, { ...BOUNDS, lineWidthPx: width });
+    if (!solved) continue;
+    widths += 1;
+    if (solved.lines.length < 3) belowFloor += 1;
+  }
+  assert.ok(widths > 0, "no width produced a layout; the check would pass vacuously");
+  assert.equal(belowFloor, 0, `a 7-syllable page fell below three lines at ${belowFloor} width(s)`);
+  console.log(
+    `OK — seven syllables, the first past the cap, never on two lines (${widths} widths)`,
+  );
+}
+
+// A page with too few segments to reach three lines is exempt rather than unset.
+{
+  const items = segments(["một hai ba b\u1ed1n", 6.0], ["năm sáu bảy", 4.5]);
+  const solved = solveMeasuredLines(items, BOUNDS);
+  assert.ok(solved, "a two-segment page must still get a layout");
+  console.log(`OK — too few segments to reach the floor still renders: ${show(solved.lines)}`);
+}
+
 console.log("\nAll measured-line checks passed.");
