@@ -16,7 +16,7 @@
  * what a job captures here is what a reader sees there.
  *
  * Exports: ExportFramePage
- * Depends on: VocabularyCard, export presets, saved-words (share-code lookup)
+ * Depends on: VocabularyCard, export presets, saved-words (share-code lookup), vocabulary.css
  */
 
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
@@ -25,6 +25,11 @@ import { VocabularyCard } from "./VocabularyCard";
 import { getExportPreset } from "../lib/export-presets";
 import { findWordByShareCode } from "../lib/saved-words";
 import { EXPORT_CONTRACT, type ExportPhase } from "../lib/export-contract";
+// Each page component brings the card's stylesheet in; this is a page like any other.
+// Without it the card renders with no rules at all — content height inside the frame,
+// text small and left, chrome stacked in a corner — which looks like a layout bug and is
+// really a missing import.
+import "../vocabulary.css";
 import type { FeedEntry, Presentation } from "../types";
 
 /** How long to wait for a paint before declaring readiness anyway. See the effect below. */

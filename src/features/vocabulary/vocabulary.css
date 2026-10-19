@@ -7313,11 +7313,17 @@
   color: var(--shell-text, #f4f1ff);
   font-family: "Inter", sans-serif;
 }
-/* Fill whichever axis runs out first, so the frame is as large as the window allows
-   and a recorder gets the most pixels this screen can give it. */
+/* Fill whichever axis runs out first, so the frame is as large as the window allows and a
+   recorder gets the most pixels this screen can give it.
+   BOTH axes are given a definite length on purpose. `.vocab-card` is `height: 100%`, and a
+   percentage against a height that is only implied by an aspect-ratio does not resolve —
+   the card then falls back to its content height (144px inside a 1920px stage) and lays
+   itself out for a box that is not the frame: small text, chrome crammed into a corner.
+   The studio's own rule derives height from --export-panel, which only exists beside its
+   side panel, so this route states both itself. */
 .vocab-export-frame .vocab-export-stage {
   width: min(100vw, calc(100dvh / var(--export-ratio)));
-  height: auto;
+  height: min(100dvh, calc(100vw * var(--export-ratio)));
 }
 .vocab-export-frame[data-missing] {
   padding: 24px;
