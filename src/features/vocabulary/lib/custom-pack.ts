@@ -83,12 +83,21 @@ export function toDeck(json: unknown, source: string): { meta?: { name: string }
           ? [{ en: usageEn, vi: usageVi ?? "" }]
           : [];
     const exams = Array.isArray(rest.exams) && rest.exams.length ? rest.exams : undefined;
+    // Accents are stripped before slugging (schützen → schutzen); when two words
+    // still collide (schützen/schätzen), the later one gets a numeric suffix.
+    let id =
+      typeof rest.id === "string" && rest.id
+        ? rest.id
+        : head
+            .normalize("NFD")
+            .replace(/[̀-ͯ]/g, "")
+            .replace(/[^a-z0-9_-]+/g, "-")
+            .replace(/^-+|-+$/g, "") || `w${words.length}`;
+    while (usedIds.has(id)) id = `${id.replace(/-\d+$/, "")}-${words.length}`;
+    usedIds.add(id);
     words.push({
       ...rest,
-      id:
-        typeof rest.id === "string" && rest.id
-          ? rest.id
-          : head.replace(/[^a-z0-9_-]+/g, "-").replace(/^-+|-+$/g, "") || `w${words.length}`,
+      id,
       usage,
       exams,
       emphasis: rest.emphasis ?? emphasisVi,
