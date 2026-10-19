@@ -108,15 +108,27 @@ const LONG_PAGE_MIN_LINES = 4;
 const PHRASE_SPLIT_FACTOR = 0.45;
 /** Any other break inside a phrase, against one on an edge: an edge wins close calls. */
 const INSIDE_PHRASE_FACTOR = 0.98;
-/** A word that ends a phrase: it carries a comma, full stop or semicolon, perhaps inside closing quotes. */
-const PHRASE_END = endsWithPunctuation("[,.;]");
+/**
+ * A word that ends a phrase: it carries a comma, full stop, semicolon, question mark,
+ * exclamation mark or ellipsis — perhaps inside closing quotes.
+ *
+ * The three sentence-final marks were missing for a long time, and `?` was even asserted
+ * not to count. That is backwards: a question mark closes a phrase more definitely than a
+ * comma does. Without them a line could end one word past a sentence — "Bạn có nghe /
+ * không? Tôi / ngồi đây" drags the next sentence's first word back onto this one — which
+ * is the poaching failure this rule exists to forbid.
+ *
+ * A colon is deliberately NOT here. A Vietnamese colon introduces what follows and stays
+ * glued to it ("Nhỏ thôi: …"); paginate.ts excludes it from page breaks for the same reason.
+ */
+const PHRASE_END = endsWithPunctuation("[,.;?!\u2026]");
 const HAS_GLYPH = /\p{L}|\p{N}/u;
 
 /**
  * The phrase edges a page's own punctuation makes — the reader's equivalents of `|`. A
- * word that ends in a comma, a full stop or a semicolon closes its phrase; the next one
- * starts after it. A mark inside a word or number ("1.000") is not at its end and makes no
- * edge, and the end of the page is not an edge.
+ * word that ends in a comma, full stop, semicolon, question mark, exclamation mark or
+ * ellipsis closes its phrase; the next one starts after it. A mark inside a word or number
+ * ("1.000") is not at its end and makes no edge, and the end of the page is not an edge.
  * @param words - the page's tokens
  * @returns Word indices at which a phrase begins, ascending
  * @pure true

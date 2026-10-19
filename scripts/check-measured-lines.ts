@@ -297,7 +297,58 @@ function linesFor(items: MeasuredSegment[], mask: number) {
     [],
     "a colon is not one of the marks",
   );
-  assert.deepEqual(getPunctuationPhraseEdges(["Thật", "sao?", "Ừ"]), [], "nor is a question mark");
+  // A sentence-final mark closes a phrase at least as firmly as a comma does. This used
+  // to assert the opposite for `?`, which let a line end one word past a sentence end.
+  assert.deepEqual(
+    getPunctuationPhraseEdges(["Thật", "sao?", "Ừ"]),
+    [2],
+    "a question mark closes a phrase",
+  );
+  assert.deepEqual(
+    getPunctuationPhraseEdges(["Cháy", "rồi!", "Chạy"]),
+    [2],
+    "so does an exclamation mark",
+  );
+  assert.deepEqual(getPunctuationPhraseEdges(["Thôi", "vậy…", "Về"]), [2], "so does an ellipsis");
+  assert.deepEqual(
+    getPunctuationPhraseEdges(["Hỏi", "rằng:", "“Sao?”", "Ừ"]),
+    [3],
+    "a sentence mark inside closing quotes still closes the phrase",
+  );
+  // The failure that motivated this: without an edge at the `?`, the solver was free to
+  // pull the next sentence's first word back onto this sentence's line.
+  {
+    const items = segments(
+      ["Bạn", 2.0],
+      ["có", 1.3],
+      ["nghe", 2.4],
+      ["không?", 3.6],
+      ["Tôi", 1.9],
+      ["ngồi", 2.3],
+      ["đây", 2.1],
+      ["mãi", 2.0],
+      ["rồi.", 2.3],
+    );
+    const tokens = items.flatMap((item) => item.segment.words.map((word) => word.text));
+    const edges = getPunctuationPhraseEdges(tokens);
+    assert.ok(edges.includes(4), "the word after `không?` opens a new phrase");
+    const solved = solveMeasuredLines(
+      items,
+      { ...BOUNDS, lineWidthPx: 220 },
+      {
+        phraseEdges: edges,
+      },
+    );
+    assert.ok(solved, "expected a layout");
+    const rows = solved.lines.map((line) =>
+      line.segments.flatMap((segment) => segment.words.map((word) => word.index)),
+    );
+    assert.ok(
+      !rows.some((row) => row[row.length - 1] === 4),
+      `no line may end one word past the sentence: ${show(solved.lines)}`,
+    );
+    console.log(`OK — a sentence end is honoured as a phrase edge: ${show(solved.lines)}`);
+  }
 
   // A page with nothing to say about phrases solves exactly as before.
   const plain = segments(

@@ -28,11 +28,18 @@ ends, and a line break lands wherever it fits.
 Chất_lỏng trong suốt | mà ta uống=mỗi ngày.
 ```
 
-The reader also treats a word that ends in a **comma, full stop or semicolon** (`,` `.` `;`,
-possibly inside closing quotes) as a phrase edge: its own equivalent of `|`, read from text
+The reader also treats a word that ends in a **comma, full stop, semicolon, question mark,
+exclamation mark or ellipsis** (`,` `.` `;` `?` `!` `…`, possibly inside closing quotes) as a
+phrase edge: its own equivalent of `|`, read from text
 that has no marks at all. This is a reading rule only; it asks nothing new of a generator.
 A mark inside a word or number (`1.000`) is not at its end and makes no edge, and the end of
 a page is not an edge.
+
+The three sentence-final marks (`?` `!` `…`) were missing from this list at first, and `?` was
+even asserted not to count — which is backwards, since a question mark closes a phrase more
+definitely than a comma does. Without them a line could end one word past a sentence
+(`Bạn có nghe / không? Tôi / ngồi đây`), dragging the next sentence's first word onto this
+one. A colon stays out on purpose: a Vietnamese colon introduces what follows.
 
 None of the three marks reaches a reader, and none changes a word count: every "N words" rule
 counts syllables as if the marks were spaces. `countJoinedUnits()` is that count.
@@ -81,7 +88,7 @@ them in a fixed order. The first two are hard; nothing below them may override t
    smaller. This is already enforced (§2).
 2. **Never leave the box.** Every line is measured and must fit its line width at the size
    the page is set in. Already enforced.
-3. **Honour the phrase edges — `|`, and a word ending in `,` `.` `;`.** A break is welcome
+3. **Honour the phrase edges — `|`, and a word ending in `,` `.` `;` `?` `!` `…`.** A break is welcome
    right **after** an edge, and **never one word away from it**: a line or page must not end
    one word after the mark, nor begin with the one word that carries it. See "How strong"
    for the one escape the layout keeps.
@@ -141,7 +148,7 @@ break exactly on an edge always avoids it.
 - **Rule 3 and the scrap penalty are different tests.** The scrap penalty is about width (a
   lone word much narrower than its neighbours). Rule 3 is about distance from a mark, and
   applies even when the word is wide.
-- **Rule 3 applies only to phrased text** — a page with at least one `|`, or a `,` `.` `;` inside it.
+- **Rule 3 applies only to phrased text** — a page with at least one `|`, or a `,` `.` `;` `?` `!` `…` inside it.
   Unmarked text carries no phrase information, so it changes nothing there: pages without
   edges lay out exactly as they did before (asserted).
 
@@ -215,7 +222,7 @@ Then thread `phraseEdges` through `VocabularyStage` → `WordSequenceText` exact
   `getBreakFactors` turns them into one factor per gap between segments, and the loop over
   arrangements multiplies in the factor of every break it makes, beside the lone-word
   penalty. Each segment carries its words' indices, so nothing else is needed.
-- `getPunctuationPhraseEdges(words)` returns the edges a page's own `,` `.` `;` make, and
+- `getPunctuationPhraseEdges(words)` returns the edges a page's own `,` `.` `;` `?` `!` `…` make, and
   `isBreakOneWordFromEdge(words, edges, at)` applies rule 3 to a break between single
   tokens, for callers that do not have segments.
 - `WordSequenceText` derives those edges from the page's tokens and passes them through
@@ -259,7 +266,7 @@ could loop or produce a line of one very long segment.
 A page break is a break, so rules 1 and 3 apply to it:
 
 - **Rule 3, for punctuation — done.** `paginateText(text, { keepPhraseEdges: true })` drops
-  any clause break that would be one word away from a `,` `.` `;` (counting single tokens,
+  any clause break that would be one word away from a `,` `.` `;` `?` `!` `…` (counting single tokens,
   through `isBreakOneWordFromEdge`). `buildStages` passes it; community posts do not, so
   they page exactly as before. When `|` arrives, give the same filter its edges too.
 - **Rule 1 — still open.** A page break must never fall inside a `_` or `=` group, but
@@ -316,7 +323,7 @@ doing when you touch this code; not urgent.
   the mark says nothing a reader should see. Keep it stripped and carry the indices.
 - **Do not apply any of this to `usageEn`.** It carries the five-underscore answer blank
   and is auto-blanked upstream; marks are excluded from it by design.
-- **Do not treat punctuation as a substitute for `|`.** The reader honours both: a `,` `.` `;`
+- **Do not treat punctuation as a substitute for `|`.** The reader honours both: a `,` `.` `;` `?` `!` `…`
   is always an edge, and `|` marks the edges punctuation does not show. Neither asks the
   generator for anything new.
 
@@ -325,8 +332,9 @@ doing when you touch this code; not urgent.
 **The measured layout** — `scripts/check-measured-lines.ts` (`npm run check:measured-lines`)
 already asserts, for the punctuation rule:
 
-- which words make an edge (a `,` `.` `;` at the end of a word, inside closing quotes too;
-  not inside a number, not at the end of the page, not `:` or `?`)
+- which words make an edge (a `,` `.` `;` `?` `!` `…` at the end of a word, inside closing quotes
+  too; not inside a number, not at the end of the page, and never `:` — a Vietnamese colon
+  introduces what follows and stays glued to it)
 - the page in §3 breaks as `Mở cửa ra, / ồ đẹp quá!`
 - a page with no edges solves exactly as before
 - a break between single tokens is judged the same way (the page rule)
