@@ -7,6 +7,9 @@ describe("resolveTarget", () => {
   it("anh.chayla.app serves English", () => expect(resolveTarget("anh.chayla.app")).toBe("en"));
   it("han.chayla.app serves Korean", () => expect(resolveTarget("han.chayla.app")).toBe("ko"));
   it("nhat.chayla.app serves Japanese", () => expect(resolveTarget("nhat.chayla.app")).toBe("ja"));
+  it("phap.chayla.app serves French", () => expect(resolveTarget("phap.chayla.app")).toBe("fr"));
+  it("duc.chayla.app serves German", () => expect(resolveTarget("duc.chayla.app")).toBe("de"));
+  it("tbn.chayla.app serves Spanish", () => expect(resolveTarget("tbn.chayla.app")).toBe("es"));
   it("unknown host falls back to English", () =>
     expect(resolveTarget("foo.lovable.app")).toBe("en"));
   it("tolerates port and case", () => expect(resolveTarget("HOA.chayla.app:8080")).toBe("zh"));
@@ -16,7 +19,7 @@ describe("resolveTarget", () => {
     expect(siteBrand("zh")).toEqual({ lead: "hoa.chay", accent: "Lá" });
     expect(siteBrand("en")).toEqual({ lead: "anh.chay", accent: "Lá" });
     expect(siteBrand("ja")).toEqual({ lead: "nhật.chay", accent: "Lá" });
-    for (const locale of ["en", "zh", "ko", "ja"] as const) {
+    for (const locale of ["en", "zh", "ko", "ja", "fr", "de", "es"] as const) {
       const { lead, accent } = siteBrand(locale);
       expect(lead + accent).toBe(siteTitle(locale));
     }
@@ -31,5 +34,24 @@ describe("Chinese deck", () => {
     );
     expect(page.entries.length).toBeGreaterThan(0);
     for (const e of page.entries) expect(e.word.word).toMatch(/^\p{Script=Han}+$/u);
+  });
+});
+
+describe("French, German and Spanish decks", () => {
+  const request = { seed: "testseed01", position: 0, limit: 24, topic: "", level: "", difficulty: "" };
+  it("a phap request returns only French words", () => {
+    const page = readVocabularyPage(request, "fr");
+    expect(page.entries.length).toBeGreaterThan(0);
+    for (const e of page.entries) expect(e.word.word).not.toMatch(/^\p{Script=Han}+$/u);
+  });
+  it("a duc request returns only German words", () => {
+    const page = readVocabularyPage(request, "de");
+    expect(page.entries.length).toBeGreaterThan(0);
+    for (const e of page.entries) expect(e.word.word).not.toMatch(/^\p{Script=Han}+$/u);
+  });
+  it("a tbn request returns only Spanish words", () => {
+    const page = readVocabularyPage(request, "es");
+    expect(page.entries.length).toBeGreaterThan(0);
+    for (const e of page.entries) expect(e.word.word).not.toMatch(/^\p{Script=Han}+$/u);
   });
 });
