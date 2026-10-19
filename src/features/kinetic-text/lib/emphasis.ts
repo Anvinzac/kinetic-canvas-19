@@ -201,7 +201,12 @@ export function getEmphasisTextShadow(variant: EmphasisVariant | null): string {
     return "0 4px 40px rgba(0,0,0,0.45)";
   }
   if (variant === "glow") {
-    return "0 0 0.14em var(--kinetic-aura-color, #FFBE0B), 0 0 0.4em var(--kinetic-aura-color, #FFBE0B), 0 5px 30px rgba(0,0,0,0.5)";
+    // The two radii come from registered custom properties so the breathing animation can
+    // move them (styles.css, @keyframes kinetic-emphasis-glow). They were a `filter:
+    // drop-shadow()` pulse, which clipped this very shadow to the filter's region and left
+    // the glow cropped to a rectangle. The fallbacks are the resting glow, so a browser
+    // without @property still paints it, just without the breath.
+    return "0 0 calc(var(--kinetic-glow-inner, 0.14) * 1em) var(--kinetic-aura-color, #FFBE0B), 0 0 calc(var(--kinetic-glow-outer, 0.4) * 1em) var(--kinetic-aura-color, #FFBE0B), 0 5px 30px rgba(0,0,0,0.5)";
   }
   if (variant === "frame") {
     return "0 2px 16px rgba(0,0,0,0.5)";

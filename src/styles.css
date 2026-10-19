@@ -556,12 +556,38 @@
   }
 }
 
+/* ── glow: the word breathes light ───────────────────────────────────
+   The pulse animates the GLOW'S OWN RADII, not a filter.
+
+   It used to breathe with `filter: drop-shadow()`, and a filter on the same element that
+   paints a text-shadow clips that shadow to the filter region — the element's box plus the
+   filter's own spread. The spread here was 0.08em against a shadow reaching 0.4em plus a
+   30px drop, so the glow was cut off square: a hard-edged rectangle around the word, which
+   is exactly what it looked like.
+
+   The radii are registered so they interpolate; `<number>` rather than `<length>` because a
+   registered initial value has to be computationally independent, and the em is applied at
+   the point of use instead. A browser without @property simply takes the var() fallbacks
+   and the word glows without breathing. The shadow's SHAPE stays in one place —
+   getEmphasisTextShadow in emphasis.ts — and only these two numbers move. */
+@property --kinetic-glow-inner {
+  syntax: "<number>";
+  inherits: false;
+  initial-value: 0.14;
+}
+@property --kinetic-glow-outer {
+  syntax: "<number>";
+  inherits: false;
+  initial-value: 0.4;
+}
 @keyframes kinetic-emphasis-glow {
   0%,
   100% {
-    filter: drop-shadow(0 0 0.08em var(--kinetic-aura-color, #ffbe0b));
+    --kinetic-glow-inner: 0.14;
+    --kinetic-glow-outer: 0.3;
   }
   50% {
-    filter: drop-shadow(0 0 0.34em var(--kinetic-aura-color, #ffbe0b));
+    --kinetic-glow-inner: 0.2;
+    --kinetic-glow-outer: 0.62;
   }
 }
