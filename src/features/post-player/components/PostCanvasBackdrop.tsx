@@ -6,20 +6,28 @@
  */
 
 import { motion } from "framer-motion";
-import type { ReactElement } from "react";
+import { useState, type ReactElement } from "react";
 import { getPatternBackgroundPosition, type CanvasPatternTheme } from "@/features/canvas";
 import { getSceneBackgroundStyle, type CanvasSceneTheme } from "@/features/canvas";
-import { DEFAULT_CANVAS_BACKGROUND } from "../lib/post-background";
+import { DEFAULT_CANVAS_BACKGROUND, isBackdropJump } from "../lib/post-background";
 
 export type PostCanvasBackdropProps = {
   postId: string;
   backgroundShiftPage: number;
   sceneTheme: CanvasSceneTheme | null | undefined;
   patternTheme: CanvasPatternTheme | null | undefined;
-  slidingCanvasBackground: { background: string; width: string; x: string } | null;
+  slidingCanvasBackground: {
+    background: string;
+    width: string;
+    x: string;
+    pageShift: number;
+  } | null;
   staticCanvasBackground: string | null | undefined;
   hasTransitionBackground: boolean;
 };
+
+/** How long the old colour takes to fade off a page change too far to glide. */
+const JUMP_FADE_S = 0.45;
 
 /**
  * Paint the post canvas background layer (scene/pattern/gradient).
@@ -35,49 +43,90 @@ export function PostCanvasBackdrop({
   staticCanvasBackground,
   hasTransitionBackground,
 }: PostCanvasBackdropProps): ReactElement {
+  // A one-page turn glides the backdrop to the next colour. A longer jump (reveal, replay,
+  // restart) lands on its colour at once while the colour it left fades out above it.
+  const [shown, setShown] = useState({
+    page: backgroundShiftPage,
+    instant: false,
+    from: null as number | null,
+    jump: 0,
+  });
+  if (shown.page !== backgroundShiftPage) {
+    const instant = isBackdropJump(shown.page, backgroundShiftPage);
+    setShown({
+      page: backgroundShiftPage,
+      instant,
+      from: instant ? shown.page : shown.from,
+      jump: instant ? shown.jump + 1 : shown.jump,
+    });
+  }
+
+  const layer = (page: number, instant: boolean) =>
+    sceneTheme ? (
+      <div
+        aria-hidden
+        className="absolute inset-0"
+        style={{
+          ...getSceneBackgroundStyle(sceneTheme, page),
+          ...(instant && { transition: "none" }),
+        }}
+      />
+    ) : patternTheme ? (
+      <div
+        aria-hidden
+        className="absolute inset-0"
+        style={{
+          backgroundColor: patternTheme.base,
+          backgroundImage: patternTheme.image,
+          backgroundSize: patternTheme.size,
+          backgroundRepeat: "repeat",
+          backgroundPosition: getPatternBackgroundPosition(patternTheme, page),
+          transition: instant ? "none" : "background-position 1.25s cubic-bezier(0.22,1,0.36,1)",
+        }}
+      />
+    ) : slidingCanvasBackground ? (
+      <motion.div
+        aria-hidden
+        className="absolute inset-y-0 left-0"
+        style={{
+          background: DEFAULT_CANVAS_BACKGROUND,
+          backgroundImage: slidingCanvasBackground.background,
+          width: slidingCanvasBackground.width,
+        }}
+        initial={false}
+        animate={{ x: `-${page * slidingCanvasBackground.pageShift}%` }}
+        transition={instant ? { duration: 0 } : { duration: 1.25, ease: [0.22, 1, 0.36, 1] }}
+      />
+    ) : (
+      <div
+        aria-hidden
+        className="absolute inset-0"
+        style={{
+          background: DEFAULT_CANVAS_BACKGROUND,
+          backgroundImage: staticCanvasBackground ?? undefined,
+        }}
+      />
+    );
+
   return (
     <>
-      {sceneTheme ? (
-        <div
-          aria-hidden
-          className="absolute inset-0"
-          style={getSceneBackgroundStyle(sceneTheme, backgroundShiftPage)}
-        />
-      ) : patternTheme ? (
-        <div
-          aria-hidden
-          className="absolute inset-0"
-          style={{
-            backgroundColor: patternTheme.base,
-            backgroundImage: patternTheme.image,
-            backgroundSize: patternTheme.size,
-            backgroundRepeat: "repeat",
-            backgroundPosition: getPatternBackgroundPosition(patternTheme, backgroundShiftPage),
-            transition: "background-position 1.25s cubic-bezier(0.22,1,0.36,1)",
-          }}
-        />
-      ) : slidingCanvasBackground ? (
+      {layer(shown.page, shown.instant)}
+      {shown.from !== null && (
         <motion.div
+          key={`jump-${shown.jump}`}
           aria-hidden
-          className="absolute inset-y-0 left-0"
-          style={{
-            background: DEFAULT_CANVAS_BACKGROUND,
-            backgroundImage: slidingCanvasBackground.background,
-            width: slidingCanvasBackground.width,
-          }}
-          initial={false}
-          animate={{ x: slidingCanvasBackground.x }}
-          transition={{ duration: 1.25, ease: [0.22, 1, 0.36, 1] }}
-        />
-      ) : (
-        <div
-          aria-hidden
-          className="absolute inset-0"
-          style={{
-            background: DEFAULT_CANVAS_BACKGROUND,
-            backgroundImage: staticCanvasBackground ?? undefined,
-          }}
-        />
+          className="absolute inset-0 overflow-hidden"
+          initial={{ opacity: 1 }}
+          animate={{ opacity: 0 }}
+          transition={{ duration: JUMP_FADE_S, ease: "easeOut" }}
+          onAnimationComplete={() =>
+            setShown((current) =>
+              current.jump === shown.jump ? { ...current, from: null } : current,
+            )
+          }
+        >
+          {layer(shown.from, true)}
+        </motion.div>
       )}
       {(hasTransitionBackground || patternTheme || sceneTheme) && (
         <motion.div

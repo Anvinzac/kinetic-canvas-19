@@ -1,7 +1,7 @@
 /**
  * Resolved and sliding post canvas backgrounds for page transitions.
  *
- * Exports: getResolvedPostBackground, getSlidingCanvasBackground, DEFAULT_CANVAS_BACKGROUND
+ * Exports: getResolvedPostBackground, getSlidingCanvasBackground, isBackdropJump, DEFAULT_CANVAS_BACKGROUND
  * Depends on: lib/canvas resolve/isUsable/isTooDark, Post type
  */
 
@@ -47,23 +47,40 @@ export function getResolvedPostBackground(post: Post): string | null {
  *   it each step is a plain sRGB ramp; a caller that wants a perceptual blend (the
  *   vocabulary card) passes one and the extra stops are laid out inside each step, so
  *   a step is still exactly one screen wide.
- * @returns Strip background, width and offset, or null when there is nothing to slide
+ * @returns Strip background, width, offset, and the offset one page moves it (in % of
+ *   the strip), or null when there is nothing to slide
  */
 export function getSlidingCanvasBackground(
   spec: CanvasSpec,
   fallback: string | null,
   shiftPage: number,
   blend?: (from: string, to: string) => string[],
-): { background: string; width: string; x: string } | null {
+): { background: string; width: string; x: string; pageShift: number } | null {
   const colors = getTransitionColorCycle(spec, fallback);
   if (colors.length < 2) return null;
 
   const segmentCount = Math.max(64, colors.length * 12);
+  const pageShift = 100 / segmentCount;
   return {
     background: buildStrip(colors, segmentCount, blend),
     width: `${segmentCount * 100}%`,
-    x: `-${shiftPage * (100 / segmentCount)}%`,
+    x: `-${shiftPage * pageShift}%`,
+    pageShift,
   };
+}
+
+/**
+ * Whether a backdrop page change is too far to glide. Every page owns its own colour
+ * band laid side by side, so gliding from page 0 to the reveal (or from the coda back
+ * to page 0 on a replay) has to pass every band in between, and reads as a burst of
+ * four or five other backgrounds. Those changes cut and crossfade instead.
+ * @param from - page the backdrop is showing
+ * @param to - page it is moving to
+ * @returns True when the change must not glide
+ * @pure true
+ */
+export function isBackdropJump(from: number, to: number): boolean {
+  return Math.abs(to - from) > 1;
 }
 
 // The strip only depends on its color cycle, but a card asks for it on every render.
