@@ -103,13 +103,6 @@ export const CEFR_TRACKS: readonly DifficultyTrack[] = [
     levels: ["B2"],
   },
   {
-    id: "nang-cao",
-    label: "nâng cao",
-    hint: "Từ trừu tượng hơn",
-    emoji: "⚡",
-    levels: ["B2", "C1"],
-  },
-  {
     id: "viet-lach",
     label: "viết lách",
     hint: "Chữ nghĩa dùng khi viết",
@@ -122,6 +115,13 @@ export const CEFR_TRACKS: readonly DifficultyTrack[] = [
     hint: "Tiếng Anh học thuật",
     emoji: "🚀",
     levels: ["B1", "B2", "C1"],
+  },
+  {
+    id: "nang-cao",
+    label: "nâng cao",
+    hint: "Từ trừu tượng hơn",
+    emoji: "⚡",
+    levels: ["B2", "C1"],
   },
   {
     id: "van-chuong",
@@ -179,13 +179,6 @@ export const HSK_TRACKS: readonly DifficultyTrack[] = [
     levels: ["HSK4"],
   },
   {
-    id: "nang-cao",
-    label: "cao cấp",
-    hint: "Từ trừu tượng hơn",
-    emoji: "",
-    levels: ["HSK4", "HSK5"],
-  },
-  {
     id: "viet-lach",
     label: "thư diện",
     hint: "Chữ nghĩa dùng khi viết",
@@ -198,6 +191,13 @@ export const HSK_TRACKS: readonly DifficultyTrack[] = [
     hint: "Tiếng Trung học thuật",
     emoji: "🚀",
     levels: ["HSK3", "HSK4", "HSK5"],
+  },
+  {
+    id: "nang-cao",
+    label: "cao cấp",
+    hint: "Từ trừu tượng hơn",
+    emoji: "",
+    levels: ["HSK4", "HSK5"],
   },
   {
     id: "van-chuong",
