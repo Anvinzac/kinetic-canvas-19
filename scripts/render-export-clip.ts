@@ -1,9 +1,15 @@
 /**
  * Render one word to an MP4, headlessly, with no browser automation dependency.
  *
- * This is the prototype that answers the one risky question behind the daily-post idea:
- * does /export/$code, driven by a machine, produce a clip that looks like the real card?
- * Everything after it — uploading to a Page, pushing a TikTok draft, scheduling — is
+ * Two modes, because they capture different things:
+ *
+ *   feed    (default) the real /feed page as a visitor sees it — toolbar, action bar,
+ *           progress, all of it — at a phone-sized viewport, for one whole word. This is
+ *           what a promo clip wants: the app, not a cutout of it.
+ *   export  the stripped /export/$code frame, chrome removed to the preset's clear zone.
+ *           Addressable by share code, for when one specific word is wanted.
+ *
+ * Everything after this — uploading to a Page, pushing a TikTok draft, scheduling — is
  * routine once a good file exists.
  *
  * It drives the installed Chrome over the DevTools protocol and captures with
@@ -22,12 +28,19 @@
  * the animation it is supposed to be showing.
  *
  * Usage:
- *   npx tsx scripts/render-export-clip.ts <shareCode> [options]
- *     --preset <id>    export preset (default: tiktok-clear)
- *     --base <url>     app origin (default: http://localhost:5195)
- *     --out <path>     output file (default: ./export-<code>.mp4)
- *     --fps <n>        output frame rate (default: 30)
- *     --max <seconds>  give up if the card never finishes (default: 120)
+ *   npx tsx scripts/render-export-clip.ts                  # one word off the live feed
+ *   npx tsx scripts/render-export-clip.ts --mode export T22
+ *
+ *     --mode <feed|export>  what to record (default: feed)
+ *     --base <url>          app origin (default: http://localhost:5195)
+ *     --out <path>          output file
+ *     --fps <n>             output frame rate (default: 30)
+ *     --max <seconds>       give up if the word never finishes (default: 120)
+ *   feed mode:
+ *     --css <w>x<h>         CSS viewport, phone-sized (default: 405x720)
+ *     --scale <n>           device pixel ratio (default: 2.667 — 405×720 → 1080×1920)
+ *   export mode:
+ *     --preset <id>         export preset (default: tiktok-clear)
  */
 import { spawn, spawnSync } from "node:child_process";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
@@ -36,12 +49,24 @@ import { join, resolve } from "node:path";
 import { setTimeout as sleep } from "node:timers/promises";
 
 import { getExportPreset } from "../src/features/vocabulary/lib/export-presets";
+import { DIFFICULTY_CHOICE_KEY } from "../src/features/vocabulary/lib/difficulty-choice";
+import { DIFFICULTY_ALL } from "../src/features/vocabulary/lib/difficulty";
 
 /** The frame a preset asks for, read from the app's own table rather than hardcoded. */
 function presetSize(id: string): { width: number; height: number } {
   const found = getExportPreset(id);
   return { width: found.width, height: found.height };
 }
+
+/** The word on screen, by its position in the stream; 0 when none is. */
+const ACTIVE_POSITION = `(() => {
+  const mid = innerHeight / 2;
+  for (const card of document.querySelectorAll('.vocab-card')) {
+    const r = card.getBoundingClientRect();
+    if (r.top <= mid && r.bottom >= mid) return Number(card.getAttribute('aria-posinset')) || 0;
+  }
+  return 0;
+})()`;
 
 const CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
 const DEBUG_PORT = 9333;
@@ -55,17 +80,27 @@ function flag(name: string, fallback: string): string {
 const code = argv.find(
   (a) => !a.startsWith("--") && argv[argv.indexOf(a) - 1]?.startsWith("--") !== true,
 );
-if (!code) {
-  console.error(
-    "Usage: npx tsx scripts/render-export-clip.ts <shareCode> [--preset id] [--base url] [--out file]",
-  );
+const mode = flag("mode", "feed");
+if (mode !== "feed" && mode !== "export") {
+  console.error(`--mode must be "feed" or "export" (got "${mode}")`);
+  process.exit(1);
+}
+if (mode === "export" && !code) {
+  console.error("export mode needs a share code: --mode export <code>");
   process.exit(1);
 }
 const preset = flag("preset", "tiktok-clear");
 const base = flag("base", "http://localhost:5195");
-const out = resolve(flag("out", `./export-${code}.mp4`));
 const fps = Number(flag("fps", "30"));
 const maxSeconds = Number(flag("max", "120"));
+// A phone-shaped CSS viewport scaled up to the output size, so the app lays itself out the
+// way it does on a phone — the layout a viewer recognises — rather than the desktop one it
+// would choose at a literal 1080px wide.
+const [cssWidth, cssHeight] = flag("css", "405x720").split("x").map(Number);
+const scale = Number(flag("scale", String(1080 / 405)));
+const out = resolve(
+  flag("out", mode === "feed" ? "./feed-clip.mp4" : `./export-${code ?? "clip"}.mp4`),
+);
 
 // ── A minimal CDP client over Node's built-in WebSocket ─────────────────────────────────
 type Handler = (params: Record<string, unknown>) => void;
@@ -177,45 +212,93 @@ async function main() {
   await cdp.send("Page.enable");
   await cdp.send("Runtime.enable");
 
-  // Size the viewport BEFORE loading. The card measures its own box with a ResizeObserver
-  // and lays out from those numbers; arriving at one size and being resized to another
-  // leaves it laid out for the box it first saw — text low and left, chrome crammed into
-  // a corner. Loading straight into the final frame avoids the question entirely.
-  const { width: presetWidth, height: presetHeight } = presetSize(preset);
-  await cdp.send("Emulation.setDeviceMetricsOverride", {
-    width: presetWidth,
-    height: presetHeight,
-    deviceScaleFactor: 1,
-    mobile: false,
-  });
+  // ── Set the stage, per mode ───────────────────────────────────────────────────────────
+  let width: number;
+  let height: number;
+  let url: string;
+  /** Resolves when the thing being recorded has finished; polled below. */
+  let isFinished: () => Promise<boolean>;
+  let describe: () => Promise<string>;
 
-  const url = `${base}/export/${code}?preset=${encodeURIComponent(preset)}`;
+  if (mode === "feed") {
+    width = Math.round(cssWidth * scale);
+    height = Math.round(cssHeight * scale);
+    // Phone metrics, not a 1080px-wide desktop window. `mobile` makes the app lay out the
+    // way it does on a phone; the scale factor is what turns that into output pixels.
+    await cdp.send("Emulation.setDeviceMetricsOverride", {
+      width: cssWidth,
+      height: cssHeight,
+      deviceScaleFactor: scale,
+      mobile: true,
+    });
+    await cdp.send("Emulation.setTouchEmulationEnabled", { enabled: true, maxTouchPoints: 5 });
+    // Skip the difficulty onboarding. It is a first-visit screen, and a clip that opens on
+    // it is showing the reader a form rather than the thing being advertised. Written
+    // before any app script runs, so the feed never renders the onboarding at all.
+    await cdp.send("Page.addScriptToEvaluateOnNewDocument", {
+      source: `try { localStorage.setItem(${JSON.stringify(DIFFICULTY_CHOICE_KEY)}, ${JSON.stringify(DIFFICULTY_ALL)}); } catch {}`,
+    });
+    url = `${base}/feed`;
+  } else {
+    const size = presetSize(preset);
+    width = size.width;
+    height = size.height;
+    // The card measures its own box and lays out from what it first saw, so it has to
+    // arrive at the final size rather than be resized into it.
+    await cdp.send("Emulation.setDeviceMetricsOverride", {
+      width,
+      height,
+      deviceScaleFactor: 1,
+      mobile: false,
+    });
+    url = `${base}/export/${code}?preset=${encodeURIComponent(preset)}`;
+  }
+
   console.log(`→ ${url}`);
   await cdp.send("Page.navigate", { url });
 
-  // Wait for the page's own readiness signal — the contract, not a guessed delay.
-  let phase = "";
-  let size = "";
-  for (let attempt = 0; attempt < 150; attempt += 1) {
-    phase = (await cdp.evaluate<string>("document.body.dataset.exportPhase || ''")) ?? "";
-    if (phase === "ready" || phase === "missing") break;
-    await sleep(200);
+  if (mode === "feed") {
+    // Wait for a card to be on screen. A fresh load starts the first word at its first
+    // page, so recording from here gives a clean beginning with nothing to trim.
+    let position = 0;
+    for (let attempt = 0; attempt < 150; attempt += 1) {
+      position = (await cdp.evaluate<number>(ACTIVE_POSITION)) ?? 0;
+      if (position > 0) break;
+      await sleep(200);
+    }
+    if (!position) throw new Error("the feed never put a word on screen");
+    const startedOn = position;
+    console.log(`  feed at ${cssWidth}×${cssHeight} ×${scale.toFixed(2)} → ${width}×${height}`);
+    // One whole word: finished when the feed has moved on to the next one.
+    isFinished = async () =>
+      ((await cdp.evaluate<number>(ACTIVE_POSITION)) ?? startedOn) !== startedOn;
+    // Named by position, not by headword. Reading the answer off the page during the take
+    // is possible but was not worth the fuss here: a caller that needs the word can ask
+    // the feed API for the word at this position, and export mode reports it outright.
+    describe = async () => `position ${startedOn}`;
+  } else {
+    let phase = "";
+    for (let attempt = 0; attempt < 150; attempt += 1) {
+      phase = (await cdp.evaluate<string>("document.body.dataset.exportPhase || ''")) ?? "";
+      if (phase === "ready" || phase === "missing") break;
+      await sleep(200);
+    }
+    if (phase === "missing") throw new Error(`No word has the share code "${code}"`);
+    if (phase !== "ready") throw new Error(`page never became ready (phase: "${phase || "none"}")`);
+    const reported = (await cdp.evaluate<string>("document.body.dataset.exportSize || ''")) ?? "";
+    const word = await cdp.evaluate<string>("document.body.dataset.exportWord || ''");
+    if (reported !== `${width}x${height}`) {
+      throw new Error(
+        `preset "${preset}" is ${width}×${height} here but the page reported ${reported}`,
+      );
+    }
+    console.log(`  word "${word}" at ${width}×${height}`);
+    isFinished = async () =>
+      (await cdp.evaluate<string>("document.body.dataset.exportPhase || ''")) === "done";
+    describe = async () => word;
   }
-  if (phase === "missing") throw new Error(`No word has the share code "${code}"`);
-  if (phase !== "ready") throw new Error(`page never became ready (phase: "${phase || "none"}")`);
 
-  size = (await cdp.evaluate<string>("document.body.dataset.exportSize || ''")) ?? "";
-  const word = await cdp.evaluate<string>("document.body.dataset.exportWord || ''");
-  const [width, height] = size.split("x").map(Number);
-  if (!width || !height) throw new Error(`page did not report a frame size (got "${size}")`);
-  console.log(`  word "${word}" at ${width}×${height}`);
-
-  if (width !== presetWidth || height !== presetHeight) {
-    throw new Error(
-      `preset "${preset}" is ${presetWidth}×${presetHeight} here but the page reported ${size}`,
-    );
-  }
-  // The page is already at the right size; give the card a moment to have settled on it.
+  // Let whatever just mounted settle before the first frame is kept.
   await sleep(400);
 
   const captured: { file: string; atMs: number }[] = [];
@@ -237,20 +320,23 @@ async function main() {
     maxWidth: width,
     maxHeight: height,
   });
-  // Hand the page its cue only once frames are flowing, so the entrance is not already
-  // part-way through by the time anything is being recorded.
-  await cdp.evaluate(`window.dispatchEvent(new Event("vocab-export-start"))`);
+  // Export mode holds its card still until cued, so that it is not already part-way
+  // through an entrance by the time frames are flowing. The feed needs no cue: it plays
+  // on its own, which is the whole point of recording it.
+  if (mode === "export") {
+    await cdp.evaluate(`window.dispatchEvent(new Event("vocab-export-start"))`);
+  }
 
   const deadline = Date.now() + maxSeconds * 1000;
   for (;;) {
-    const current = await cdp.evaluate<string>("document.body.dataset.exportPhase || ''");
-    if (current === "done") break;
+    if (await isFinished()) break;
     if (Date.now() > deadline) {
-      console.warn(`! card never reported done within ${maxSeconds}s; using what was captured`);
+      console.warn(`! never finished within ${maxSeconds}s; using what was captured`);
       break;
     }
     await sleep(250);
   }
+  const subject = await describe();
   await cdp.send("Page.stopScreencast");
   await sleep(200);
   cdp.close();
@@ -300,7 +386,7 @@ async function main() {
   );
   if (ffmpeg.status !== 0)
     throw new Error(`ffmpeg failed:\n${ffmpeg.stderr?.toString().slice(-1500)}`);
-  console.log(`✓ ${out}`);
+  console.log(`✓ ${subject} → ${out}`);
 }
 
 main()
