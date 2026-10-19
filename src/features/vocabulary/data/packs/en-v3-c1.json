@@ -35,7 +35,8 @@
       ],
       "chars": 6,
       "initial": "H",
-      "shareCode": "EHM"
+      "shareCode": "EHM",
+      "meaningVi": "khiêm_tốn"
     },
     {
       "id": "frustrated",
@@ -62,7 +63,8 @@
       ],
       "chars": 10,
       "initial": "F",
-      "shareCode": "C5K"
+      "shareCode": "C5K",
+      "meaningVi": "bực_bội"
     }
   ]
 }

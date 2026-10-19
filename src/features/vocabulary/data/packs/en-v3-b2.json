@@ -43,7 +43,8 @@
           "vi": "Trẻ_con vốn tò_mò | về thế_giới xung_quanh."
         }
       ],
-      "shareCode": "DTW"
+      "shareCode": "DTW",
+      "meaningVi": "tò_mò"
     },
     {
       "id": "patient",
@@ -70,7 +71,8 @@
           "vi": "Xin hãy kiên_nhẫn, bác_sĩ sẽ=khám | cho bạn ngay."
         }
       ],
-      "shareCode": "5VT"
+      "shareCode": "5VT",
+      "meaningVi": "kiên_nhẫn"
     },
     {
       "id": "stubborn",
@@ -97,7 +99,8 @@
           "vi": "Anh ta quá bướng_bỉnh | nên không=chịu nhận sai."
         }
       ],
-      "shareCode": "T0F"
+      "shareCode": "T0F",
+      "meaningVi": "bướng_bỉnh"
     },
     {
       "id": "relieved",
@@ -124,7 +127,8 @@
           "vi": "Chúng_tôi nhẹ_nhõm | khi nghe tin mọi người đều an_toàn."
         }
       ],
-      "shareCode": "BCG"
+      "shareCode": "BCG",
+      "meaningVi": "nhẹ_nhõm"
     },
     {
       "id": "interrupt",
@@ -151,7 +155,8 @@
           "vi": "Làm ơn đừng ngắt_lời | khi tôi đang=nói."
         }
       ],
-      "shareCode": "BA3"
+      "shareCode": "BA3",
+      "meaningVi": "ngắt lời"
     },
     {
       "id": "punctual",
@@ -182,7 +187,8 @@
           "vi": "Cô ấy luôn đến họp | đúng giờ."
         }
       ],
-      "shareCode": "CNY"
+      "shareCode": "CNY",
+      "meaningVi": "đúng giờ"
     },
     {
       "id": "delay",
@@ -213,7 +219,8 @@
           "vi": "Kẹt xe có_thể khiến chúng_tôi | đến trễ."
         }
       ],
-      "shareCode": "W2R"
+      "shareCode": "W2R",
+      "meaningVi": "làm chậm trễ"
     },
     {
       "id": "efficient",
@@ -245,7 +252,8 @@
           "vi": "Chiếc máy sưởi mới này | hoạt_động hiệu_quả hơn, tốn ít điện hơn."
         }
       ],
-      "shareCode": "T90"
+      "shareCode": "T90",
+      "meaningVi": "hiệu_quả"
     },
     {
       "id": "commute",
@@ -277,7 +285,8 @@
           "vi": "Quãng đường đi làm mỗi ngày của=tôi | mất khoảng bốn mươi phút."
         }
       ],
-      "shareCode": "XVP"
+      "shareCode": "XVP",
+      "meaningVi": "đường đi làm"
     },
     {
       "id": "rush",
@@ -305,7 +314,8 @@
           "vi": "Không=cần vội đâu, mình còn thời_gian."
         }
       ],
-      "shareCode": "GYM"
+      "shareCode": "GYM",
+      "meaningVi": "vội_vàng"
     }
   ]
 }

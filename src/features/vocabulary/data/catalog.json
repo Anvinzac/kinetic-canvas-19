@@ -51,7 +51,8 @@
           "vi": "Tôi đồng_ý với bạn rằng kế_hoạch quá mạo_hiểm."
         }
       ],
-      "shareCode": "B74"
+      "shareCode": "B74",
+      "meaningVi": "đồng_ý"
     },
     {
       "id": "allow",
@@ -79,7 +80,8 @@
           "vi": "Bố_mẹ không cho_phép tôi đi chơi khuya."
         }
       ],
-      "shareCode": "8BN"
+      "shareCode": "8BN",
+      "meaningVi": "cho_phép"
     },
     {
       "id": "although",
@@ -111,7 +113,8 @@
           "vi": "Dù trời mưa, chúng_tôi vẫn đi dạo."
         }
       ],
-      "shareCode": "98Z"
+      "shareCode": "98Z",
+      "meaningVi": "mặc_dù"
     },
     {
       "id": "arrange",
@@ -142,7 +145,8 @@
           "vi": "Bạn có_thể sắp_xếp một cuộc họp với quản_lý vào thứ Sáu không?"
         }
       ],
-      "shareCode": "T8Q"
+      "shareCode": "T8Q",
+      "meaningVi": "sắp_xếp"
     },
     {
       "id": "avoid",
@@ -170,7 +174,8 @@
           "vi": "Hãy cố tránh ăn quá nhiều đường."
         }
       ],
-      "shareCode": "00W"
+      "shareCode": "00W",
+      "meaningVi": "tránh"
     },
     {
       "id": "budget",
@@ -202,7 +207,8 @@
           "vi": "Ngân_sách du_lịch của chúng_tôi chỉ có năm trăm đô_la."
         }
       ],
-      "shareCode": "F6Y"
+      "shareCode": "F6Y",
+      "meaningVi": "ngân_sách"
     },
     {
       "id": "challenge",
@@ -234,7 +240,8 @@
           "vi": "Học một ngôn_ngữ mới là một thử_thách lớn."
         }
       ],
-      "shareCode": "1Y8"
+      "shareCode": "1Y8",
+      "meaningVi": "thử_thách"
     },
     {
       "id": "climate",
@@ -266,7 +273,8 @@
           "vi": "Khí_hậu ở vùng này nóng và khô."
         }
       ],
-      "shareCode": "5J4"
+      "shareCode": "5J4",
+      "meaningVi": "khí_hậu"
     },
     {
       "id": "compare",
@@ -297,7 +305,8 @@
           "vi": "Thật khó để so_sánh hai chiếc điện_thoại này."
         }
       ],
-      "shareCode": "2TF"
+      "shareCode": "2TF",
+      "meaningVi": "so_sánh"
     },
     {
       "id": "confident",
@@ -328,7 +337,8 @@
           "vi": "Cô ấy thấy tự_tin trước kỳ thi vì đã ôn bài."
         }
       ],
-      "shareCode": "F91"
+      "shareCode": "F91",
+      "meaningVi": "tự_tin"
     },
     {
       "id": "convince",
@@ -360,7 +370,8 @@
           "vi": "Tôi đã cố thuyết_phục anh ấy đi khám bác_sĩ."
         }
       ],
-      "shareCode": "QVX"
+      "shareCode": "QVX",
+      "meaningVi": "thuyết_phục"
     },
     {
       "id": "deliver",
@@ -391,7 +402,8 @@
           "vi": "Cửa_hàng sẽ giao đơn hàng của bạn sáng mai."
         }
       ],
-      "shareCode": "VE7"
+      "shareCode": "VE7",
+      "meaningVi": "giao hàng"
     },
     {
       "id": "describe",
@@ -422,7 +434,8 @@
           "vi": "Bạn có_thể mô_tả người đàn_ông bạn đã thấy không?"
         }
       ],
-      "shareCode": "720"
+      "shareCode": "720",
+      "meaningVi": "mô_tả"
     },
     {
       "id": "destination",
@@ -453,7 +466,8 @@
           "vi": "Đà_Nẵng là điểm_đến được du_khách yêu_thích."
         }
       ],
-      "shareCode": "TM8"
+      "shareCode": "TM8",
+      "meaningVi": "điểm_đến"
     },
     {
       "id": "disappointed",
@@ -480,7 +494,8 @@
           "vi": "Anh ấy thất_vọng về kết_quả thi."
         }
       ],
-      "shareCode": "E49"
+      "shareCode": "E49",
+      "meaningVi": "thất_vọng"
     },
     {
       "id": "discover",
@@ -512,7 +527,8 @@
           "vi": "Các nhà_khoa_học phát_hiện một loài ếch mới trong rừng."
         }
       ],
-      "shareCode": "04S"
+      "shareCode": "04S",
+      "meaningVi": "phát_hiện"
     },
     {
       "id": "environment",
@@ -545,7 +561,8 @@
           "vi": "Chúng_ta phải bảo_vệ môi_trường cho thế_hệ sau."
         }
       ],
-      "shareCode": "PRK"
+      "shareCode": "PRK",
+      "meaningVi": "môi_trường"
     },
     {
       "id": "equipment",
@@ -576,7 +593,8 @@
           "vi": "Phòng tập có rất nhiều thiết_bị hiện_đại."
         }
       ],
-      "shareCode": "FF4"
+      "shareCode": "FF4",
+      "meaningVi": "thiết_bị"
     },
     {
       "id": "essential",
@@ -608,7 +626,8 @@
           "vi": "Nước là thiết_yếu với mọi sinh_vật."
         }
       ],
-      "shareCode": "4NP"
+      "shareCode": "4NP",
+      "meaningVi": "thiết_yếu"
     },
     {
       "id": "experience",
@@ -639,7 +658,8 @@
           "vi": "Cô ấy có năm năm kinh_nghiệm về tiếp_thị."
         }
       ],
-      "shareCode": "536"
+      "shareCode": "536",
+      "meaningVi": "kinh_nghiệm"
     },
     {
       "id": "explain",
@@ -667,7 +687,8 @@
           "vi": "Bạn có_thể giải_thích cái máy này hoạt_động thế_nào không?"
         }
       ],
-      "shareCode": "E8A"
+      "shareCode": "E8A",
+      "meaningVi": "giải_thích"
     },
     {
       "id": "familiar",
@@ -695,7 +716,8 @@
           "vi": "Mặt anh ấy trông quen_quen, nhưng tôi không nhớ tên."
         }
       ],
-      "shareCode": "JTQ"
+      "shareCode": "JTQ",
+      "meaningVi": "quen_thuộc"
     },
     {
       "id": "forgive",
@@ -723,7 +745,8 @@
           "vi": "Xin hãy tha_thứ cho tôi vì đến muộn."
         }
       ],
-      "shareCode": "9TB"
+      "shareCode": "9TB",
+      "meaningVi": "tha_thứ"
     },
     {
       "id": "frightened",
@@ -750,7 +773,8 @@
           "vi": "Cậu bé sợ bóng_tối."
         }
       ],
-      "shareCode": "A3F"
+      "shareCode": "A3F",
+      "meaningVi": "sợ_hãi"
     },
     {
       "id": "gradually",
@@ -780,7 +804,8 @@
           "vi": "Trời dần_dần ấm lên vào mùa xuân."
         }
       ],
-      "shareCode": "FSJ"
+      "shareCode": "FSJ",
+      "meaningVi": "dần_dần"
     },
     {
       "id": "guess",
@@ -807,7 +832,8 @@
           "vi": "Bạn đoán được cô ấy bao_nhiêu tuổi không?"
         }
       ],
-      "shareCode": "GXF"
+      "shareCode": "GXF",
+      "meaningVi": "đoán"
     },
     {
       "id": "improve",
@@ -839,7 +865,8 @@
           "vi": "Tôi muốn cải_thiện kỹ_năng nói tiếng Anh."
         }
       ],
-      "shareCode": "VWE"
+      "shareCode": "VWE",
+      "meaningVi": "cải_thiện"
     },
     {
       "id": "ingredient",
@@ -866,7 +893,8 @@
           "vi": "Bột và trứng là nguyên_liệu chính của bánh này."
         }
       ],
-      "shareCode": "Y0X"
+      "shareCode": "Y0X",
+      "meaningVi": "nguyên_liệu"
     },
     {
       "id": "injury",
@@ -893,7 +921,8 @@
           "vi": "Anh ấy lỡ trận đấu vì chấn_thương đầu_gối."
         }
       ],
-      "shareCode": "DTA"
+      "shareCode": "DTA",
+      "meaningVi": "chấn_thương"
     },
     {
       "id": "interview",
@@ -924,7 +953,8 @@
           "vi": "Tôi có buổi phỏng_vấn xin việc lúc mười giờ sáng mai."
         }
       ],
-      "shareCode": "RST"
+      "shareCode": "RST",
+      "meaningVi": "buổi=phỏng_vấn"
     },
     {
       "id": "invite",
@@ -952,7 +982,8 @@
           "vi": "Họ mời chúng_tôi dự đám_cưới tháng sau."
         }
       ],
-      "shareCode": "13D"
+      "shareCode": "13D",
+      "meaningVi": "mời"
     },
     {
       "id": "journey",
@@ -979,7 +1010,8 @@
           "vi": "Hành_trình từ Hà_Nội đến Huế mất khoảng mười hai tiếng."
         }
       ],
-      "shareCode": "0DY"
+      "shareCode": "0DY",
+      "meaningVi": "chuyến đi"
     },
     {
       "id": "knowledge",
@@ -1011,7 +1043,8 @@
           "vi": "Cô ấy có kiến_thức tốt về lịch_sử."
         }
       ],
-      "shareCode": "076"
+      "shareCode": "076",
+      "meaningVi": "kiến_thức"
     },
     {
       "id": "luggage",
@@ -1041,7 +1074,8 @@
           "vi": "Xin đừng để hành_lý của bạn không người trông."
         }
       ],
-      "shareCode": "HCZ"
+      "shareCode": "HCZ",
+      "meaningVi": "hành_lý"
     },
     {
       "id": "manage",
@@ -1071,7 +1105,8 @@
           "vi": "Cô ấy quản_lý một nhóm mười người."
         }
       ],
-      "shareCode": "CG1"
+      "shareCode": "CG1",
+      "meaningVi": "quản_lý"
     },
     {
       "id": "memory",
@@ -1099,7 +1134,8 @@
           "vi": "Tôi có kỷ_niệm vui về ngày đầu đi học."
         }
       ],
-      "shareCode": "13A"
+      "shareCode": "13A",
+      "meaningVi": "kỷ_niệm"
     },
     {
       "id": "neighbour",
@@ -1127,7 +1163,8 @@
           "vi": "Người hàng_xóm mới đã giúp chúng_tôi khiêng thùng."
         }
       ],
-      "shareCode": "C2B"
+      "shareCode": "C2B",
+      "meaningVi": "hàng_xóm"
     },
     {
       "id": "opinion",
@@ -1159,7 +1196,8 @@
           "vi": "Theo ý_kiến của tôi, cuốn sách hay hơn bộ phim."
         }
       ],
-      "shareCode": "WYM"
+      "shareCode": "WYM",
+      "meaningVi": "ý_kiến"
     },
     {
       "id": "opportunity",
@@ -1191,7 +1229,8 @@
           "vi": "Công_việc này là cơ_hội tuyệt_vời để học kỹ_năng mới."
         }
       ],
-      "shareCode": "1S0"
+      "shareCode": "1S0",
+      "meaningVi": "cơ_hội"
     },
     {
       "id": "pollution",
@@ -1225,7 +1264,8 @@
           "vi": "Ô_nhiễm không_khí là vấn_đề nghiêm_trọng ở các thành_phố lớn."
         }
       ],
-      "shareCode": "44H"
+      "shareCode": "44H",
+      "meaningVi": "ô_nhiễm"
     },
     {
       "id": "popular",
@@ -1253,7 +1293,8 @@
           "vi": "Bài hát này rất được giới trẻ ưa_chuộng."
         }
       ],
-      "shareCode": "MP5"
+      "shareCode": "MP5",
+      "meaningVi": "phổ_biến, được=ưa_chuộng"
     },
     {
       "id": "prefer",
@@ -1281,7 +1322,8 @@
           "vi": "Tôi thích trà hơn cà_phê."
         }
       ],
-      "shareCode": "GKV"
+      "shareCode": "GKV",
+      "meaningVi": "thích hơn"
     },
     {
       "id": "prepare",
@@ -1309,7 +1351,8 @@
           "vi": "Mẹ tôi đang chuẩn_bị bữa tối trong bếp."
         }
       ],
-      "shareCode": "XD7"
+      "shareCode": "XD7",
+      "meaningVi": "chuẩn_bị"
     },
     {
       "id": "pretend",
@@ -1337,7 +1380,8 @@
           "vi": "Cậu ấy giả_vờ ngủ khi mẹ bước vào."
         }
       ],
-      "shareCode": "MHQ"
+      "shareCode": "MHQ",
+      "meaningVi": "giả_vờ"
     },
     {
       "id": "prevent",
@@ -1368,7 +1412,8 @@
           "vi": "Rửa tay có_thể phòng_ngừa nhiều bệnh."
         }
       ],
-      "shareCode": "NC4"
+      "shareCode": "NC4",
+      "meaningVi": "ngăn_ngừa"
     },
     {
       "id": "protect",
@@ -1396,7 +1441,8 @@
           "vi": "Kem chống nắng giúp bảo_vệ da khỏi ánh nắng."
         }
       ],
-      "shareCode": "VH7"
+      "shareCode": "VH7",
+      "meaningVi": "bảo_vệ"
     },
     {
       "id": "purpose",
@@ -1428,7 +1474,8 @@
           "vi": "Mục_đích chuyến thăm của bạn là gì?"
         }
       ],
-      "shareCode": "3A8"
+      "shareCode": "3A8",
+      "meaningVi": "mục_đích"
     },
     {
       "id": "quality",
@@ -1460,7 +1507,8 @@
           "vi": "Cửa_hàng này bán quần_áo chất_lượng cao."
         }
       ],
-      "shareCode": "K2C"
+      "shareCode": "K2C",
+      "meaningVi": "chất_lượng"
     },
     {
       "id": "reduce",
@@ -1492,7 +1540,8 @@
           "vi": "Chúng_ta cần giảm lượng nhựa sử_dụng."
         }
       ],
-      "shareCode": "F9E"
+      "shareCode": "F9E",
+      "meaningVi": "giảm"
     },
     {
       "id": "relationship",
@@ -1523,7 +1572,8 @@
           "vi": "Cô ấy có mối quan_hệ thân_thiết với chị gái."
         }
       ],
-      "shareCode": "ZCV"
+      "shareCode": "ZCV",
+      "meaningVi": "mối=quan_hệ"
     },
     {
       "id": "reliable",
@@ -1554,7 +1604,8 @@
           "vi": "Chúng_tôi cần một người đáng tin để trông cửa_hàng."
         }
       ],
-      "shareCode": "CX7"
+      "shareCode": "CX7",
+      "meaningVi": "đáng tin_cậy"
     },
     {
       "id": "remind",
@@ -1582,7 +1633,8 @@
           "vi": "Nhớ nhắc tôi gọi cho mẹ tối nay nhé."
         }
       ],
-      "shareCode": "Z7E"
+      "shareCode": "Z7E",
+      "meaningVi": "nhắc"
     },
     {
       "id": "rent",
@@ -1613,7 +1665,8 @@
           "vi": "Tiền thuê căn_hộ này rất cao."
         }
       ],
-      "shareCode": "NZ5"
+      "shareCode": "NZ5",
+      "meaningVi": "tiền thuê nhà"
     },
     {
       "id": "request",
@@ -1644,7 +1697,8 @@
           "vi": "Khách_sạn đã đồng_ý yêu_cầu phòng yên_tĩnh của chúng_tôi."
         }
       ],
-      "shareCode": "DS3"
+      "shareCode": "DS3",
+      "meaningVi": "yêu_cầu, lời đề_nghị"
     },
     {
       "id": "responsible",
@@ -1676,7 +1730,8 @@
           "vi": "Hôm nay ai chịu trách_nhiệm dọn lớp?"
         }
       ],
-      "shareCode": "KMC"
+      "shareCode": "KMC",
+      "meaningVi": "chịu trách_nhiệm"
     },
     {
       "id": "shy",
@@ -1704,7 +1759,8 @@
           "vi": "Cậu ấy quá nhút_nhát để nói trước lớp."
         }
       ],
-      "shareCode": "C1D"
+      "shareCode": "C1D",
+      "meaningVi": "nhút_nhát"
     },
     {
       "id": "silence",
@@ -1731,7 +1787,8 @@
           "vi": "Sau câu hỏi của anh ấy là một khoảng lặng dài."
         }
       ],
-      "shareCode": "QD3"
+      "shareCode": "QD3",
+      "meaningVi": "sự=im_lặng"
     },
     {
       "id": "solution",
@@ -1763,7 +1820,8 @@
           "vi": "Chúng_ta cần nhanh_chóng tìm ra giải_pháp cho vấn_đề này."
         }
       ],
-      "shareCode": "D28"
+      "shareCode": "D28",
+      "meaningVi": "giải_pháp"
     },
     {
       "id": "suddenly",
@@ -1790,7 +1848,8 @@
           "vi": "Đèn bỗng_nhiên tắt phụt giữa lúc xem phim."
         }
       ],
-      "shareCode": "43Q"
+      "shareCode": "43Q",
+      "meaningVi": "đột_nhiên"
     },
     {
       "id": "suitable",
@@ -1822,7 +1881,8 @@
           "vi": "Bộ phim này không phù_hợp với trẻ nhỏ."
         }
       ],
-      "shareCode": "TN0"
+      "shareCode": "TN0",
+      "meaningVi": "phù_hợp"
     },
     {
       "id": "support",
@@ -1853,7 +1913,8 @@
           "vi": "Gia_đình luôn ủng_hộ tôi trong mọi việc."
         }
       ],
-      "shareCode": "B90"
+      "shareCode": "B90",
+      "meaningVi": "ủng_hộ"
     },
     {
       "id": "surface",
@@ -1885,7 +1946,8 @@
           "vi": "Mặt bàn rất nhẵn."
         }
       ],
-      "shareCode": "YPR"
+      "shareCode": "YPR",
+      "meaningVi": "bề_mặt"
     },
     {
       "id": "survive",
@@ -1917,7 +1979,8 @@
           "vi": "Ít loài cây có_thể sống_sót ở sa_mạc."
         }
       ],
-      "shareCode": "PB7"
+      "shareCode": "PB7",
+      "meaningVi": "sống_sót"
     },
     {
       "id": "tradition",
@@ -1947,7 +2010,8 @@
           "vi": "Lì_xì dịp Tết là một truyền_thống lâu_đời."
         }
       ],
-      "shareCode": "M9A"
+      "shareCode": "M9A",
+      "meaningVi": "truyền_thống"
     },
     {
       "id": "warn",
@@ -1975,7 +2039,8 @@
           "vi": "Cô giáo cảnh_báo chúng_tôi không được đi muộn nữa."
         }
       ],
-      "shareCode": "XVR"
+      "shareCode": "XVR",
+      "meaningVi": "cảnh_báo"
     },
     {
       "id": "wealthy",
@@ -2003,7 +2068,8 @@
           "vi": "Anh ấy xuất_thân từ một gia_đình giàu_có."
         }
       ],
-      "shareCode": "AX3"
+      "shareCode": "AX3",
+      "meaningVi": "giàu_có"
     }
   ]
 }

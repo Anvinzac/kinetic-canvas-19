@@ -45,7 +45,8 @@
       ],
       "chars": 12,
       "initial": "A",
-      "shareCode": "PHZ"
+      "shareCode": "PHZ",
+      "meaningVi": "tình_cảm, âu_yếm"
     },
     {
       "id": "animated",
@@ -74,7 +75,8 @@
       ],
       "chars": 8,
       "initial": "A",
-      "shareCode": "90D"
+      "shareCode": "90D",
+      "meaningVi": "sôi_nổi"
     },
     {
       "id": "anticipation",
@@ -105,7 +107,8 @@
       ],
       "chars": 12,
       "initial": "A",
-      "shareCode": "YZ7"
+      "shareCode": "YZ7",
+      "meaningVi": "sự háo_hức"
     },
     {
       "id": "awe",
@@ -136,7 +139,8 @@
       ],
       "chars": 3,
       "initial": "A",
-      "shareCode": "DKC"
+      "shareCode": "DKC",
+      "meaningVi": "kinh_ngạc, thán_phục"
     },
     {
       "id": "bleak",
@@ -168,7 +172,8 @@
       ],
       "chars": 5,
       "initial": "B",
-      "shareCode": "CEG"
+      "shareCode": "CEG",
+      "meaningVi": "ảm_đạm"
     },
     {
       "id": "cheerfulness",
@@ -196,7 +201,8 @@
       ],
       "chars": 12,
       "initial": "C",
-      "shareCode": "313"
+      "shareCode": "313",
+      "meaningVi": "sự vui_vẻ"
     },
     {
       "id": "comforting",
@@ -224,7 +230,8 @@
       ],
       "chars": 10,
       "initial": "C",
-      "shareCode": "7J9"
+      "shareCode": "7J9",
+      "meaningVi": "an_ủi, ấm_lòng"
     },
     {
       "id": "dazed",
@@ -252,7 +259,8 @@
       ],
       "chars": 5,
       "initial": "D",
-      "shareCode": "5TX"
+      "shareCode": "5TX",
+      "meaningVi": "choáng_váng"
     },
     {
       "id": "detached",
@@ -281,7 +289,8 @@
       ],
       "chars": 8,
       "initial": "D",
-      "shareCode": "KZM"
+      "shareCode": "KZM",
+      "meaningVi": "giữ khoảng_cách"
     },
     {
       "id": "disgust",
@@ -308,7 +317,8 @@
       ],
       "chars": 7,
       "initial": "D",
-      "shareCode": "JPC"
+      "shareCode": "JPC",
+      "meaningVi": "sự ghê_tởm"
     },
     {
       "id": "disillusioned",
@@ -340,7 +350,8 @@
       ],
       "chars": 13,
       "initial": "D",
-      "shareCode": "Q9C"
+      "shareCode": "Q9C",
+      "meaningVi": "vỡ_mộng"
     },
     {
       "id": "dismay",
@@ -370,7 +381,8 @@
       ],
       "chars": 6,
       "initial": "D",
-      "shareCode": "GNK"
+      "shareCode": "GNK",
+      "meaningVi": "sự hụt_hẫng"
     },
     {
       "id": "dread",
@@ -398,7 +410,8 @@
       ],
       "chars": 5,
       "initial": "D",
-      "shareCode": "BD4"
+      "shareCode": "BD4",
+      "meaningVi": "lo_sợ"
     },
     {
       "id": "elated",
@@ -428,7 +441,8 @@
       ],
       "chars": 6,
       "initial": "E",
-      "shareCode": "0A3"
+      "shareCode": "0A3",
+      "meaningVi": "vui_sướng tột_độ"
     },
     {
       "id": "expressive",
@@ -457,7 +471,8 @@
       ],
       "chars": 10,
       "initial": "E",
-      "shareCode": "R3Z"
+      "shareCode": "R3Z",
+      "meaningVi": "biểu_cảm"
     },
     {
       "id": "fearful",
@@ -484,7 +499,8 @@
       ],
       "chars": 7,
       "initial": "F",
-      "shareCode": "V2C"
+      "shareCode": "V2C",
+      "meaningVi": "e_sợ, sợ_sệt"
     },
     {
       "id": "fearless",
@@ -512,7 +528,8 @@
       ],
       "chars": 8,
       "initial": "F",
-      "shareCode": "QPX"
+      "shareCode": "QPX",
+      "meaningVi": "gan_dạ"
     },
     {
       "id": "frantic",
@@ -542,7 +559,8 @@
       ],
       "chars": 7,
       "initial": "F",
-      "shareCode": "E8H"
+      "shareCode": "E8H",
+      "meaningVi": "cuống_cuồng"
     },
     {
       "id": "fulfilment",
@@ -573,7 +591,8 @@
       ],
       "chars": 10,
       "initial": "F",
-      "shareCode": "68H"
+      "shareCode": "68H",
+      "meaningVi": "sự mãn_nguyện"
     },
     {
       "id": "fury",
@@ -600,7 +619,8 @@
       ],
       "chars": 4,
       "initial": "F",
-      "shareCode": "GHH"
+      "shareCode": "GHH",
+      "meaningVi": "cơn thịnh_nộ"
     },
     {
       "id": "gasp",
@@ -628,7 +648,8 @@
       ],
       "chars": 4,
       "initial": "G",
-      "shareCode": "TAP"
+      "shareCode": "TAP",
+      "meaningVi": "há_hốc miệng"
     },
     {
       "id": "giggle",
@@ -656,7 +677,8 @@
       ],
       "chars": 6,
       "initial": "G",
-      "shareCode": "0BJ"
+      "shareCode": "0BJ",
+      "meaningVi": "cười khúc_khích"
     },
     {
       "id": "grim",
@@ -684,7 +706,8 @@
       ],
       "chars": 4,
       "initial": "G",
-      "shareCode": "PMD"
+      "shareCode": "PMD",
+      "meaningVi": "ảm_đạm, chẳng lành"
     },
     {
       "id": "humiliated",
@@ -711,7 +734,8 @@
       ],
       "chars": 10,
       "initial": "H",
-      "shareCode": "V54"
+      "shareCode": "V54",
+      "meaningVi": "bẽ_mặt, nhục_nhã"
     },
     {
       "id": "humility",
@@ -742,7 +766,8 @@
       ],
       "chars": 8,
       "initial": "H",
-      "shareCode": "WKK"
+      "shareCode": "WKK",
+      "meaningVi": "sự khiêm_nhường"
     },
     {
       "id": "impatience",
@@ -771,7 +796,8 @@
       ],
       "chars": 10,
       "initial": "I",
-      "shareCode": "5ZB"
+      "shareCode": "5ZB",
+      "meaningVi": "sự sốt_ruột"
     },
     {
       "id": "impulse",
@@ -802,7 +828,8 @@
       ],
       "chars": 7,
       "initial": "I",
-      "shareCode": "B8J"
+      "shareCode": "B8J",
+      "meaningVi": "sự thôi_thúc"
     },
     {
       "id": "inferiority",
@@ -833,7 +860,8 @@
       ],
       "chars": 11,
       "initial": "I",
-      "shareCode": "6AB"
+      "shareCode": "6AB",
+      "meaningVi": "sự tự_ti"
     },
     {
       "id": "inhibition",
@@ -861,7 +889,8 @@
       ],
       "chars": 10,
       "initial": "I",
-      "shareCode": "7QZ"
+      "shareCode": "7QZ",
+      "meaningVi": "sự e_dè"
     },
     {
       "id": "insecurity",
@@ -892,7 +921,8 @@
       ],
       "chars": 10,
       "initial": "I",
-      "shareCode": "3EA"
+      "shareCode": "3EA",
+      "meaningVi": "sự bất_an, tự_ti"
     },
     {
       "id": "irrational",
@@ -923,7 +953,8 @@
       ],
       "chars": 10,
       "initial": "I",
-      "shareCode": "5VS"
+      "shareCode": "5VS",
+      "meaningVi": "vô_lý"
     },
     {
       "id": "irritable",
@@ -951,7 +982,8 @@
       ],
       "chars": 9,
       "initial": "I",
-      "shareCode": "DQ0"
+      "shareCode": "DQ0",
+      "meaningVi": "cáu_kỉnh"
     },
     {
       "id": "irritation",
@@ -979,7 +1011,8 @@
       ],
       "chars": 10,
       "initial": "I",
-      "shareCode": "E53"
+      "shareCode": "E53",
+      "meaningVi": "sự bực_mình"
     },
     {
       "id": "loathe",
@@ -1006,7 +1039,8 @@
       ],
       "chars": 6,
       "initial": "L",
-      "shareCode": "5QK"
+      "shareCode": "5QK",
+      "meaningVi": "căm_ghét"
     },
     {
       "id": "longing",
@@ -1033,7 +1067,8 @@
       ],
       "chars": 7,
       "initial": "L",
-      "shareCode": "616"
+      "shareCode": "616",
+      "meaningVi": "nỗi khao_khát"
     },
     {
       "id": "moan",
@@ -1061,7 +1096,8 @@
       ],
       "chars": 4,
       "initial": "M",
-      "shareCode": "XAW"
+      "shareCode": "XAW",
+      "meaningVi": "than_vãn"
     },
     {
       "id": "nostalgia",
@@ -1092,7 +1128,8 @@
       ],
       "chars": 9,
       "initial": "N",
-      "shareCode": "BSH"
+      "shareCode": "BSH",
+      "meaningVi": "nỗi hoài_niệm"
     },
     {
       "id": "possessive",
@@ -1120,7 +1157,8 @@
       ],
       "chars": 10,
       "initial": "P",
-      "shareCode": "KM9"
+      "shareCode": "KM9",
+      "meaningVi": "chiếm_hữu"
     },
     {
       "id": "reassurance",
@@ -1149,7 +1187,8 @@
       ],
       "chars": 11,
       "initial": "R",
-      "shareCode": "X1X"
+      "shareCode": "X1X",
+      "meaningVi": "sự trấn_an"
     },
     {
       "id": "remorse",
@@ -1179,7 +1218,8 @@
       ],
       "chars": 7,
       "initial": "R",
-      "shareCode": "ZA5"
+      "shareCode": "ZA5",
+      "meaningVi": "sự hối_hận"
     },
     {
       "id": "resent",
@@ -1207,7 +1247,8 @@
       ],
       "chars": 6,
       "initial": "R",
-      "shareCode": "C6P"
+      "shareCode": "C6P",
+      "meaningVi": "oán_giận, ấm_ức"
     },
     {
       "id": "resentment",
@@ -1239,7 +1280,8 @@
       ],
       "chars": 10,
       "initial": "R",
-      "shareCode": "HVB"
+      "shareCode": "HVB",
+      "meaningVi": "sự oán_giận"
     },
     {
       "id": "reserved",
@@ -1267,7 +1309,8 @@
       ],
       "chars": 8,
       "initial": "R",
-      "shareCode": "8MN"
+      "shareCode": "8MN",
+      "meaningVi": "kín_đáo"
     },
     {
       "id": "sadden",
@@ -1294,7 +1337,8 @@
       ],
       "chars": 6,
       "initial": "S",
-      "shareCode": "NGR"
+      "shareCode": "NGR",
+      "meaningVi": "làm buồn_lòng"
     },
     {
       "id": "self-assured",
@@ -1322,7 +1366,8 @@
       ],
       "chars": 11,
       "initial": "S",
-      "shareCode": "T91"
+      "shareCode": "T91",
+      "meaningVi": "tự_tin"
     },
     {
       "id": "self-control",
@@ -1353,7 +1398,8 @@
       ],
       "chars": 11,
       "initial": "S",
-      "shareCode": "NCA"
+      "shareCode": "NCA",
+      "meaningVi": "sự tự_chủ"
     },
     {
       "id": "self-respect",
@@ -1381,7 +1427,8 @@
       ],
       "chars": 11,
       "initial": "S",
-      "shareCode": "319"
+      "shareCode": "319",
+      "meaningVi": "lòng tự_trọng"
     },
     {
       "id": "sentimental",
@@ -1409,7 +1456,8 @@
       ],
       "chars": 11,
       "initial": "S",
-      "shareCode": "X5V"
+      "shareCode": "X5V",
+      "meaningVi": "tình_cảm, đa_cảm"
     },
     {
       "id": "serene",
@@ -1441,7 +1489,8 @@
       ],
       "chars": 6,
       "initial": "S",
-      "shareCode": "GTA"
+      "shareCode": "GTA",
+      "meaningVi": "thanh_thản"
     },
     {
       "id": "shaken",
@@ -1468,7 +1517,8 @@
       ],
       "chars": 6,
       "initial": "S",
-      "shareCode": "RR2"
+      "shareCode": "RR2",
+      "meaningVi": "bàng_hoàng"
     },
     {
       "id": "shattered",
@@ -1495,7 +1545,8 @@
       ],
       "chars": 9,
       "initial": "S",
-      "shareCode": "574"
+      "shareCode": "574",
+      "meaningVi": "suy_sụp"
     },
     {
       "id": "soothing",
@@ -1523,7 +1574,8 @@
       ],
       "chars": 8,
       "initial": "S",
-      "shareCode": "PQ5"
+      "shareCode": "PQ5",
+      "meaningVi": "êm_dịu"
     },
     {
       "id": "sorrow",
@@ -1550,7 +1602,8 @@
       ],
       "chars": 6,
       "initial": "S",
-      "shareCode": "713"
+      "shareCode": "713",
+      "meaningVi": "nỗi sầu_muộn"
     },
     {
       "id": "suspense",
@@ -1577,7 +1630,8 @@
       ],
       "chars": 8,
       "initial": "S",
-      "shareCode": "T45"
+      "shareCode": "T45",
+      "meaningVi": "sự hồi_hộp"
     },
     {
       "id": "sympathize",
@@ -1605,7 +1659,8 @@
       ],
       "chars": 10,
       "initial": "S",
-      "shareCode": "ZXP"
+      "shareCode": "ZXP",
+      "meaningVi": "cảm_thông"
     },
     {
       "id": "temper",
@@ -1633,7 +1688,8 @@
       ],
       "chars": 6,
       "initial": "T",
-      "shareCode": "ZY7"
+      "shareCode": "ZY7",
+      "meaningVi": "sự bình_tĩnh"
     },
     {
       "id": "thrill",
@@ -1660,7 +1716,8 @@
       ],
       "chars": 6,
       "initial": "T",
-      "shareCode": "1HS"
+      "shareCode": "1HS",
+      "meaningVi": "làm phấn_khích"
     },
     {
       "id": "timid",
@@ -1691,7 +1748,8 @@
       ],
       "chars": 5,
       "initial": "T",
-      "shareCode": "S3C"
+      "shareCode": "S3C",
+      "meaningVi": "rụt_rè"
     },
     {
       "id": "tiresome",
@@ -1719,7 +1777,8 @@
       ],
       "chars": 8,
       "initial": "T",
-      "shareCode": "NW0"
+      "shareCode": "NW0",
+      "meaningVi": "phiền_toái"
     },
     {
       "id": "traumatic",
@@ -1750,7 +1809,8 @@
       ],
       "chars": 9,
       "initial": "T",
-      "shareCode": "Z6Q"
+      "shareCode": "Z6Q",
+      "meaningVi": "gây sang_chấn"
     },
     {
       "id": "turmoil",
@@ -1782,7 +1842,8 @@
       ],
       "chars": 7,
       "initial": "T",
-      "shareCode": "N55"
+      "shareCode": "N55",
+      "meaningVi": "rối_bời, hỗn_loạn"
     },
     {
       "id": "weep",
@@ -1809,7 +1870,8 @@
       ],
       "chars": 4,
       "initial": "W",
-      "shareCode": "X0Q"
+      "shareCode": "X0Q",
+      "meaningVi": "khóc"
     },
     {
       "id": "wretched",
@@ -1837,7 +1899,8 @@
       ],
       "chars": 8,
       "initial": "W",
-      "shareCode": "Q55"
+      "shareCode": "Q55",
+      "meaningVi": "khổ_sở"
     },
     {
       "id": "yearn",
@@ -1864,7 +1927,8 @@
       ],
       "chars": 5,
       "initial": "Y",
-      "shareCode": "A7C"
+      "shareCode": "A7C",
+      "meaningVi": "mong_mỏi"
     },
     {
       "id": "wary",
@@ -1897,7 +1961,8 @@
       ],
       "chars": 4,
       "initial": "W",
-      "shareCode": "FME"
+      "shareCode": "FME",
+      "meaningVi": "dè_chừng"
     },
     {
       "id": "weary",
@@ -1925,7 +1990,8 @@
       ],
       "chars": 5,
       "initial": "W",
-      "shareCode": "VZZ"
+      "shareCode": "VZZ",
+      "meaningVi": "mệt rã_rời"
     },
     {
       "id": "indifferent",
@@ -1958,7 +2024,8 @@
       ],
       "chars": 11,
       "initial": "I",
-      "shareCode": "5Z2"
+      "shareCode": "5Z2",
+      "meaningVi": "thờ_ơ"
     },
     {
       "id": "empathy",
@@ -1990,7 +2057,8 @@
       ],
       "chars": 7,
       "initial": "E",
-      "shareCode": "1HG"
+      "shareCode": "1HG",
+      "meaningVi": "sự thấu_cảm"
     },
     {
       "id": "relish",
@@ -2021,7 +2089,8 @@
       ],
       "chars": 6,
       "initial": "R",
-      "shareCode": "JKP"
+      "shareCode": "JKP",
+      "meaningVi": "thích_thú"
     },
     {
       "id": "shudder",
@@ -2049,7 +2118,8 @@
       ],
       "chars": 7,
       "initial": "S",
-      "shareCode": "7B3"
+      "shareCode": "7B3",
+      "meaningVi": "rùng_mình"
     }
   ]
 }

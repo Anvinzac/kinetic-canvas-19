@@ -53,7 +53,8 @@
           "vi": "Họ đành bỏ lại chiếc=xe | giữa trời tuyết."
         }
       ],
-      "shareCode": "BSD"
+      "shareCode": "BSD",
+      "meaningVi": "bỏ lại, bỏ_rơi"
     },
     {
       "id": "accurate",
@@ -85,7 +86,8 @@
           "vi": "Dự_báo thời_tiết | rất=chính_xác."
         }
       ],
-      "shareCode": "QNG"
+      "shareCode": "QNG",
+      "meaningVi": "chính_xác"
     },
     {
       "id": "acknowledge",
@@ -115,7 +117,8 @@
           "vi": "Anh ấy thừa_nhận | mình đã=mắc lỗi."
         }
       ],
-      "shareCode": "7C0"
+      "shareCode": "7C0",
+      "meaningVi": "thừa_nhận"
     },
     {
       "id": "adapt",
@@ -147,7 +150,8 @@
           "vi": "Tôi mất mấy tháng | để thích_nghi với công_việc mới."
         }
       ],
-      "shareCode": "8NS"
+      "shareCode": "8NS",
+      "meaningVi": "thích_nghi"
     },
     {
       "id": "adequate",
@@ -178,7 +182,8 @@
           "vi": "Thức_ăn | đủ cho mười người."
         }
       ],
-      "shareCode": "QQY"
+      "shareCode": "QQY",
+      "meaningVi": "đủ, thỏa_đáng"
     },
     {
       "id": "aggressive",
@@ -206,7 +211,8 @@
           "vi": "Con=chó trở_nên hung_hăng | khi người lạ đến gần."
         }
       ],
-      "shareCode": "VM8"
+      "shareCode": "VM8",
+      "meaningVi": "hung_hăng"
     },
     {
       "id": "ambition",
@@ -237,7 +243,8 @@
           "vi": "Hoài_bão của=cô ấy | là trở_thành thẩm_phán."
         }
       ],
-      "shareCode": "M7Y"
+      "shareCode": "M7Y",
+      "meaningVi": "hoài_bão, tham_vọng"
     },
     {
       "id": "anxiety",
@@ -265,7 +272,8 @@
           "vi": "Kỳ thi | gây nhiều lo_âu cho học_sinh."
         }
       ],
-      "shareCode": "R45"
+      "shareCode": "R45",
+      "meaningVi": "sự=lo_âu"
     },
     {
       "id": "appeal",
@@ -297,7 +305,8 @@
           "vi": "Ý_tưởng sống ở nước_ngoài | không hấp_dẫn tôi."
         }
       ],
-      "shareCode": "MG6"
+      "shareCode": "MG6",
+      "meaningVi": "thu_hút, hấp_dẫn"
     },
     {
       "id": "approach",
@@ -329,7 +338,8 @@
           "vi": "Chúng_ta cần | cách tiếp_cận mới cho vấn_đề này."
         }
       ],
-      "shareCode": "JZ8"
+      "shareCode": "JZ8",
+      "meaningVi": "cách tiếp_cận"
     },
     {
       "id": "assess",
@@ -361,7 +371,8 @@
           "vi": "Giáo_viên đánh_giá | tiến_bộ của=học_sinh mỗi kỳ."
         }
       ],
-      "shareCode": "7X1"
+      "shareCode": "7X1",
+      "meaningVi": "đánh_giá"
     },
     {
       "id": "assume",
@@ -391,7 +402,8 @@
           "vi": "Tôi cứ tưởng | bạn biết rồi."
         }
       ],
-      "shareCode": "XXX"
+      "shareCode": "XXX",
+      "meaningVi": "cho rằng"
     },
     {
       "id": "attitude",
@@ -422,7 +434,8 @@
           "vi": "Cô ấy có thái_độ | tích_cực với cuộc_sống."
         }
       ],
-      "shareCode": "YWQ"
+      "shareCode": "YWQ",
+      "meaningVi": "thái_độ"
     },
     {
       "id": "authority",
@@ -454,7 +467,8 @@
           "vi": "Chỉ quản_lý | mới có thẩm_quyền ký văn_bản này."
         }
       ],
-      "shareCode": "7WG"
+      "shareCode": "7WG",
+      "meaningVi": "quyền_hạn"
     },
     {
       "id": "aware",
@@ -485,7 +499,8 @@
           "vi": "Bạn có nhận_thức được | những rủi_ro không?"
         }
       ],
-      "shareCode": "VF8"
+      "shareCode": "VF8",
+      "meaningVi": "nhận_thức được, biết"
     },
     {
       "id": "benefit",
@@ -517,7 +532,8 @@
           "vi": "Tập_luyện | mang lại nhiều lợi_ích cho sức_khỏe."
         }
       ],
-      "shareCode": "408"
+      "shareCode": "408",
+      "meaningVi": "lợi_ích"
     },
     {
       "id": "brief",
@@ -549,7 +565,8 @@
           "vi": "Cô ấy có | một=bài phát_biểu ngắn."
         }
       ],
-      "shareCode": "F96"
+      "shareCode": "F96",
+      "meaningVi": "ngắn_gọn"
     },
     {
       "id": "capable",
@@ -581,7 +598,8 @@
           "vi": "Anh ấy đủ khả_năng | điều_hành cả nhóm."
         }
       ],
-      "shareCode": "F8Z"
+      "shareCode": "F8Z",
+      "meaningVi": "có khả_năng"
     },
     {
       "id": "cautious",
@@ -611,7 +629,8 @@
           "vi": "Hãy thận_trọng | khi đầu_tư tiền của=bạn."
         }
       ],
-      "shareCode": "T04"
+      "shareCode": "T04",
+      "meaningVi": "thận_trọng"
     },
     {
       "id": "circumstance",
@@ -642,7 +661,8 @@
           "vi": "Trong bất_cứ hoàn_cảnh nào | bạn cũng không được mở cửa này."
         }
       ],
-      "shareCode": "FXG"
+      "shareCode": "FXG",
+      "meaningVi": "hoàn_cảnh"
     },
     {
       "id": "commitment",
@@ -674,7 +694,8 @@
           "vi": "Hôn_nhân | là một=cam_kết lớn."
         }
       ],
-      "shareCode": "QTA"
+      "shareCode": "QTA",
+      "meaningVi": "sự=cam_kết"
     },
     {
       "id": "compromise",
@@ -706,7 +727,8 @@
           "vi": "Sau nhiều cuộc bàn_bạc, | họ đã=đạt được thỏa_hiệp."
         }
       ],
-      "shareCode": "MWQ"
+      "shareCode": "MWQ",
+      "meaningVi": "sự=thỏa_hiệp"
     },
     {
       "id": "conclude",
@@ -738,7 +760,8 @@
           "vi": "Bản báo_cáo kết_luận | rằng giá sẽ tăng."
         }
       ],
-      "shareCode": "Z04"
+      "shareCode": "Z04",
+      "meaningVi": "kết_luận"
     },
     {
       "id": "consequence",
@@ -770,7 +793,8 @@
           "vi": "Bạn phải chấp_nhận | hậu_quả từ hành_động của=mình."
         }
       ],
-      "shareCode": "XZS"
+      "shareCode": "XZS",
+      "meaningVi": "hậu_quả"
     },
     {
       "id": "consistent",
@@ -801,7 +825,8 @@
           "vi": "Cả năm nay | công_việc của=cô ấy rất=ổn_định."
         }
       ],
-      "shareCode": "XED"
+      "shareCode": "XED",
+      "meaningVi": "ổn_định, nhất_quán"
     },
     {
       "id": "contribute",
@@ -833,7 +858,8 @@
           "vi": "Mọi người | đều đóng_góp vào dự_án."
         }
       ],
-      "shareCode": "T2X"
+      "shareCode": "T2X",
+      "meaningVi": "đóng_góp"
     },
     {
       "id": "controversial",
@@ -865,7 +891,8 @@
           "vi": "Luật mới | đang gây nhiều tranh_cãi."
         }
       ],
-      "shareCode": "1XG"
+      "shareCode": "1XG",
+      "meaningVi": "gây tranh_cãi"
     },
     {
       "id": "cope",
@@ -896,7 +923,8 @@
           "vi": "Cô ấy đã=đối_phó tốt | với áp_lực."
         }
       ],
-      "shareCode": "A3H"
+      "shareCode": "A3H",
+      "meaningVi": "xoay_xở, đương_đầu"
     },
     {
       "id": "crucial",
@@ -928,7 +956,8 @@
           "vi": "Quyết_định này | then_chốt cho tương_lai chúng_ta."
         }
       ],
-      "shareCode": "9Z0"
+      "shareCode": "9Z0",
+      "meaningVi": "then_chốt, cực_kỳ quan_trọng"
     },
     {
       "id": "decline",
@@ -960,7 +989,8 @@
           "vi": "Năm nay | doanh_số đã=sụt_giảm."
         }
       ],
-      "shareCode": "FEE"
+      "shareCode": "FEE",
+      "meaningVi": "suy_giảm"
     },
     {
       "id": "demand",
@@ -992,7 +1022,8 @@
           "vi": "Nhu_cầu | về xe điện đang rất=cao."
         }
       ],
-      "shareCode": "2AS"
+      "shareCode": "2AS",
+      "meaningVi": "nhu_cầu"
     },
     {
       "id": "deny",
@@ -1019,7 +1050,8 @@
           "vi": "Anh ta phủ_nhận | việc làm vỡ cửa kính."
         }
       ],
-      "shareCode": "9TT"
+      "shareCode": "9TT",
+      "meaningVi": "phủ_nhận"
     },
     {
       "id": "determine",
@@ -1051,7 +1083,8 @@
           "vi": "Các=xét_nghiệm | sẽ xác_định nguyên_nhân gây bệnh."
         }
       ],
-      "shareCode": "BCR"
+      "shareCode": "BCR",
+      "meaningVi": "xác_định"
     },
     {
       "id": "distract",
@@ -1081,7 +1114,8 @@
           "vi": "Đừng làm tôi | xao_nhãng khi lái xe."
         }
       ],
-      "shareCode": "D57"
+      "shareCode": "D57",
+      "meaningVi": "làm phân_tâm"
     },
     {
       "id": "diverse",
@@ -1113,7 +1147,8 @@
           "vi": "Luân_Đôn | là thành_phố rất=đa_dạng."
         }
       ],
-      "shareCode": "MB9"
+      "shareCode": "MB9",
+      "meaningVi": "đa_dạng"
     },
     {
       "id": "eager",
@@ -1140,7 +1175,8 @@
           "vi": "Bọn trẻ | háo_hức được đi học."
         }
       ],
-      "shareCode": "QHM"
+      "shareCode": "QHM",
+      "meaningVi": "háo_hức"
     },
     {
       "id": "emerge",
@@ -1172,7 +1208,8 @@
           "vi": "Mặt_trời | ló ra sau đám mây."
         }
       ],
-      "shareCode": "YGX"
+      "shareCode": "YGX",
+      "meaningVi": "hiện ra, xuất_hiện"
     },
     {
       "id": "emphasize",
@@ -1203,7 +1240,8 @@
           "vi": "Ông ấy nhấn_mạnh | sự cần_thiết của=an_toàn."
         }
       ],
-      "shareCode": "TDM"
+      "shareCode": "TDM",
+      "meaningVi": "nhấn_mạnh"
     },
     {
       "id": "encounter",
@@ -1235,7 +1273,8 @@
           "vi": "Chúng_tôi gặp phải | nhiều trục_trặc trong chuyến đi."
         }
       ],
-      "shareCode": "K0S"
+      "shareCode": "K0S",
+      "meaningVi": "gặp phải"
     },
     {
       "id": "enhance",
@@ -1266,7 +1305,8 @@
           "vi": "Ánh_sáng tốt | có_thể làm bức ảnh đẹp hơn."
         }
       ],
-      "shareCode": "32X"
+      "shareCode": "32X",
+      "meaningVi": "nâng_cao, tôn lên"
     },
     {
       "id": "estimate",
@@ -1298,7 +1338,8 @@
           "vi": "Họ ước_tính | chi_phí khoảng hai triệu."
         }
       ],
-      "shareCode": "BB3"
+      "shareCode": "BB3",
+      "meaningVi": "ước_tính"
     },
     {
       "id": "evidence",
@@ -1330,7 +1371,8 @@
           "vi": "Không có bằng_chứng | nào cho thấy anh ta ở đó."
         }
       ],
-      "shareCode": "N06"
+      "shareCode": "N06",
+      "meaningVi": "bằng_chứng"
     },
     {
       "id": "evaluate",
@@ -1362,7 +1404,8 @@
           "vi": "Chúng_ta phải đánh_giá | kết_quả thật cẩn_thận."
         }
       ],
-      "shareCode": "W12"
+      "shareCode": "W12",
+      "meaningVi": "đánh_giá"
     },
     {
       "id": "exaggerate",
@@ -1389,7 +1432,8 @@
           "vi": "Đừng phóng_đại, | nó không tệ đến thế."
         }
       ],
-      "shareCode": "QVT"
+      "shareCode": "QVT",
+      "meaningVi": "phóng_đại"
     },
     {
       "id": "expand",
@@ -1421,7 +1465,8 @@
           "vi": "Công_ty dự_định | mở_rộng sang châu Á."
         }
       ],
-      "shareCode": "RZP"
+      "shareCode": "RZP",
+      "meaningVi": "mở_rộng"
     },
     {
       "id": "expose",
@@ -1452,7 +1497,8 @@
           "vi": "Đừng để da | tiếp_xúc ánh nắng quá lâu."
         }
       ],
-      "shareCode": "HDT"
+      "shareCode": "HDT",
+      "meaningVi": "phơi ra, để lộ"
     },
     {
       "id": "flexible",
@@ -1483,7 +1529,8 @@
           "vi": "Tôi có | lịch làm_việc linh_hoạt."
         }
       ],
-      "shareCode": "H16"
+      "shareCode": "H16",
+      "meaningVi": "linh_hoạt"
     },
     {
       "id": "fundamental",
@@ -1515,7 +1562,8 @@
           "vi": "Giáo_dục | là quyền cơ_bản."
         }
       ],
-      "shareCode": "9FG"
+      "shareCode": "9FG",
+      "meaningVi": "cơ_bản"
     },
     {
       "id": "genuine",
@@ -1543,7 +1591,8 @@
           "vi": "Đây là | túi da thật."
         }
       ],
-      "shareCode": "5JS"
+      "shareCode": "5JS",
+      "meaningVi": "thật, chính_hiệu"
     },
     {
       "id": "guarantee",
@@ -1575,7 +1624,8 @@
           "vi": "Chúng_tôi bảo_đảm | giao hàng trong hai mươi bốn giờ."
         }
       ],
-      "shareCode": "DVZ"
+      "shareCode": "DVZ",
+      "meaningVi": "bảo_đảm"
     },
     {
       "id": "hesitate",
@@ -1603,7 +1653,8 @@
           "vi": "Đừng ngần_ngại | đặt câu hỏi."
         }
       ],
-      "shareCode": "M0D"
+      "shareCode": "M0D",
+      "meaningVi": "do_dự, ngần_ngại"
     },
     {
       "id": "identify",
@@ -1635,7 +1686,8 @@
           "vi": "Bạn nhận_diện được | người đàn_ông trong ảnh không?"
         }
       ],
-      "shareCode": "MC1"
+      "shareCode": "MC1",
+      "meaningVi": "nhận_diện, nhận_ra"
     },
     {
       "id": "impact",
@@ -1667,7 +1719,8 @@
           "vi": "Công_nghệ | có ảnh_hưởng lớn đến cuộc_sống."
         }
       ],
-      "shareCode": "39A"
+      "shareCode": "39A",
+      "meaningVi": "tác_động"
     },
     {
       "id": "inevitable",
@@ -1699,7 +1752,8 @@
           "vi": "Thay_đổi | là điều không_thể tránh khỏi."
         }
       ],
-      "shareCode": "SS6"
+      "shareCode": "SS6",
+      "meaningVi": "không_thể tránh khỏi"
     },
     {
       "id": "influence",
@@ -1731,7 +1785,8 @@
           "vi": "Mẹ có ảnh_hưởng | rất=lớn đến tôi."
         }
       ],
-      "shareCode": "V2F"
+      "shareCode": "V2F",
+      "meaningVi": "ảnh_hưởng"
     },
     {
       "id": "insist",
@@ -1759,7 +1814,8 @@
           "vi": "Cô ấy nhất_quyết | trả tiền bữa tối."
         }
       ],
-      "shareCode": "S1F"
+      "shareCode": "S1F",
+      "meaningVi": "nhất_quyết, khăng_khăng"
     },
     {
       "id": "intend",
@@ -1789,7 +1845,8 @@
           "vi": "Tôi định | tuần sau thăm ông bà."
         }
       ],
-      "shareCode": "S1Y"
+      "shareCode": "S1Y",
+      "meaningVi": "định, có ý_định"
     },
     {
       "id": "interpret",
@@ -1821,7 +1878,8 @@
           "vi": "Bạn hiểu | bài thơ này thế_nào?"
         }
       ],
-      "shareCode": "488"
+      "shareCode": "488",
+      "meaningVi": "diễn_giải, hiểu"
     },
     {
       "id": "investigate",
@@ -1852,7 +1910,8 @@
           "vi": "Cảnh_sát | đang điều_tra vụ tai_nạn."
         }
       ],
-      "shareCode": "9N4"
+      "shareCode": "9N4",
+      "meaningVi": "điều_tra"
     },
     {
       "id": "justify",
@@ -1883,7 +1942,8 @@
           "vi": "Bạn biện_minh thế_nào | cho mức giá cao như vậy?"
         }
       ],
-      "shareCode": "XPE"
+      "shareCode": "XPE",
+      "meaningVi": "biện_minh"
     },
     {
       "id": "launch",
@@ -1915,7 +1975,8 @@
           "vi": "Tháng sau | công_ty sẽ ra_mắt điện_thoại mới."
         }
       ],
-      "shareCode": "0VS"
+      "shareCode": "0VS",
+      "meaningVi": "ra_mắt, tung ra"
     },
     {
       "id": "maintain",
@@ -1947,7 +2008,8 @@
           "vi": "Thật khó | để duy_trì cân nặng hợp_lý."
         }
       ],
-      "shareCode": "X62"
+      "shareCode": "X62",
+      "meaningVi": "duy_trì, giữ"
     },
     {
       "id": "minor",
@@ -1978,7 +2040,8 @@
           "vi": "Bản báo_cáo | có vài lỗi nhỏ."
         }
       ],
-      "shareCode": "T43"
+      "shareCode": "T43",
+      "meaningVi": "nhỏ, không đáng_kể"
     },
     {
       "id": "negotiate",
@@ -2010,7 +2073,8 @@
           "vi": "Chúng_tôi đã=thương_lượng | được giá tốt hơn."
         }
       ],
-      "shareCode": "R1W"
+      "shareCode": "R1W",
+      "meaningVi": "thương_lượng"
     },
     {
       "id": "obvious",
@@ -2041,7 +2105,8 @@
           "vi": "Rõ_ràng là | cô ấy đang=mệt."
         }
       ],
-      "shareCode": "TKV"
+      "shareCode": "TKV",
+      "meaningVi": "rõ_ràng, hiển_nhiên"
     },
     {
       "id": "obstacle",
@@ -2073,7 +2138,8 @@
           "vi": "Thiếu tiền | là trở_ngại chính."
         }
       ],
-      "shareCode": "TBK"
+      "shareCode": "TBK",
+      "meaningVi": "trở_ngại"
     },
     {
       "id": "occur",
@@ -2105,7 +2171,8 @@
           "vi": "Vụ tai_nạn | xảy ra vào ban_đêm."
         }
       ],
-      "shareCode": "G3Q"
+      "shareCode": "G3Q",
+      "meaningVi": "xảy ra"
     },
     {
       "id": "overcome",
@@ -2136,7 +2203,8 @@
           "vi": "Cô ấy đã=vượt qua | nỗi sợ đi máy_bay."
         }
       ],
-      "shareCode": "HFB"
+      "shareCode": "HFB",
+      "meaningVi": "vượt qua"
     },
     {
       "id": "perspective",
@@ -2167,7 +2235,8 @@
           "vi": "Du_lịch cho bạn | góc nhìn mới về cuộc_sống."
         }
       ],
-      "shareCode": "W53"
+      "shareCode": "W53",
+      "meaningVi": "góc nhìn"
     },
     {
       "id": "potential",
@@ -2199,7 +2268,8 @@
           "vi": "Cậu học_sinh này | có tiềm_năng lớn."
         }
       ],
-      "shareCode": "3AD"
+      "shareCode": "3AD",
+      "meaningVi": "tiềm_năng"
     },
     {
       "id": "precise",
@@ -2230,7 +2300,8 @@
           "vi": "Hãy cho tôi | thời_gian chính_xác."
         }
       ],
-      "shareCode": "JWA"
+      "shareCode": "JWA",
+      "meaningVi": "chính_xác"
     },
     {
       "id": "priority",
@@ -2262,7 +2333,8 @@
           "vi": "An_toàn | là ưu_tiên hàng_đầu của=chúng_tôi."
         }
       ],
-      "shareCode": "JQP"
+      "shareCode": "JQP",
+      "meaningVi": "ưu_tiên"
     },
     {
       "id": "profit",
@@ -2294,7 +2366,8 @@
           "vi": "Năm nay | cửa_hàng thu lợi_nhuận lớn."
         }
       ],
-      "shareCode": "JTH"
+      "shareCode": "JTH",
+      "meaningVi": "lợi_nhuận, tiền lời"
     },
     {
       "id": "pursue",
@@ -2325,7 +2398,8 @@
           "vi": "Cô ấy muốn | theo_đuổi nghề luật."
         }
       ],
-      "shareCode": "2ST"
+      "shareCode": "2ST",
+      "meaningVi": "theo_đuổi"
     },
     {
       "id": "rapid",
@@ -2357,7 +2431,8 @@
           "vi": "Thành_phố | phát_triển nhanh_chóng."
         }
       ],
-      "shareCode": "8NT"
+      "shareCode": "8NT",
+      "meaningVi": "nhanh"
     },
     {
       "id": "reluctant",
@@ -2384,7 +2459,8 @@
           "vi": "Anh ấy | miễn_cưỡng giúp_đỡ."
         }
       ],
-      "shareCode": "D0C"
+      "shareCode": "D0C",
+      "meaningVi": "miễn_cưỡng"
     },
     {
       "id": "rely",
@@ -2416,7 +2492,8 @@
           "vi": "Bạn có_thể | trông_cậy vào tôi."
         }
       ],
-      "shareCode": "CGJ"
+      "shareCode": "CGJ",
+      "meaningVi": "trông_cậy, dựa vào"
     },
     {
       "id": "resolve",
@@ -2448,7 +2525,8 @@
           "vi": "Chúng_ta cần nhanh_chóng | giải_quyết mâu_thuẫn này."
         }
       ],
-      "shareCode": "KAP"
+      "shareCode": "KAP",
+      "meaningVi": "giải_quyết"
     },
     {
       "id": "resource",
@@ -2480,7 +2558,8 @@
           "vi": "Nước là tài_nguyên | thiên_nhiên quý_giá."
         }
       ],
-      "shareCode": "AAK"
+      "shareCode": "AAK",
+      "meaningVi": "tài_nguyên, nguồn_lực"
     },
     {
       "id": "restrict",
@@ -2511,7 +2590,8 @@
           "vi": "Luật hạn_chế | hút thuốc ở nơi công_cộng."
         }
       ],
-      "shareCode": "C68"
+      "shareCode": "C68",
+      "meaningVi": "hạn_chế"
     },
     {
       "id": "reveal",
@@ -2542,7 +2622,8 @@
           "vi": "Cô ấy tiết_lộ | bí_mật cho tôi."
         }
       ],
-      "shareCode": "VXQ"
+      "shareCode": "VXQ",
+      "meaningVi": "tiết_lộ, để lộ"
     },
     {
       "id": "rural",
@@ -2574,7 +2655,8 @@
           "vi": "Nhiều người trẻ | rời bỏ vùng nông_thôn."
         }
       ],
-      "shareCode": "29B"
+      "shareCode": "29B",
+      "meaningVi": "nông_thôn, thôn_quê"
     },
     {
       "id": "significant",
@@ -2606,7 +2688,8 @@
           "vi": "Giá_cả | đã tăng đáng_kể."
         }
       ],
-      "shareCode": "B9E"
+      "shareCode": "B9E",
+      "meaningVi": "đáng_kể"
     },
     {
       "id": "strategy",
@@ -2638,7 +2721,8 @@
           "vi": "Chúng_ta cần | chiến_lược tiếp_thị mới."
         }
       ],
-      "shareCode": "KAE"
+      "shareCode": "KAE",
+      "meaningVi": "chiến_lược"
     },
     {
       "id": "sufficient",
@@ -2669,7 +2753,8 @@
           "vi": "Chúng_tôi | không=có đủ thời_gian."
         }
       ],
-      "shareCode": "PQP"
+      "shareCode": "PQP",
+      "meaningVi": "đủ"
     },
     {
       "id": "sustainable",
@@ -2701,7 +2786,8 @@
           "vi": "Chúng_ta cần | nguồn năng_lượng bền_vững."
         }
       ],
-      "shareCode": "CM3"
+      "shareCode": "CM3",
+      "meaningVi": "bền_vững"
     },
     {
       "id": "tendency",
@@ -2732,7 +2818,8 @@
           "vi": "Anh ấy | có xu_hướng nói quá nhiều."
         }
       ],
-      "shareCode": "A5Z"
+      "shareCode": "A5Z",
+      "meaningVi": "xu_hướng, khuynh_hướng"
     },
     {
       "id": "threat",
@@ -2764,7 +2851,8 @@
           "vi": "Ô_nhiễm | là mối đe_dọa lớn với động_vật hoang_dã."
         }
       ],
-      "shareCode": "0M8"
+      "shareCode": "0M8",
+      "meaningVi": "mối đe_dọa"
     },
     {
       "id": "tolerate",
@@ -2792,7 +2880,8 @@
           "vi": "Tôi không_thể chịu_đựng | thái_độ thô_lỗ."
         }
       ],
-      "shareCode": "40M"
+      "shareCode": "40M",
+      "meaningVi": "chịu_đựng, dung_thứ"
     },
     {
       "id": "transform",
@@ -2824,7 +2913,8 @@
           "vi": "Mạng toàn_cầu | đã thay_đổi cách chúng_ta làm_việc."
         }
       ],
-      "shareCode": "376"
+      "shareCode": "376",
+      "meaningVi": "biến_đổi, thay_đổi hoàn_toàn"
     },
     {
       "id": "unique",
@@ -2855,7 +2945,8 @@
           "vi": "Mỗi bông tuyết | đều độc_nhất vô_nhị."
         }
       ],
-      "shareCode": "7KP"
+      "shareCode": "7KP",
+      "meaningVi": "độc_nhất"
     },
     {
       "id": "vague",
@@ -2883,7 +2974,8 @@
           "vi": "Anh ấy | trả_lời rất=mơ_hồ."
         }
       ],
-      "shareCode": "N05"
+      "shareCode": "N05",
+      "meaningVi": "mơ_hồ"
     },
     {
       "id": "volunteer",
@@ -2910,7 +3002,8 @@
           "vi": "Cô ấy làm tình_nguyện_viên | ở bệnh_viện."
         }
       ],
-      "shareCode": "898"
+      "shareCode": "898",
+      "meaningVi": "tình_nguyện_viên"
     },
     {
       "id": "witness",
@@ -2937,7 +3030,8 @@
           "vi": "Cảnh_sát | đang tìm nhân_chứng."
         }
       ],
-      "shareCode": "W55"
+      "shareCode": "W55",
+      "meaningVi": "nhân_chứng"
     },
     {
       "id": "relevant",
@@ -2969,7 +3063,8 @@
           "vi": "Vui_lòng chỉ đưa | thông_tin có liên_quan."
         }
       ],
-      "shareCode": "NAB"
+      "shareCode": "NAB",
+      "meaningVi": "có liên_quan"
     },
     {
       "id": "reputation",
@@ -3001,7 +3096,8 @@
           "vi": "Nhà_hàng này | có tiếng_tăm tốt."
         }
       ],
-      "shareCode": "4RS"
+      "shareCode": "4RS",
+      "meaningVi": "danh_tiếng, tiếng_tăm"
     }
   ]
 }

@@ -269,8 +269,13 @@ export function VocabularyStage({
                 {word.ipa} {word.pos && <span>· {word.pos}</span>}
               </p>
             )}
-            <p lang="vi">
-              <MarkedText text={word.defVi} />
+            {/* The gloss, not the definition. `defVi` is written to work as a CLUE
+                before the answer is known — a sentence describing the word without
+                naming it — and that is the wrong register once the reader can see the
+                word: they want the equivalent, not a description. Decks authored before
+                `meaningVi` existed fall back to the sentence they do have. */}
+            <p className="vocab-meaning" lang="vi">
+              <MarkedText text={word.meaningVi || word.defVi} />
             </p>
             {word.usage.map((example, index) => (
               <div className="vocab-example" key={index}>

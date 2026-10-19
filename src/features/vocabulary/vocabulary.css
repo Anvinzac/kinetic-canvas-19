@@ -1845,6 +1845,17 @@
   backdrop-filter: blur(16px);
   color: var(--vocab-ink);
 }
+/* The gloss that replaced the definition sentence. It is a word or two where a paragraph
+   used to be, so it is set to carry the panel rather than sit in it as body copy — this is
+   the thing the reader opened the card for. `balance` keeps a two-part gloss from leaving
+   one word alone on a second line. */
+.vocab-meaning {
+  font-size: 1.18em;
+  font-weight: 650;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
 .vocab-pronunciation {
   margin-bottom: 18px;
   font-size: 0.82em;

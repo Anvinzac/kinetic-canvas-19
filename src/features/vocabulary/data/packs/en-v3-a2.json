@@ -50,7 +50,8 @@
           "vi": "Cô ấy không=hề nhắc | rằng mình sắp ra nước_ngoài sống."
         }
       ],
-      "shareCode": "FW4"
+      "shareCode": "FW4",
+      "meaningVi": "nhắc đến"
     },
     {
       "id": "schedule",
@@ -81,7 +82,8 @@
           "vi": "Lịch_trình của=tôi | tuần này rất=kín."
         }
       ],
-      "shareCode": "RC4"
+      "shareCode": "RC4",
+      "meaningVi": "lịch_trình"
     },
     {
       "id": "colleague",
@@ -111,7 +113,8 @@
           "vi": "Tôi ăn trưa | với một=đồng_nghiệp bên nhóm tiếp_thị."
         }
       ],
-      "shareCode": "F2N"
+      "shareCode": "F2N",
+      "meaningVi": "đồng_nghiệp"
     },
     {
       "id": "achieve",
@@ -143,7 +146,8 @@
           "vi": "Cô ấy làm việc chăm_chỉ | để đạt được ước_mơ làm bác_sĩ."
         }
       ],
-      "shareCode": "R16"
+      "shareCode": "R16",
+      "meaningVi": "đạt được"
     },
     {
       "id": "notice",
@@ -171,7 +175,8 @@
           "vi": "Bạn có để_ý | bức=tranh mới ở hành_lang không?"
         }
       ],
-      "shareCode": "1NP"
+      "shareCode": "1NP",
+      "meaningVi": "để_ý"
     },
     {
       "id": "consider",
@@ -198,7 +203,8 @@
           "vi": "Hãy cân_nhắc lời đề_nghị của=tôi | trước khi quyết_định."
         }
       ],
-      "shareCode": "DVK"
+      "shareCode": "DVK",
+      "meaningVi": "cân_nhắc"
     },
     {
       "id": "polite",
@@ -226,7 +232,8 @@
           "vi": "Nói lời cảm_ơn | là phép lịch_sự."
         }
       ],
-      "shareCode": "AAZ"
+      "shareCode": "AAZ",
+      "meaningVi": "lịch_sự"
     },
     {
       "id": "lazy",
@@ -253,7 +260,8 @@
           "vi": "Đừng=lười thế, phụ mình dọn_dẹp đi!"
         }
       ],
-      "shareCode": "043"
+      "shareCode": "043",
+      "meaningVi": "lười"
     },
     {
       "id": "complain",
@@ -283,7 +291,8 @@
           "vi": "Khách_hàng hay phàn_nàn | về Wi-Fi chậm."
         }
       ],
-      "shareCode": "3F6"
+      "shareCode": "3F6",
+      "meaningVi": "phàn_nàn"
     },
     {
       "id": "promise",
@@ -310,7 +319,8 @@
           "vi": "Mình hứa | tối nay sẽ=gọi cho bạn."
         }
       ],
-      "shareCode": "16M"
+      "shareCode": "16M",
+      "meaningVi": "hứa"
     },
     {
       "id": "argue",
@@ -337,7 +347,8 @@
           "vi": "Mấy anh_em trai tôi | cãi_nhau đủ thứ chuyện."
         }
       ],
-      "shareCode": "P28"
+      "shareCode": "P28",
+      "meaningVi": "cãi_nhau"
     },
     {
       "id": "realize",
@@ -364,7 +375,8 @@
           "vi": "Tôi không=nhận_ra | là đã=khuya đến thế."
         }
       ],
-      "shareCode": "W6H"
+      "shareCode": "W6H",
+      "meaningVi": "nhận_ra"
     },
     {
       "id": "habit",
@@ -391,7 +403,8 @@
           "vi": "Cắn móng_tay | là một=thói_quen xấu."
         }
       ],
-      "shareCode": "BVG"
+      "shareCode": "BVG",
+      "meaningVi": "thói_quen"
     },
     {
       "id": "borrow",
@@ -419,7 +432,8 @@
           "vi": "Mình mượn cục=sạc của=bạn | được không?"
         }
       ],
-      "shareCode": "06K"
+      "shareCode": "06K",
+      "meaningVi": "mượn"
     },
     {
       "id": "salary",
@@ -450,7 +464,8 @@
           "vi": "Cô=ấy đề_nghị | được tăng lương."
         }
       ],
-      "shareCode": "XVV"
+      "shareCode": "XVV",
+      "meaningVi": "tiền_lương"
     },
     {
       "id": "nervous",
@@ -477,7 +492,8 @@
           "vi": "Tôi lúc_nào cũng=hồi_hộp | trước kỳ=thi."
         }
       ],
-      "shareCode": "3AE"
+      "shareCode": "3AE",
+      "meaningVi": "hồi_hộp, lo_lắng"
     },
     {
       "id": "lucky",
@@ -505,7 +521,8 @@
           "vi": "Bạn thật may_mắn | khi có những=người bạn tốt như_vậy."
         }
       ],
-      "shareCode": "CZ0"
+      "shareCode": "CZ0",
+      "meaningVi": "may_mắn"
     },
     {
       "id": "careful",
@@ -533,7 +550,8 @@
           "vi": "Cẩn_thận nhé, sàn_nhà đang=ướt."
         }
       ],
-      "shareCode": "J7X"
+      "shareCode": "J7X",
+      "meaningVi": "cẩn_thận"
     },
     {
       "id": "clever",
@@ -561,7 +579,8 @@
           "vi": "Ý_tưởng thông_minh quá!"
         }
       ],
-      "shareCode": "CM2"
+      "shareCode": "CM2",
+      "meaningVi": "thông_minh"
     },
     {
       "id": "crowded",
@@ -589,7 +608,8 @@
           "vi": "Xe_buýt đông đến mức | tôi phải đứng."
         }
       ],
-      "shareCode": "FAB"
+      "shareCode": "FAB",
+      "meaningVi": "đông_đúc"
     },
     {
       "id": "empty",
@@ -616,7 +636,8 @@
           "vi": "Ngày Tết | đường_phố vắng_tanh."
         }
       ],
-      "shareCode": "FZ9"
+      "shareCode": "FZ9",
+      "meaningVi": "trống, vắng"
     },
     {
       "id": "rude",
@@ -644,7 +665,8 @@
           "vi": "Vừa nhai vừa nói | là bất lịch_sự."
         }
       ],
-      "shareCode": "54C"
+      "shareCode": "54C",
+      "meaningVi": "thô_lỗ, bất lịch_sự"
     },
     {
       "id": "worried",
@@ -671,7 +693,8 @@
           "vi": "Bố_mẹ lo_lắng | mỗi khi tôi đi một=mình."
         }
       ],
-      "shareCode": "JKJ"
+      "shareCode": "JKJ",
+      "meaningVi": "lo_lắng"
     },
     {
       "id": "strange",
@@ -699,7 +722,8 @@
           "vi": "Tôi nghe thấy một=tiếng_động lạ | bên ngoài."
         }
       ],
-      "shareCode": "GJ9"
+      "shareCode": "GJ9",
+      "meaningVi": "lạ, kỳ_lạ"
     },
     {
       "id": "huge",
@@ -727,7 +751,8 @@
           "vi": "Họ sống trong một=căn nhà rất=lớn."
         }
       ],
-      "shareCode": "M1N"
+      "shareCode": "M1N",
+      "meaningVi": "khổng_lồ"
     },
     {
       "id": "fresh",
@@ -755,7 +780,8 @@
           "vi": "Rau này tươi thật."
         }
       ],
-      "shareCode": "J8S"
+      "shareCode": "J8S",
+      "meaningVi": "tươi"
     },
     {
       "id": "comfortable",
@@ -782,7 +808,8 @@
           "vi": "Đôi=giày này | đi rất=êm chân."
         }
       ],
-      "shareCode": "5BK"
+      "shareCode": "5BK",
+      "meaningVi": "thoải_mái"
     },
     {
       "id": "surprised",
@@ -809,7 +836,8 @@
           "vi": "Tôi ngạc_nhiên | khi thấy anh=ấy ở bữa=tiệc."
         }
       ],
-      "shareCode": "TW9"
+      "shareCode": "TW9",
+      "meaningVi": "ngạc_nhiên"
     },
     {
       "id": "tidy",
@@ -837,7 +865,8 @@
           "vi": "Con giữ phòng gọn_gàng nhé."
         }
       ],
-      "shareCode": "BWQ"
+      "shareCode": "BWQ",
+      "meaningVi": "gọn_gàng"
     },
     {
       "id": "accident",
@@ -865,7 +894,8 @@
           "vi": "Anh=ấy bị gãy chân | trong một=vụ tai_nạn ô_tô."
         }
       ],
-      "shareCode": "MDS"
+      "shareCode": "MDS",
+      "meaningVi": "tai_nạn"
     },
     {
       "id": "adventure",
@@ -892,7 +922,8 @@
           "vi": "Chuyến đi Hà_Giang | thật_sự là một=cuộc phiêu_lưu."
         }
       ],
-      "shareCode": "821"
+      "shareCode": "821",
+      "meaningVi": "cuộc=phiêu_lưu"
     },
     {
       "id": "gift",
@@ -920,7 +951,8 @@
           "vi": "Chiếc=đồng_hồ này | là quà bố tặng tôi."
         }
       ],
-      "shareCode": "G0W"
+      "shareCode": "G0W",
+      "meaningVi": "món=quà"
     },
     {
       "id": "recipe",
@@ -947,7 +979,8 @@
           "vi": "Bạn gửi mình công_thức | nấu món canh này được không?"
         }
       ],
-      "shareCode": "ABT"
+      "shareCode": "ABT",
+      "meaningVi": "công_thức nấu ăn"
     },
     {
       "id": "invitation",
@@ -978,7 +1011,8 @@
           "vi": "Cảm_ơn bạn đã=mời mình | dự tiệc."
         }
       ],
-      "shareCode": "YMV"
+      "shareCode": "YMV",
+      "meaningVi": "lời=mời"
     },
     {
       "id": "wedding",
@@ -1005,7 +1039,8 @@
           "vi": "Chủ_nhật này | chúng_tôi đi đám_cưới em họ."
         }
       ],
-      "shareCode": "8KF"
+      "shareCode": "8KF",
+      "meaningVi": "đám_cưới"
     },
     {
       "id": "headache",
@@ -1032,7 +1067,8 @@
           "vi": "Hôm_nay tôi đau đầu | kinh_khủng."
         }
       ],
-      "shareCode": "6B0"
+      "shareCode": "6B0",
+      "meaningVi": "đau_đầu"
     },
     {
       "id": "secret",
@@ -1060,7 +1096,8 @@
           "vi": "Bạn giữ bí_mật được không?"
         }
       ],
-      "shareCode": "KQK"
+      "shareCode": "KQK",
+      "meaningVi": "bí_mật"
     },
     {
       "id": "joke",
@@ -1088,7 +1125,8 @@
           "vi": "Anh=ấy kể một=câu đùa | và mọi_người đều cười."
         }
       ],
-      "shareCode": "M3G"
+      "shareCode": "M3G",
+      "meaningVi": "chuyện cười"
     },
     {
       "id": "prize",
@@ -1116,7 +1154,8 @@
           "vi": "Cô=ấy đoạt giải nhất | cuộc_thi hát."
         }
       ],
-      "shareCode": "NRE"
+      "shareCode": "NRE",
+      "meaningVi": "giải_thưởng"
     },
     {
       "id": "guest",
@@ -1144,7 +1183,8 @@
           "vi": "Khách của=chúng_tôi | sẽ=đến lúc bảy giờ."
         }
       ],
-      "shareCode": "C65"
+      "shareCode": "C65",
+      "meaningVi": "khách"
     },
     {
       "id": "pocket",
@@ -1171,7 +1211,8 @@
           "vi": "Chìa_khóa ở trong túi tôi."
         }
       ],
-      "shareCode": "ZJJ"
+      "shareCode": "ZJJ",
+      "meaningVi": "túi áo, túi quần"
     },
     {
       "id": "mirror",
@@ -1198,7 +1239,8 @@
           "vi": "Cô=ấy ngắm mình trong gương."
         }
       ],
-      "shareCode": "ZF3"
+      "shareCode": "ZF3",
+      "meaningVi": "cái=gương"
     },
     {
       "id": "fridge",
@@ -1226,7 +1268,8 @@
           "vi": "Cất sữa lại vào tủ_lạnh đi."
         }
       ],
-      "shareCode": "FQ5"
+      "shareCode": "FQ5",
+      "meaningVi": "tủ_lạnh"
     },
     {
       "id": "rubbish",
@@ -1254,7 +1297,8 @@
           "vi": "Vui_lòng bỏ rác vào thùng."
         }
       ],
-      "shareCode": "TGB"
+      "shareCode": "TGB",
+      "meaningVi": "rác"
     },
     {
       "id": "uniform",
@@ -1283,7 +1327,8 @@
           "vi": "Ở trường tôi, học_sinh phải mặc đồng_phục."
         }
       ],
-      "shareCode": "XJ3"
+      "shareCode": "XJ3",
+      "meaningVi": "đồng_phục"
     },
     {
       "id": "thief",
@@ -1311,7 +1356,8 @@
           "vi": "Cảnh_sát đã=bắt được tên trộm."
         }
       ],
-      "shareCode": "G70"
+      "shareCode": "G70",
+      "meaningVi": "kẻ=trộm"
     },
     {
       "id": "celebrity",
@@ -1341,7 +1387,8 @@
           "vi": "Cô=ấy trở_thành người nổi_tiếng | sau chương_trình truyền_hình đó."
         }
       ],
-      "shareCode": "YZ0"
+      "shareCode": "YZ0",
+      "meaningVi": "người nổi_tiếng"
     },
     {
       "id": "charity",
@@ -1372,7 +1419,8 @@
           "vi": "Tháng nào | cô=ấy cũng quyên_góp cho quỹ từ_thiện."
         }
       ],
-      "shareCode": "81W"
+      "shareCode": "81W",
+      "meaningVi": "tổ_chức từ_thiện"
     },
     {
       "id": "permission",
@@ -1403,7 +1451,8 @@
           "vi": "Phải được phép | mới được đỗ xe ở đây."
         }
       ],
-      "shareCode": "B0V"
+      "shareCode": "B0V",
+      "meaningVi": "sự cho_phép"
     },
     {
       "id": "pet",
@@ -1431,7 +1480,8 @@
           "vi": "Con=mèo của=tôi | là thú_cưng tuyệt nhất."
         }
       ],
-      "shareCode": "2JC"
+      "shareCode": "2JC",
+      "meaningVi": "thú_cưng"
     },
     {
       "id": "celebrate",
@@ -1459,7 +1509,8 @@
           "vi": "Tối nay | mình ăn_mừng công_việc mới của=bạn nhé!"
         }
       ],
-      "shareCode": "TF5"
+      "shareCode": "TF5",
+      "meaningVi": "ăn_mừng"
     },
     {
       "id": "earn",
@@ -1487,7 +1538,8 @@
           "vi": "Mỗi tháng | bạn kiếm được bao_nhiêu?"
         }
       ],
-      "shareCode": "NDS"
+      "shareCode": "NDS",
+      "meaningVi": "kiếm được"
     },
     {
       "id": "lend",
@@ -1515,7 +1567,8 @@
           "vi": "Bạn cho mình mượn | cây=bút được không?"
         }
       ],
-      "shareCode": "PM4"
+      "shareCode": "PM4",
+      "meaningVi": "cho mượn"
     },
     {
       "id": "hide",
@@ -1542,7 +1595,8 @@
           "vi": "Con=mèo thích trốn | dưới gầm giường."
         }
       ],
-      "shareCode": "KSZ"
+      "shareCode": "KSZ",
+      "meaningVi": "trốn, giấu"
     },
     {
       "id": "steal",
@@ -1570,7 +1624,8 @@
           "vi": "Có người định lấy_trộm | xe_đạp của=tôi."
         }
       ],
-      "shareCode": "3FP"
+      "shareCode": "3FP",
+      "meaningVi": "ăn_trộm"
     },
     {
       "id": "repair",
@@ -1600,7 +1655,8 @@
           "vi": "Sửa cái=tivi | tốn bao_nhiêu tiền?"
         }
       ],
-      "shareCode": "Z60"
+      "shareCode": "Z60",
+      "meaningVi": "sửa_chữa"
     },
     {
       "id": "refuse",
@@ -1628,7 +1684,8 @@
           "vi": "Tôi không nỡ từ_chối | lời đề_nghị tử_tế như_vậy."
         }
       ],
-      "shareCode": "N2G"
+      "shareCode": "N2G",
+      "meaningVi": "từ_chối"
     },
     {
       "id": "recommend",
@@ -1659,7 +1716,8 @@
           "vi": "Bạn gợi_ý giúp mình | một=quán ngon gần đây được không?"
         }
       ],
-      "shareCode": "Z8G"
+      "shareCode": "Z8G",
+      "meaningVi": "gợi_ý, giới_thiệu"
     },
     {
       "id": "shout",
@@ -1686,7 +1744,8 @@
           "vi": "Đừng quát mình!"
         }
       ],
-      "shareCode": "V53"
+      "shareCode": "V53",
+      "meaningVi": "hét"
     },
     {
       "id": "pack",
@@ -1713,7 +1772,8 @@
           "vi": "Nhớ xếp đồ bơi | vào va_li nhé."
         }
       ],
-      "shareCode": "G06"
+      "shareCode": "G06",
+      "meaningVi": "xếp hành_lý"
     },
     {
       "id": "disappear",
@@ -1740,7 +1800,8 @@
           "vi": "Tất của=tôi cứ biến_mất | trong máy_giặt."
         }
       ],
-      "shareCode": "3VC"
+      "shareCode": "3VC",
+      "meaningVi": "biến_mất"
     },
     {
       "id": "cry",
@@ -1767,7 +1828,8 @@
           "vi": "Em_bé bắt_đầu khóc."
         }
       ],
-      "shareCode": "04D"
+      "shareCode": "04D",
+      "meaningVi": "khóc"
     }
   ]
 }

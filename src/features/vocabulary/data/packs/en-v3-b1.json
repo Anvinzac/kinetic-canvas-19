@@ -42,7 +42,8 @@
       ],
       "chars": 8,
       "initial": "G",
-      "shareCode": "RQK"
+      "shareCode": "RQK",
+      "meaningVi": "hào_phóng"
     },
     {
       "id": "grateful",
@@ -69,7 +70,8 @@
       ],
       "chars": 8,
       "initial": "G",
-      "shareCode": "6DP"
+      "shareCode": "6DP",
+      "meaningVi": "biết_ơn"
     },
     {
       "id": "embarrassed",
@@ -96,7 +98,8 @@
       ],
       "chars": 11,
       "initial": "E",
-      "shareCode": "TEP"
+      "shareCode": "TEP",
+      "meaningVi": "ngượng, xấu_hổ"
     },
     {
       "id": "apologize",
@@ -123,7 +126,8 @@
       ],
       "chars": 9,
       "initial": "A",
-      "shareCode": "57V"
+      "shareCode": "57V",
+      "meaningVi": "xin_lỗi"
     },
     {
       "id": "ignore",
@@ -151,7 +155,8 @@
       ],
       "chars": 6,
       "initial": "I",
-      "shareCode": "74M"
+      "shareCode": "74M",
+      "meaningVi": "phớt_lờ"
     },
     {
       "id": "doubt",
@@ -178,7 +183,8 @@
       ],
       "chars": 5,
       "initial": "D",
-      "shareCode": "PFQ"
+      "shareCode": "PFQ",
+      "meaningVi": "nghi_ngờ"
     },
     {
       "id": "chore",
@@ -205,7 +211,8 @@
       ],
       "chars": 5,
       "initial": "C",
-      "shareCode": "7ZQ"
+      "shareCode": "7ZQ",
+      "meaningVi": "việc nhà"
     },
     {
       "id": "jealous",
@@ -232,7 +239,8 @@
       ],
       "chars": 7,
       "initial": "J",
-      "shareCode": "T41"
+      "shareCode": "T41",
+      "meaningVi": "ghen_tị"
     },
     {
       "id": "lonely",
@@ -259,7 +267,8 @@
       ],
       "chars": 6,
       "initial": "L",
-      "shareCode": "MYA"
+      "shareCode": "MYA",
+      "meaningVi": "cô_đơn"
     },
     {
       "id": "proud",
@@ -286,7 +295,8 @@
       ],
       "chars": 5,
       "initial": "P",
-      "shareCode": "EC6"
+      "shareCode": "EC6",
+      "meaningVi": "tự_hào"
     },
     {
       "id": "confused",
@@ -314,7 +324,8 @@
       ],
       "chars": 8,
       "initial": "C",
-      "shareCode": "EA8"
+      "shareCode": "EA8",
+      "meaningVi": "bối_rối"
     },
     {
       "id": "exhausted",
@@ -342,7 +353,8 @@
       ],
       "chars": 9,
       "initial": "E",
-      "shareCode": "9VS"
+      "shareCode": "9VS",
+      "meaningVi": "kiệt_sức"
     },
     {
       "id": "honest",
@@ -369,7 +381,8 @@
       ],
       "chars": 6,
       "initial": "H",
-      "shareCode": "PJQ"
+      "shareCode": "PJQ",
+      "meaningVi": "trung_thực"
     },
     {
       "id": "brave",
@@ -396,7 +409,8 @@
       ],
       "chars": 5,
       "initial": "B",
-      "shareCode": "4DC"
+      "shareCode": "4DC",
+      "meaningVi": "dũng_cảm"
     },
     {
       "id": "selfish",
@@ -423,7 +437,8 @@
       ],
       "chars": 7,
       "initial": "S",
-      "shareCode": "NJ3"
+      "shareCode": "NJ3",
+      "meaningVi": "ích_kỷ"
     },
     {
       "id": "encourage",
@@ -451,7 +466,8 @@
       ],
       "chars": 9,
       "initial": "E",
-      "shareCode": "ZAJ"
+      "shareCode": "ZAJ",
+      "meaningVi": "động_viên, khuyến_khích"
     },
     {
       "id": "afford",
@@ -478,7 +494,8 @@
       ],
       "chars": 6,
       "initial": "A",
-      "shareCode": "V9Z"
+      "shareCode": "V9Z",
+      "meaningVi": "đủ tiền mua"
     }
   ]
 }

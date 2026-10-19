@@ -142,10 +142,19 @@ function encodeWord(word: VocabularyWord): VocabularyWord {
   // stored plain.
   const emphasis = word.emphasis?.map(stripWordJoiners);
   const emphasisChanged = !!emphasis?.some((phrase, index) => phrase !== word.emphasis![index]);
+  // A gloss is usually one compound word and so is where a join matters most: "tò_mò"
+  // must reach a reader as one unbreakable token, never wrapped across two lines.
+  //
+  // Guarded rather than passed straight in: this runs on decks CAST to Catalog, not
+  // parsed through the schema (catalog-source.ts), so a deck authored without the field
+  // really does arrive undefined here. Left undefined rather than coerced to "", so the
+  // word keeps the shape it was written with.
+  const meaningVi = word.meaningVi ? encodeWordJoiners(word.meaningVi) : word.meaningVi;
   const defVi = encodeWordJoiners(word.defVi);
   const leadVi = encodeWordJoiners(word.leadVi);
   const anticipateVi = encodeWordJoiners(word.anticipateVi);
   if (
+    meaningVi === word.meaningVi &&
     defVi === word.defVi &&
     leadVi === word.leadVi &&
     anticipateVi === word.anticipateVi &&
@@ -156,6 +165,7 @@ function encodeWord(word: VocabularyWord): VocabularyWord {
   }
   return {
     ...word,
+    meaningVi,
     defVi,
     leadVi,
     anticipateVi,

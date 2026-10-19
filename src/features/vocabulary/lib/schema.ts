@@ -5,7 +5,17 @@ import type { TargetLocale } from "./target-language";
 /** CEFR levels — used by the English (and ko/ja) vocabulary pages. */
 export const CEFR_LEVELS = ["A1", "A2", "B1", "B2", "C1", "C2"] as const;
 /** HSK 3.0 (2021) proficiency levels — the official Chinese word-frequency standard for the hoa domain. */
-export const HSK_LEVELS = ["HSK1", "HSK2", "HSK3", "HSK4", "HSK5", "HSK6", "HSK7", "HSK8", "HSK9"] as const;
+export const HSK_LEVELS = [
+  "HSK1",
+  "HSK2",
+  "HSK3",
+  "HSK4",
+  "HSK5",
+  "HSK6",
+  "HSK7",
+  "HSK8",
+  "HSK9",
+] as const;
 /** Master enum accepted by the word schema; covers both proficiency systems. */
 export const LEVELS = [...CEFR_LEVELS, ...HSK_LEVELS] as const;
 export const STYLE_IDS = ["detective", "speed", "confession", "minimal"] as const;
@@ -59,6 +69,18 @@ const wordSchema = z.object({
     .toUpperCase()
     .regex(/^[0-9A-HJKMNP-TV-Z]{3}$/)
     .optional(),
+  /**
+   * The short gloss — what the word MEANS, in a word or two ("tò mò", "kiên nhẫn").
+   *
+   * This is what the reveal panel shows. `defVi` is a full sentence written to work as a
+   * CLUE before the answer is known, which is the wrong register once the reader has the
+   * word in front of them: they want the equivalent, not a description of it.
+   *
+   * Optional because decks authored before the field existed do not carry it, and the
+   * panel falls back to `defVi` for those. check:meanings is what requires every
+   * PUBLISHED English word to have one — same arrangement as shareCode above.
+   */
+  meaningVi: optionalText(120),
   defVi: z.string().trim().min(2).max(400),
   leadVi: optionalText(240),
   anticipateVi: optionalText(180),

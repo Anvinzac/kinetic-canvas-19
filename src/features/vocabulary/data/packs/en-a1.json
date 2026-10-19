@@ -48,7 +48,8 @@
           "vi": "Sáng nào tôi cũng=ăn một=quả táo."
         }
       ],
-      "shareCode": "T22"
+      "shareCode": "T22",
+      "meaningVi": "quả=táo"
     },
     {
       "id": "bag",
@@ -75,7 +76,8 @@
           "vi": "Cô ấy cất điện_thoại | vào=túi_xách."
         }
       ],
-      "shareCode": "XRF"
+      "shareCode": "XRF",
+      "meaningVi": "cái=túi"
     },
     {
       "id": "bed",
@@ -102,7 +104,8 @@
           "vi": "Tôi đi ngủ | lúc mười giờ."
         }
       ],
-      "shareCode": "H46"
+      "shareCode": "H46",
+      "meaningVi": "cái=giường"
     },
     {
       "id": "bike",
@@ -130,7 +133,8 @@
           "vi": "Tôi đạp xe | đến trường."
         }
       ],
-      "shareCode": "5K4"
+      "shareCode": "5K4",
+      "meaningVi": "xe_đạp"
     },
     {
       "id": "bird",
@@ -157,7 +161,8 @@
           "vi": "Một con=chim nhỏ | đang hót trên cây."
         }
       ],
-      "shareCode": "JKV"
+      "shareCode": "JKV",
+      "meaningVi": "con=chim"
     },
     {
       "id": "book",
@@ -185,7 +190,8 @@
           "vi": "Cuốn=sách này | rất=thú_vị."
         }
       ],
-      "shareCode": "W9H"
+      "shareCode": "W9H",
+      "meaningVi": "cuốn=sách"
     },
     {
       "id": "bread",
@@ -212,7 +218,8 @@
           "vi": "Bữa sáng tôi ăn bánh_mì | với sữa."
         }
       ],
-      "shareCode": "ZV6"
+      "shareCode": "ZV6",
+      "meaningVi": "bánh_mì"
     },
     {
       "id": "brother",
@@ -240,7 +247,8 @@
           "vi": "Anh trai tôi | lớn hơn tôi hai tuổi."
         }
       ],
-      "shareCode": "R61"
+      "shareCode": "R61",
+      "meaningVi": "anh_trai hoặc em_trai"
     },
     {
       "id": "bus",
@@ -267,7 +275,8 @@
           "vi": "Tôi đi xe_buýt | đi làm."
         }
       ],
-      "shareCode": "AQJ"
+      "shareCode": "AQJ",
+      "meaningVi": "xe_buýt"
     },
     {
       "id": "cake",
@@ -294,7 +303,8 @@
           "vi": "Mẹ làm bánh sô_cô_la | cho=sinh_nhật tôi."
         }
       ],
-      "shareCode": "37B"
+      "shareCode": "37B",
+      "meaningVi": "bánh_ngọt"
     },
     {
       "id": "car",
@@ -321,7 +331,8 @@
           "vi": "Bố tôi lái một=chiếc ô_tô đỏ."
         }
       ],
-      "shareCode": "SGB"
+      "shareCode": "SGB",
+      "meaningVi": "ô_tô"
     },
     {
       "id": "cat",
@@ -349,7 +360,8 @@
           "vi": "Con=mèo nhà tôi | ngủ trên ghế dài."
         }
       ],
-      "shareCode": "1PY"
+      "shareCode": "1PY",
+      "meaningVi": "con=mèo"
     },
     {
       "id": "chair",
@@ -376,7 +388,8 @@
           "vi": "Mời bạn ngồi | lên chiếc=ghế này."
         }
       ],
-      "shareCode": "GDH"
+      "shareCode": "GDH",
+      "meaningVi": "cái=ghế"
     },
     {
       "id": "child",
@@ -404,7 +417,8 @@
           "vi": "Đứa trẻ | đang=chơi trong vườn."
         }
       ],
-      "shareCode": "7KX"
+      "shareCode": "7KX",
+      "meaningVi": "đứa=trẻ"
     },
     {
       "id": "city",
@@ -432,7 +446,8 @@
           "vi": "Hà_Nội | là một=thành_phố lớn."
         }
       ],
-      "shareCode": "2Z3"
+      "shareCode": "2Z3",
+      "meaningVi": "thành_phố"
     },
     {
       "id": "clock",
@@ -460,7 +475,8 @@
           "vi": "Cái=đồng_hồ trên tường | chạy chậm."
         }
       ],
-      "shareCode": "CYR"
+      "shareCode": "CYR",
+      "meaningVi": "đồng_hồ"
     },
     {
       "id": "coat",
@@ -487,7 +503,8 @@
           "vi": "Mặc áo khoác vào, | ngoài trời lạnh đấy."
         }
       ],
-      "shareCode": "F6A"
+      "shareCode": "F6A",
+      "meaningVi": "áo_khoác"
     },
     {
       "id": "cold",
@@ -515,7 +532,8 @@
           "vi": "Hôm nay | trời rất=lạnh."
         }
       ],
-      "shareCode": "9X6"
+      "shareCode": "9X6",
+      "meaningVi": "lạnh"
     },
     {
       "id": "cook",
@@ -543,7 +561,8 @@
           "vi": "Mẹ tôi | nấu bữa tối hằng ngày."
         }
       ],
-      "shareCode": "26W"
+      "shareCode": "26W",
+      "meaningVi": "nấu ăn"
     },
     {
       "id": "cup",
@@ -571,7 +590,8 @@
           "vi": "Bạn uống một=tách trà nhé?"
         }
       ],
-      "shareCode": "53F"
+      "shareCode": "53F",
+      "meaningVi": "cái=tách"
     },
     {
       "id": "dance",
@@ -599,7 +619,8 @@
           "vi": "Họ thích nhảy múa | trong các=bữa tiệc."
         }
       ],
-      "shareCode": "5Y2"
+      "shareCode": "5Y2",
+      "meaningVi": "nhảy_múa"
     },
     {
       "id": "day",
@@ -626,7 +647,8 @@
           "vi": "Một tuần | có bảy ngày."
         }
       ],
-      "shareCode": "Z3R"
+      "shareCode": "Z3R",
+      "meaningVi": "ngày"
     },
     {
       "id": "desk",
@@ -654,7 +676,8 @@
           "vi": "Sách của=tôi | nằm trên bàn học."
         }
       ],
-      "shareCode": "JXC"
+      "shareCode": "JXC",
+      "meaningVi": "bàn học, bàn làm_việc"
     },
     {
       "id": "dog",
@@ -682,7 +705,8 @@
           "vi": "Con=chó | đang=sủa ở cổng."
         }
       ],
-      "shareCode": "YBF"
+      "shareCode": "YBF",
+      "meaningVi": "con=chó"
     },
     {
       "id": "door",
@@ -709,7 +733,8 @@
           "vi": "Làm ơn | đóng cửa lại."
         }
       ],
-      "shareCode": "4K2"
+      "shareCode": "4K2",
+      "meaningVi": "cửa"
     },
     {
       "id": "drink",
@@ -737,7 +762,8 @@
           "vi": "Bạn nên uống | nhiều nước hơn."
         }
       ],
-      "shareCode": "M0E"
+      "shareCode": "M0E",
+      "meaningVi": "uống"
     },
     {
       "id": "egg",
@@ -764,7 +790,8 @@
           "vi": "Tôi muốn ăn trứng ốp | cho=bữa sáng."
         }
       ],
-      "shareCode": "T0N"
+      "shareCode": "T0N",
+      "meaningVi": "quả=trứng"
     },
     {
       "id": "eye",
@@ -792,7 +819,8 @@
           "vi": "Cô ấy | có đôi mắt nâu to."
         }
       ],
-      "shareCode": "EA5"
+      "shareCode": "EA5",
+      "meaningVi": "mắt"
     },
     {
       "id": "family",
@@ -820,7 +848,8 @@
           "vi": "Tôi sống | cùng gia_đình."
         }
       ],
-      "shareCode": "11A"
+      "shareCode": "11A",
+      "meaningVi": "gia_đình"
     },
     {
       "id": "farm",
@@ -848,7 +877,8 @@
           "vi": "Chú tôi | có một=trang_trại lớn."
         }
       ],
-      "shareCode": "BJZ"
+      "shareCode": "BJZ",
+      "meaningVi": "trang_trại"
     },
     {
       "id": "father",
@@ -876,7 +906,8 @@
           "vi": "Bố tôi | là bác_sĩ."
         }
       ],
-      "shareCode": "MR5"
+      "shareCode": "MR5",
+      "meaningVi": "bố"
     },
     {
       "id": "fish",
@@ -904,7 +935,8 @@
           "vi": "Bữa tối | chúng_tôi ăn cá."
         }
       ],
-      "shareCode": "JH4"
+      "shareCode": "JH4",
+      "meaningVi": "cá"
     },
     {
       "id": "flower",
@@ -931,7 +963,8 @@
           "vi": "Cô ấy tặng tôi | một=bông hoa đỏ."
         }
       ],
-      "shareCode": "SDB"
+      "shareCode": "SDB",
+      "meaningVi": "bông=hoa"
     },
     {
       "id": "friend",
@@ -959,7 +992,8 @@
           "vi": "Tom là bạn thân nhất | của=tôi."
         }
       ],
-      "shareCode": "SCJ"
+      "shareCode": "SCJ",
+      "meaningVi": "người bạn"
     },
     {
       "id": "fruit",
@@ -987,7 +1021,8 @@
           "vi": "Hãy ăn | nhiều trái_cây tươi."
         }
       ],
-      "shareCode": "13N"
+      "shareCode": "13N",
+      "meaningVi": "trái_cây"
     },
     {
       "id": "game",
@@ -1014,7 +1049,8 @@
           "vi": "Ăn tối xong | mình chơi trò_chơi nhé."
         }
       ],
-      "shareCode": "SNV"
+      "shareCode": "SNV",
+      "meaningVi": "trò_chơi"
     },
     {
       "id": "garden",
@@ -1042,7 +1078,8 @@
           "vi": "Chúng_tôi trồng rau | trong vườn."
         }
       ],
-      "shareCode": "A5P"
+      "shareCode": "A5P",
+      "meaningVi": "khu=vườn"
     },
     {
       "id": "glass",
@@ -1070,7 +1107,8 @@
           "vi": "Cho tôi | một=ly nước nhé?"
         }
       ],
-      "shareCode": "PWD"
+      "shareCode": "PWD",
+      "meaningVi": "cái=ly"
     },
     {
       "id": "happy",
@@ -1097,7 +1135,8 @@
           "vi": "Tôi rất=vui | được gặp bạn."
         }
       ],
-      "shareCode": "8AB"
+      "shareCode": "8AB",
+      "meaningVi": "vui_vẻ"
     },
     {
       "id": "hat",
@@ -1124,7 +1163,8 @@
           "vi": "Đội mũ vào, | trời nắng đấy."
         }
       ],
-      "shareCode": "FNG"
+      "shareCode": "FNG",
+      "meaningVi": "cái=mũ"
     },
     {
       "id": "help",
@@ -1152,7 +1192,8 @@
           "vi": "Bạn giúp tôi | bê thùng này nhé?"
         }
       ],
-      "shareCode": "F0B"
+      "shareCode": "F0B",
+      "meaningVi": "giúp_đỡ"
     },
     {
       "id": "home",
@@ -1179,7 +1220,8 @@
           "vi": "Bây_giờ | tôi về nhà."
         }
       ],
-      "shareCode": "8RR"
+      "shareCode": "8RR",
+      "meaningVi": "nhà"
     },
     {
       "id": "horse",
@@ -1207,7 +1249,8 @@
           "vi": "Anh ấy cưỡi | một=con ngựa trắng."
         }
       ],
-      "shareCode": "X3N"
+      "shareCode": "X3N",
+      "meaningVi": "con=ngựa"
     },
     {
       "id": "hot",
@@ -1235,7 +1278,8 @@
           "vi": "Cẩn_thận, | canh nóng đấy."
         }
       ],
-      "shareCode": "1E9"
+      "shareCode": "1E9",
+      "meaningVi": "nóng"
     },
     {
       "id": "house",
@@ -1262,7 +1306,8 @@
           "vi": "Họ sống | trong một=ngôi nhà lớn."
         }
       ],
-      "shareCode": "VEB"
+      "shareCode": "VEB",
+      "meaningVi": "ngôi=nhà"
     },
     {
       "id": "ice",
@@ -1290,7 +1335,8 @@
           "vi": "Cho thêm | ít đá vào ly tôi nhé."
         }
       ],
-      "shareCode": "AGV"
+      "shareCode": "AGV",
+      "meaningVi": "nước đá"
     },
     {
       "id": "juice",
@@ -1317,7 +1363,8 @@
           "vi": "Ngày nào tôi cũng=uống | nước cam."
         }
       ],
-      "shareCode": "9Q0"
+      "shareCode": "9Q0",
+      "meaningVi": "nước ép"
     },
     {
       "id": "key",
@@ -1344,7 +1391,8 @@
           "vi": "Tôi không=tìm thấy | chìa_khóa."
         }
       ],
-      "shareCode": "PFA"
+      "shareCode": "PFA",
+      "meaningVi": "chìa_khóa"
     },
     {
       "id": "leg",
@@ -1371,7 +1419,8 @@
           "vi": "Tôi bị đau chân | khi đá bóng."
         }
       ],
-      "shareCode": "AZQ"
+      "shareCode": "AZQ",
+      "meaningVi": "chân"
     },
     {
       "id": "letter",
@@ -1398,7 +1447,8 @@
           "vi": "Tôi viết thư | cho=bà."
         }
       ],
-      "shareCode": "XJS"
+      "shareCode": "XJS",
+      "meaningVi": "lá=thư"
     },
     {
       "id": "milk",
@@ -1426,7 +1476,8 @@
           "vi": "Em bé | uống rất=nhiều sữa."
         }
       ],
-      "shareCode": "6XT"
+      "shareCode": "6XT",
+      "meaningVi": "sữa"
     },
     {
       "id": "money",
@@ -1453,7 +1504,8 @@
           "vi": "Tôi không=có | nhiều tiền."
         }
       ],
-      "shareCode": "YNF"
+      "shareCode": "YNF",
+      "meaningVi": "tiền"
     },
     {
       "id": "moon",
@@ -1480,7 +1532,8 @@
           "vi": "Đêm nay | trăng tròn."
         }
       ],
-      "shareCode": "HJJ"
+      "shareCode": "HJJ",
+      "meaningVi": "mặt_trăng"
     },
     {
       "id": "morning",
@@ -1507,7 +1560,8 @@
           "vi": "Tôi chạy bộ | mỗi buổi sáng."
         }
       ],
-      "shareCode": "W6F"
+      "shareCode": "W6F",
+      "meaningVi": "buổi sáng"
     },
     {
       "id": "mother",
@@ -1535,7 +1589,8 @@
           "vi": "Mẹ tôi | nấu ăn rất=ngon."
         }
       ],
-      "shareCode": "D2P"
+      "shareCode": "D2P",
+      "meaningVi": "mẹ"
     },
     {
       "id": "mouth",
@@ -1562,7 +1617,8 @@
           "vi": "Há miệng ra nào."
         }
       ],
-      "shareCode": "Y57"
+      "shareCode": "Y57",
+      "meaningVi": "miệng"
     },
     {
       "id": "music",
@@ -1590,7 +1646,8 @@
           "vi": "Tối nào tôi cũng=nghe nhạc."
         }
       ],
-      "shareCode": "KHD"
+      "shareCode": "KHD",
+      "meaningVi": "âm_nhạc"
     },
     {
       "id": "name",
@@ -1617,7 +1674,8 @@
           "vi": "Bạn tên là gì?"
         }
       ],
-      "shareCode": "FXX"
+      "shareCode": "FXX",
+      "meaningVi": "tên"
     },
     {
       "id": "night",
@@ -1644,7 +1702,8 @@
           "vi": "Ban_đêm | tôi không=ngủ được."
         }
       ],
-      "shareCode": "JH7"
+      "shareCode": "JH7",
+      "meaningVi": "ban_đêm"
     },
     {
       "id": "nose",
@@ -1672,7 +1731,8 @@
           "vi": "Anh ấy bị cảm, | mũi đỏ ửng."
         }
       ],
-      "shareCode": "XVB"
+      "shareCode": "XVB",
+      "meaningVi": "cái=mũi"
     },
     {
       "id": "open",
@@ -1699,7 +1759,8 @@
           "vi": "Làm ơn | mở cửa_sổ ra."
         }
       ],
-      "shareCode": "4RY"
+      "shareCode": "4RY",
+      "meaningVi": "mở"
     },
     {
       "id": "park",
@@ -1727,7 +1788,8 @@
           "vi": "Chủ_nhật | chúng_tôi đi dạo công_viên."
         }
       ],
-      "shareCode": "BZD"
+      "shareCode": "BZD",
+      "meaningVi": "công_viên"
     },
     {
       "id": "pen",
@@ -1754,7 +1816,8 @@
           "vi": "Tôi dùng bút | của=bạn được không?"
         }
       ],
-      "shareCode": "4EK"
+      "shareCode": "4EK",
+      "meaningVi": "cái=bút"
     },
     {
       "id": "phone",
@@ -1782,7 +1845,8 @@
           "vi": "Điện_thoại của=tôi | đang=reo."
         }
       ],
-      "shareCode": "ZF7"
+      "shareCode": "ZF7",
+      "meaningVi": "điện_thoại"
     },
     {
       "id": "picture",
@@ -1809,7 +1873,8 @@
           "vi": "Cô bé vẽ | một=bức tranh về con=mèo."
         }
       ],
-      "shareCode": "3WR"
+      "shareCode": "3WR",
+      "meaningVi": "bức=tranh"
     },
     {
       "id": "rain",
@@ -1836,7 +1901,8 @@
           "vi": "Chúng_tôi ở nhà | vì trời mưa."
         }
       ],
-      "shareCode": "4VP"
+      "shareCode": "4VP",
+      "meaningVi": "mưa"
     },
     {
       "id": "read",
@@ -1863,7 +1929,8 @@
           "vi": "Tôi thích đọc | trước khi ngủ."
         }
       ],
-      "shareCode": "KMV"
+      "shareCode": "KMV",
+      "meaningVi": "đọc"
     },
     {
       "id": "rice",
@@ -1890,7 +1957,8 @@
           "vi": "Ngày nào chúng_tôi cũng=ăn cơm."
         }
       ],
-      "shareCode": "BKQ"
+      "shareCode": "BKQ",
+      "meaningVi": "cơm, gạo"
     },
     {
       "id": "river",
@@ -1917,7 +1985,8 @@
           "vi": "Ở đây | con=sông rất=rộng."
         }
       ],
-      "shareCode": "7KM"
+      "shareCode": "7KM",
+      "meaningVi": "con=sông"
     },
     {
       "id": "room",
@@ -1944,7 +2013,8 @@
           "vi": "Phòng tôi | nhỏ nhưng gọn_gàng."
         }
       ],
-      "shareCode": "H4H"
+      "shareCode": "H4H",
+      "meaningVi": "căn=phòng"
     },
     {
       "id": "run",
@@ -1971,7 +2041,8 @@
           "vi": "Sáng nào tôi cũng=chạy | trong công_viên."
         }
       ],
-      "shareCode": "RKX"
+      "shareCode": "RKX",
+      "meaningVi": "chạy"
     },
     {
       "id": "sad",
@@ -1998,7 +2069,8 @@
           "vi": "Cô ấy buồn | khi bạn rời đi."
         }
       ],
-      "shareCode": "3YW"
+      "shareCode": "3YW",
+      "meaningVi": "buồn"
     },
     {
       "id": "school",
@@ -2025,7 +2097,8 @@
           "vi": "Ngày nào tôi cũng=đi bộ | đến trường."
         }
       ],
-      "shareCode": "1AQ"
+      "shareCode": "1AQ",
+      "meaningVi": "trường_học"
     },
     {
       "id": "sea",
@@ -2053,7 +2126,8 @@
           "vi": "Hè năm ngoái | chúng_tôi bơi ở biển."
         }
       ],
-      "shareCode": "1GF"
+      "shareCode": "1GF",
+      "meaningVi": "biển"
     },
     {
       "id": "shoe",
@@ -2080,7 +2154,8 @@
           "vi": "Đôi giày này | chật với tôi."
         }
       ],
-      "shareCode": "3KE"
+      "shareCode": "3KE",
+      "meaningVi": "chiếc=giày"
     },
     {
       "id": "shop",
@@ -2108,7 +2183,8 @@
           "vi": "Cửa_hàng | mở cửa lúc tám giờ."
         }
       ],
-      "shareCode": "6PV"
+      "shareCode": "6PV",
+      "meaningVi": "cửa_hàng"
     },
     {
       "id": "sing",
@@ -2136,7 +2212,8 @@
           "vi": "Cô ấy thích hát | khi tắm."
         }
       ],
-      "shareCode": "C9Y"
+      "shareCode": "C9Y",
+      "meaningVi": "hát"
     },
     {
       "id": "sister",
@@ -2164,7 +2241,8 @@
           "vi": "Chị gái tôi | là y_tá."
         }
       ],
-      "shareCode": "NG1"
+      "shareCode": "NG1",
+      "meaningVi": "chị gái, em gái"
     },
     {
       "id": "sleep",
@@ -2192,7 +2270,8 @@
           "vi": "Em bé | ngủ rất=nhiều."
         }
       ],
-      "shareCode": "E68"
+      "shareCode": "E68",
+      "meaningVi": "ngủ"
     },
     {
       "id": "small",
@@ -2219,7 +2298,8 @@
           "vi": "Cái=áo này | quá chật với tôi."
         }
       ],
-      "shareCode": "DWW"
+      "shareCode": "DWW",
+      "meaningVi": "nhỏ"
     },
     {
       "id": "snow",
@@ -2246,7 +2326,8 @@
           "vi": "Mùa đông | trẻ_em chơi đùa trong tuyết."
         }
       ],
-      "shareCode": "4PC"
+      "shareCode": "4PC",
+      "meaningVi": "tuyết"
     },
     {
       "id": "song",
@@ -2274,7 +2355,8 @@
           "vi": "Đây là | bài hát tôi thích nhất."
         }
       ],
-      "shareCode": "FKK"
+      "shareCode": "FKK",
+      "meaningVi": "bài_hát"
     },
     {
       "id": "star",
@@ -2301,7 +2383,8 @@
           "vi": "Đêm nay | tôi thấy nhiều ngôi sao."
         }
       ],
-      "shareCode": "VY7"
+      "shareCode": "VY7",
+      "meaningVi": "ngôi=sao"
     },
     {
       "id": "sun",
@@ -2328,7 +2411,8 @@
           "vi": "Hôm nay | mặt_trời rất=chói."
         }
       ],
-      "shareCode": "TKS"
+      "shareCode": "TKS",
+      "meaningVi": "mặt_trời"
     },
     {
       "id": "swim",
@@ -2356,7 +2440,8 @@
           "vi": "Bạn biết bơi không?"
         }
       ],
-      "shareCode": "2SK"
+      "shareCode": "2SK",
+      "meaningVi": "bơi"
     },
     {
       "id": "table",
@@ -2383,7 +2468,8 @@
           "vi": "Đặt đĩa | lên bàn đi."
         }
       ],
-      "shareCode": "DMT"
+      "shareCode": "DMT",
+      "meaningVi": "cái=bàn"
     },
     {
       "id": "teacher",
@@ -2411,7 +2497,8 @@
           "vi": "Cô giáo của=chúng_tôi | rất=hiền."
         }
       ],
-      "shareCode": "FEF"
+      "shareCode": "FEF",
+      "meaningVi": "giáo_viên"
     },
     {
       "id": "tea",
@@ -2438,7 +2525,8 @@
           "vi": "Bạn uống | chút trà xanh nhé?"
         }
       ],
-      "shareCode": "4SM"
+      "shareCode": "4SM",
+      "meaningVi": "trà"
     },
     {
       "id": "tree",
@@ -2465,7 +2553,8 @@
           "vi": "Trước nhà tôi | có một=cái cây to."
         }
       ],
-      "shareCode": "W9N"
+      "shareCode": "W9N",
+      "meaningVi": "cái=cây"
     },
     {
       "id": "walk",
@@ -2493,7 +2582,8 @@
           "vi": "Ngày nào tôi cũng=đi bộ | đi làm."
         }
       ],
-      "shareCode": "CGC"
+      "shareCode": "CGC",
+      "meaningVi": "đi_bộ"
     },
     {
       "id": "wash",
@@ -2521,7 +2611,8 @@
           "vi": "Rửa tay | trước khi ăn nhé."
         }
       ],
-      "shareCode": "9ZW"
+      "shareCode": "9ZW",
+      "meaningVi": "rửa"
     },
     {
       "id": "window",
@@ -2548,7 +2639,8 @@
           "vi": "Bạn mở cửa_sổ | được không?"
         }
       ],
-      "shareCode": "7NS"
+      "shareCode": "7NS",
+      "meaningVi": "cửa_sổ"
     },
     {
       "id": "write",
@@ -2576,7 +2668,8 @@
           "vi": "Hãy viết tên bạn | vào đây."
         }
       ],
-      "shareCode": "7AB"
+      "shareCode": "7AB",
+      "meaningVi": "viết"
     },
     {
       "id": "big",
@@ -2603,7 +2696,8 @@
           "vi": "Họ sống | trong một=ngôi nhà to."
         }
       ],
-      "shareCode": "EC2"
+      "shareCode": "EC2",
+      "meaningVi": "to, lớn"
     },
     {
       "id": "red",
@@ -2630,7 +2724,8 @@
           "vi": "Cô ấy mặc | một=chiếc váy đỏ."
         }
       ],
-      "shareCode": "FSN"
+      "shareCode": "FSN",
+      "meaningVi": "đỏ"
     },
     {
       "id": "eat",
@@ -2658,7 +2753,8 @@
           "vi": "Chúng_tôi ăn trưa | lúc mười hai giờ."
         }
       ],
-      "shareCode": "HJA"
+      "shareCode": "HJA",
+      "meaningVi": "ăn"
     },
     {
       "id": "baby",
@@ -2686,7 +2782,8 @@
           "vi": "Em bé | đang=ngủ."
         }
       ],
-      "shareCode": "8CF"
+      "shareCode": "8CF",
+      "meaningVi": "em bé"
     },
     {
       "id": "chicken",
@@ -2714,7 +2811,8 @@
           "vi": "Bữa tối | chúng_tôi ăn gà quay."
         }
       ],
-      "shareCode": "SKG"
+      "shareCode": "SKG",
+      "meaningVi": "gà"
     }
   ]
 }
