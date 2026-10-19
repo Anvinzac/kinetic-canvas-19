@@ -16,21 +16,54 @@ const wordSchema = z.object({
   nudge: z.string().min(2).max(140).optional(),
 });
 
+/**
+ * The expected key, cached briefly in memory.
+ *
+ * The table stays the single source of truth; this only stops every ATTEMPT costing a
+ * round trip to it. Before, an empty header was rejected for free but any junk value was
+ * not: each one bought the sender a Supabase query, so a flood of garbage keys amplified
+ * straight into database load on an endpoint nobody is supposed to be calling.
+ *
+ * The TTL is what bounds a rotation: a new key in the table takes effect within it.
+ */
+const KEY_TTL_MS = 60 * 1000;
+let cachedKey: { secret: string; until: number } | null = null;
+
+async function expectedKey(): Promise<string> {
+  const now = Date.now();
+  if (cachedKey && now < cachedKey.until) return cachedKey.secret;
+  let secret = "";
+  try {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data } = await supabaseAdmin
+      .from("internal_api_keys")
+      .select("secret")
+      .eq("name", "vocabulary_refill")
+      .maybeSingle();
+    secret = data?.secret ?? "";
+  } catch {
+    // Unreachable store: fall through with no key, which refuses the caller. Caching the
+    // failure matters as much as caching a hit — an outage must not turn a flood of
+    // attempts into a flood of retries against the thing that is already struggling.
+    secret = "";
+  }
+  // A miss is cached too, for a shorter spell: if the row is absent, repeatedly asking
+  // for it is exactly the amplification this is here to prevent.
+  cachedKey = { secret, until: now + (secret ? KEY_TTL_MS : KEY_TTL_MS / 4) };
+  return secret;
+}
+
 async function authorize(request: Request) {
   const provided = request.headers.get("x-ingest-key") ?? "";
   if (!provided) return null;
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const { data } = await supabaseAdmin
-    .from("internal_api_keys")
-    .select("secret")
-    .eq("name", "vocabulary_refill")
-    .maybeSingle();
-  const expected = data?.secret ?? "";
+  const expected = await expectedKey();
   if (!expected || provided.length !== expected.length) return null;
   let mismatch = 0;
   for (let i = 0; i < provided.length; i += 1)
     mismatch |= provided.charCodeAt(i) ^ expected.charCodeAt(i);
-  return mismatch === 0 ? supabaseAdmin : null;
+  if (mismatch !== 0) return null;
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  return supabaseAdmin;
 }
 
 async function generateWords(count: number, avoid: string[]) {

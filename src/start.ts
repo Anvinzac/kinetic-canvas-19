@@ -1,7 +1,28 @@
 import { createStart, createMiddleware } from "@tanstack/react-start";
 
 import { renderErrorPage } from "./lib/error-page";
+import { RATE_LIMITS, callerKey, checkRateLimit, rateLimitedResponse } from "./lib/rate-limit";
 import { attachSupabaseAuth } from "@/integrations/supabase/auth-attacher";
+
+/**
+ * Rate limiting, applied here rather than inside each handler.
+ *
+ * It used to live in one endpoint, and the four other public routes never got it —
+ * including the unauthenticated telemetry POST that writes with the service-role key.
+ * Running it in the request chain means a new route under /api/public is limited by
+ * adding a line to RATE_LIMITS, not by remembering to call something.
+ *
+ * Only paths named in RATE_LIMITS are touched: page loads, assets and server functions
+ * pass straight through, so this can never throttle a reader looking at the app.
+ */
+const rateLimitMiddleware = createMiddleware().server(async ({ next, request }) => {
+  const path = new URL(request.url).pathname;
+  const budget = RATE_LIMITS[path];
+  if (!budget) return next();
+  const verdict = checkRateLimit(path, callerKey(request), budget);
+  if (!verdict.allowed) return rateLimitedResponse(verdict.retryAfterSeconds);
+  return next();
+});
 
 const errorMiddleware = createMiddleware().server(async ({ next }) => {
   try {
@@ -20,5 +41,7 @@ const errorMiddleware = createMiddleware().server(async ({ next }) => {
 
 export const startInstance = createStart(() => ({
   functionMiddleware: [attachSupabaseAuth],
-  requestMiddleware: [errorMiddleware],
+  // Limit first: a refused request must not reach a handler, and the error middleware
+  // still wraps it because it is the outer one.
+  requestMiddleware: [errorMiddleware, rateLimitMiddleware],
 }));
