@@ -45,7 +45,7 @@ function levelFromSource(source: string): string | undefined {
  * compiled packs (data/packs/*.json — { revision, words: [...] }). Both become the
  * schema's word shape before validation.
  */
-function toDeck(json: unknown, source: string): { meta?: { name: string }; words: RawWord[] } {
+export function toDeck(json: unknown, source: string): { meta?: { name: string }; words: RawWord[] } {
   const list = (Array.isArray(json) ? json : (json as { words?: unknown })?.words) as unknown;
   if (!Array.isArray(list)) throw new Error("Không tìm thấy danh sách từ trong gói.");
   const root = Array.isArray(json) ? {} : (json as { name?: unknown; meta?: { name?: unknown } });

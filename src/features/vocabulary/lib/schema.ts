@@ -53,9 +53,10 @@ const wordSchema = z.object({
     .trim()
     .min(1)
     .max(64)
-    // An English headword (2+ chars, letters with inner ' or -) or a Chinese one
-    // (one or more Han characters) for a locale deck served on its own domain.
-    .regex(/^(?:(?=.{2})[a-zA-Z]+(?:['’-][a-zA-Z]+)*|\p{Script=Han}+)$/u),
+    // A headword in any deck language: Unicode letters (so German äöüß, French
+    // accents, Spanish ñ all pass) with inner ', - or spaces for multi-word entries
+    // ("sich vorstellen"), or one or more Han characters for the Chinese deck.
+    .regex(/^(?:(?=.{2})\p{L}+(?:['’ -]\p{L}+)*|\p{Script=Han}+)$/u),
   /**
    * The short handle used to share this word as a challenge (`/w/K7F`). Assigned
    * once by scripts/assign-share-codes.ts and then permanent: codes escape into
