@@ -188,7 +188,13 @@ async function main() {
       `--user-data-dir=${profile}`,
       "--hide-scrollbars",
       "--mute-audio",
-      "--force-device-scale-factor=1",
+      // Forced at the BROWSER, not through Emulation.setDeviceMetricsOverride. Screencast
+      // hands back frames sized in CSS pixels, so an emulated scale factor leaves them at
+      // the viewport's logical size and ffmpeg upscales — 1080×1920 in the container,
+      // 405×720 of real detail. Forcing the device scale factor makes the surface itself
+      // that many pixels, which is what screencast then captures.
+      `--force-device-scale-factor=${mode === "feed" ? scale : 1}`,
+      `--window-size=${mode === "feed" ? `${cssWidth},${cssHeight}` : "1080,1920"}`,
       "--force-color-profile=srgb",
       // The card plays on its own; nothing should wait for a gesture that will never come.
       "--autoplay-policy=no-user-gesture-required",
@@ -229,10 +235,13 @@ async function main() {
     height = Math.round(cssHeight * scale);
     // Phone metrics, not a 1080px-wide desktop window. `mobile` makes the app lay out the
     // way it does on a phone; the scale factor is what turns that into output pixels.
+    // deviceScaleFactor 0 means "keep what the browser already has" — the forced factor
+    // above. Passing `scale` here instead would emulate it a second time, and the frames
+    // would come back logical again.
     await cdp.send("Emulation.setDeviceMetricsOverride", {
       width: cssWidth,
       height: cssHeight,
-      deviceScaleFactor: scale,
+      deviceScaleFactor: 0,
       mobile: true,
     });
     await cdp.send("Emulation.setTouchEmulationEnabled", { enabled: true, maxTouchPoints: 5 });
@@ -369,6 +378,29 @@ async function main() {
   cdp.close();
 
   if (captured.length < 2) throw new Error(`captured ${captured.length} frames; nothing to encode`);
+
+  // Measure what Chrome actually handed back, which is not always what was asked for: a
+  // screencast of a scaled viewport can arrive at the CSS size rather than the device-pixel
+  // one, and ffmpeg would then quietly UPSCALE it to the output size. Asking for the scale
+  // is not the same as getting it, so the check is on the result, and it refuses rather
+  // than warns \u2014 a clip that says 1080\u00d71920 and holds 405\u00d7720 of detail looks soft with
+  // nothing in the file to say why, and that one shipped before anyone noticed.
+  const probe = spawnSync(
+    "ffprobe",
+    ["-v", "error", "-select_streams", "v:0", "-show_entries", "stream=width,height",
+     "-of", "csv=p=0", captured[0]!.file],
+    { encoding: "utf8" },
+  );
+  const [grabbedWidth, grabbedHeight] = (probe.stdout ?? "").trim().split(",").map(Number);
+  if (grabbedWidth && grabbedHeight) {
+    if (grabbedWidth < width || grabbedHeight < height) {
+      throw new Error(
+        `frames came back at ${grabbedWidth}\u00d7${grabbedHeight}, short of the ${width}\u00d7${height} asked for; ` +
+          "encoding them would upscale. Check --force-device-scale-factor reached the browser.",
+      );
+    }
+    console.log(`  frames captured at ${grabbedWidth}\u00d7${grabbedHeight} (native)`);
+  }
   const seconds = captured[captured.length - 1]!.atMs / 1000;
   console.log(
     `  ${captured.length} frames over ${seconds.toFixed(1)}s (${(captured.length / seconds).toFixed(1)}/s)`,
@@ -397,14 +429,45 @@ async function main() {
       "0",
       "-i",
       listFile,
+      // A silent track. The picture is the whole point, but an upload with no audio stream
+      // at all is the odd one out in a platform's ingest pipeline, and a muted track costs
+      // a few kilobytes.
+      "-f",
+      "lavfi",
+      "-i",
+      "anullsrc=channel_layout=stereo:sample_rate=48000",
+      "-shortest",
       "-vf",
-      `fps=${fps},scale=${width}:${height}:flags=lanczos,format=yuv420p`,
+      // in_range=full is what the frames really are \u2014 they arrive as JPEG, which is full
+      // range \u2014 and out_range=tv is what an H.264 file is expected to hold. Without the
+      // conversion the levels stay 0\u2013255 and the file gets tagged yuvj420p; players that
+      // read it as 16\u2013235 anyway crush the blacks and blow out the white text.
+      `fps=${fps},scale=${width}:${height}:flags=lanczos:in_range=full:out_range=tv,format=yuv420p`,
       "-c:v",
       "libx264",
       "-preset",
       "medium",
       "-crf",
       "20",
+      // Spelled out rather than left to be guessed at the other end.
+      "-pix_fmt",
+      "yuv420p",
+      "-color_range",
+      "tv",
+      "-colorspace",
+      "bt709",
+      "-color_primaries",
+      "bt709",
+      "-color_trc",
+      "bt709",
+      "-profile:v",
+      "high",
+      "-level",
+      "4.0",
+      "-c:a",
+      "aac",
+      "-b:a",
+      "128k",
       "-movflags",
       "+faststart",
       out,
