@@ -1,0 +1,357 @@
+{
+  "revision": "e56e7f0baf9f6cf01288b459",
+  "name": "deck-de-C2",
+  "count": 12,
+  "topics": [
+    "character",
+    "communication",
+    "emotion",
+    "general",
+    "money",
+    "nature",
+    "perception",
+    "society",
+    "study",
+    "thinking",
+    "work"
+  ],
+  "levels": [
+    "C2"
+  ],
+  "words": [
+    {
+      "id": "desillusioniert",
+      "word": "desillusioniert",
+      "meaningVi": "vỡ_mộng",
+      "defVi": "Vỡ_mộng, thất_vọng | vì sự_thật | không như mình nghĩ.",
+      "leadVi": "Tưởng làm ca_sĩ sướng, | ai ngờ | chạy sô mệt_nhoài.",
+      "anticipateVi": "Màu hồng đâu mất=rồi?",
+      "emphasis": [
+        "thất vọng",
+        "ai ngờ"
+      ],
+      "pos": "adj",
+      "ipa": "/dɛsɪluzi̯oˈniːɐ̯t/",
+      "topic": "emotion",
+      "topics": [
+        "emotion",
+        "work"
+      ],
+      "level": "C2",
+      "usage": [
+        {
+          "en": "Nach drei Jahren in der Firma war er völlig _____.",
+          "vi": "Sau ba năm | ở công_ty, | anh=ấy hoàn_toàn vỡ_mộng."
+        }
+      ],
+      "chars": 15,
+      "initial": "D"
+    },
+    {
+      "id": "minderwertigkeit",
+      "word": "minderwertigkeit",
+      "meaningVi": "sự tự_ti",
+      "defVi": "Cảm_giác tự_ti, | thấy mình | thua_kém người khác.",
+      "leadVi": "Anh chị | học giỏi cả, | cậu út | ngồi im thin_thít.",
+      "anticipateVi": "Mình chẳng bằng ai…",
+      "emphasis": [
+        "tự ti",
+        "thin thít"
+      ],
+      "pos": "noun",
+      "ipa": "/ˈmɪndɐveːɐ̯tɪçkaɪ̯t/",
+      "topic": "emotion",
+      "topics": [
+        "emotion",
+        "character"
+      ],
+      "level": "C2",
+      "usage": [
+        {
+          "en": "Neben seinem erfolgreichen Bruder litt er unter einem Gefühl der _____.",
+          "vi": "Bên_cạnh người anh thành_đạt, | cậu=ấy | luôn thấy tự_ti."
+        }
+      ],
+      "chars": 16,
+      "initial": "M"
+    },
+    {
+      "id": "besitzergreifend",
+      "word": "besitzergreifend",
+      "meaningVi": "chiếm_hữu",
+      "defVi": "Chiếm_hữu, | muốn người kia | chỉ thuộc về riêng mình.",
+      "leadVi": "Người_yêu kiểm_tra điện_thoại, | cấm đi chơi | với bạn.",
+      "anticipateVi": "Của=tui, | cấm đụng!",
+      "emphasis": [
+        "riêng mình",
+        "kiểm tra"
+      ],
+      "pos": "adj",
+      "ipa": "/bəˈzɪtsʔɛɐ̯ˌɡʁaɪ̯fn̩t/",
+      "topic": "emotion",
+      "topics": [
+        "emotion",
+        "character"
+      ],
+      "level": "C2",
+      "usage": [
+        {
+          "en": "Ihr Freund ist sehr _____ und liest heimlich ihre Nachrichten.",
+          "vi": "Bạn_trai cô=ấy | rất chiếm_hữu | và lén đọc tin_nhắn | của=cô."
+        }
+      ],
+      "chars": 16,
+      "initial": "B"
+    },
+    {
+      "id": "schaudern",
+      "word": "schaudern",
+      "meaningVi": "rùng_mình",
+      "defVi": "Rùng_mình | khi nghĩ đến hay thấy | điều gì ghê_sợ.",
+      "leadVi": "Nhớ lần kẹt thang_máy | tối om, | sống_lưng | lạnh toát.",
+      "anticipateVi": "Nổi hết da_gà!",
+      "emphasis": [
+        "ghê sợ",
+        "lạnh toát"
+      ],
+      "pos": "verb",
+      "ipa": "/ˈʃaʊ̯dɐn/",
+      "topic": "emotion",
+      "topics": [
+        "emotion",
+        "perception"
+      ],
+      "level": "C2",
+      "usage": [
+        {
+          "en": "Beim Gedanken an die Spinne musste ich _____.",
+          "vi": "Nghĩ đến con_nhện, | tôi phải rùng_mình."
+        }
+      ],
+      "chars": 9,
+      "initial": "S"
+    },
+    {
+      "id": "zerstreuen",
+      "word": "zerstreuen",
+      "meaningVi": "xua_tan, làm tiêu_tan",
+      "defVi": "Xua tan | nỗi lo, nghi_ngờ | hay niềm tin sai.",
+      "leadVi": "Một lời giải_thích rõ_ràng | khiến nghi_kỵ | tan biến.",
+      "anticipateVi": "Mây mù tan chưa?",
+      "emphasis": [
+        "Xua tan",
+        "tan biến"
+      ],
+      "pos": "verb",
+      "ipa": "/tsɛɐ̯ˈʃtʁɔɪ̯ən/",
+      "topic": "thinking",
+      "topics": [
+        "thinking",
+        "emotion"
+      ],
+      "level": "C2",
+      "usage": [
+        {
+          "en": "Der Arzt konnte alle meine Bedenken _____.",
+          "vi": "Bác_sĩ đã có_thể | xua_tan mọi lo_ngại | của=tôi."
+        }
+      ],
+      "chars": 10,
+      "initial": "Z"
+    },
+    {
+      "id": "eloquent",
+      "word": "eloquent",
+      "meaningVi": "hùng_hồn, có tài hùng_biện",
+      "defVi": "Ăn nói hùng_hồn, | lưu_loát | và giàu sức thuyết_phục.",
+      "leadVi": "Bài diễn_văn | khiến khán_phòng lặng đi | rồi vỗ tay.",
+      "anticipateVi": "Lời_lẽ cuốn_hút chứ?",
+      "emphasis": [
+        "hùng hồn",
+        "vỗ tay"
+      ],
+      "pos": "adj",
+      "ipa": "/eloˈkvɛnt/",
+      "topic": "communication",
+      "topics": [
+        "communication"
+      ],
+      "level": "C2",
+      "usage": [
+        {
+          "en": "Sie spricht immer sehr _____ und überzeugend.",
+          "vi": "Cô=ấy luôn nói | rất hùng_hồn | và thuyết_phục."
+        }
+      ],
+      "chars": 8,
+      "initial": "E"
+    },
+    {
+      "id": "empirisch",
+      "word": "empirisch",
+      "meaningVi": "thực_nghiệm",
+      "defVi": "Dựa trên | quan_sát | và thí_nghiệm thực_tế.",
+      "leadVi": "Không đoán mò, | nhà_khoa_học | đo_đạc từng con_số.",
+      "anticipateVi": "Thử rồi mới biết?",
+      "emphasis": [
+        "thí nghiệm",
+        "đoán mò"
+      ],
+      "pos": "adj",
+      "ipa": "/ɛmˈpiːʁɪʃ/",
+      "topic": "study",
+      "topics": [
+        "study",
+        "thinking"
+      ],
+      "level": "C2",
+      "usage": [
+        {
+          "en": "Diese Ergebnisse sind rein _____, nicht theoretisch.",
+          "vi": "Những kết_quả này | hoàn_toàn mang tính thực_nghiệm, | không phải lý_thuyết."
+        }
+      ],
+      "chars": 9,
+      "initial": "E"
+    },
+    {
+      "id": "paradox",
+      "word": "paradox",
+      "meaningVi": "nghịch_lý",
+      "defVi": "Nghịch_lý, | điều tưởng mâu_thuẫn | nhưng lại có thật.",
+      "leadVi": "Càng nhiều bạn trên mạng, | càng thấy | cô_đơn hơn.",
+      "anticipateVi": "Ngược đời không chứ?",
+      "emphasis": [
+        "Nghịch lý",
+        "cô đơn"
+      ],
+      "pos": "noun",
+      "ipa": "/paʁaˈdɔks/",
+      "topic": "thinking",
+      "topics": [
+        "thinking"
+      ],
+      "level": "C2",
+      "usage": [
+        {
+          "en": "Es ist ein _____: Je mehr Apps wir haben, desto weniger Zeit bleibt.",
+          "vi": "Thật là nghịch_lý: | càng nhiều ứng_dụng, | ta càng còn ít thời_gian."
+        }
+      ],
+      "chars": 7,
+      "initial": "P"
+    },
+    {
+      "id": "pr-zedenzfall",
+      "word": "präzedenzfall",
+      "meaningVi": "tiền_lệ",
+      "defVi": "Tiền_lệ, | sự_việc trước | làm mẫu cho sau.",
+      "leadVi": "Lần này cho nghỉ, | lần sau | ai cũng đòi theo.",
+      "anticipateVi": "Có tiền_lệ chưa?",
+      "emphasis": [
+        "Tiền lệ",
+        "đòi theo"
+      ],
+      "pos": "noun",
+      "ipa": "/pʁɛtseˈdɛntsfal/",
+      "topic": "society",
+      "topics": [
+        "society",
+        "work"
+      ],
+      "level": "C2",
+      "usage": [
+        {
+          "en": "Dieses Urteil könnte ein wichtiger _____ werden.",
+          "vi": "Phán_quyết này | có_thể trở_thành | một tiền_lệ quan_trọng."
+        }
+      ],
+      "chars": 13,
+      "initial": "P"
+    },
+    {
+      "id": "gedeihen",
+      "word": "gedeihen",
+      "meaningVi": "phát_triển mạnh",
+      "defVi": "Phát_triển mạnh_mẽ, | thịnh_vượng | trong điều_kiện thuận_lợi.",
+      "leadVi": "Gặp đất tốt, | cây_ớt nhỏ | vươn cao trĩu quả.",
+      "anticipateVi": "Lên như diều gặp gió?",
+      "emphasis": [
+        "thịnh vượng",
+        "trĩu quả"
+      ],
+      "pos": "verb",
+      "ipa": "/ɡəˈdaɪ̯ən/",
+      "topic": "nature",
+      "topics": [
+        "nature",
+        "general"
+      ],
+      "level": "C2",
+      "usage": [
+        {
+          "en": "Tomaten _____ am besten an einem sonnigen Ort.",
+          "vi": "Cà_chua | phát_triển mạnh nhất | ở nơi nhiều nắng."
+        }
+      ],
+      "chars": 8,
+      "initial": "G"
+    },
+    {
+      "id": "untergraben",
+      "word": "untergraben",
+      "meaningVi": "làm suy_yếu, phá_hoại",
+      "defVi": "Làm suy_yếu dần | sức_mạnh, uy_tín | hay niềm tin.",
+      "leadVi": "Lời đàm_tiếu sau lưng | gặm_nhấm lòng tin của=đội.",
+      "anticipateVi": "Ai đào chân móng?",
+      "emphasis": [
+        "suy yếu",
+        "gặm nhấm"
+      ],
+      "pos": "verb",
+      "ipa": "/ʊntɐˈɡʁaːbn̩/",
+      "topic": "society",
+      "topics": [
+        "society",
+        "emotion"
+      ],
+      "level": "C2",
+      "usage": [
+        {
+          "en": "Solche Gerüchte können das Vertrauen der Kunden _____.",
+          "vi": "Những tin_đồn như vậy | có_thể làm suy_yếu | lòng tin của khách_hàng."
+        }
+      ],
+      "chars": 11,
+      "initial": "U"
+    },
+    {
+      "id": "tragf-hig",
+      "word": "tragfähig",
+      "meaningVi": "khả_thi",
+      "defVi": "Có_thể tồn_tại | hoặc vận_hành thành_công | lâu dài.",
+      "leadVi": "Tính đi tính lại, | mô_hình này | vẫn sinh lời.",
+      "anticipateVi": "Trụ được | lâu không?",
+      "emphasis": [
+        "tồn tại",
+        "sinh lời"
+      ],
+      "pos": "adj",
+      "ipa": "/ˈtʁaːkfɛːɪç/",
+      "topic": "work",
+      "topics": [
+        "work",
+        "money"
+      ],
+      "level": "C2",
+      "usage": [
+        {
+          "en": "Ist dieses Geschäftsmodell auf Dauer _____?",
+          "vi": "Mô_hình kinh_doanh này | có khả_thi | lâu_dài không?"
+        }
+      ],
+      "chars": 9,
+      "initial": "T"
+    }
+  ]
+}

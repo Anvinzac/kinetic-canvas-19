@@ -1,0 +1,438 @@
+{
+  "revision": "8d4314950e88d415f94d8c3f",
+  "name": "deck-fr-C2",
+  "count": 15,
+  "topics": [
+    "character",
+    "communication",
+    "emotion",
+    "general",
+    "health",
+    "money",
+    "perception",
+    "society",
+    "study",
+    "thinking",
+    "time",
+    "work"
+  ],
+  "levels": [
+    "C2"
+  ],
+  "words": [
+    {
+      "id": "expressif",
+      "word": "expressif",
+      "meaningVi": "biểu_cảm",
+      "defVi": "Biểu_cảm, | dễ_dàng | thể_hiện cảm_xúc | ra bên_ngoài.",
+      "leadVi": "Chưa nói câu nào, | chỉ ánh_mắt thôi | đã đủ hiểu.",
+      "anticipateVi": "Mắt biết nói đó!",
+      "emphasis": [
+        "thể hiện",
+        "ánh mắt"
+      ],
+      "pos": "adj",
+      "ipa": "/ɛkspʁesif/",
+      "topic": "emotion",
+      "topics": [
+        "emotion",
+        "communication",
+        "character"
+      ],
+      "level": "C2",
+      "usage": [
+        {
+          "en": "Ce jeune acteur a un visage très _____.",
+          "vi": "Cậu diễn_viên trẻ này | có gương_mặt | rất=biểu_cảm."
+        }
+      ],
+      "chars": 9,
+      "initial": "E"
+    },
+    {
+      "id": "traumatisant",
+      "word": "traumatisant",
+      "meaningVi": "gây sang_chấn",
+      "defVi": "Gây chấn_thương tâm_lý, | để lại ám_ảnh | lâu_dài.",
+      "leadVi": "Sau trận_lũ cuốn nhà, | nghe tiếng mưa | là run_rẩy.",
+      "anticipateVi": "Vết sẹo | trong lòng…",
+      "emphasis": [
+        "chấn thương",
+        "run rẩy"
+      ],
+      "pos": "adj",
+      "ipa": "/tʁomatizɑ̃/",
+      "topic": "emotion",
+      "topics": [
+        "emotion",
+        "health"
+      ],
+      "level": "C2",
+      "usage": [
+        {
+          "en": "Pour lui, cet accident a été très _____.",
+          "vi": "Với cậu=ấy, | vụ tai_nạn đó | gây sang_chấn nặng_nề."
+        }
+      ],
+      "chars": 12,
+      "initial": "T"
+    },
+    {
+      "id": "crucial",
+      "word": "crucial",
+      "meaningVi": "then_chốt, cực_kỳ quan_trọng",
+      "defVi": "Cực_kỳ quan_trọng, | ảnh_hưởng quyết_định | đến kết_quả.",
+      "leadVi": "Phút cuối trận, | cú sút này | định_đoạt tất_cả.",
+      "anticipateVi": "Then chốt ở đâu?",
+      "emphasis": [
+        "quyết định",
+        "định đoạt"
+      ],
+      "pos": "adj",
+      "ipa": "/kʁysjal/",
+      "topic": "thinking",
+      "topics": [
+        "thinking",
+        "work"
+      ],
+      "level": "C2",
+      "usage": [
+        {
+          "en": "Ce match est _____ pour la saison de l'équipe.",
+          "vi": "Trận_đấu này | mang tính then_chốt | cho mùa giải | của đội."
+        }
+      ],
+      "chars": 7,
+      "initial": "C"
+    },
+    {
+      "id": "adversit",
+      "word": "adversité",
+      "meaningVi": "nghịch_cảnh",
+      "defVi": "Hoàn_cảnh khốn_khó, | nhiều bất_hạnh | và thử_thách.",
+      "leadVi": "Mồ_côi từ nhỏ, | bán vé số | nuôi em ăn học.",
+      "anticipateVi": "Sóng gió cuộc đời ư?",
+      "emphasis": [
+        "khốn khó",
+        "Mồ côi"
+      ],
+      "pos": "noun",
+      "ipa": "/ad.vɛʁ.si.te/",
+      "topic": "emotion",
+      "topics": [
+        "emotion",
+        "society"
+      ],
+      "level": "C2",
+      "usage": [
+        {
+          "en": "Elle a gardé le sourire malgré l'_____.",
+          "vi": "Cô=ấy vẫn mỉm_cười | dù gặp nghịch_cảnh."
+        }
+      ],
+      "chars": 9,
+      "initial": "A"
+    },
+    {
+      "id": "co-ncider",
+      "word": "coïncider",
+      "meaningVi": "trùng, trùng_hợp",
+      "defVi": "Xảy ra | cùng một lúc | một_cách tình_cờ.",
+      "leadVi": "Sinh_nhật trùng đúng | ngày khai_trương cửa_hàng.",
+      "anticipateVi": "Trùng_hợp | ghê nhỉ?",
+      "emphasis": [
+        "tình cờ",
+        "khai trương"
+      ],
+      "pos": "verb",
+      "ipa": "/kɔ.ɛ̃.si.de/",
+      "topic": "time",
+      "topics": [
+        "time"
+      ],
+      "level": "C2",
+      "usage": [
+        {
+          "en": "Cette année, mon anniversaire va _____ avec Pâques.",
+          "vi": "Năm nay | sinh_nhật tôi | trùng với lễ Phục_sinh."
+        }
+      ],
+      "chars": 9,
+      "initial": "C"
+    },
+    {
+      "id": "d-duire",
+      "word": "déduire",
+      "meaningVi": "suy_ra, suy_luận",
+      "defVi": "Suy ra kết_luận | từ những dữ_kiện | đã có.",
+      "leadVi": "Vết bùn ở giày, | thám_tử đoán | anh vừa ra vườn.",
+      "anticipateVi": "Suy ra được gì?",
+      "emphasis": [
+        "kết luận",
+        "Vết bùn"
+      ],
+      "pos": "verb",
+      "ipa": "/de.dɥiʁ/",
+      "topic": "thinking",
+      "topics": [
+        "thinking"
+      ],
+      "level": "C2",
+      "usage": [
+        {
+          "en": "Avec ces traces de boue, on peut _____ qu'il est sorti dans le jardin.",
+          "vi": "Nhờ vết bùn này, | ta có_thể suy_ra | anh=ấy đã ra vườn."
+        }
+      ],
+      "chars": 7,
+      "initial": "D"
+    },
+    {
+      "id": "disparit",
+      "word": "disparité",
+      "meaningVi": "sự chênh_lệch, bất_bình_đẳng",
+      "defVi": "Khoảng cách chênh_lệch lớn | giữa các nhóm.",
+      "leadVi": "Phố này biệt_thự, | ngõ bên cạnh | mái tôn dột nát.",
+      "anticipateVi": "Cách_biệt bao xa?",
+      "emphasis": [
+        "Khoảng cách",
+        "dột nát"
+      ],
+      "pos": "noun",
+      "ipa": "/dis.pa.ʁi.te/",
+      "topic": "society",
+      "topics": [
+        "society",
+        "money"
+      ],
+      "level": "C2",
+      "usage": [
+        {
+          "en": "La _____ des salaires entre hommes et femmes reste importante.",
+          "vi": "Chênh_lệch lương | giữa nam và nữ | vẫn còn lớn."
+        }
+      ],
+      "chars": 9,
+      "initial": "D"
+    },
+    {
+      "id": "loquent",
+      "word": "éloquent",
+      "meaningVi": "hùng_hồn, có tài hùng_biện",
+      "defVi": "Ăn nói hùng_hồn, | lưu_loát | và giàu sức thuyết_phục.",
+      "leadVi": "Bài diễn_văn | khiến khán_phòng lặng đi | rồi vỗ tay.",
+      "anticipateVi": "Lời_lẽ cuốn_hút chứ?",
+      "emphasis": [
+        "hùng hồn",
+        "vỗ tay"
+      ],
+      "pos": "adj",
+      "ipa": "/e.lɔ.kɑ̃/",
+      "topic": "communication",
+      "topics": [
+        "communication"
+      ],
+      "level": "C2",
+      "usage": [
+        {
+          "en": "Le maire a fait un discours très _____ hier soir.",
+          "vi": "Ông thị_trưởng | đã có bài phát_biểu | rất hùng_hồn | tối qua."
+        }
+      ],
+      "chars": 8,
+      "initial": "É"
+    },
+    {
+      "id": "empirique",
+      "word": "empirique",
+      "meaningVi": "thực_nghiệm",
+      "defVi": "Dựa trên | quan_sát | và thí_nghiệm thực_tế.",
+      "leadVi": "Không đoán mò, | nhà_khoa_học | đo_đạc từng con_số.",
+      "anticipateVi": "Thử rồi mới biết?",
+      "emphasis": [
+        "thí nghiệm",
+        "đoán mò"
+      ],
+      "pos": "adj",
+      "ipa": "/ɑ̃.pi.ʁik/",
+      "topic": "study",
+      "topics": [
+        "study",
+        "thinking"
+      ],
+      "level": "C2",
+      "usage": [
+        {
+          "en": "Cette théorie manque encore de preuves, il faut une étude _____.",
+          "vi": "Lý_thuyết này | vẫn thiếu bằng_chứng, | cần một nghiên_cứu thực_nghiệm."
+        }
+      ],
+      "chars": 9,
+      "initial": "E"
+    },
+    {
+      "id": "entraver",
+      "word": "entraver",
+      "meaningVi": "cản_trở",
+      "defVi": "Cản_trở, | làm chậm | hoặc gây khó | cho tiến_trình.",
+      "leadVi": "Mưa lớn kéo dài, | công_trình đành dừng | giữa chừng.",
+      "anticipateVi": "Vướng chân | ở đâu?",
+      "emphasis": [
+        "Cản trở",
+        "giữa chừng"
+      ],
+      "pos": "verb",
+      "ipa": "/ɑ̃.tʁa.ve/",
+      "topic": "general",
+      "topics": [
+        "general"
+      ],
+      "level": "C2",
+      "usage": [
+        {
+          "en": "La neige risque d'_____ la circulation demain matin.",
+          "vi": "Tuyết có_thể | cản_trở giao_thông | sáng mai."
+        }
+      ],
+      "chars": 8,
+      "initial": "E"
+    },
+    {
+      "id": "implicite",
+      "word": "implicite",
+      "meaningVi": "ngầm, ngầm hiểu",
+      "defVi": "Được ngầm hiểu, | không nói ra trực_tiếp.",
+      "leadVi": "Mẹ không cấm, | nhưng ánh mắt ấy | đã nói hết.",
+      "anticipateVi": "Ngầm hiểu chưa?",
+      "emphasis": [
+        "ngầm hiểu",
+        "ánh mắt"
+      ],
+      "pos": "adj",
+      "ipa": "/ɛ̃.pli.sit/",
+      "topic": "communication",
+      "topics": [
+        "communication"
+      ],
+      "level": "C2",
+      "usage": [
+        {
+          "en": "Entre nous, il y avait un accord _____ : personne ne parlait du passé.",
+          "vi": "Giữa chúng_tôi | có một thỏa_thuận ngầm: | không ai nhắc | chuyện cũ."
+        }
+      ],
+      "chars": 9,
+      "initial": "I"
+    },
+    {
+      "id": "inh-rent",
+      "word": "inhérent",
+      "meaningVi": "vốn_có",
+      "defVi": "Tồn_tại sẵn | bên trong, | không_thể tách rời.",
+      "leadVi": "Leo núi cao | luôn đi kèm rủi_ro, | chẳng tránh được.",
+      "anticipateVi": "Sinh ra đã có?",
+      "emphasis": [
+        "Tồn tại",
+        "đi kèm"
+      ],
+      "pos": "adj",
+      "ipa": "/i.ne.ʁɑ̃/",
+      "topic": "thinking",
+      "topics": [
+        "thinking"
+      ],
+      "level": "C2",
+      "usage": [
+        {
+          "en": "Le stress est _____ à ce métier difficile.",
+          "vi": "Căng_thẳng | là điều vốn_có | của nghề khó_khăn này."
+        }
+      ],
+      "chars": 8,
+      "initial": "I"
+    },
+    {
+      "id": "compromettre",
+      "word": "compromettre",
+      "meaningVi": "gây nguy_hại, đe_dọa",
+      "defVi": "Đẩy vào nguy_cơ | bị tổn_hại | hay thất_bại.",
+      "leadVi": "Một lần say_xỉn | lái xe | có_thể mất sự_nghiệp.",
+      "anticipateVi": "Đánh_cược | cả đời?",
+      "emphasis": [
+        "tổn hại",
+        "say xỉn"
+      ],
+      "pos": "verb",
+      "ipa": "/kɔ̃.pʁɔ.mɛtʁ/",
+      "topic": "general",
+      "topics": [
+        "general"
+      ],
+      "level": "C2",
+      "usage": [
+        {
+          "en": "Une seule erreur pourrait _____ tout le projet.",
+          "vi": "Chỉ một lỗi | có_thể gây nguy_hại | cho cả dự_án."
+        }
+      ],
+      "chars": 12,
+      "initial": "C"
+    },
+    {
+      "id": "saper",
+      "word": "saper",
+      "meaningVi": "làm suy_yếu, phá_hoại",
+      "defVi": "Làm suy_yếu dần | sức_mạnh, uy_tín | hay niềm tin.",
+      "leadVi": "Lời đàm_tiếu sau lưng | gặm_nhấm lòng tin của=đội.",
+      "anticipateVi": "Ai đào chân móng?",
+      "emphasis": [
+        "suy yếu",
+        "gặm nhấm"
+      ],
+      "pos": "verb",
+      "ipa": "/sa.pe/",
+      "topic": "society",
+      "topics": [
+        "society",
+        "emotion"
+      ],
+      "level": "C2",
+      "usage": [
+        {
+          "en": "Ces critiques constantes finissent par _____ sa confiance.",
+          "vi": "Những lời chỉ_trích liên_tục | cuối_cùng | làm suy_yếu | sự tự_tin của=cô=ấy."
+        }
+      ],
+      "chars": 5,
+      "initial": "S"
+    },
+    {
+      "id": "discerner",
+      "word": "discerner",
+      "meaningVi": "nhận ra, phân_biệt",
+      "defVi": "Nhận ra | hoặc phân_biệt được | điều khó thấy.",
+      "leadVi": "Giữa sương mù dày, | anh vẫn nhìn ra | bóng con_thuyền.",
+      "anticipateVi": "Tinh mắt | nhận ra không?",
+      "emphasis": [
+        "phân biệt",
+        "sương mù"
+      ],
+      "pos": "verb",
+      "ipa": "/di.sɛʁ.ne/",
+      "topic": "perception",
+      "topics": [
+        "perception",
+        "thinking"
+      ],
+      "level": "C2",
+      "usage": [
+        {
+          "en": "Dans le brouillard, on pouvait à peine _____ les maisons.",
+          "vi": "Trong sương_mù, | ta khó lòng nhận ra | những ngôi_nhà."
+        }
+      ],
+      "chars": 9,
+      "initial": "D"
+    }
+  ]
+}
