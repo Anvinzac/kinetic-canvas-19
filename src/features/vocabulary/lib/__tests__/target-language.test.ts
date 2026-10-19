@@ -38,7 +38,7 @@ describe("Chinese deck", () => {
 });
 
 describe("French, German and Spanish decks", () => {
-  const request = { seed: "testseed01", position: 0, limit: 24, topic: "", level: "", difficulty: "" };
+  const request = { seed: "testseed01", position: 0, limit: 24, topic: "", level: "", difficulty: "" } as const;
   it("a phap request returns only French words", () => {
     const page = readVocabularyPage(request, "fr");
     expect(page.entries.length).toBeGreaterThan(0);
