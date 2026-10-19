@@ -32,8 +32,8 @@ const TITLES: Record<TargetLocale, string> = {
   zh: "hoa.chayLá",
   ko: "hàn.chayLá",
   ja: "nhật.chayLá",
-  fr: "phap.chayLá",
-  de: "duc.chayLá",
+  fr: "pháp.chayLá",
+  de: "đức.chayLá",
   es: "tbn.chayLá",
 };
 
