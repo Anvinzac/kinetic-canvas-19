@@ -87,7 +87,12 @@
   --vocab-corner: 44px;
   position: fixed;
   z-index: 50;
-  top: max(12px, env(safe-area-inset-top));
+  /* The top offset is a variable so a recorder can push the bar clear of a platform's own
+     overlay (TikTok's search row, a Reels header) without that inset reaching readers.
+     Default unchanged, so nothing moves for anyone who does not set it. The bottom chrome
+     already had its knob: --vocab-chrome-inset on the shell, which the progress row, the
+     button row and the meaning panel's cap all derive from. */
+  top: max(var(--vocab-chrome-head, 12px), env(safe-area-inset-top));
   left: max(16px, env(safe-area-inset-left));
   right: max(16px, env(safe-area-inset-right));
   color: var(--chrome-ink);

@@ -97,6 +97,10 @@ const maxSeconds = Number(flag("max", "120"));
 // way it does on a phone — the layout a viewer recognises — rather than the desktop one it
 // would choose at a literal 1080px wide.
 const [cssWidth, cssHeight] = flag("css", "405x720").split("x").map(Number);
+// How far in from the top and bottom edges the app's own bars are pushed, in CSS pixels.
+// Defaults are roughly TikTok's overlay zones at a 405×720 viewport (~8% and ~15%); pass
+// 0,0 to record the app exactly as it sits on a phone.
+const [insetTop, insetBottom] = flag("inset", "56,110").split(",").map(Number);
 const scale = Number(flag("scale", String(1080 / 405)));
 const out = resolve(
   flag("out", mode === "feed" ? "./feed-clip.mp4" : `./export-${code ?? "clip"}.mp4`),
@@ -232,6 +236,29 @@ async function main() {
       mobile: true,
     });
     await cdp.send("Emulation.setTouchEmulationEnabled", { enabled: true, maxTouchPoints: 5 });
+    // Push the app's own chrome clear of the platform's. TikTok puts a search row across
+    // the top and a caption, action rail and nav across the bottom; a toolbar 12px from
+    // the edge sits underneath them. These two variables move the app's bars inward —
+    // the bottom one is the shell's existing contract, so the meaning panel's cap and the
+    // clue band's foot follow it without anything else being told.
+    if (insetTop || insetBottom) {
+      // A STYLESHEET, not a property set on the root. --vocab-chrome-inset is declared on
+      // .vocabulary-shell itself, and a declaration on the element beats a value inherited
+      // from an ancestor — so setting it on <html> moves the toolbar and leaves the bottom
+      // exactly where it was. A rule targeting the shell wins, and survives re-renders.
+      await cdp.send("Page.addScriptToEvaluateOnNewDocument", {
+        source: `(() => {
+          const css = ':root{--vocab-chrome-head:${insetTop}px}.vocabulary-shell{--vocab-chrome-inset:${insetBottom}px}';
+          const add = () => {
+            const style = document.createElement('style');
+            style.textContent = css;
+            document.head.appendChild(style);
+          };
+          if (document.head) add();
+          else document.addEventListener('DOMContentLoaded', add, { once: true });
+        })();`,
+      });
+    }
     // Skip the difficulty onboarding. It is a first-visit screen, and a clip that opens on
     // it is showing the reader a form rather than the thing being advertised. Written
     // before any app script runs, so the feed never renders the onboarding at all.
