@@ -82,18 +82,18 @@ export const CEFR_TRACKS: readonly DifficultyTrack[] = [
     levels: ["A2", "B1"],
   },
   {
-    id: "doc-hieu",
-    label: "đọc hiểu",
-    hint: "Đọc báo và đọc truyện",
-    emoji: "🍃",
-    levels: ["B1", "B2"],
-  },
-  {
     id: "giao-tiep",
     label: "giao tiếp",
     hint: "Nói chuyện tự nhiên hơn",
     emoji: "🌾",
     levels: ["A1", "A2", "B1"],
+  },
+  {
+    id: "doc-hieu",
+    label: "đọc hiểu",
+    hint: "Đọc báo và đọc truyện",
+    emoji: "🍃",
+    levels: ["B1", "B2"],
   },
   {
     id: "chuyen-sau",
@@ -158,18 +158,18 @@ export const HSK_TRACKS: readonly DifficultyTrack[] = [
     levels: ["HSK2", "HSK3"],
   },
   {
-    id: "doc-hieu",
-    label: "đọc hiểu",
-    hint: "Đọc báo và đọc truyện",
-    emoji: "🍃",
-    levels: ["HSK3", "HSK4"],
-  },
-  {
     id: "giao-tiep",
     label: "giao tiếp",
     hint: "Nói chuyện tự nhiên hơn",
     emoji: "🌾",
     levels: ["HSK1", "HSK2", "HSK3"],
+  },
+  {
+    id: "doc-hieu",
+    label: "đọc hiểu",
+    hint: "Đọc báo và đọc truyện",
+    emoji: "🍃",
+    levels: ["HSK3", "HSK4"],
   },
   {
     id: "chuyen-sau",
