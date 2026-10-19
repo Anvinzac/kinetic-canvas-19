@@ -41,7 +41,7 @@ function levelFromSource(source: string): string | undefined {
 
 /**
  * Accept the word packs this app already uses: the WordCrawler batch decks
- * (docs/Batches/*.json — a bare array with usageEn/usageVi/emphasisVi, no ids) and the
+ * (docs/Batches/<locale>/*.json — a bare array with usageEn/usageVi/emphasisVi, no ids) and the
  * compiled packs (data/packs/*.json — { revision, words: [...] }). Both become the
  * schema's word shape before validation.
  */

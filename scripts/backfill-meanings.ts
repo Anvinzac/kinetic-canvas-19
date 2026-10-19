@@ -8,15 +8,20 @@
  * nothing else.
  *
  * Matching is by headword, not by id: a pack's id is derived at import time and a batch
- * has none. Headwords are unique within the published set (normalizeDeck rejects a
- * duplicate), so the match is exact.
+ * has none. Headwords are unique within ONE language's published set (normalizeDeck
+ * rejects a duplicate), so the match is exact.
+ *
+ * Batches live per language under docs/Batches/<locale>/, mirroring how the served decks
+ * are split (data/packs for English, data/<locale> for the rest). Each language is matched
+ * only against its own batches — a French headword must never pick up a gloss because the
+ * same spelling happens to exist in an English deck.
  *
  * Idempotent: a word that already carries the field is left alone, and a run that changes
  * nothing writes nothing.
  *
  * Run: npx tsx scripts/backfill-meanings.ts [--check]
  */
-import { readdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 
@@ -26,15 +31,37 @@ const checkOnly = process.argv.includes("--check");
 
 type Word = Record<string, unknown> & { word?: string; meaningVi?: string };
 
-/** Every published deck file, English and per-locale. */
-function deckFiles(): string[] {
-  const files = [join(DATA, "catalog.json")];
-  for (const dir of ["packs", "zh", "ko", "ja"]) {
+/**
+ * Where each language's batches are authored and where its compiled decks are served.
+ *
+ * English is the odd one: its decks are the admin-editable base plus every provider pack,
+ * while another language is a single folder. French, German and Spanish are listed with no
+ * served decks yet — their batches exist and will compile into data/<locale>/ when they do,
+ * and listing them now means that day needs no change here.
+ */
+const LANGUAGES: { locale: string; decks: string[] }[] = [
+  { locale: "en", decks: [join(DATA, "catalog.json"), join(DATA, "packs")] },
+  { locale: "zh", decks: [join(DATA, "zh")] },
+  { locale: "ko", decks: [join(DATA, "ko")] },
+  { locale: "ja", decks: [join(DATA, "ja")] },
+  { locale: "fr", decks: [join(DATA, "fr")] },
+  { locale: "de", decks: [join(DATA, "de")] },
+  { locale: "es", decks: [join(DATA, "es")] },
+];
+
+/** Expand a list of files and folders into the deck files that exist. */
+function deckFiles(entries: string[]): string[] {
+  const files: string[] = [];
+  for (const entry of entries) {
+    if (entry.endsWith(".json")) {
+      if (existsSync(entry)) files.push(entry);
+      continue;
+    }
     try {
       files.push(
-        ...readdirSync(join(DATA, dir))
+        ...readdirSync(entry)
           .filter((f) => f.endsWith(".json"))
-          .map((f) => join(DATA, dir, f)),
+          .map((f) => join(entry, f)),
       );
     } catch {
       continue; // a locale with no decks yet
@@ -43,13 +70,20 @@ function deckFiles(): string[] {
   return files;
 }
 
-/** headword (lowercased) → gloss, from every batch that carries one. */
-function batchMeanings(): Map<string, string> {
+/** headword (lowercased) → gloss, from ONE language's batches. */
+function batchMeanings(locale: string): Map<string, string> {
   const meanings = new Map<string, string>();
-  for (const file of readdirSync(BATCHES).filter((f) => f.endsWith(".json"))) {
+  const dir = join(BATCHES, locale);
+  let entries: string[];
+  try {
+    entries = readdirSync(dir).filter((f) => f.endsWith(".json"));
+  } catch {
+    return meanings; // no batches authored for this language yet
+  }
+  for (const file of entries) {
     let parsed: unknown;
     try {
-      parsed = JSON.parse(readFileSync(join(BATCHES, file), "utf8"));
+      parsed = JSON.parse(readFileSync(join(dir, file), "utf8"));
     } catch {
       continue; // not a deck batch
     }
@@ -59,52 +93,59 @@ function batchMeanings(): Map<string, string> {
       const head = typeof entry?.word === "string" ? entry.word.trim().toLowerCase() : "";
       const gloss = typeof entry?.meaningVi === "string" ? entry.meaningVi.trim() : "";
       // First batch to define a headword wins; later batches are revisions of the same
-      // deck and agree, and a disagreement is reported below rather than silently picked.
+      // deck and agree.
       if (head && gloss && !meanings.has(head)) meanings.set(head, gloss);
     }
   }
   return meanings;
 }
 
-const meanings = batchMeanings();
 let written = 0;
 let already = 0;
 const missing: string[] = [];
 
-for (const file of deckFiles()) {
-  const raw = readFileSync(file, "utf8");
-  const deck = JSON.parse(raw) as { words?: Word[] };
-  if (!Array.isArray(deck.words)) continue;
-  let changed = false;
-  for (const word of deck.words) {
-    if (typeof word.meaningVi === "string" && word.meaningVi.trim()) {
-      already += 1;
-      continue;
+for (const { locale, decks } of LANGUAGES) {
+  const meanings = batchMeanings(locale);
+  const files = deckFiles(decks);
+  if (!meanings.size && !files.length) continue;
+  console.log(
+    `${locale}: ${meanings.size} gloss(es) in ${join(BATCHES, locale)}, ${files.length} deck file(s)`,
+  );
+  for (const file of files) {
+    const deck = JSON.parse(readFileSync(file, "utf8")) as { words?: Word[] };
+    if (!Array.isArray(deck.words)) continue;
+    let changed = false;
+    for (const word of deck.words) {
+      if (typeof word.meaningVi === "string" && word.meaningVi.trim()) {
+        already += 1;
+        continue;
+      }
+      const gloss = meanings.get(
+        String(word.word ?? "")
+          .trim()
+          .toLowerCase(),
+      );
+      if (!gloss) {
+        missing.push(`${file}  ${String(word.word)}`);
+        continue;
+      }
+      word.meaningVi = gloss;
+      changed = true;
+      written += 1;
     }
-    const gloss = meanings.get(
-      String(word.word ?? "")
-        .trim()
-        .toLowerCase(),
-    );
-    if (!gloss) {
-      missing.push(`${file}  ${String(word.word)}`);
-      continue;
+    if (changed && !checkOnly) {
+      // Same atomic write the importer uses: a failure leaves the old file intact.
+      const temporary = `${file}.${randomUUID()}.tmp`;
+      writeFileSync(temporary, `${JSON.stringify(deck, null, 2)}\n`, "utf8");
+      renameSync(temporary, file);
     }
-    word.meaningVi = gloss;
-    changed = true;
-    written += 1;
-  }
-  if (changed && !checkOnly) {
-    // Same atomic write the importer uses: a failure leaves the old file intact.
-    const temporary = `${file}.${randomUUID()}.tmp`;
-    writeFileSync(temporary, `${JSON.stringify(deck, null, 2)}\n`, "utf8");
-    renameSync(temporary, file);
   }
 }
 
-console.log(`${meanings.size} glosses in ${BATCHES}`);
-console.log(`${already} words already had one, ${written} ${checkOnly ? "would be" : ""} filled`);
+console.log(
+  `\n${already} words already had a gloss, ${written} ${checkOnly ? "would be" : ""} filled`,
+);
 if (missing.length) {
-  console.log(`\n${missing.length} published word(s) with no gloss in any batch:`);
+  console.log(`\n${missing.length} published word(s) with no gloss in their language's batches:`);
   missing.slice(0, 20).forEach((line) => console.log(`  ${line}`));
 }

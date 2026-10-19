@@ -1,0 +1,731 @@
+[
+  {
+    "word": "mencionar",
+    "pos": "verb",
+    "ipa": "/menθjoˈnaɾ/",
+    "meaningVi": "nhắc đến",
+    "gender": null,
+    "article": null,
+    "feminine": null,
+    "defVi": "Chỉ nhắc đến điều gì | một cách ngắn_gọn, | thoáng qua.",
+    "leadVi": "Kể chuyện đi chơi, | chị buột_miệng | nói tên người cũ.",
+    "anticipateVi": "Tiện_thể | nói luôn nè!",
+    "usageEn": "Se olvidó de _____ que venía con su perro.",
+    "usageVi": "Cô=ấy quên nhắc | là sẽ dẫn chó theo.",
+    "topics": [
+      "communication"
+    ],
+    "exams": [],
+    "emphasisVi": [
+      "nhắc đến",
+      "buột miệng"
+    ]
+  },
+  {
+    "word": "animar",
+    "pos": "verb",
+    "ipa": "/aniˈmaɾ/",
+    "meaningVi": "động_viên, khuyến_khích",
+    "gender": null,
+    "article": null,
+    "feminine": null,
+    "defVi": "Nói lời động_viên | để ai thêm tự_tin, | cố_gắng.",
+    "leadVi": "Trước giờ thi, | mẹ vỗ vai: | \"Con làm=được mà.\"",
+    "anticipateVi": "Vỗ tay cho bạn | trước nè!",
+    "usageEn": "Hay que _____ a los niños a hacer deporte.",
+    "usageVi": "Cần động_viên trẻ_em | chơi thể_thao.",
+    "topics": [
+      "communication",
+      "emotion"
+    ],
+    "exams": [],
+    "emphasisVi": [
+      "động viên",
+      "vỗ vai"
+    ]
+  },
+  {
+    "word": "sombrío",
+    "pos": "adj",
+    "ipa": "/somˈbɾio/",
+    "meaningVi": "ảm_đạm",
+    "gender": null,
+    "article": null,
+    "feminine": "sombría",
+    "defVi": "Ảm_đạm, | gần như | chẳng còn chút hy_vọng nào.",
+    "leadVi": "Quán vắng khách | ba tháng liền, | tiền thuê=nhà vẫn tăng.",
+    "anticipateVi": "Tối om, | chẳng thấy lối!",
+    "usageEn": "El panorama económico es _____ este año.",
+    "usageVi": "Bức_tranh kinh_tế | năm nay | khá ảm_đạm.",
+    "topics": [
+      "emotion",
+      "general"
+    ],
+    "exams": [],
+    "emphasisVi": [
+      "hy vọng",
+      "vắng khách"
+    ]
+  },
+  {
+    "word": "furia",
+    "pos": "noun",
+    "ipa": "/ˈfuɾja/",
+    "meaningVi": "cơn thịnh_nộ",
+    "gender": "f",
+    "article": "la",
+    "feminine": null,
+    "defVi": "Cơn thịnh_nộ, | sự giận_dữ | đến mức không kìm được.",
+    "leadVi": "Thấy xe mới bị cào xước, | ông đập bàn | quát_tháo.",
+    "anticipateVi": "Núi_lửa | sắp phun_trào!",
+    "usageEn": "Cuando vio el coche rayado, no pudo contener su _____.",
+    "usageVi": "Thấy xe bị xước, | anh=ấy không kìm nổi | cơn thịnh_nộ.",
+    "topics": [
+      "emotion"
+    ],
+    "exams": [],
+    "emphasisVi": [
+      "thịnh nộ",
+      "quát tháo"
+    ]
+  },
+  {
+    "word": "inseguridad",
+    "pos": "noun",
+    "ipa": "/inseɣuɾiˈðað/",
+    "meaningVi": "sự bất_an, tự_ti",
+    "gender": "f",
+    "article": "la",
+    "feminine": null,
+    "defVi": "Sự bất_an, | thiếu tự_tin | hoặc không thấy an_toàn.",
+    "leadVi": "Đứng trước gương, | cô luôn thấy mình | chưa đủ xinh.",
+    "anticipateVi": "Chông_chênh quá đi!",
+    "usageEn": "Su _____ le impide hablar en público.",
+    "usageVi": "Sự thiếu tự_tin | khiến cô=ấy không dám nói | trước đám_đông.",
+    "topics": [
+      "emotion",
+      "character"
+    ],
+    "exams": [],
+    "emphasisVi": [
+      "bất an",
+      "đủ xinh"
+    ]
+  },
+  {
+    "word": "irracional",
+    "pos": "adj",
+    "ipa": "/iraθjoˈnal/",
+    "meaningVi": "vô_lý",
+    "gender": null,
+    "article": null,
+    "feminine": "irracional",
+    "defVi": "Không dựa trên lý_lẽ, | chỉ xuất_phát | từ cảm_xúc.",
+    "leadVi": "Biết máy_bay an_toàn | mà lên | là toát mồ_hôi.",
+    "anticipateVi": "Vô_lý | mà vẫn sợ!",
+    "usageEn": "Su miedo a los ascensores es totalmente _____.",
+    "usageVi": "Nỗi sợ thang_máy | của=cô=ấy | hoàn_toàn vô_lý.",
+    "topics": [
+      "emotion",
+      "thinking"
+    ],
+    "exams": [],
+    "emphasisVi": [
+      "lý lẽ",
+      "an toàn"
+    ]
+  },
+  {
+    "word": "destrozado",
+    "pos": "adj",
+    "ipa": "/destɾoˈθaðo/",
+    "meaningVi": "suy_sụp",
+    "gender": null,
+    "article": null,
+    "feminine": "destrozada",
+    "defVi": "Suy_sụp hoàn_toàn, | đau_đớn | như tan_nát cõi_lòng.",
+    "leadVi": "Ôn ba năm | vẫn trượt, | cậu ngồi thẫn_thờ | cả ngày.",
+    "anticipateVi": "Trái_tim vỡ_vụn.",
+    "usageEn": "Juan quedó _____ cuando su novia lo dejó.",
+    "usageVi": "Juan suy_sụp | khi bạn_gái bỏ anh=ấy.",
+    "topics": [
+      "emotion"
+    ],
+    "exams": [],
+    "emphasisVi": [
+      "tan nát",
+      "thẫn thờ"
+    ]
+  },
+  {
+    "word": "indiferente",
+    "pos": "adj",
+    "ipa": "/indifeˈɾente/",
+    "meaningVi": "thờ_ơ",
+    "gender": null,
+    "article": null,
+    "feminine": "indiferente",
+    "defVi": "Thờ_ơ, | chẳng quan_tâm | đến ai hay điều gì.",
+    "leadVi": "Có người ngã giữa đường, | ai cũng lướt qua | mặc_kệ.",
+    "anticipateVi": "Liên_quan gì tới tôi?",
+    "usageEn": "A mi hermano el fútbol le es totalmente _____.",
+    "usageVi": "Anh_trai tôi | hoàn_toàn thờ_ơ | với bóng_đá.",
+    "topics": [
+      "emotion",
+      "character",
+      "society"
+    ],
+    "exams": [],
+    "emphasisVi": [
+      "quan tâm",
+      "mặc kệ"
+    ]
+  },
+  {
+    "word": "diente",
+    "pos": "noun",
+    "ipa": "/ˈdjen.te/",
+    "meaningVi": "cái=răng",
+    "gender": "m",
+    "article": "el",
+    "feminine": null,
+    "defVi": "Phần cứng màu trắng | trong miệng | dùng để nhai.",
+    "leadVi": "Đánh sạch mỗi tối, | cười lên | trắng bóng.",
+    "anticipateVi": "Cười lên trắng bóng chưa?",
+    "usageEn": "Al niño se le cayó su primer _____ ayer.",
+    "usageVi": "Hôm qua | thằng bé | rụng chiếc_răng đầu_tiên.",
+    "topics": [
+      "health"
+    ],
+    "exams": [],
+    "emphasisVi": [
+      "màu trắng",
+      "trắng bóng"
+    ]
+  },
+  {
+    "word": "adinerado",
+    "pos": "adj",
+    "ipa": "/aðineˈɾaðo/",
+    "meaningVi": "giàu_có",
+    "gender": null,
+    "article": null,
+    "feminine": "adinerada",
+    "defVi": "Có=rất nhiều tiền_bạc | và tài_sản quý_giá.",
+    "leadVi": "Biệt_thự bên hồ, | xe sang | đậu kín cả sân.",
+    "anticipateVi": "Tiền nhiều | để=làm gì?",
+    "usageEn": "Se casó con un hombre muy _____.",
+    "usageVi": "Cô=ấy cưới | một người đàn_ông | rất giàu_có.",
+    "topics": [
+      "money",
+      "society"
+    ],
+    "exams": [],
+    "emphasisVi": [
+      "tài sản",
+      "xe sang"
+    ]
+  },
+  {
+    "word": "enfoque",
+    "pos": "noun",
+    "ipa": "/emˈfoke/",
+    "meaningVi": "cách tiếp_cận",
+    "gender": "m",
+    "article": "el",
+    "feminine": null,
+    "defVi": "Cách tiếp_cận | hoặc phương_pháp | giải_quyết một vấn_đề.",
+    "leadVi": "Thay vì la_mắng, | cô giáo chọn | lắng_nghe học_trò.",
+    "anticipateVi": "Đổi cách làm thử?",
+    "usageEn": "Este libro de cocina tiene un _____ muy práctico.",
+    "usageVi": "Cuốn_sách nấu_ăn này | có cách tiếp_cận | rất thực_tế.",
+    "topics": [
+      "thinking",
+      "work"
+    ],
+    "exams": [],
+    "emphasisVi": [
+      "tiếp cận",
+      "lắng nghe"
+    ]
+  },
+  {
+    "word": "contribuir",
+    "pos": "verb",
+    "ipa": "/kontɾiˈβwiɾ/",
+    "meaningVi": "đóng_góp",
+    "gender": null,
+    "article": null,
+    "feminine": null,
+    "defVi": "Góp sức, góp tiền | hoặc ý_tưởng | vào việc chung.",
+    "leadVi": "Mỗi nhà một ít, | cả xóm dựng được | nhà văn_hóa.",
+    "anticipateVi": "Mỗi người góp gì?",
+    "usageEn": "Todos queremos _____ a mejorar el barrio.",
+    "usageVi": "Ai cũng muốn đóng_góp | để khu phố | tốt hơn.",
+    "topics": [
+      "society",
+      "work"
+    ],
+    "exams": [],
+    "emphasisVi": [
+      "việc chung",
+      "cả xóm"
+    ]
+  },
+  {
+    "word": "estimar",
+    "pos": "verb",
+    "ipa": "/es.tiˈmaɾ/",
+    "meaningVi": "ước_tính",
+    "gender": null,
+    "article": null,
+    "feminine": null,
+    "defVi": "Đoán gần đúng | số_lượng hay giá_trị | từ thông_tin.",
+    "leadVi": "Nhìn đám_đông, | anh nhẩm chắc | tầm ngàn người.",
+    "anticipateVi": "Tầm bao nhiêu nhỉ?",
+    "usageEn": "¿Puedes _____ cuánto costará la reparación?",
+    "usageVi": "Bạn có_thể ước_tính | chi_phí sửa_chữa | bao_nhiêu không?",
+    "topics": [
+      "thinking",
+      "money"
+    ],
+    "exams": [],
+    "emphasisVi": [
+      "gần đúng",
+      "nhẩm chắc"
+    ]
+  },
+  {
+    "word": "perseguir",
+    "pos": "verb",
+    "ipa": "/peɾ.seˈɣiɾ/",
+    "meaningVi": "theo_đuổi",
+    "gender": null,
+    "article": null,
+    "feminine": null,
+    "defVi": "Kiên_trì theo_đuổi | một mục_tiêu | trong thời_gian dài.",
+    "leadVi": "Mười năm ôm đàn, | vẫn mơ đứng | trên sân_khấu lớn.",
+    "anticipateVi": "Đuổi theo | giấc_mơ?",
+    "usageEn": "Nunca dejes de _____ tus sueños.",
+    "usageVi": "Đừng bao_giờ ngừng | theo_đuổi ước_mơ.",
+    "topics": [
+      "work",
+      "character"
+    ],
+    "exams": [],
+    "emphasisVi": [
+      "mục tiêu",
+      "sân khấu"
+    ]
+  },
+  {
+    "word": "pertinente",
+    "pos": "adj",
+    "ipa": "/peɾ.tiˈnen.te/",
+    "meaningVi": "có liên_quan",
+    "gender": null,
+    "article": null,
+    "feminine": "pertinente",
+    "defVi": "Có liên_quan trực_tiếp | đến vấn_đề | đang bàn.",
+    "leadVi": "Đang bàn chuyện học_phí, | ai lại kể | chuyện đi câu?",
+    "anticipateVi": "Dính_dáng gì không?",
+    "usageEn": "Tu pregunta es muy _____ para el tema de hoy.",
+    "usageVi": "Câu hỏi của=bạn | rất=liên_quan | đến chủ_đề hôm_nay.",
+    "topics": [
+      "thinking",
+      "work"
+    ],
+    "exams": [],
+    "emphasisVi": [
+      "liên quan",
+      "đi câu"
+    ]
+  },
+  {
+    "word": "estético",
+    "pos": "adj",
+    "ipa": "/esˈte.ti.ko/",
+    "meaningVi": "thẩm_mỹ",
+    "gender": null,
+    "article": null,
+    "feminine": "estética",
+    "defVi": "Liên_quan đến cái_đẹp | và cảm_nhận nghệ_thuật.",
+    "leadVi": "Căn_phòng tối_giản, | ánh_sáng dịu, | từng góc như tranh.",
+    "anticipateVi": "Đẹp mắt | cỡ nào?",
+    "usageEn": "El diseño es práctico, pero también muy _____.",
+    "usageVi": "Thiết_kế tiện_dụng, | nhưng cũng rất=thẩm_mỹ.",
+    "topics": [
+      "perception",
+      "society"
+    ],
+    "exams": [],
+    "emphasisVi": [
+      "cái đẹp",
+      "tối giản"
+    ]
+  },
+  {
+    "word": "arbitrario",
+    "pos": "adj",
+    "ipa": "/aɾ.βiˈtɾa.ɾjo/",
+    "meaningVi": "tùy_tiện",
+    "gender": null,
+    "article": null,
+    "feminine": "arbitraria",
+    "defVi": "Tùy_tiện, | dựa vào ý_thích | chứ không | theo lý_lẽ.",
+    "leadVi": "Sếp đổi luật | theo tâm_trạng | mỗi sáng thứ hai.",
+    "anticipateVi": "Tùy hứng | thế à?",
+    "usageEn": "El castigo fue totalmente _____.",
+    "usageVi": "Hình_phạt đó | hoàn_toàn tùy_tiện.",
+    "topics": [
+      "thinking",
+      "society"
+    ],
+    "exams": [],
+    "emphasisVi": [
+      "Tùy tiện",
+      "tâm trạng"
+    ]
+  },
+  {
+    "word": "concienzudo",
+    "pos": "adj",
+    "ipa": "/kon.θjenˈθu.ðo/",
+    "meaningVi": "tận_tâm, chu_đáo",
+    "gender": null,
+    "article": null,
+    "feminine": "concienzuda",
+    "defVi": "Tận_tụy, | làm việc chu_đáo | và có trách_nhiệm.",
+    "leadVi": "Về sau cùng, | cô kiểm lại | từng con_số | lần nữa.",
+    "anticipateVi": "Kỹ_lưỡng tới đâu?",
+    "usageEn": "Es un mecánico _____ y honrado.",
+    "usageVi": "Anh=ấy | là thợ máy | tận_tâm và trung_thực.",
+    "topics": [
+      "character",
+      "work"
+    ],
+    "exams": [],
+    "emphasisVi": [
+      "Tận tụy",
+      "con số"
+    ]
+  },
+  {
+    "word": "aplicado",
+    "pos": "adj",
+    "ipa": "/apliˈkaðo/",
+    "meaningVi": "chăm_chỉ",
+    "gender": null,
+    "article": null,
+    "feminine": "aplicada",
+    "defVi": "Siêng_năng, | chăm_chỉ và bền_bỉ | trong công_việc.",
+    "leadVi": "Ngày nào cũng dậy sớm | ôn bài | trước khi gà gáy.",
+    "anticipateVi": "Cần_cù | bù thông_minh?",
+    "usageEn": "Mi hijo es muy _____ y siempre saca buenas notas.",
+    "usageVi": "Con trai tôi | rất chăm_chỉ | và luôn đạt điểm cao.",
+    "topics": [
+      "character",
+      "study"
+    ],
+    "exams": [],
+    "emphasisVi": [
+      "Siêng năng",
+      "dậy sớm"
+    ]
+  },
+  {
+    "word": "disparidad",
+    "pos": "noun",
+    "ipa": "/dispaɾiˈðað/",
+    "meaningVi": "sự chênh_lệch, bất_bình_đẳng",
+    "gender": "f",
+    "article": "la",
+    "feminine": null,
+    "defVi": "Khoảng cách chênh_lệch lớn | giữa các nhóm.",
+    "leadVi": "Phố này biệt_thự, | ngõ bên cạnh | mái tôn dột nát.",
+    "anticipateVi": "Cách_biệt bao xa?",
+    "usageEn": "Existe una gran _____ entre el campo y la ciudad.",
+    "usageVi": "Có sự chênh_lệch lớn | giữa nông_thôn | và thành_phố.",
+    "topics": [
+      "society",
+      "money"
+    ],
+    "exams": [],
+    "emphasisVi": [
+      "Khoảng cách",
+      "dột nát"
+    ]
+  },
+  {
+    "word": "disipar",
+    "pos": "verb",
+    "ipa": "/disiˈpaɾ/",
+    "meaningVi": "xua_tan, làm tiêu_tan",
+    "gender": null,
+    "article": null,
+    "feminine": null,
+    "defVi": "Xua tan | nỗi lo, nghi_ngờ | hay niềm tin sai.",
+    "leadVi": "Một lời giải_thích rõ_ràng | khiến nghi_kỵ | tan biến.",
+    "anticipateVi": "Mây mù tan chưa?",
+    "usageEn": "Sus palabras ayudaron a _____ mis dudas.",
+    "usageVi": "Lời nói của=anh=ấy | giúp xua_tan | những nghi_ngờ của=tôi.",
+    "topics": [
+      "thinking",
+      "emotion"
+    ],
+    "exams": [],
+    "emphasisVi": [
+      "Xua tan",
+      "tan biến"
+    ]
+  },
+  {
+    "word": "empírico",
+    "pos": "adj",
+    "ipa": "/emˈpiɾiko/",
+    "meaningVi": "thực_nghiệm",
+    "gender": null,
+    "article": null,
+    "feminine": "empírica",
+    "defVi": "Dựa trên | quan_sát | và thí_nghiệm thực_tế.",
+    "leadVi": "Không đoán mò, | nhà_khoa_học | đo_đạc từng con_số.",
+    "anticipateVi": "Thử rồi mới biết?",
+    "usageEn": "Necesitamos un estudio _____ antes de decidir.",
+    "usageVi": "Chúng_ta cần | một nghiên_cứu thực_nghiệm | trước khi quyết_định.",
+    "topics": [
+      "study",
+      "thinking"
+    ],
+    "exams": [],
+    "emphasisVi": [
+      "thí nghiệm",
+      "đoán mò"
+    ]
+  },
+  {
+    "word": "factible",
+    "pos": "adj",
+    "ipa": "/fakˈtiβle/",
+    "meaningVi": "khả_thi",
+    "gender": null,
+    "article": null,
+    "feminine": "factible",
+    "defVi": "Khả_thi, | có_thể thực_hiện được | trong thực_tế.",
+    "leadVi": "Kế_hoạch đẹp trên giấy, | nhưng vốn, người | có đủ không?",
+    "anticipateVi": "Làm nổi không đấy?",
+    "usageEn": "¿Crees que es _____ terminar la casa este año?",
+    "usageVi": "Bạn có nghĩ | việc xây xong nhà năm nay | là khả_thi không?",
+    "topics": [
+      "work",
+      "thinking"
+    ],
+    "exams": [],
+    "emphasisVi": [
+      "Khả thi",
+      "trên giấy"
+    ]
+  },
+  {
+    "word": "inherente",
+    "pos": "adj",
+    "ipa": "/ineˈɾente/",
+    "meaningVi": "vốn_có",
+    "gender": null,
+    "article": null,
+    "feminine": "inherente",
+    "defVi": "Tồn_tại sẵn | bên trong, | không_thể tách rời.",
+    "leadVi": "Leo núi cao | luôn đi kèm rủi_ro, | chẳng tránh được.",
+    "anticipateVi": "Sinh ra đã có?",
+    "usageEn": "El riesgo es _____ a cualquier deporte extremo.",
+    "usageVi": "Rủi_ro | là điều vốn_có | ở mọi môn thể_thao mạo_hiểm.",
+    "topics": [
+      "thinking"
+    ],
+    "exams": [],
+    "emphasisVi": [
+      "Tồn tại",
+      "đi kèm"
+    ]
+  },
+  {
+    "word": "mitigar",
+    "pos": "verb",
+    "ipa": "/mitiˈɣaɾ/",
+    "meaningVi": "giảm_nhẹ",
+    "gender": null,
+    "article": null,
+    "feminine": null,
+    "defVi": "Làm giảm nhẹ | mức nghiêm_trọng | hay tác_hại.",
+    "leadVi": "Trồng rừng ngập mặn | để sóng bớt dữ | khi bão về.",
+    "anticipateVi": "Nhẹ bớt phần nào?",
+    "usageEn": "Plantar árboles ayuda a _____ el calor en la ciudad.",
+    "usageVi": "Trồng cây | giúp giảm_nhẹ cái nóng | trong thành_phố.",
+    "topics": [
+      "nature",
+      "society"
+    ],
+    "exams": [],
+    "emphasisVi": [
+      "giảm nhẹ",
+      "ngập mặn"
+    ]
+  },
+  {
+    "word": "obsoleto",
+    "pos": "adj",
+    "ipa": "/oβsoˈleto/",
+    "meaningVi": "lỗi_thời",
+    "gender": null,
+    "article": null,
+    "feminine": "obsoleta",
+    "defVi": "Lỗi_thời, | không còn được dùng | vì đã có cái mới.",
+    "leadVi": "Chiếc máy nhắn tin | nằm im trong ngăn kéo | bao năm.",
+    "anticipateVi": "Lỗi thời rồi sao?",
+    "usageEn": "Este teléfono ya está _____, nadie lo usa.",
+    "usageVi": "Chiếc điện_thoại này | đã lỗi_thời, | không ai dùng nữa.",
+    "topics": [
+      "technology"
+    ],
+    "exams": [],
+    "emphasisVi": [
+      "Lỗi thời",
+      "ngăn kéo"
+    ]
+  },
+  {
+    "word": "paradoja",
+    "pos": "noun",
+    "ipa": "/paɾaˈðoxa/",
+    "meaningVi": "nghịch_lý",
+    "gender": "f",
+    "article": "la",
+    "feminine": null,
+    "defVi": "Nghịch_lý, | điều tưởng mâu_thuẫn | nhưng lại có thật.",
+    "leadVi": "Càng nhiều bạn trên mạng, | càng thấy | cô_đơn hơn.",
+    "anticipateVi": "Ngược đời không chứ?",
+    "usageEn": "Es una _____ que la gente más rica sea la más tacaña.",
+    "usageVi": "Thật nghịch_lý | khi người giàu nhất | lại keo_kiệt nhất.",
+    "topics": [
+      "thinking"
+    ],
+    "exams": [],
+    "emphasisVi": [
+      "Nghịch lý",
+      "cô đơn"
+    ]
+  },
+  {
+    "word": "escrutinio",
+    "pos": "noun",
+    "ipa": "/eskɾuˈtinjo/",
+    "meaningVi": "sự soi_xét kỹ",
+    "gender": "m",
+    "article": "el",
+    "feminine": null,
+    "defVi": "Sự xem_xét | rất kỹ_lưỡng | từng chi_tiết nhỏ.",
+    "leadVi": "Mọi phát_ngôn của=bà | đều bị báo_chí | mổ_xẻ.",
+    "anticipateVi": "Soi kỹ đến đâu?",
+    "usageEn": "El gobierno está bajo el _____ de la prensa.",
+    "usageVi": "Chính_phủ | đang bị báo_chí | soi_xét kỹ.",
+    "topics": [
+      "attention",
+      "society"
+    ],
+    "exams": [],
+    "emphasisVi": [
+      "kỹ lưỡng",
+      "mổ xẻ"
+    ]
+  },
+  {
+    "word": "tangible",
+    "pos": "adj",
+    "ipa": "/tanˈxiβle/",
+    "meaningVi": "hữu_hình, cụ_thể",
+    "gender": null,
+    "article": null,
+    "feminine": "tangible",
+    "defVi": "Hữu_hình, | có_thể chạm vào | hoặc thấy rõ.",
+    "leadVi": "Sau một năm tập, | cân nặng giảm mười ký | rành_rành.",
+    "anticipateVi": "Sờ thấy được chứ?",
+    "usageEn": "Queremos ver un resultado _____ antes de invertir más.",
+    "usageVi": "Chúng_tôi muốn thấy | một kết_quả cụ_thể | trước khi đầu_tư thêm.",
+    "topics": [
+      "general"
+    ],
+    "exams": [],
+    "emphasisVi": [
+      "Hữu hình",
+      "rành rành"
+    ]
+  },
+  {
+    "word": "socavar",
+    "pos": "verb",
+    "ipa": "/sokaˈβaɾ/",
+    "meaningVi": "làm suy_yếu, phá_hoại",
+    "gender": null,
+    "article": null,
+    "feminine": null,
+    "defVi": "Làm suy_yếu dần | sức_mạnh, uy_tín | hay niềm tin.",
+    "leadVi": "Lời đàm_tiếu sau lưng | gặm_nhấm lòng tin của=đội.",
+    "anticipateVi": "Ai đào chân móng?",
+    "usageEn": "Las mentiras pueden _____ la confianza en una pareja.",
+    "usageVi": "Những lời nói_dối | có_thể làm suy_yếu | lòng tin | trong một cặp đôi.",
+    "topics": [
+      "society",
+      "emotion"
+    ],
+    "exams": [],
+    "emphasisVi": [
+      "suy yếu",
+      "gặm nhấm"
+    ]
+  },
+  {
+    "word": "viable",
+    "pos": "adj",
+    "ipa": "/ˈbjaβle/",
+    "meaningVi": "khả_thi",
+    "gender": null,
+    "article": null,
+    "feminine": "viable",
+    "defVi": "Có_thể tồn_tại | hoặc vận_hành thành_công | lâu dài.",
+    "leadVi": "Tính đi tính lại, | mô_hình này | vẫn sinh lời.",
+    "anticipateVi": "Trụ được | lâu không?",
+    "usageEn": "El proyecto no es _____ sin más dinero.",
+    "usageVi": "Dự_án | không khả_thi | nếu không có thêm tiền.",
+    "topics": [
+      "work",
+      "money"
+    ],
+    "exams": [],
+    "emphasisVi": [
+      "tồn tại",
+      "sinh lời"
+    ]
+  },
+  {
+    "word": "discernir",
+    "pos": "verb",
+    "ipa": "/disθeɾˈniɾ/",
+    "meaningVi": "nhận ra, phân_biệt",
+    "gender": null,
+    "article": null,
+    "feminine": null,
+    "defVi": "Nhận ra | hoặc phân_biệt được | điều khó thấy.",
+    "leadVi": "Giữa sương mù dày, | anh vẫn nhìn ra | bóng con_thuyền.",
+    "anticipateVi": "Tinh mắt | nhận ra không?",
+    "usageEn": "Los niños pequeños no siempre saben _____ lo real de lo imaginario.",
+    "usageVi": "Trẻ nhỏ | không phải lúc_nào | cũng phân_biệt được | thật và tưởng_tượng.",
+    "topics": [
+      "perception",
+      "thinking"
+    ],
+    "exams": [],
+    "emphasisVi": [
+      "phân biệt",
+      "sương mù"
+    ]
+  }
+]

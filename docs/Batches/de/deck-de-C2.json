@@ -1,0 +1,264 @@
+[
+  {
+    "word": "desillusioniert",
+    "pos": "adj",
+    "ipa": "/dɛsɪluzi̯oˈniːɐ̯t/",
+    "meaningVi": "vỡ_mộng",
+    "gender": null,
+    "article": null,
+    "defVi": "Vỡ_mộng, thất_vọng | vì sự_thật | không như mình nghĩ.",
+    "leadVi": "Tưởng làm ca_sĩ sướng, | ai ngờ | chạy sô mệt_nhoài.",
+    "anticipateVi": "Màu hồng đâu mất=rồi?",
+    "usageEn": "Nach drei Jahren in der Firma war er völlig _____.",
+    "usageVi": "Sau ba năm | ở công_ty, | anh=ấy hoàn_toàn vỡ_mộng.",
+    "topics": [
+      "emotion",
+      "work"
+    ],
+    "exams": [],
+    "emphasisVi": [
+      "thất vọng",
+      "ai ngờ"
+    ]
+  },
+  {
+    "word": "Minderwertigkeit",
+    "pos": "noun",
+    "ipa": "/ˈmɪndɐveːɐ̯tɪçkaɪ̯t/",
+    "meaningVi": "sự tự_ti",
+    "gender": "f",
+    "article": "die",
+    "defVi": "Cảm_giác tự_ti, | thấy mình | thua_kém người khác.",
+    "leadVi": "Anh chị | học giỏi cả, | cậu út | ngồi im thin_thít.",
+    "anticipateVi": "Mình chẳng bằng ai…",
+    "usageEn": "Neben seinem erfolgreichen Bruder litt er unter einem Gefühl der _____.",
+    "usageVi": "Bên_cạnh người anh thành_đạt, | cậu=ấy | luôn thấy tự_ti.",
+    "topics": [
+      "emotion",
+      "character"
+    ],
+    "exams": [],
+    "emphasisVi": [
+      "tự ti",
+      "thin thít"
+    ]
+  },
+  {
+    "word": "besitzergreifend",
+    "pos": "adj",
+    "ipa": "/bəˈzɪtsʔɛɐ̯ˌɡʁaɪ̯fn̩t/",
+    "meaningVi": "chiếm_hữu",
+    "gender": null,
+    "article": null,
+    "defVi": "Chiếm_hữu, | muốn người kia | chỉ thuộc về riêng mình.",
+    "leadVi": "Người_yêu kiểm_tra điện_thoại, | cấm đi chơi | với bạn.",
+    "anticipateVi": "Của=tui, | cấm đụng!",
+    "usageEn": "Ihr Freund ist sehr _____ und liest heimlich ihre Nachrichten.",
+    "usageVi": "Bạn_trai cô=ấy | rất chiếm_hữu | và lén đọc tin_nhắn | của=cô.",
+    "topics": [
+      "emotion",
+      "character"
+    ],
+    "exams": [],
+    "emphasisVi": [
+      "riêng mình",
+      "kiểm tra"
+    ]
+  },
+  {
+    "word": "schaudern",
+    "pos": "verb",
+    "ipa": "/ˈʃaʊ̯dɐn/",
+    "meaningVi": "rùng_mình",
+    "gender": null,
+    "article": null,
+    "defVi": "Rùng_mình | khi nghĩ đến hay thấy | điều gì ghê_sợ.",
+    "leadVi": "Nhớ lần kẹt thang_máy | tối om, | sống_lưng | lạnh toát.",
+    "anticipateVi": "Nổi hết da_gà!",
+    "usageEn": "Beim Gedanken an die Spinne musste ich _____.",
+    "usageVi": "Nghĩ đến con_nhện, | tôi phải rùng_mình.",
+    "topics": [
+      "emotion",
+      "perception"
+    ],
+    "exams": [],
+    "emphasisVi": [
+      "ghê sợ",
+      "lạnh toát"
+    ]
+  },
+  {
+    "word": "zerstreuen",
+    "pos": "verb",
+    "ipa": "/tsɛɐ̯ˈʃtʁɔɪ̯ən/",
+    "meaningVi": "xua_tan, làm tiêu_tan",
+    "gender": null,
+    "article": null,
+    "defVi": "Xua tan | nỗi lo, nghi_ngờ | hay niềm tin sai.",
+    "leadVi": "Một lời giải_thích rõ_ràng | khiến nghi_kỵ | tan biến.",
+    "anticipateVi": "Mây mù tan chưa?",
+    "usageEn": "Der Arzt konnte alle meine Bedenken _____.",
+    "usageVi": "Bác_sĩ đã có_thể | xua_tan mọi lo_ngại | của=tôi.",
+    "topics": [
+      "thinking",
+      "emotion"
+    ],
+    "exams": [],
+    "emphasisVi": [
+      "Xua tan",
+      "tan biến"
+    ]
+  },
+  {
+    "word": "eloquent",
+    "pos": "adj",
+    "ipa": "/eloˈkvɛnt/",
+    "meaningVi": "hùng_hồn, có tài hùng_biện",
+    "gender": null,
+    "article": null,
+    "defVi": "Ăn nói hùng_hồn, | lưu_loát | và giàu sức thuyết_phục.",
+    "leadVi": "Bài diễn_văn | khiến khán_phòng lặng đi | rồi vỗ tay.",
+    "anticipateVi": "Lời_lẽ cuốn_hút chứ?",
+    "usageEn": "Sie spricht immer sehr _____ und überzeugend.",
+    "usageVi": "Cô=ấy luôn nói | rất hùng_hồn | và thuyết_phục.",
+    "topics": [
+      "communication"
+    ],
+    "exams": [],
+    "emphasisVi": [
+      "hùng hồn",
+      "vỗ tay"
+    ]
+  },
+  {
+    "word": "empirisch",
+    "pos": "adj",
+    "ipa": "/ɛmˈpiːʁɪʃ/",
+    "meaningVi": "thực_nghiệm",
+    "gender": null,
+    "article": null,
+    "defVi": "Dựa trên | quan_sát | và thí_nghiệm thực_tế.",
+    "leadVi": "Không đoán mò, | nhà_khoa_học | đo_đạc từng con_số.",
+    "anticipateVi": "Thử rồi mới biết?",
+    "usageEn": "Diese Ergebnisse sind rein _____, nicht theoretisch.",
+    "usageVi": "Những kết_quả này | hoàn_toàn mang tính thực_nghiệm, | không phải lý_thuyết.",
+    "topics": [
+      "study",
+      "thinking"
+    ],
+    "exams": [],
+    "emphasisVi": [
+      "thí nghiệm",
+      "đoán mò"
+    ]
+  },
+  {
+    "word": "Paradox",
+    "pos": "noun",
+    "ipa": "/paʁaˈdɔks/",
+    "meaningVi": "nghịch_lý",
+    "gender": "n",
+    "article": "das",
+    "defVi": "Nghịch_lý, | điều tưởng mâu_thuẫn | nhưng lại có thật.",
+    "leadVi": "Càng nhiều bạn trên mạng, | càng thấy | cô_đơn hơn.",
+    "anticipateVi": "Ngược đời không chứ?",
+    "usageEn": "Es ist ein _____: Je mehr Apps wir haben, desto weniger Zeit bleibt.",
+    "usageVi": "Thật là nghịch_lý: | càng nhiều ứng_dụng, | ta càng còn ít thời_gian.",
+    "topics": [
+      "thinking"
+    ],
+    "exams": [],
+    "emphasisVi": [
+      "Nghịch lý",
+      "cô đơn"
+    ]
+  },
+  {
+    "word": "Präzedenzfall",
+    "pos": "noun",
+    "ipa": "/pʁɛtseˈdɛntsfal/",
+    "meaningVi": "tiền_lệ",
+    "gender": "m",
+    "article": "der",
+    "defVi": "Tiền_lệ, | sự_việc trước | làm mẫu cho sau.",
+    "leadVi": "Lần này cho nghỉ, | lần sau | ai cũng đòi theo.",
+    "anticipateVi": "Có tiền_lệ chưa?",
+    "usageEn": "Dieses Urteil könnte ein wichtiger _____ werden.",
+    "usageVi": "Phán_quyết này | có_thể trở_thành | một tiền_lệ quan_trọng.",
+    "topics": [
+      "society",
+      "work"
+    ],
+    "exams": [],
+    "emphasisVi": [
+      "Tiền lệ",
+      "đòi theo"
+    ]
+  },
+  {
+    "word": "gedeihen",
+    "pos": "verb",
+    "ipa": "/ɡəˈdaɪ̯ən/",
+    "meaningVi": "phát_triển mạnh",
+    "gender": null,
+    "article": null,
+    "defVi": "Phát_triển mạnh_mẽ, | thịnh_vượng | trong điều_kiện thuận_lợi.",
+    "leadVi": "Gặp đất tốt, | cây_ớt nhỏ | vươn cao trĩu quả.",
+    "anticipateVi": "Lên như diều gặp gió?",
+    "usageEn": "Tomaten _____ am besten an einem sonnigen Ort.",
+    "usageVi": "Cà_chua | phát_triển mạnh nhất | ở nơi nhiều nắng.",
+    "topics": [
+      "nature",
+      "general"
+    ],
+    "exams": [],
+    "emphasisVi": [
+      "thịnh vượng",
+      "trĩu quả"
+    ]
+  },
+  {
+    "word": "untergraben",
+    "pos": "verb",
+    "ipa": "/ʊntɐˈɡʁaːbn̩/",
+    "meaningVi": "làm suy_yếu, phá_hoại",
+    "gender": null,
+    "article": null,
+    "defVi": "Làm suy_yếu dần | sức_mạnh, uy_tín | hay niềm tin.",
+    "leadVi": "Lời đàm_tiếu sau lưng | gặm_nhấm lòng tin của=đội.",
+    "anticipateVi": "Ai đào chân móng?",
+    "usageEn": "Solche Gerüchte können das Vertrauen der Kunden _____.",
+    "usageVi": "Những tin_đồn như vậy | có_thể làm suy_yếu | lòng tin của khách_hàng.",
+    "topics": [
+      "society",
+      "emotion"
+    ],
+    "exams": [],
+    "emphasisVi": [
+      "suy yếu",
+      "gặm nhấm"
+    ]
+  },
+  {
+    "word": "tragfähig",
+    "pos": "adj",
+    "ipa": "/ˈtʁaːkfɛːɪç/",
+    "meaningVi": "khả_thi",
+    "gender": null,
+    "article": null,
+    "defVi": "Có_thể tồn_tại | hoặc vận_hành thành_công | lâu dài.",
+    "leadVi": "Tính đi tính lại, | mô_hình này | vẫn sinh lời.",
+    "anticipateVi": "Trụ được | lâu không?",
+    "usageEn": "Ist dieses Geschäftsmodell auf Dauer _____?",
+    "usageVi": "Mô_hình kinh_doanh này | có khả_thi | lâu_dài không?",
+    "topics": [
+      "work",
+      "money"
+    ],
+    "exams": [],
+    "emphasisVi": [
+      "tồn tại",
+      "sinh lời"
+    ]
+  }
+]

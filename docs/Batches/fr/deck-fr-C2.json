@@ -1,0 +1,341 @@
+[
+  {
+    "word": "expressif",
+    "pos": "adj",
+    "ipa": "/ɛkspʁesif/",
+    "meaningVi": "biểu_cảm",
+    "gender": null,
+    "article": null,
+    "feminine": "expressive",
+    "defVi": "Biểu_cảm, | dễ_dàng | thể_hiện cảm_xúc | ra bên_ngoài.",
+    "leadVi": "Chưa nói câu nào, | chỉ ánh_mắt thôi | đã đủ hiểu.",
+    "anticipateVi": "Mắt biết nói đó!",
+    "usageEn": "Ce jeune acteur a un visage très _____.",
+    "usageVi": "Cậu diễn_viên trẻ này | có gương_mặt | rất=biểu_cảm.",
+    "topics": [
+      "emotion",
+      "communication",
+      "character"
+    ],
+    "exams": [],
+    "emphasisVi": [
+      "thể hiện",
+      "ánh mắt"
+    ]
+  },
+  {
+    "word": "traumatisant",
+    "pos": "adj",
+    "ipa": "/tʁomatizɑ̃/",
+    "meaningVi": "gây sang_chấn",
+    "gender": null,
+    "article": null,
+    "feminine": "traumatisante",
+    "defVi": "Gây chấn_thương tâm_lý, | để lại ám_ảnh | lâu_dài.",
+    "leadVi": "Sau trận_lũ cuốn nhà, | nghe tiếng mưa | là run_rẩy.",
+    "anticipateVi": "Vết sẹo | trong lòng…",
+    "usageEn": "Pour lui, cet accident a été très _____.",
+    "usageVi": "Với cậu=ấy, | vụ tai_nạn đó | gây sang_chấn nặng_nề.",
+    "topics": [
+      "emotion",
+      "health"
+    ],
+    "exams": [],
+    "emphasisVi": [
+      "chấn thương",
+      "run rẩy"
+    ]
+  },
+  {
+    "word": "crucial",
+    "pos": "adj",
+    "ipa": "/kʁysjal/",
+    "meaningVi": "then_chốt, cực_kỳ quan_trọng",
+    "gender": null,
+    "article": null,
+    "feminine": "cruciale",
+    "defVi": "Cực_kỳ quan_trọng, | ảnh_hưởng quyết_định | đến kết_quả.",
+    "leadVi": "Phút cuối trận, | cú sút này | định_đoạt tất_cả.",
+    "anticipateVi": "Then chốt ở đâu?",
+    "usageEn": "Ce match est _____ pour la saison de l'équipe.",
+    "usageVi": "Trận_đấu này | mang tính then_chốt | cho mùa giải | của đội.",
+    "topics": [
+      "thinking",
+      "work"
+    ],
+    "exams": [],
+    "emphasisVi": [
+      "quyết định",
+      "định đoạt"
+    ]
+  },
+  {
+    "word": "adversité",
+    "pos": "noun",
+    "ipa": "/ad.vɛʁ.si.te/",
+    "meaningVi": "nghịch_cảnh",
+    "gender": "f",
+    "article": "l'",
+    "feminine": null,
+    "defVi": "Hoàn_cảnh khốn_khó, | nhiều bất_hạnh | và thử_thách.",
+    "leadVi": "Mồ_côi từ nhỏ, | bán vé số | nuôi em ăn học.",
+    "anticipateVi": "Sóng gió cuộc đời ư?",
+    "usageEn": "Elle a gardé le sourire malgré l'_____.",
+    "usageVi": "Cô=ấy vẫn mỉm_cười | dù gặp nghịch_cảnh.",
+    "topics": [
+      "emotion",
+      "society"
+    ],
+    "exams": [],
+    "emphasisVi": [
+      "khốn khó",
+      "Mồ côi"
+    ]
+  },
+  {
+    "word": "coïncider",
+    "pos": "verb",
+    "ipa": "/kɔ.ɛ̃.si.de/",
+    "meaningVi": "trùng, trùng_hợp",
+    "gender": null,
+    "article": null,
+    "feminine": null,
+    "defVi": "Xảy ra | cùng một lúc | một_cách tình_cờ.",
+    "leadVi": "Sinh_nhật trùng đúng | ngày khai_trương cửa_hàng.",
+    "anticipateVi": "Trùng_hợp | ghê nhỉ?",
+    "usageEn": "Cette année, mon anniversaire va _____ avec Pâques.",
+    "usageVi": "Năm nay | sinh_nhật tôi | trùng với lễ Phục_sinh.",
+    "topics": [
+      "time"
+    ],
+    "exams": [],
+    "emphasisVi": [
+      "tình cờ",
+      "khai trương"
+    ]
+  },
+  {
+    "word": "déduire",
+    "pos": "verb",
+    "ipa": "/de.dɥiʁ/",
+    "meaningVi": "suy_ra, suy_luận",
+    "gender": null,
+    "article": null,
+    "feminine": null,
+    "defVi": "Suy ra kết_luận | từ những dữ_kiện | đã có.",
+    "leadVi": "Vết bùn ở giày, | thám_tử đoán | anh vừa ra vườn.",
+    "anticipateVi": "Suy ra được gì?",
+    "usageEn": "Avec ces traces de boue, on peut _____ qu'il est sorti dans le jardin.",
+    "usageVi": "Nhờ vết bùn này, | ta có_thể suy_ra | anh=ấy đã ra vườn.",
+    "topics": [
+      "thinking"
+    ],
+    "exams": [],
+    "emphasisVi": [
+      "kết luận",
+      "Vết bùn"
+    ]
+  },
+  {
+    "word": "disparité",
+    "pos": "noun",
+    "ipa": "/dis.pa.ʁi.te/",
+    "meaningVi": "sự chênh_lệch, bất_bình_đẳng",
+    "gender": "f",
+    "article": "la",
+    "feminine": null,
+    "defVi": "Khoảng cách chênh_lệch lớn | giữa các nhóm.",
+    "leadVi": "Phố này biệt_thự, | ngõ bên cạnh | mái tôn dột nát.",
+    "anticipateVi": "Cách_biệt bao xa?",
+    "usageEn": "La _____ des salaires entre hommes et femmes reste importante.",
+    "usageVi": "Chênh_lệch lương | giữa nam và nữ | vẫn còn lớn.",
+    "topics": [
+      "society",
+      "money"
+    ],
+    "exams": [],
+    "emphasisVi": [
+      "Khoảng cách",
+      "dột nát"
+    ]
+  },
+  {
+    "word": "éloquent",
+    "pos": "adj",
+    "ipa": "/e.lɔ.kɑ̃/",
+    "meaningVi": "hùng_hồn, có tài hùng_biện",
+    "gender": null,
+    "article": null,
+    "feminine": "éloquente",
+    "defVi": "Ăn nói hùng_hồn, | lưu_loát | và giàu sức thuyết_phục.",
+    "leadVi": "Bài diễn_văn | khiến khán_phòng lặng đi | rồi vỗ tay.",
+    "anticipateVi": "Lời_lẽ cuốn_hút chứ?",
+    "usageEn": "Le maire a fait un discours très _____ hier soir.",
+    "usageVi": "Ông thị_trưởng | đã có bài phát_biểu | rất hùng_hồn | tối qua.",
+    "topics": [
+      "communication"
+    ],
+    "exams": [],
+    "emphasisVi": [
+      "hùng hồn",
+      "vỗ tay"
+    ]
+  },
+  {
+    "word": "empirique",
+    "pos": "adj",
+    "ipa": "/ɑ̃.pi.ʁik/",
+    "meaningVi": "thực_nghiệm",
+    "gender": null,
+    "article": null,
+    "feminine": "empirique",
+    "defVi": "Dựa trên | quan_sát | và thí_nghiệm thực_tế.",
+    "leadVi": "Không đoán mò, | nhà_khoa_học | đo_đạc từng con_số.",
+    "anticipateVi": "Thử rồi mới biết?",
+    "usageEn": "Cette théorie manque encore de preuves, il faut une étude _____.",
+    "usageVi": "Lý_thuyết này | vẫn thiếu bằng_chứng, | cần một nghiên_cứu thực_nghiệm.",
+    "topics": [
+      "study",
+      "thinking"
+    ],
+    "exams": [],
+    "emphasisVi": [
+      "thí nghiệm",
+      "đoán mò"
+    ]
+  },
+  {
+    "word": "entraver",
+    "pos": "verb",
+    "ipa": "/ɑ̃.tʁa.ve/",
+    "meaningVi": "cản_trở",
+    "gender": null,
+    "article": null,
+    "feminine": null,
+    "defVi": "Cản_trở, | làm chậm | hoặc gây khó | cho tiến_trình.",
+    "leadVi": "Mưa lớn kéo dài, | công_trình đành dừng | giữa chừng.",
+    "anticipateVi": "Vướng chân | ở đâu?",
+    "usageEn": "La neige risque d'_____ la circulation demain matin.",
+    "usageVi": "Tuyết có_thể | cản_trở giao_thông | sáng mai.",
+    "topics": [
+      "general"
+    ],
+    "exams": [],
+    "emphasisVi": [
+      "Cản trở",
+      "giữa chừng"
+    ]
+  },
+  {
+    "word": "implicite",
+    "pos": "adj",
+    "ipa": "/ɛ̃.pli.sit/",
+    "meaningVi": "ngầm, ngầm hiểu",
+    "gender": null,
+    "article": null,
+    "feminine": "implicite",
+    "defVi": "Được ngầm hiểu, | không nói ra trực_tiếp.",
+    "leadVi": "Mẹ không cấm, | nhưng ánh mắt ấy | đã nói hết.",
+    "anticipateVi": "Ngầm hiểu chưa?",
+    "usageEn": "Entre nous, il y avait un accord _____ : personne ne parlait du passé.",
+    "usageVi": "Giữa chúng_tôi | có một thỏa_thuận ngầm: | không ai nhắc | chuyện cũ.",
+    "topics": [
+      "communication"
+    ],
+    "exams": [],
+    "emphasisVi": [
+      "ngầm hiểu",
+      "ánh mắt"
+    ]
+  },
+  {
+    "word": "inhérent",
+    "pos": "adj",
+    "ipa": "/i.ne.ʁɑ̃/",
+    "meaningVi": "vốn_có",
+    "gender": null,
+    "article": null,
+    "feminine": "inhérente",
+    "defVi": "Tồn_tại sẵn | bên trong, | không_thể tách rời.",
+    "leadVi": "Leo núi cao | luôn đi kèm rủi_ro, | chẳng tránh được.",
+    "anticipateVi": "Sinh ra đã có?",
+    "usageEn": "Le stress est _____ à ce métier difficile.",
+    "usageVi": "Căng_thẳng | là điều vốn_có | của nghề khó_khăn này.",
+    "topics": [
+      "thinking"
+    ],
+    "exams": [],
+    "emphasisVi": [
+      "Tồn tại",
+      "đi kèm"
+    ]
+  },
+  {
+    "word": "compromettre",
+    "pos": "verb",
+    "ipa": "/kɔ̃.pʁɔ.mɛtʁ/",
+    "meaningVi": "gây nguy_hại, đe_dọa",
+    "gender": null,
+    "article": null,
+    "feminine": null,
+    "defVi": "Đẩy vào nguy_cơ | bị tổn_hại | hay thất_bại.",
+    "leadVi": "Một lần say_xỉn | lái xe | có_thể mất sự_nghiệp.",
+    "anticipateVi": "Đánh_cược | cả đời?",
+    "usageEn": "Une seule erreur pourrait _____ tout le projet.",
+    "usageVi": "Chỉ một lỗi | có_thể gây nguy_hại | cho cả dự_án.",
+    "topics": [
+      "general"
+    ],
+    "exams": [],
+    "emphasisVi": [
+      "tổn hại",
+      "say xỉn"
+    ]
+  },
+  {
+    "word": "saper",
+    "pos": "verb",
+    "ipa": "/sa.pe/",
+    "meaningVi": "làm suy_yếu, phá_hoại",
+    "gender": null,
+    "article": null,
+    "feminine": null,
+    "defVi": "Làm suy_yếu dần | sức_mạnh, uy_tín | hay niềm tin.",
+    "leadVi": "Lời đàm_tiếu sau lưng | gặm_nhấm lòng tin của=đội.",
+    "anticipateVi": "Ai đào chân móng?",
+    "usageEn": "Ces critiques constantes finissent par _____ sa confiance.",
+    "usageVi": "Những lời chỉ_trích liên_tục | cuối_cùng | làm suy_yếu | sự tự_tin của=cô=ấy.",
+    "topics": [
+      "society",
+      "emotion"
+    ],
+    "exams": [],
+    "emphasisVi": [
+      "suy yếu",
+      "gặm nhấm"
+    ]
+  },
+  {
+    "word": "discerner",
+    "pos": "verb",
+    "ipa": "/di.sɛʁ.ne/",
+    "meaningVi": "nhận ra, phân_biệt",
+    "gender": null,
+    "article": null,
+    "feminine": null,
+    "defVi": "Nhận ra | hoặc phân_biệt được | điều khó thấy.",
+    "leadVi": "Giữa sương mù dày, | anh vẫn nhìn ra | bóng con_thuyền.",
+    "anticipateVi": "Tinh mắt | nhận ra không?",
+    "usageEn": "Dans le brouillard, on pouvait à peine _____ les maisons.",
+    "usageVi": "Trong sương_mù, | ta khó lòng nhận ra | những ngôi_nhà.",
+    "topics": [
+      "perception",
+      "thinking"
+    ],
+    "exams": [],
+    "emphasisVi": [
+      "phân biệt",
+      "sương mù"
+    ]
+  }
+]
