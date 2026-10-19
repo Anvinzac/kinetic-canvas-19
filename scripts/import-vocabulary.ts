@@ -42,7 +42,8 @@ let locale: string | undefined;
 if (localeAt !== -1) {
   locale = argv[localeAt + 1];
   argv.splice(localeAt, locale ? 2 : 1);
-  if (!locale || !/^(zh|ko|ja)$/.test(locale)) throw new Error("--locale must be zh, ko or ja");
+  if (!locale || !/^(zh|ko|ja|fr|de|es)$/.test(locale))
+    throw new Error("--locale must be zh, ko, ja, fr, de or es");
 }
 const packAt = argv.indexOf("--pack");
 let packName: string | undefined;
