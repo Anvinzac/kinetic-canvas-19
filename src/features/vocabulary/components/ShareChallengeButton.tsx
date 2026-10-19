@@ -22,7 +22,7 @@ const CONFIRM_MS = 2200;
 
 /** What goes in the message. Deliberately free of the answer. */
 function challengeText(url: string): string {
-  return `Đoán thử từ này xem, tui cá là bạn chịu thua 😎\n${url}`;
+  return `Đoán thử từ này xem\n${url}`;
 }
 
 /**
