@@ -7298,3 +7298,28 @@
     transition: none;
   }
 }
+
+/* ── Export frame route ──────────────────────────────────────────────────────
+   The page a recorder loads: the stage at the preset's exact aspect, centred on a
+   flat backdrop, and nothing else. No chrome at all — anything painted here would
+   be painted into the clip. The stage reuses .vocab-export-stage, so the card is
+   laid out exactly as Export Studio lays it out. */
+.vocab-export-frame {
+  display: grid;
+  place-items: center;
+  min-height: 100dvh;
+  margin: 0;
+  background: #05010e;
+  color: var(--shell-text, #f4f1ff);
+  font-family: "Inter", sans-serif;
+}
+/* Fill whichever axis runs out first, so the frame is as large as the window allows
+   and a recorder gets the most pixels this screen can give it. */
+.vocab-export-frame .vocab-export-stage {
+  width: min(100vw, calc(100dvh / var(--export-ratio)));
+  height: auto;
+}
+.vocab-export-frame[data-missing] {
+  padding: 24px;
+  text-align: center;
+}

@@ -35,7 +35,8 @@
     "check:word-block": "npx tsx scripts/check-word-block.ts",
     "check:entrance-rest": "npx tsx scripts/check-entrance-rest.ts",
     "check:meanings": "npx tsx scripts/check-meanings.ts",
-    "check:rate-limits": "npx tsx scripts/check-rate-limits.ts"
+    "check:rate-limits": "npx tsx scripts/check-rate-limits.ts",
+    "check:export-frame": "npx tsx scripts/check-export-frame.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

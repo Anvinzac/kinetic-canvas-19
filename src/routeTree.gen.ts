@@ -36,6 +36,7 @@ import { Route as AdminTemplatesRouteImport } from './routes/admin/templates'
 import { Route as AdminUsersRouteImport } from './routes/admin/users'
 import { Route as AdminVocabularyRouteImport } from './routes/admin/vocabulary'
 import { Route as AdminWordingsRouteImport } from './routes/admin/wordings'
+import { Route as ExportCodeRouteImport } from './routes/export.$code'
 import { Route as FeedIndexRouteImport } from './routes/feed/index'
 import { Route as FeedLibraryRouteImport } from './routes/feed/library'
 import { Route as FeedSavedRouteImport } from './routes/feed/saved'
@@ -184,6 +185,11 @@ const AdminWordingsRoute = AdminWordingsRouteImport.update({
   path: '/wordings',
   getParentRoute: () => AdminRouteRoute,
 } as any)
+const ExportCodeRoute = ExportCodeRouteImport.update({
+  id: '/export/$code',
+  path: '/export/$code',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const FeedIndexRoute = FeedIndexRouteImport.update({
   id: '/feed/',
   path: '/feed/',
@@ -267,6 +273,7 @@ export interface FileRoutesByFullPath {
   '/admin/users': typeof AdminUsersRoute
   '/admin/vocabulary': typeof AdminVocabularyRoute
   '/admin/wordings': typeof AdminWordingsRoute
+  '/export/$code': typeof ExportCodeRoute
   '/feed/library': typeof FeedLibraryRoute
   '/feed/saved': typeof FeedSavedRoute
   '/w/$code': typeof WCodeRoute
@@ -305,6 +312,7 @@ export interface FileRoutesByTo {
   '/admin/users': typeof AdminUsersRoute
   '/admin/vocabulary': typeof AdminVocabularyRoute
   '/admin/wordings': typeof AdminWordingsRoute
+  '/export/$code': typeof ExportCodeRoute
   '/feed/library': typeof FeedLibraryRoute
   '/feed/saved': typeof FeedSavedRoute
   '/w/$code': typeof WCodeRoute
@@ -346,6 +354,7 @@ export interface FileRoutesById {
   '/admin/users': typeof AdminUsersRoute
   '/admin/vocabulary': typeof AdminVocabularyRoute
   '/admin/wordings': typeof AdminWordingsRoute
+  '/export/$code': typeof ExportCodeRoute
   '/feed/library': typeof FeedLibraryRoute
   '/feed/saved': typeof FeedSavedRoute
   '/w/$code': typeof WCodeRoute
@@ -387,6 +396,7 @@ export interface FileRouteTypes {
     | '/admin/users'
     | '/admin/vocabulary'
     | '/admin/wordings'
+    | '/export/$code'
     | '/feed/library'
     | '/feed/saved'
     | '/w/$code'
@@ -425,6 +435,7 @@ export interface FileRouteTypes {
     | '/admin/users'
     | '/admin/vocabulary'
     | '/admin/wordings'
+    | '/export/$code'
     | '/feed/library'
     | '/feed/saved'
     | '/w/$code'
@@ -465,6 +476,7 @@ export interface FileRouteTypes {
     | '/admin/users'
     | '/admin/vocabulary'
     | '/admin/wordings'
+    | '/export/$code'
     | '/feed/library'
     | '/feed/saved'
     | '/w/$code'
@@ -486,6 +498,7 @@ export interface RootRouteChildren {
   AdminAccessDeniedRoute: typeof AdminAccessDeniedRoute
   AuthRoute: typeof AuthRoute
   StoreRoute: typeof StoreRoute
+  ExportCodeRoute: typeof ExportCodeRoute
   FeedLibraryRoute: typeof FeedLibraryRoute
   FeedSavedRoute: typeof FeedSavedRoute
   WCodeRoute: typeof WCodeRoute
@@ -688,6 +701,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminWordingsRouteImport
       parentRoute: typeof AdminRouteRoute
     }
+    '/export/$code': {
+      id: '/export/$code'
+      path: '/export/$code'
+      fullPath: '/export/$code'
+      preLoaderRoute: typeof ExportCodeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/feed/': {
       id: '/feed/'
       path: '/feed'
@@ -840,6 +860,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminAccessDeniedRoute: AdminAccessDeniedRoute,
   AuthRoute: AuthRoute,
   StoreRoute: StoreRoute,
+  ExportCodeRoute: ExportCodeRoute,
   FeedLibraryRoute: FeedLibraryRoute,
   FeedSavedRoute: FeedSavedRoute,
   WCodeRoute: WCodeRoute,
