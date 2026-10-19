@@ -17,7 +17,7 @@ Two independent variables, and only one of them moves:
 |                                 | varies per domain?                 |
 | ------------------------------- | ---------------------------------- |
 | Hint / UI language (Vietnamese) | **no** — byte-identical everywhere |
-| Target language (the answer)    | **yes** — en / ko / ja / zh        |
+| Target language (the answer)    | **yes** — en / ko / ja / zh / fr / de / es |
 
 So `defVi`, `leadVi`, `anticipateVi`, `usageVi` and all 45 files carrying hardcoded
 Vietnamese stay untouched. What generalises is the English side: `word`, `ipa`,
