@@ -110,10 +110,13 @@ const [insetTop, insetBottom] = flag("inset", "56,110").split(",").map(Number);
 // offset added to four different per-element bases, which is why "make the inset smaller"
 // kept cutting whichever element was shallowest.
 //
-// 0 is full bleed: the scene fills the width, as a reader sees it. That is the right
-// baseline to judge a real post from, because what a platform actually crops has never been
-// measured on a real phone here - see docs/export-recording-layout-handoff.md.
-const insetSide = Number(flag("side", "0"));
+// The TOP GRADIENT is exempt and always reaches the edges: it is drawn against the bar and
+// pulled back out by exactly this value, so it spans the frame at any margin. A gradient
+// that stops short is not a soft top edge, it is a box.
+//
+// 25 is a judgement call, not a derived number. What a platform actually crops has never
+// been measured on a real phone here - see docs/export-recording-layout-handoff.md.
+const insetSide = Number(flag("side", "25"));
 // Whether the transport controls (play, sound, shuffle) stay in the recorded top bar.
 // Kept by default: they are part of what the app looks like. `--controls hide` drops them,
 // which is worth a look when a platform's own chrome is already crowding that edge.
