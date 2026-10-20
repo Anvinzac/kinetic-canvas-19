@@ -194,6 +194,9 @@ if (!ruleBodies(`${RECORDING} .vocab-toolbar-left`).some((b) => b.includes("alig
 // live scene by the recorder, so only the class names need asserting.
 checks += 1;
 const OUTRO_CLASSES = [
+  "vocab-intro",
+  "vocab-intro-veil",
+  "vocab-intro-badge",
   "vocab-outro",
   "vocab-outro-veil",
   "vocab-outro-bar",
@@ -209,8 +212,10 @@ if (undefinedClasses.length) {
   );
 }
 checks += 1;
-if (!/--outro-dur\s*:/.test(css)) {
-  failures.push("--outro-dur is not declared; the recorder reads it to size the end card");
+for (const v of ["--outro-dur", "--intro-dur"]) {
+  if (!new RegExp(`${v}\\s*:`).test(css)) {
+    failures.push(`${v} is not declared; the recorder reads it to size that scene`);
+  }
 }
 
 for (const line of failures) console.log(`FAIL  ${line}`);
@@ -220,7 +225,7 @@ if (!failures.length) {
   console.log(`OK    ${RECORDING} hides the saved-words drawer handle`);
   console.log(`OK    ${RECORDING} .vocab-toolbar takes its top from the preset's safe area`);
   console.log(`OK    every recorded edge resolves to ${VAR} alone, with no base added`);
-  console.log(`OK    the outro's ${OUTRO_CLASSES.length} injected classes are all styled`);
+  console.log(`OK    the ${OUTRO_CLASSES.length} injected intro/outro classes are all styled`);
 }
 
 console.log(

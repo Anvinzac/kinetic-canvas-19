@@ -7670,3 +7670,110 @@ body:has(.vocab-outro) .vocab-resume {
   3%, 9%, 15%, 21%, 27%, 33%, 39%, 45% { opacity: 0; }
   52%, 100% { opacity: 0; }  /* 2400ms - gone once Enter is pressed */
 }
+
+/* ── Recorded intro ──────────────────────────────────────────────────────────────────────
+   The opening: the page is blurred, a badge asks the question the clip is about, and then
+   it clears and the first clue plays. It exists so a viewer is given the context BEFORE
+   the text starts arriving, rather than having to work out what they are looking at while
+   reading it.
+
+   The mirror image of the outro below it, and built the same way: one CSS timeline the
+   recorder starts and waits out, with the duration read back off the live scene. The
+   recorder pauses playback for the intro's length and resumes after, so the first page's
+   entrance plays AFTER the badge rather than behind it. */
+:root {
+  --intro-dur: 2600ms;
+}
+.vocab-intro {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  font-family: "Inter", sans-serif;
+}
+.vocab-intro-veil {
+  position: absolute;
+  inset: 0;
+  animation: vocab-intro-veil var(--intro-dur) linear forwards;
+}
+@keyframes vocab-intro-veil {
+  0%,
+  62% {  /* 1600ms - held while the badge is up */
+    backdrop-filter: blur(22px);
+    background: #00000073;
+  }
+  88%,
+  100% {  /* 2300ms - clear, and the card is sharp again */
+    backdrop-filter: blur(0px);
+    background: #0000;
+  }
+}
+/* The badge. Big on purpose: it is the only thing on screen for a second and a half, and
+   it has to be read at a glance on a phone held at arm's length. */
+.vocab-intro-badge {
+  position: relative;
+  max-width: 78%;
+  padding: 22px 38px;
+  border-radius: 28px;
+  font-size: 40px;
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.015em;
+  text-align: center;
+  color: #10121a;
+  background: #fdfdffee;
+  box-shadow:
+    0 26px 70px #00000066,
+    0 2px 0 #ffffff7a inset;
+  animation: vocab-intro-badge var(--intro-dur) cubic-bezier(0.22, 1.2, 0.36, 1) forwards;
+}
+@keyframes vocab-intro-badge {
+  0% {
+    opacity: 0;
+    transform: scale(0.82) translateY(10px);
+  }
+  13% {  /* 350ms - overshoots, so it lands rather than fades up */
+    opacity: 1;
+    transform: scale(1.04);
+  }
+  18% {
+    transform: scale(1);
+  }
+  62% {  /* 1600ms - the hold, which is the whole point of the intro */
+    opacity: 1;
+    transform: scale(1);
+  }
+  77%,
+  100% {  /* 2000ms - gone quickly, so the clip gets on with it */
+    opacity: 0;
+    transform: scale(0.94);
+  }
+}
+/* The card arrives as the badge leaves. Same "everything except the backdrop" shape as the
+   outro: the gradient stays, so the blur clears onto a page that was always there rather
+   than onto one that fades up from nothing. */
+body:has(.vocab-intro) .vocab-card > *:not(.vocab-backdrop),
+body:has(.vocab-intro) .vocab-toolbar,
+body:has(.vocab-intro) .vocab-saved-dock,
+body:has(.vocab-intro) .vocab-resume {
+  animation: vocab-intro-arrive var(--intro-dur, 2600ms) ease-out forwards;
+}
+/* The resume button is an artefact of pausing, not part of the card, so it must not fade
+   in with it. Same selector as the rule above and declared after it, which is what makes
+   this an exception to that list rather than a second opinion about it. */
+body:has(.vocab-intro) .vocab-resume {
+  animation: none;
+  opacity: 0;
+}
+@keyframes vocab-intro-arrive {
+  0%,
+  62% {
+    opacity: 0;
+  }
+  88%,
+  100% {
+    opacity: 1;
+  }
+}

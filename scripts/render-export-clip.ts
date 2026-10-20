@@ -40,6 +40,8 @@
  *     --css <w>x<h>         CSS viewport, phone-sized (default: 405x720)
  *     --side <px>           left/right inset clear of a platform's crop (default: 25)
  *     --controls <keep|hide>  the top transport controls (default: keep)
+ *     --intro <on|off>      the opening badge (default: on)
+ *     --badge <text>        what the badge says (default: "Từ gì mà ...")
  *     --outro <on|off>      the anh.chayla.app end card (default: on)
  *     --preset <id>         whose safe area the title corner follows (default: tiktok-clear)
  *     --scale <n>           device pixel ratio (default: 2.667 — 405×720 → 1080×1920)
@@ -126,6 +128,10 @@ const hideControls = flag("controls", "keep") === "hide";
 // after the word and is captured in the SAME take, so there is no second encode to match.
 // The duration is the stylesheet's --outro-dur; the two have to agree, so it is asserted
 // against the live value rather than trusted (check below).
+const withIntro = flag("intro", "on") !== "off";
+// The badge's words. A flag rather than a constant because it is the one thing in the
+// scene a caller is likely to want to change per clip.
+const introText = flag("badge", "Từ gì mà ...");
 const withOutro = flag("outro", "on") !== "off";
 const OUTRO_MS = 4600;
 // The safe area comes from the EXPORT preset rather than from numbers invented here, so
@@ -365,6 +371,16 @@ async function main() {
       await sleep(200);
     }
     if (!position) throw new Error("the feed never put a word on screen");
+    // Paused HERE, the moment a card exists, rather than when the intro is injected a
+    // second later: by then the first page's words have already finished arriving, and the
+    // badge would clear onto text that is just sitting there. Pausing this early leaves the
+    // entrance almost entirely unplayed, so it runs after the badge, which is the point of
+    // having an intro at all.
+    if (withIntro) {
+      await cdp.evaluate(
+        `document.querySelector('.vocab-player-controls .vocab-icon-button')?.click()`,
+      );
+    }
     const startedOn = position;
     recordedPosition = position;
     console.log(`  feed at ${cssWidth}×${cssHeight} ×${scale.toFixed(2)} → ${width}×${height}`);
@@ -424,6 +440,42 @@ async function main() {
   // on its own, which is the whole point of recording it.
   if (mode === "export") {
     await cdp.evaluate(`window.dispatchEvent(new Event("vocab-export-start"))`);
+  }
+
+  // The intro goes in AFTER the screencast is running, so its first frame is captured, and
+  // playback is paused for its length: the first clue's entrance is supposed to play once
+  // the badge has gone, not behind it.
+  if (mode === "feed" && withIntro) {
+    const introMs = await cdp.evaluate<number>(`(() => {
+      const el = document.createElement('div');
+      el.className = 'vocab-intro';
+      const badge = document.createElement('div');
+      badge.className = 'vocab-intro-badge';
+      // textContent, not innerHTML: the badge's words come from a command line.
+      badge.textContent = ${JSON.stringify(introText)};
+      el.innerHTML = '<div class="vocab-intro-veil"></div>';
+      el.appendChild(badge);
+      document.body.appendChild(el);
+      const raw = getComputedStyle(el).getPropertyValue('--intro-dur').trim();
+      const n = parseFloat(raw);
+      if (!isFinite(n)) return 0;
+      return /ms\s*$/.test(raw) ? n : n * 1000;
+    })()`);
+    if (!introMs) throw new Error("the intro scene has no --intro-dur; is vocabulary.css loaded?");
+    console.log(`  + intro (${introMs}ms) "${introText}"`);
+    // Resume when the badge STARTS leaving, not when the scene ends. The stylesheet clears
+    // the veil between 62% and 88%, so resuming at 62% means the first clue arrives as the
+    // blur lifts - and, more practically, the paused-state resume button is gone well
+    // before the page is sharp enough to see it.
+    await sleep(Math.round(introMs * 0.62));
+    await cdp.evaluate(
+      `document.querySelector('.vocab-player-controls .vocab-icon-button')?.click()`,
+    );
+    await sleep(introMs - Math.round(introMs * 0.62));
+    // Removed rather than left transparent: while it is in the document its :has() rule
+    // keeps animating the card's own chrome, and the outro's identical rule would then be
+    // fighting it for the same elements.
+    await cdp.evaluate(`document.querySelector('.vocab-intro')?.remove()`);
   }
 
   const deadline = Date.now() + maxSeconds * 1000;
