@@ -96,8 +96,8 @@
      to work out how far back UP it has to reach. */
   --vocab-chrome-top-offset: max(var(--vocab-chrome-head, 12px), env(safe-area-inset-top));
   top: var(--vocab-chrome-top-offset);
-  left: max(16px, env(safe-area-inset-left));
-  right: max(16px, env(safe-area-inset-right));
+  left: calc(max(16px, env(safe-area-inset-left)) + var(--vocab-chrome-side, 0px));
+  right: calc(max(16px, env(safe-area-inset-right)) + var(--vocab-chrome-side, 0px));
   color: var(--chrome-ink);
   transition: color var(--dur-move) var(--ease-out);
 }
@@ -113,8 +113,13 @@
      up by exactly however far the bar was pushed down — plus 2px, so antialiasing at the
      boundary cannot leave a hairline of card showing. Pushing the bar further down
      therefore makes the scrim taller instead of detaching it, and the gradient still
-     fades out below the controls because the bottom inset is unchanged. */
-  inset: calc(-1 * var(--vocab-chrome-top-offset, 14px) - 2px) -18px -26px;
+     fades out below the controls because the bottom inset is unchanged.
+
+     The sides work the same way. --vocab-chrome-side moves the BAR inward, away from a
+     platform's crop; the scrim has to travel back out by the same amount or it stops
+     being a top-edge gradient and becomes a dark box floating in the middle. */
+  inset: calc(-1 * var(--vocab-chrome-top-offset, 14px) - 2px)
+    calc(-18px - var(--vocab-chrome-side, 0px)) -26px;
   /* Square on top, rounded only on the bottom two corners: the scrim sits flush against
      the top edge of the viewport, so rounded top corners would let the card background
      leak through the gaps. The bottom edge still fades over the content, so it keeps its
@@ -413,7 +418,8 @@
      right hand — and well clear of the optical middle, where it sat across the
      word itself. */
   top: 62%;
-  right: env(safe-area-inset-right, 0px);
+  /* Rides the right edge, so it is the first thing a side crop eats. */
+  right: calc(env(safe-area-inset-right, 0px) + var(--vocab-chrome-side, 0px));
   display: grid;
   place-items: center end;
   /* 1.5× the tab's own width plus its old breathing room, so the wider handle never
@@ -1791,6 +1797,16 @@
   inset: 0;
   pointer-events: none;
 }
+/* The text's own side margins, and the reason this is a variable rather than a number:
+   a platform that scales the clip to fill a taller screen crops the SIDES, and the text
+   runs to within 2% of them (LINE_BOX_SHARE in useMeasuredLines). Narrowing the band is
+   what moves the text, not a padding \u2014 clientWidth includes padding, so the fit
+   pipeline would never see it. The band is the box the pipeline measures, a ResizeObserver
+   watches it, and the lines re-solve to the narrower width on their own. */
+.vocab-stage-band {
+  left: var(--vocab-chrome-side, 0px);
+  right: var(--vocab-chrome-side, 0px);
+}
 .vocab-reveal-details {
   position: absolute;
   /* Top-anchored below the stage and content-hugging (height:auto): the frosted
@@ -1892,7 +1908,7 @@
   bottom: var(--vocab-chrome-progress-bottom);
   left: 50%;
   transform: translateX(-50%);
-  width: min(440px, calc(100% - 48px));
+  width: min(440px, calc(100% - 48px - 2 * var(--vocab-chrome-side, 0px)));
   display: flex;
   gap: 5px;
 }
@@ -1939,7 +1955,7 @@
   /* Exactly the progress bar's box, which is the row's alignment anchor: the report
      button's left edge sits under the first progress segment and the bookmark's right
      edge under the last. */
-  width: min(440px, calc(100% - 48px));
+  width: min(440px, calc(100% - 48px - 2 * var(--vocab-chrome-side, 0px)));
   display: flex;
   align-items: center;
   gap: var(--action-gap);

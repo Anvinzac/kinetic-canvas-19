@@ -38,6 +38,7 @@
  *     --max <seconds>       give up if the word never finishes (default: 120)
  *   feed mode:
  *     --css <w>x<h>         CSS viewport, phone-sized (default: 405x720)
+ *     --side <px>           left/right inset clear of a platform's crop (default: 52)
  *     --scale <n>           device pixel ratio (default: 2.667 — 405×720 → 1080×1920)
  *   export mode:
  *     --preset <id>         export preset (default: tiktok-clear)
@@ -101,6 +102,13 @@ const [cssWidth, cssHeight] = flag("css", "405x720").split("x").map(Number);
 // Defaults are roughly TikTok's overlay zones at a 405×720 viewport (~8% and ~15%); pass
 // 0,0 to record the app exactly as it sits on a phone.
 const [insetTop, insetBottom] = flag("inset", "56,110").split(",").map(Number);
+// How far in from the LEFT and RIGHT edges, in CSS pixels, and the reason it is not zero:
+// a 9:16 clip on a taller phone is scaled to COVER the feed, so the sides are cropped off.
+// At 20:9 \u2014 the common case \u2014 that is 12.5% of the width gone from each edge, about 51px
+// of a 405px viewport; 21:9 takes 15.6%. Anything anchored to an edge is what disappears
+// first, which is why the title and the gear were the casualties. 52px clears the 20:9
+// crop with the text still as wide as it can be; pass 0 to record the app untouched.
+const insetSide = Number(flag("side", "52"));
 const scale = Number(flag("scale", String(1080 / 405)));
 const out = resolve(
   flag("out", mode === "feed" ? "./feed-clip.mp4" : `./export-${code ?? "clip"}.mp4`),
@@ -250,14 +258,15 @@ async function main() {
     // the edge sits underneath them. These two variables move the app's bars inward —
     // the bottom one is the shell's existing contract, so the meaning panel's cap and the
     // clue band's foot follow it without anything else being told.
-    if (insetTop || insetBottom) {
+    if (insetTop || insetBottom || insetSide) {
       // A STYLESHEET, not a property set on the root. --vocab-chrome-inset is declared on
       // .vocabulary-shell itself, and a declaration on the element beats a value inherited
       // from an ancestor — so setting it on <html> moves the toolbar and leaves the bottom
       // exactly where it was. A rule targeting the shell wins, and survives re-renders.
       await cdp.send("Page.addScriptToEvaluateOnNewDocument", {
         source: `(() => {
-          const css = ':root{--vocab-chrome-head:${insetTop}px}.vocabulary-shell{--vocab-chrome-inset:${insetBottom}px}';
+          const css = ':root{--vocab-chrome-head:${insetTop}px;--vocab-chrome-side:${insetSide}px}'
+            + '.vocabulary-shell{--vocab-chrome-inset:${insetBottom}px}';
           const add = () => {
             const style = document.createElement('style');
             style.textContent = css;
