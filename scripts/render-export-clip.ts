@@ -106,9 +106,14 @@ const [insetTop, insetBottom] = flag("inset", "56,110").split(",").map(Number);
 // a 9:16 clip on a taller phone is scaled to COVER the feed, so the sides are cropped off.
 // At 20:9 \u2014 the common case \u2014 that is 12.5% of the width gone from each edge, about 51px
 // of a 405px viewport; 21:9 takes 15.6%. Anything anchored to an edge is what disappears
-// first, which is why the title and the gear were the casualties. 52px clears the 20:9
-// crop with the text still as wide as it can be; pass 0 to record the app untouched.
-const insetSide = Number(flag("side", "52"));
+// first, which is why the title and the gear were the casualties.
+//
+// 31px is a judgement call, not the safe number: it is what clearing the crop outright
+// (52px) was traded down to because the clip looked too boxed-in. It keeps the toolbar and
+// the rows outside a 19.5:9 crop, leaves them a few pixels inside a 20:9 one, and does not
+// save them at 21:9. Raise it towards 52 to buy that back, or pass 0 to record the app
+// exactly as a reader sees it.
+const insetSide = Number(flag("side", "31"));
 const scale = Number(flag("scale", String(1080 / 405)));
 const out = resolve(
   flag("out", mode === "feed" ? "./feed-clip.mp4" : `./export-${code ?? "clip"}.mp4`),
