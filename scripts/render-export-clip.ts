@@ -484,31 +484,52 @@ async function main() {
     })()`);
     if (!introMs) throw new Error("the intro scene has no --intro-dur; is vocabulary.css loaded?");
     console.log(`  + intro (${introMs}ms) "${introText}"`);
-    await sleep(introMs);
 
-    // Beat 3. The first page's entrance has already played, behind the blur, within a
-    // second of the card mounting - pausing cannot win that race, and nothing in the app
-    // exposes a replay. What it does expose is page navigation by tap: forward one page and
-    // back remounts page one, and a remount is a fresh entrance. So the clue arrives here,
-    // after the page has finished assembling, instead of having happened while nobody could
-    // see it. The taps also resume playback on their way through, which is wanted anyway.
-    const card = await cdp.evaluate<{ x: number; y: number } | null>(`(() => {
+    // Beat 3, in two halves.
+    //
+    // The first clue's entrance has already played, behind the blur, within a second of the
+    // card mounting - pausing cannot win that race, and nothing in the app exposes a replay.
+    // Page navigation by tap does: forward then back remounts page one, and a remount is a
+    // fresh entrance. (Each touch moves TWO pages, not one - the card's handler answers both
+    // pointerup and touchend - but the round trip still lands back on page one, which is all
+    // this needs.)
+    //
+    // It happens HERE, while the badge is still up and every piece of chrome is still
+    // hidden, because the page indicator and the stage label are NOT inside the stage: do
+    // this after they have slid in and a viewer watches the label flick to a later page and
+    // back, which is exactly the flash this ordering removes.
+    await sleep(1700);
+    const card = await cdp.evaluate<{ y: number } | null>(`(() => {
       const mid = innerHeight / 2;
       const c = [...document.querySelectorAll('.vocab-card')].find(el => {
         const b = el.getBoundingClientRect(); return b.top <= mid && b.bottom >= mid; });
       if (!c) return null;
       const b = c.getBoundingClientRect();
-      return { x: b.left + b.width / 2, y: b.top + b.height * 0.42 };
+      return { y: b.top + b.height * 0.42 };
     })()`);
     if (card) {
-      // Past 65% of the width is the forward zone, under 35% the back one. Kept well clear
-      // of both edges so a rounded corner or a stray overlay cannot swallow the tap.
+      // Past 65% of the width is the forward zone, under 35% the back one.
       await tap(cdp, cssWidth * 0.86, card.y);
-      await sleep(120);
+      await sleep(140);
       await tap(cdp, cssWidth * 0.14, card.y);
       await sleep(80);
+      // A tap resumes playback on its way through, so the fresh entrance has just started.
+      // Freeze it immediately: the second half of the beat is letting the page finish
+      // assembling, and the clue is supposed to arrive after that, not under it.
+      await cdp.evaluate(
+        `document.querySelector('.vocab-player-controls .vocab-icon-button')?.click()`,
+      );
     }
+
+    // The assembly plays out; the clue is held at the first frame of its entrance.
+    await sleep(Math.max(0, introMs - 1920));
+    // Scene first, then play: the stage is dark while the intro is in the document, so
+    // starting playback before removing it would run the first words where nobody can see
+    // them - the whole fault this beat exists to fix.
     await cdp.evaluate(`document.querySelector('.vocab-intro')?.remove()`);
+    await cdp.evaluate(
+      `document.querySelector('.vocab-player-controls .vocab-icon-button')?.click()`,
+    );
   }
 
   const deadline = Date.now() + maxSeconds * 1000;
