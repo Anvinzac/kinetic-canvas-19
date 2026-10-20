@@ -7692,6 +7692,25 @@ body:has(.vocab-outro) .vocab-resume {
    viewer to read and orient at the same time; this gives them the question first, then the
    page, then the answer starting to arrive.
 
+   One piece of the bottom row is NOT on this timeline and cannot be: the reveal button and
+   the reaction buttons mount with playback, not with the chrome around them. So the scene
+   ends close behind the assembly rather than waiting for it to settle - they arrive with
+   the first word, which is the only moment they can.
+
+   Every piece must also finish BEFORE --intro-dur. The scene is unmounted at that moment,
+   which takes these rules with it, and an animation still running is not eased out - it is
+   dropped, and its element snaps to where it was heading. The button row did exactly that:
+   it was still arriving at the cut and appeared to pop into place at the same instant the
+   first word showed up. The last delay plus its duration is 2120 against a 2150 scene.
+
+   The beats OVERLAP on purpose. Run strictly in sequence - badge out, then blur, then each
+   piece, then the text - the opening reads as a queue: the frame goes sharp and then holds
+   still while nothing happens. It had 530ms of literally no change in it, between the last
+   piece landing and playback starting, plus the entrance's own ramp after that. Now the
+   blur lifts while the badge is still leaving, the chrome arrives into it, and the first
+   clue starts before the last piece has finished settling. Nothing waits for the thing
+   before it to be completely done.
+
    The stagger is done with animation-delay and `backwards` fill rather than by slicing one
    long keyframe set into percentages. Each piece then states its own entrance and its own
    moment in its own rule, the delays read as the running order, and re-timing one piece
@@ -7699,7 +7718,7 @@ body:has(.vocab-outro) .vocab-resume {
 
    Recording-only: the recorder injects .vocab-intro, and none of this matches without it. */
 :root {
-  --intro-dur: 3400ms;
+  --intro-dur: 1980ms;
   /* Overshoots slightly, so pieces land rather than glide to a stop. */
   --intro-ease: cubic-bezier(0.17, 0.89, 0.28, 1.08);
 }
@@ -7717,7 +7736,7 @@ body:has(.vocab-outro) .vocab-resume {
 .vocab-intro-veil {
   position: absolute;
   inset: 0;
-  animation: vocab-intro-veil 500ms ease-out 1900ms both;
+  animation: vocab-intro-veil 420ms ease-out 1300ms both;
   backdrop-filter: blur(22px);
   background: #00000073;
 }
@@ -7752,7 +7771,7 @@ body:has(.vocab-outro) .vocab-resume {
   /* In, hold, out - one animation each, so the hold is simply the gap between them. */
   animation:
     vocab-intro-badge-in 620ms var(--intro-ease) 200ms backwards,
-    vocab-intro-badge-out 340ms cubic-bezier(0.5, -0.4, 0.75, 0.4) 1800ms forwards;
+    vocab-intro-badge-out 340ms cubic-bezier(0.5, -0.4, 0.75, 0.4) 1250ms forwards;
   overflow: hidden;
 }
 @keyframes vocab-intro-badge-in {
@@ -7907,19 +7926,19 @@ body:has(.vocab-intro) .vocab-saved-dock {
    opacity 0 the instant it had finished arriving. The veil did the same thing and snapped
    back to full blur. */
 body:has(.vocab-intro) .vocab-toolbar {
-  animation: vocab-intro-drop 540ms var(--intro-ease) 2000ms both;
+  animation: vocab-intro-drop 460ms var(--intro-ease) 1340ms both;
 }
 body:has(.vocab-intro) .vocab-progress {
-  animation: vocab-intro-rise-centred 540ms var(--intro-ease) 2130ms both;
+  animation: vocab-intro-rise-centred 460ms var(--intro-ease) 1380ms both;
 }
 body:has(.vocab-intro) .vocab-stage-label {
-  animation: vocab-intro-rise-centred 540ms var(--intro-ease) 2190ms both;
+  animation: vocab-intro-rise-centred 460ms var(--intro-ease) 1420ms both;
 }
 body:has(.vocab-intro) .vocab-action-bar {
-  animation: vocab-intro-rise-centred 540ms var(--intro-ease) 2260ms both;
+  animation: vocab-intro-rise-centred 460ms var(--intro-ease) 1460ms both;
 }
 body:has(.vocab-intro) .vocab-emoji-strip {
-  animation: vocab-intro-rise 540ms var(--intro-ease) 2330ms both;
+  animation: vocab-intro-rise 460ms var(--intro-ease) 1500ms both;
 }
 @keyframes vocab-intro-drop {
   from {

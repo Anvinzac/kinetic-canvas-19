@@ -126,7 +126,7 @@ export function ShowcasePage() {
   useEffect(() => {
     if (phase !== "intro") return;
     setPhase("intro");
-    const timer = setTimeout(() => go("playing"), cssDuration("--intro-dur", 3400));
+    const timer = setTimeout(() => go("playing"), cssDuration("--intro-dur", 1980));
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase]);
