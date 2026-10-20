@@ -104,7 +104,7 @@ const [cssWidth, cssHeight] = flag("css", "405x720").split("x").map(Number);
 // How far in from the top and bottom edges the app's own bars are pushed, in CSS pixels.
 // Defaults are roughly TikTok's overlay zones at a 405×720 viewport (~8% and ~15%); pass
 // 0,0 to record the app exactly as it sits on a phone.
-const [insetTop, insetBottom] = flag("inset", "56,110").split(",").map(Number);
+const [insetTop, insetBottom] = flag("inset", "56,64").split(",").map(Number);
 // THE margin for the recorded frame, in CSS pixels, and the only horizontal knob there is.
 // Every edge-anchored thing in the recording resolves to exactly this - title, gear, text,
 // progress row, button row - so one number moves the whole scene together. It used to be an
@@ -297,7 +297,12 @@ async function main() {
       source: `(() => {
         const css = ':root{--vocab-chrome-head:${insetTop}px;--vocab-chrome-side:${insetSide}px'
           + ';--vocab-safe-top:${safeTopPx}px;--vocab-safe-right:${safeRightPx}px}'
-          + '.vocabulary-shell{--vocab-chrome-inset:${insetBottom}px}';
+          // A .vocab-recording-scoped selector, not a bare .vocabulary-shell: the app declares
+          // this variable on the shell itself, at the same specificity, and the app's
+          // stylesheet is appended AFTER this one - so the plain selector tied and lost on
+          // source order, silently. The bottom chrome sat at its reader default of 44px
+          // while this script reported it had been moved to ${insetBottom}.
+          + '.vocab-recording .vocabulary-shell{--vocab-chrome-inset:${insetBottom}px}';
         // EVERYTHING waits for the document. This runs before the parser has built <html>,
         // so document.documentElement is null here; touching it threw, which silently
         // skipped the flag while the stylesheet — already deferred — went in regardless.

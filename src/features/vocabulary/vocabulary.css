@@ -431,8 +431,30 @@
    TikTok's own interface but not against the aspect-fill crop that eats ~12.5% of each
    edge - following it would put the gear back under the crop. Two different hazards, two
    different numbers; only the right edge happens to be covered by both. */
+/* The recorded top bar's own geometry, in one place because two things depend on it: the
+   bar sits at --vocab-rec-top, and the TEXT CANVAS starts below --vocab-rec-top-h, the
+   bar's height. Written as a pair so the canvas cannot be left overlapping the bar when
+   either moves - the band's height is what the fit pipeline measures, so shrinking it from
+   the top resizes the text rather than sliding it under the chrome. */
+.vocab-recording {
+  --vocab-rec-nudge: 20px;
+  --vocab-rec-top: calc(var(--vocab-safe-top, 61px) + var(--vocab-rec-nudge));
+  /* The bar is two lines: the wordmark and the difficulty row under it. */
+  --vocab-rec-top-h: 56px;
+  --vocab-rec-top-gap: 14px;
+  --vocab-rec-bottom-gap: 16px;
+}
+/* The bottom row: shorter, and lifted towards the progress row above it. The clearance
+   underneath carries the lift (--inset's second value, 64) and the gap gives back exactly
+   what the lift and the shorter row take, so the PROGRESS row does not move at all:
+   64 + 36 + 28 is the same 128 as the reader's 44 + 44 + 40. The row ends up 12px higher,
+   8px shorter, and 28px under the progress row instead of 40. */
+.vocab-recording .vocabulary-shell {
+  --vocab-chrome-bar: 36px;
+  --vocab-chrome-gap: 28px;
+}
 .vocab-recording .vocab-toolbar {
-  top: var(--vocab-safe-top, var(--vocab-chrome-top-offset));
+  top: var(--vocab-rec-top);
   left: var(--vocab-chrome-side, 0px);
   right: var(--vocab-chrome-side, 0px);
 }
@@ -443,7 +465,7 @@
    floating in the middle of the frame rather than as a top edge. Vertically the same rule
    already applied, which is why the top looked right while the sides did not. */
 .vocab-recording .vocab-toolbar::before {
-  inset: calc(-1 * var(--vocab-safe-top, var(--vocab-chrome-top-offset, 14px)) - 2px)
+  inset: calc(-1 * var(--vocab-rec-top, 61px) - 2px)
     calc(-1 * var(--vocab-chrome-side, 0px)) -26px;
 }
 /* Recorded top bar: the title moves to the RIGHT corner.
@@ -497,6 +519,19 @@
 .vocab-recording .vocab-stage-band {
   left: var(--vocab-chrome-side, 0px);
   right: var(--vocab-chrome-side, 0px);
+}
+/* Clear of the bar, and specific enough to beat the reveal rules that also set `top` on
+   the band (`.vocab-card:not([data-export]) .vocab-stage-band[data-reveal]`), which would
+   otherwise put the answer page back under the chrome. */
+.vocab-recording .vocab-card .vocab-stage-band,
+.vocab-recording .vocab-card .vocab-stage-band[data-reveal] {
+  top: calc(var(--vocab-rec-top) + var(--vocab-rec-top-h) + var(--vocab-rec-top-gap));
+  /* BOTH ends, or the canvas is only half resized. Setting the top alone moved the band's
+     centre down with it - the text sits at a percentage of the band - and pushed the last
+     line straight through the progress row. --vocab-chrome-top is the shell's existing
+     measure of where the bottom chrome begins, so this follows the row automatically
+     rather than repeating its arithmetic. */
+  bottom: calc(var(--vocab-chrome-top) + var(--vocab-rec-bottom-gap));
 }
 .vocab-recording :is(.vocab-progress, .vocab-action-bar) {
   width: min(440px, calc(100% - 2 * var(--vocab-chrome-side, 0px)));

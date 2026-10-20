@@ -131,10 +131,21 @@ const recordedBar = ruleBodies(`${RECORDING} .vocab-toolbar`);
 if (recordedBar.length === 0) {
   failures.push(`${RECORDING} .vocab-toolbar is gone; the title no longer takes the safe corner`);
 } else {
-  const missing = SAFE_VARS.filter((v) => !recordedBar.some((b) => b.includes(v)));
-  if (missing.length) {
+  // The bar's top may read the preset's safe top directly, or through one named step
+  // (--vocab-rec-top, which the text canvas also measures from so the two cannot drift).
+  // What matters is that it still TRACES to the preset rather than to a number typed here.
+  const tracesToSafeTop = SAFE_VARS.every((v) =>
+    recordedBar.some(
+      (b) =>
+        b.includes(v) ||
+        [...b.matchAll(/var\((--vocab-rec-[\w-]+)/g)].some((m) =>
+          new RegExp(`${m[1]}\\s*:[^;]*${v}`).test(css),
+        ),
+    ),
+  );
+  if (!tracesToSafeTop) {
     failures.push(
-      `${RECORDING} .vocab-toolbar does not read ${missing.join(" or ")}; the bar's top ` +
+      `${RECORDING} .vocab-toolbar's top no longer traces to ${SAFE_VARS.join(", ")}; it ` +
         "would be a number invented in the stylesheet rather than the export preset's safe area",
     );
   }
