@@ -474,6 +474,16 @@
 .vocab-hide-controls .vocab-player-controls {
   display: none;
 }
+/* Held back in the recording. They are controls: a viewer cannot press them, so at full
+   strength they compete with the word for attention while promising something the video
+   cannot do. Dimmed rather than hidden, because the bar still has to read as a real app.
+   The corner pair is the app's own selector for "whichever control holds the corner"
+   (FeedControls queries exactly these two), so this cannot drift from it. */
+.vocab-recording .vocab-player-controls,
+.vocab-recording .vocab-corner-button,
+.vocab-recording .eco-trigger {
+  opacity: 0.4;
+}
 /* ONE margin for the recorded frame.
    The reader's chrome is anchored at three different depths - the toolbar at 16px, the
    progress and button rows at 24px, the text band flush - which is right for a phone and
