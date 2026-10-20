@@ -110,15 +110,16 @@ const [insetTop, insetBottom] = flag("inset", "56,110").split(",").map(Number);
 // of a 405px viewport; 21:9 takes 15.6%. Anything anchored to an edge is what disappears
 // first, which is why the title and the gear were the casualties.
 //
-// 25px is a judgement call, not the safe number: clearing the crop outright wanted 52px,
-// and this is the second trade down from it for a frame that looked too boxed-in. What the
-// edge-anchored chrome actually gets is more than this value — the toolbar and the text
-// band add their own 16px, the progress and button rows 24px — so the visible margins are
-// 41px and 49px, against a 20:9 crop that eats 50.6px. On paper that is inside the crop;
-// in the rendered frame the ink sits further in than the boxes do, so what survives is
-// measured rather than predicted. Raise it towards 52 to buy real clearance back, or pass
-// 0 to record the app exactly as a reader sees it.
-const insetSide = Number(flag("side", "25"));
+// 12px, down from the 52 that cleared the crop outright — the fourth trade towards a frame
+// that does not look boxed-in, and well past the point where this value alone protects
+// anything. What each thing gets is this plus its own base: the text band adds 16, the
+// progress and button rows 24. Against a 20:9 crop that eats ~50px of each edge, those
+// land inside it on paper; the ink sits further in than the boxes do, so what actually
+// survives is measured per render rather than predicted here.
+//
+// The TITLE does not depend on this at all any more: it is anchored to the export preset's
+// safe corner, so it stays clear however far this comes down.
+const insetSide = Number(flag("side", "12"));
 // Whether the transport controls (play, sound, shuffle) stay in the recorded top bar.
 // Kept by default: they are part of what the app looks like. `--controls hide` drops them,
 // which is worth a look when a platform's own chrome is already crowding that edge.
