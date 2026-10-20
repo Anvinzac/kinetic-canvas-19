@@ -410,6 +410,29 @@
    anywhere down the edge, not just on the handle itself. `touch-action: pan-y`
    hands vertical scrolling back to the browser while claiming horizontal
    movement, which is what keeps the pull smooth on a phone. */
+/* Chrome that belongs to a reader, not to a recording.
+   The saved-words drawer handle is a control: it invites a tap that a video cannot take,
+   and it rides the right edge where a platform's crop and its own action rail already sit.
+   The selector lives HERE rather than in the recorder so it travels with the element it
+   names \u2014 a rule spelled out in the recorder goes stale the moment this class is renamed,
+   and does so silently, because a selector that matches nothing throws no error. The
+   recorder only sets the flag. */
+.vocab-recording .vocab-saved-dock {
+  display: none;
+}
+/* The text band carries the chrome inset alone, which puts the words at --vocab-chrome-side
+   while the toolbar sits at 16px + that and the rows at 24px + that. On screen the word is
+   then the one thing reaching past everything else, which reads as the inset not applying
+   to it at all. 16px is the toolbar's own edge margin: matching it lines the word up with
+   the wordmark above it, so the scene has ONE visible margin instead of three.
+
+   Scoped to a recording because the reader's band is deliberately full-bleed: on a phone
+   there is no crop to clear, and the extra 16px would only cost the text its size. */
+.vocab-recording .vocab-stage-band {
+  left: calc(16px + var(--vocab-chrome-side, 0px));
+  right: calc(16px + var(--vocab-chrome-side, 0px));
+}
+
 .vocab-saved-dock {
   position: fixed;
   /* Under the toolbar (50), so the ecosystem fan's scrim covers the handle. */

@@ -263,25 +263,43 @@ async function main() {
     // the edge sits underneath them. These two variables move the app's bars inward —
     // the bottom one is the shell's existing contract, so the meaning panel's cap and the
     // clue band's foot follow it without anything else being told.
-    if (insetTop || insetBottom || insetSide) {
-      // A STYLESHEET, not a property set on the root. --vocab-chrome-inset is declared on
-      // .vocabulary-shell itself, and a declaration on the element beats a value inherited
-      // from an ancestor — so setting it on <html> moves the toolbar and leaves the bottom
-      // exactly where it was. A rule targeting the shell wins, and survives re-renders.
-      await cdp.send("Page.addScriptToEvaluateOnNewDocument", {
-        source: `(() => {
-          const css = ':root{--vocab-chrome-head:${insetTop}px;--vocab-chrome-side:${insetSide}px}'
-            + '.vocabulary-shell{--vocab-chrome-inset:${insetBottom}px}';
-          const add = () => {
-            const style = document.createElement('style');
-            style.textContent = css;
-            document.head.appendChild(style);
-          };
-          if (document.head) add();
-          else document.addEventListener('DOMContentLoaded', add, { once: true });
-        })();`,
-      });
-    }
+    // A STYLESHEET, not a property set on the root. --vocab-chrome-inset is declared on
+    // .vocabulary-shell itself, and a declaration on the element beats a value inherited
+    // from an ancestor — so setting it on <html> moves the toolbar and leaves the bottom
+    // exactly where it was. A rule targeting the shell wins, and survives re-renders.
+    //
+    // The vocab-recording class is set unconditionally, NOT alongside the insets: what it
+    // hides is chrome that no recording wants, and `--inset 0,0 --side 0` asks for the
+    // reader's geometry, not for the drawer handle back.
+    await cdp.send("Page.addScriptToEvaluateOnNewDocument", {
+      source: `(() => {
+        const css = ':root{--vocab-chrome-head:${insetTop}px;--vocab-chrome-side:${insetSide}px}'
+          + '.vocabulary-shell{--vocab-chrome-inset:${insetBottom}px}';
+        // EVERYTHING waits for the document. This runs before the parser has built <html>,
+        // so document.documentElement is null here; touching it threw, which silently
+        // skipped the flag while the stylesheet — already deferred — went in regardless.
+        // That is why the insets worked and the hidden chrome did not.
+        const apply = () => {
+          const style = document.createElement('style');
+          style.textContent = css;
+          document.head.appendChild(style);
+          // The flag, not the rules. What 'recording' hides is decided in vocabulary.css,
+          // beside the elements it names, so renaming one cannot leave a dead selector here.
+          //
+          // Re-applied on every class mutation: the app renders <html> itself with no
+          // className, so hydration resets the attribute. classList.add is a no-op when the
+          // class is already present, so the observer cannot retrigger itself.
+          const flag = () => document.documentElement.classList.add('vocab-recording');
+          flag();
+          new MutationObserver(flag).observe(document.documentElement, {
+            attributes: true,
+            attributeFilter: ['class'],
+          });
+        };
+        if (document.head && document.documentElement) apply();
+        else document.addEventListener('DOMContentLoaded', apply, { once: true });
+      })();`,
+    });
     // Skip the difficulty onboarding. It is a first-visit screen, and a clip that opens on
     // it is showing the reader a form rather than the thing being advertised. Written
     // before any app script runs, so the feed never renders the onboarding at all.

@@ -105,10 +105,28 @@ if (bare.length) {
 }
 if (reads.length === 0) failures.push(`${VAR} is never read — the inset does nothing`);
 
+// The recording flag. The recorder sets a class and the stylesheet decides what it hides;
+// the failure that matters is the rule going missing while the recorder still sets the
+// class, because a selector that matches nothing is silent — the drawer handle simply
+// comes back in the next clip and nobody is told.
+checks += 1;
+const RECORDING = ".vocab-recording";
+if (!css.includes(RECORDING)) {
+  failures.push(
+    `${RECORDING} has no rules in the stylesheet, but the recorder sets that class; ` +
+      "reader-only chrome would be recorded again",
+  );
+} else if (!ruleBodies(`${RECORDING} .vocab-saved-dock`).some((b) => b.includes("display: none"))) {
+  failures.push(
+    `${RECORDING} .vocab-saved-dock no longer hides the saved-words drawer handle`,
+  );
+}
+
 for (const line of failures) console.log(`FAIL  ${line}`);
 if (!failures.length) {
   for (const { selector, why } of MUST_READ) console.log(`OK    ${selector} — ${why}`);
   console.log(`OK    ${VAR} is read ${reads.length}x, always with a fallback, declared nowhere`);
+  console.log(`OK    ${RECORDING} hides the saved-words drawer handle`);
 }
 
 console.log(

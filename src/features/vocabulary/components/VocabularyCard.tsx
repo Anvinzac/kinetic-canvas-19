@@ -263,11 +263,27 @@ export function VocabularyCard({
   const cardRef = useRef<HTMLElement>(null);
   const actionBarRef = useRef<HTMLDivElement>(null);
   const emojiStripRef = useRef<HTMLDivElement>(null);
-  const [{ width, height }, setSize] = useState({ width: 390, height: 844 });
+  // `chromeSide` is --vocab-chrome-side read back off the card. The text is fitted to the
+  // BAND, which that variable has already narrowed; fitting it to the card instead sizes it
+  // for room it does not have, and a long answer word then runs out past the inset that was
+  // added to keep it clear of a platform's crop.
+  const [{ width, height, chromeSide }, setSize] = useState({
+    width: 390,
+    height: 844,
+    chromeSide: 0,
+  });
   useLayoutEffect(() => {
     const element = cardRef.current;
     if (!element) return;
-    const measure = () => setSize({ width: element.clientWidth, height: element.clientHeight });
+    const measure = () =>
+      setSize({
+        width: element.clientWidth,
+        height: element.clientHeight,
+        chromeSide:
+          Number.parseFloat(
+            getComputedStyle(element).getPropertyValue("--vocab-chrome-side"),
+          ) || 0,
+      });
     measure();
     const observer = new ResizeObserver(measure);
     observer.observe(element);
@@ -468,7 +484,9 @@ export function VocabularyCard({
   // of the band; it is derived from the same geometry the stylesheet lays out, which is
   // also where the celebration burst is aimed.
   const revealY = wideCard ? getWideRevealY(height, twoColumn) : PORTRAIT_REVEAL_Y;
-  const textWidth = exportBox?.textWidth ?? width;
+  // The export frame carries its own safe box; everywhere else the text lives inside the
+  // band, so the side inset comes off both edges before anything is fitted to it.
+  const textWidth = exportBox?.textWidth ?? Math.max(1, width - 2 * chromeSide);
   // The answer shares the card with its meaning panel now, so it is fitted to its own
   // column instead of the whole width — otherwise it is sized for space it does not have.
   const revealCanvasWidth = twoColumn ? Math.round(textWidth * WIDE_WORD_COLUMN) : textWidth;

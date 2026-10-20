@@ -34,6 +34,28 @@ export function getPreviewFitFloor(text: string): number {
 }
 
 /**
+ * The fit scale a page is actually set at.
+ *
+ * Two constraints that are NOT the same kind of thing. `fitFloor` is a preference: it keeps
+ * a short page from being shrunk into illegibility. `widthLimit` is physical: past it the
+ * text is drawn outside the box it was given. When they disagree the box wins, because a
+ * word held above the width it has does not become more readable by being bigger — it
+ * becomes a word with its ends cut off.
+ *
+ * The one-word floor is 0.74, so this is what keeps a long answer word inside a band that
+ * has been narrowed to clear a platform's side crop.
+ *
+ * @param nextFit - the scale width and height together ask for
+ * @param fitFloor - the smallest scale legibility would like to allow
+ * @param widthLimit - the largest scale that still fits the width
+ * @returns the scale to set, never above `widthLimit`
+ * @pure true
+ */
+export function clampFitScale(nextFit: number, fitFloor: number, widthLimit: number): number {
+  return Math.min(Math.max(fitFloor, nextFit), widthLimit);
+}
+
+/**
  * clamp helper
  * @param value - value argument
  * @param min - min argument

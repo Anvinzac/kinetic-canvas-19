@@ -16,6 +16,7 @@ import {
   FULL_CANVAS_MAX_HEIGHT,
   FULL_CANVAS_REFERENCE_WIDTH,
   clamp,
+  clampFitScale,
   getPreviewFitFloor,
   useIsomorphicLayoutEffect,
 } from "./preview-fit";
@@ -167,8 +168,18 @@ export function useKineticTextFit({
     const nextFit = Math.min(1, fitScale * Math.min(widthRatio, heightRatio) * 0.98);
     const fitFloor = getPreviewFitFloor(spec.text);
 
+    // What WIDTH alone will allow. The floor below keeps a short page from being shrunk
+    // into nothing, but it is a preference about legibility, and fitting inside the box is
+    // not — a word held above the width it has is simply drawn outside it, which is worse
+    // than the same word set smaller. A one-word page floors at 0.74, so the answer word
+    // overflowed as soon as the band was narrowed to clear a platform's side crop.
+    //
+    // Only bites when the floor is above what the width permits: everywhere else
+    // Math.max(fitFloor, nextFit) already sits at or below this, so nothing moves.
+    const widthLimit = Math.min(1, fitScale * widthRatio * 0.98);
+
     if (nextFit < fitScale - 0.01) {
-      setFitScale(Math.max(fitFloor, nextFit));
+      setFitScale(clampFitScale(nextFit, fitFloor, widthLimit));
     }
   }, [
     fitScale,

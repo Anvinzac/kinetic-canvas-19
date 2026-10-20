@@ -37,7 +37,8 @@
     "check:meanings": "npx tsx scripts/check-meanings.ts",
     "check:rate-limits": "npx tsx scripts/check-rate-limits.ts",
     "check:export-frame": "npx tsx scripts/check-export-frame.ts",
-    "check:chrome-side": "npx tsx scripts/check-chrome-side.ts"
+    "check:chrome-side": "npx tsx scripts/check-chrome-side.ts",
+    "check:fit-floor": "npx tsx scripts/check-fit-floor.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
