@@ -420,6 +420,40 @@
 .vocab-recording .vocab-saved-dock {
   display: none;
 }
+/* The top bar sits further in than the rest of the chrome while recording. Its base edge
+   margin is 16px against the rows' 24px, so it is the SHALLOWEST-anchored thing in the
+   scene and the first a side crop reaches \u2014 and the title now sits in the corner that crop
+   arrives at. Moving the title across does nothing for that on its own, because the crop
+   is symmetric: it takes the same bite out of either edge. This is what puts the corner
+   inside the safe area rather than just at the end of the bar. */
+.vocab-recording .vocab-toolbar {
+  left: calc(max(16px, env(safe-area-inset-left)) + var(--vocab-chrome-side, 0px) + 20px);
+  right: calc(max(16px, env(safe-area-inset-right)) + var(--vocab-chrome-side, 0px) + 20px);
+}
+/* Recorded top bar: the title moves to the RIGHT corner.
+   The row is `auto 1fr auto` and its three children are auto-placed in source order, so
+   reordering is enough to re-column them \u2014 no second markup. The gear keeps order 0 and
+   takes the left `auto`, the controls take the stretchy middle, and the title lands in the
+   right `auto` with justify-self: end. Nothing here applies to a reader. */
+.vocab-recording .vocab-player-controls {
+  order: 2;
+}
+.vocab-recording .vocab-toolbar-left {
+  order: 3;
+  justify-self: end;
+}
+/* The title's own lines follow it to that corner; left-ragged text hung off the right
+   edge reads as a mistake rather than as a corner mark. */
+.vocab-recording .vocab-toolbar-left,
+.vocab-recording .vocab-toolbar-left * {
+  text-align: right;
+}
+/* Opt-in, off by default: the transport controls are controls, so a clip does not need
+   them \u2014 but they also say "this is a real app", so whether they earn their place in the
+   frame is a judgement to make by looking, not one to bake in. --controls hide. */
+.vocab-hide-controls .vocab-player-controls {
+  display: none;
+}
 /* The text band carries the chrome inset alone, which puts the words at --vocab-chrome-side
    while the toolbar sits at 16px + that and the rows at 24px + that. On screen the word is
    then the one thing reaching past everything else, which reads as the inset not applying

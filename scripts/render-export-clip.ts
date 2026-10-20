@@ -38,7 +38,8 @@
  *     --max <seconds>       give up if the word never finishes (default: 120)
  *   feed mode:
  *     --css <w>x<h>         CSS viewport, phone-sized (default: 405x720)
- *     --side <px>           left/right inset clear of a platform's crop (default: 52)
+ *     --side <px>           left/right inset clear of a platform's crop (default: 25)
+ *     --controls <keep|hide>  the top transport controls (default: keep)
  *     --scale <n>           device pixel ratio (default: 2.667 — 405×720 → 1080×1920)
  *   export mode:
  *     --preset <id>         export preset (default: tiktok-clear)
@@ -117,6 +118,10 @@ const [insetTop, insetBottom] = flag("inset", "56,110").split(",").map(Number);
 // measured rather than predicted. Raise it towards 52 to buy real clearance back, or pass
 // 0 to record the app exactly as a reader sees it.
 const insetSide = Number(flag("side", "25"));
+// Whether the transport controls (play, sound, shuffle) stay in the recorded top bar.
+// Kept by default: they are part of what the app looks like. `--controls hide` drops them,
+// which is worth a look when a platform's own chrome is already crowding that edge.
+const hideControls = flag("controls", "keep") === "hide";
 const scale = Number(flag("scale", String(1080 / 405)));
 const out = resolve(
   flag("out", mode === "feed" ? "./feed-clip.mp4" : `./export-${code ?? "clip"}.mp4`),
@@ -292,7 +297,9 @@ async function main() {
           // Re-applied on every class mutation: the app renders <html> itself with no
           // className, so hydration resets the attribute. classList.add is a no-op when the
           // class is already present, so the observer cannot retrigger itself.
-          const flag = () => document.documentElement.classList.add('vocab-recording');
+          const flag = () => document.documentElement.classList.add(...${JSON.stringify(
+            hideControls ? ["vocab-recording", "vocab-hide-controls"] : ["vocab-recording"],
+          )});
           flag();
           new MutationObserver(flag).observe(document.documentElement, {
             attributes: true,
