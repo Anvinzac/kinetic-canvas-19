@@ -177,6 +177,31 @@ if (!ruleBodies(`${RECORDING} .vocab-toolbar-left`).some((b) => b.includes("alig
   );
 }
 
+// The outro's markup is injected by the recorder; its styling lives here. A class the
+// script writes but the stylesheet does not define produces no error anywhere - just an
+// unstyled end card in a clip nobody re-watches closely. The duration is read back off the
+// live scene by the recorder, so only the class names need asserting.
+checks += 1;
+const OUTRO_CLASSES = [
+  "vocab-outro",
+  "vocab-outro-veil",
+  "vocab-outro-bar",
+  "vocab-outro-lock",
+  "vocab-outro-url",
+  "vocab-outro-caret",
+];
+const undefinedClasses = OUTRO_CLASSES.filter((c) => !new RegExp(`\\.${c}[^\\w-]`).test(css));
+if (undefinedClasses.length) {
+  failures.push(
+    `the outro injects ${undefinedClasses.join(", ")} but the stylesheet defines no rule ` +
+      "for them; the end card would render unstyled",
+  );
+}
+checks += 1;
+if (!/--outro-dur\s*:/.test(css)) {
+  failures.push("--outro-dur is not declared; the recorder reads it to size the end card");
+}
+
 for (const line of failures) console.log(`FAIL  ${line}`);
 if (!failures.length) {
   for (const { selector, why } of MUST_READ) console.log(`OK    ${selector} — ${why}`);
@@ -184,6 +209,7 @@ if (!failures.length) {
   console.log(`OK    ${RECORDING} hides the saved-words drawer handle`);
   console.log(`OK    ${RECORDING} .vocab-toolbar takes its top from the preset's safe area`);
   console.log(`OK    every recorded edge resolves to ${VAR} alone, with no base added`);
+  console.log(`OK    the outro's ${OUTRO_CLASSES.length} injected classes are all styled`);
 }
 
 console.log(

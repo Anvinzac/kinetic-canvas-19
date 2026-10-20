@@ -7451,3 +7451,187 @@
   padding: 24px;
   text-align: center;
 }
+
+/* ── Recorded outro ──────────────────────────────────────────────────────────────────────
+   The end card: the page blurs away, a browser address bar types anh.chayla.app, Enter is
+   pressed, and the frame opens onto an empty page. On a platform that loops a clip, that
+   empty page is what the next pass starts from, so the first word's text appears to be
+   loading into the page the viewer just watched being opened.
+
+   One timeline, driven entirely by CSS. The recorder injects the markup, waits
+   --outro-dur, and stops; nothing here depends on a JS clock staying in step with a
+   screencast, which is the sort of thing that drifts under a throttled tab. Percentages
+   below are of the whole duration, with the millisecond each one lands on in a comment so
+   the scene can be re-timed by changing one number.
+
+   This is recording-only chrome: it is injected, never part of a reader's page. */
+:root {
+  --outro-dur: 4600ms;
+}
+.vocab-outro {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  font-family: "Inter", sans-serif;
+}
+/* The page itself, blurred out and dimmed, then handed over to the empty page. */
+.vocab-outro-veil {
+  position: absolute;
+  inset: 0;
+  animation: vocab-outro-veil var(--outro-dur) linear forwards;
+}
+@keyframes vocab-outro-veil {
+  0% {
+    backdrop-filter: blur(0px);
+    background: #0000;
+  }
+  15% {  /* 700ms - fully blurred, holds while the address is typed */
+    backdrop-filter: blur(24px);
+    background: #00000073;
+  }
+  61% {  /* 2800ms - Enter has landed; the empty page starts covering this */
+    backdrop-filter: blur(24px);
+    background: #00000073;
+  }
+  78%,
+  100% {  /* 3600ms - clear again: what is left is the app's own page, emptied */
+    backdrop-filter: blur(0px);
+    background: #0000;
+  }
+}
+/* The empty page the address bar opens is the app's own page with everything taken off
+   it - not a slab painted over the top. Painting one meant picking a colour, and the only
+   honest colour was near-black, which made the loop cut from a near-black end card to a
+   bright gradient opening. Fading the CONTENT instead leaves the card's own backdrop, so
+   the last frame and the first frame are the same gradient and the loop closes on itself.
+
+   :has() is safe here because the selector only matches while the recorder's injected
+   scene is in the document; a reader's page never contains it. */
+/* Everything the card paints EXCEPT its gradient, plus the chrome that lives outside it.
+   Written as "all of it, except the backdrop" rather than as a list of parts: the list was
+   tried first and kept missing things - the spelling coda, the emoji strip, the resume
+   button that appears the moment playback is paused - each one found only by rendering the
+   clip and looking at what was still on screen. A rule that names what to KEEP cannot be
+   out of date when a new part is added. */
+body:has(.vocab-outro) .vocab-card > *:not(.vocab-backdrop),
+body:has(.vocab-outro) .vocab-toolbar,
+body:has(.vocab-outro) .vocab-saved-dock,
+body:has(.vocab-outro) .vocab-resume {
+  animation: vocab-outro-clear var(--outro-dur, 4600ms) ease-out forwards;
+}
+@keyframes vocab-outro-clear {
+  0%,
+  61% {  /* 2800ms - holds until Enter has landed */
+    opacity: 1;
+  }
+  78%,
+  100% {  /* 3600ms */
+    opacity: 0;
+  }
+}
+/* The omnibox. Light pill on a dark blur, which is what makes it read as a browser
+   rather than as another one of the app's own controls. */
+.vocab-outro-bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 22px;
+  border-radius: 999px;
+  background: #f6f7fbec;
+  box-shadow:
+    0 18px 50px #00000059,
+    0 2px 0 #ffffff6b inset;
+  animation: vocab-outro-bar var(--outro-dur) ease-out forwards;
+}
+@keyframes vocab-outro-bar {
+  0%,
+  8% {  /* 350ms */
+    opacity: 0;
+    transform: scale(0.96) translateY(6px);
+  }
+  17%,
+  52% {  /* 800ms -> 2400ms */
+    opacity: 1;
+    transform: none;
+    box-shadow:
+      0 18px 50px #00000059,
+      0 2px 0 #ffffff6b inset;
+  }
+  58% {  /* 2650ms - Enter: the bar takes the keystroke rather than a key graphic drawn
+            over it, which would be one more thing to explain to a viewer */
+    opacity: 1;
+    transform: scale(0.985);
+    box-shadow:
+      0 0 0 6px #7bdcb555,
+      0 18px 50px #00000059;
+  }
+  61% {  /* 2800ms */
+    opacity: 1;
+    transform: none;
+  }
+  74%,
+  100% {  /* 3400ms */
+    opacity: 0;
+    transform: scale(1.02);
+  }
+}
+/* A padlock, drawn rather than a glyph so no icon font has to be loaded for one frame. */
+.vocab-outro-lock {
+  width: 11px;
+  height: 9px;
+  border-radius: 2px;
+  background: #3c4150;
+  position: relative;
+  flex: none;
+}
+.vocab-outro-lock::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 100%;
+  width: 7px;
+  height: 6px;
+  translate: -50% 1px;
+  border: 1.6px solid #3c4150;
+  border-bottom: 0;
+  border-radius: 4px 4px 0 0;
+}
+/* Monospace so `ch` is an exact character and the steps() lands one letter at a time. */
+.vocab-outro-url {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+  font-size: 19px;
+  letter-spacing: 0.01em;
+  color: #15171f;
+  white-space: nowrap;
+  overflow: hidden;
+  width: 0;
+  animation: vocab-outro-type var(--outro-dur) forwards;
+}
+@keyframes vocab-outro-type {
+  0%,
+  18% {  /* 850ms - the pause before a typist starts */
+    width: 0;
+    /* Governs the interval that STARTS here: 14 characters, one step each. */
+    animation-timing-function: steps(14, end);
+  }
+  51%,
+  100% {  /* 2350ms */
+    width: 14ch;
+  }
+}
+.vocab-outro-caret {
+  width: 2px;
+  height: 22px;
+  background: #15171f;
+  flex: none;
+  animation: vocab-outro-caret var(--outro-dur) steps(1, end) forwards;
+}
+@keyframes vocab-outro-caret {
+  0%, 6%, 12%, 18%, 24%, 30%, 36%, 42%, 48% { opacity: 1; }
+  3%, 9%, 15%, 21%, 27%, 33%, 39%, 45% { opacity: 0; }
+  52%, 100% { opacity: 0; }  /* 2400ms - gone once Enter is pressed */
+}

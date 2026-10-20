@@ -40,6 +40,7 @@
  *     --css <w>x<h>         CSS viewport, phone-sized (default: 405x720)
  *     --side <px>           left/right inset clear of a platform's crop (default: 25)
  *     --controls <keep|hide>  the top transport controls (default: keep)
+ *     --outro <on|off>      the anh.chayla.app end card (default: on)
  *     --preset <id>         whose safe area the title corner follows (default: tiktok-clear)
  *     --scale <n>           device pixel ratio (default: 2.667 — 405×720 → 1080×1920)
  *   export mode:
@@ -121,6 +122,12 @@ const insetSide = Number(flag("side", "25"));
 // Kept by default: they are part of what the app looks like. `--controls hide` drops them,
 // which is worth a look when a platform's own chrome is already crowding that edge.
 const hideControls = flag("controls", "keep") === "hide";
+// The end card: blur, an address bar typing anh.chayla.app, Enter, an empty page. It plays
+// after the word and is captured in the SAME take, so there is no second encode to match.
+// The duration is the stylesheet's --outro-dur; the two have to agree, so it is asserted
+// against the live value rather than trusted (check below).
+const withOutro = flag("outro", "on") !== "off";
+const OUTRO_MS = 4600;
 // The safe area comes from the EXPORT preset rather than from numbers invented here, so
 // the frame the feed is recorded into and the frame Export Studio draws agree by
 // construction. The margins are fractions of the frame, so they carry to any capture size.
@@ -254,6 +261,8 @@ async function main() {
   let url: string;
   /** Resolves when the thing being recorded has finished; polled below. */
   let isFinished: () => Promise<boolean>;
+  /** Feed mode: the card this take is of, needed again by the outro after the loop ends. */
+  let recordedPosition = 0;
   let describe: () => Promise<string>;
 
   if (mode === "feed") {
@@ -352,6 +361,7 @@ async function main() {
     }
     if (!position) throw new Error("the feed never put a word on screen");
     const startedOn = position;
+    recordedPosition = position;
     console.log(`  feed at ${cssWidth}×${cssHeight} ×${scale.toFixed(2)} → ${width}×${height}`);
     // One whole word: finished when the feed has moved on to the next one.
     isFinished = async () =>
@@ -420,6 +430,52 @@ async function main() {
     }
     await sleep(250);
   }
+  // The outro rides the end of the same take. The feed has already moved to the next word
+  // by the time `isFinished` is true, so the first thing this does is stop playback —
+  // otherwise the blurred backdrop keeps animating behind an end card that is supposed to
+  // be settling. The markup is injected here but every class it uses is defined in
+  // vocabulary.css, so the scene can be redesigned without touching this script.
+  if (mode === "feed" && withOutro) {
+    const declared = await cdp.evaluate<number>(`(() => {
+      document.querySelector('.vocab-player-controls .vocab-icon-button')?.click();
+      // Back to the word that was just recorded. The feed has already advanced by now, and
+      // the end card is meant to settle onto the gradient the clip OPENED on, so that the
+      // loop closes on the same colours instead of cutting to another word's palette.
+      document.querySelector('.vocab-card[aria-posinset="${recordedPosition}"]')
+        ?.scrollIntoView({ block: 'center' });
+      const el = document.createElement('div');
+      el.className = 'vocab-outro';
+      el.innerHTML =
+        '<div class="vocab-outro-veil"></div>' +
+        '<div class="vocab-outro-bar">' +
+          '<span class="vocab-outro-lock"></span>' +
+          '<span class="vocab-outro-url">anh.chayla.app</span>' +
+          '<span class="vocab-outro-caret"></span>' +
+        '</div>';
+      document.body.appendChild(el);
+      // Read the duration back off the scene itself, so a re-timed stylesheet cannot leave
+      // this script cutting the end card off part-way through. The unit has to be read as
+      // well as the number: Chrome hands this back canonicalised to SECONDS ('4.6s') even
+      // though the stylesheet says 4600ms, and a bare parseFloat turns 4.6 seconds into
+      // 4.6 milliseconds — an end card cut off entirely, by a check meant to prevent that.
+      const raw = getComputedStyle(el).getPropertyValue('--outro-dur').trim();
+      const n = parseFloat(raw);
+      if (!isFinite(n)) return 0;
+      return /ms\s*$/.test(raw) ? n : n * 1000;
+    })()`);
+    if (!declared) {
+      throw new Error("the outro scene has no --outro-dur; is vocabulary.css loaded?");
+    }
+    if (Math.abs(declared - OUTRO_MS) > 1) {
+      throw new Error(
+        `the outro is ${declared}ms in the stylesheet but this script waits ${OUTRO_MS}ms`,
+      );
+    }
+    console.log(`  + outro (${declared}ms)`);
+    // A beat past the end, so the last held frame is the empty page and not a cut.
+    await sleep(declared + 250);
+  }
+
   const subject = await describe();
   await cdp.send("Page.stopScreencast");
   await sleep(200);
