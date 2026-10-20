@@ -40,6 +40,7 @@
  *     --css <w>x<h>         CSS viewport, phone-sized (default: 405x720)
  *     --side <px>           left/right inset clear of a platform's crop (default: 25)
  *     --controls <keep|hide>  the top transport controls (default: keep)
+ *     --preset <id>         whose safe area the title corner follows (default: tiktok-clear)
  *     --scale <n>           device pixel ratio (default: 2.667 — 405×720 → 1080×1920)
  *   export mode:
  *     --preset <id>         export preset (default: tiktok-clear)
@@ -122,6 +123,12 @@ const insetSide = Number(flag("side", "25"));
 // Kept by default: they are part of what the app looks like. `--controls hide` drops them,
 // which is worth a look when a platform's own chrome is already crowding that edge.
 const hideControls = flag("controls", "keep") === "hide";
+// The safe area comes from the EXPORT preset rather than from numbers invented here, so
+// the frame the feed is recorded into and the frame Export Studio draws agree by
+// construction. The margins are fractions of the frame, so they carry to any capture size.
+const safeOf = getExportPreset(flag("preset", "tiktok-clear")).safe;
+const safeTopPx = Math.round(safeOf.top * cssHeight);
+const safeRightPx = Math.round(safeOf.right * cssWidth);
 const scale = Number(flag("scale", String(1080 / 405)));
 const out = resolve(
   flag("out", mode === "feed" ? "./feed-clip.mp4" : `./export-${code ?? "clip"}.mp4`),
@@ -281,7 +288,8 @@ async function main() {
     // reader's geometry, not for the drawer handle back.
     await cdp.send("Page.addScriptToEvaluateOnNewDocument", {
       source: `(() => {
-        const css = ':root{--vocab-chrome-head:${insetTop}px;--vocab-chrome-side:${insetSide}px}'
+        const css = ':root{--vocab-chrome-head:${insetTop}px;--vocab-chrome-side:${insetSide}px'
+          + ';--vocab-safe-top:${safeTopPx}px;--vocab-safe-right:${safeRightPx}px}'
           + '.vocabulary-shell{--vocab-chrome-inset:${insetBottom}px}';
         // EVERYTHING waits for the document. This runs before the parser has built <html>,
         // so document.documentElement is null here; touching it threw, which silently

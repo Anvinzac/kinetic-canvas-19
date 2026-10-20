@@ -420,15 +420,27 @@
 .vocab-recording .vocab-saved-dock {
   display: none;
 }
-/* The top bar sits further in than the rest of the chrome while recording. Its base edge
-   margin is 16px against the rows' 24px, so it is the SHALLOWEST-anchored thing in the
-   scene and the first a side crop reaches \u2014 and the title now sits in the corner that crop
-   arrives at. Moving the title across does nothing for that on its own, because the crop
-   is symmetric: it takes the same bite out of either edge. This is what puts the corner
-   inside the safe area rather than just at the end of the bar. */
+/* While recording, the bar's TOP-RIGHT is the safe area's top-right \u2014 not the canvas's.
+   --vocab-safe-top and --vocab-safe-right are the export preset's own margins (tiktok-clear
+   is 8.5% of the height and 15% of the width) resolved to pixels by the recorder, so the
+   corner the title sits in is the same corner Export Studio draws. Two numbers invented
+   here instead would be a third opinion about where the safe area is, and the first to go
+   stale when a platform moves its furniture.
+
+   The LEFT is deliberately not the preset's. That margin is 5%, which protects against
+   TikTok's own interface but not against the aspect-fill crop that eats ~12.5% of each
+   edge \u2014 following it would put the gear back under the crop. Two different hazards, two
+   different numbers; only the right edge happens to be covered by both. */
 .vocab-recording .vocab-toolbar {
+  top: var(--vocab-safe-top, var(--vocab-chrome-top-offset));
+  right: var(--vocab-safe-right, calc(max(16px, env(safe-area-inset-right)) + var(--vocab-chrome-side, 0px)));
   left: calc(max(16px, env(safe-area-inset-left)) + var(--vocab-chrome-side, 0px) + 20px);
-  right: calc(max(16px, env(safe-area-inset-right)) + var(--vocab-chrome-side, 0px) + 20px);
+}
+/* The scrim is positioned against the bar, so it has to come back up by however far the
+   bar was pushed down — the same reasoning as the reader's offset, reading the safe top. */
+.vocab-recording .vocab-toolbar::before {
+  inset: calc(-1 * var(--vocab-safe-top, var(--vocab-chrome-top-offset, 14px)) - 2px)
+    calc(-18px - var(--vocab-chrome-side, 0px)) -26px;
 }
 /* Recorded top bar: the title moves to the RIGHT corner.
    The row is `auto 1fr auto` and its three children are auto-placed in source order, so
@@ -441,6 +453,10 @@
 .vocab-recording .vocab-toolbar-left {
   order: 3;
   justify-self: end;
+  /* The row centres its items, and the title block is shorter than the row the gear sets,
+     so centring left it sitting 8px below the corner it is supposed to be anchored to.
+     Top-aligned here means the title's own top edge IS the safe area's top edge. */
+  align-self: start;
 }
 /* The title's own lines follow it to that corner; left-ragged text hung off the right
    edge reads as a mistake rather than as a corner mark. */

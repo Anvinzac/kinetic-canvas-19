@@ -122,11 +122,39 @@ if (!css.includes(RECORDING)) {
   );
 }
 
+// The recorded title's corner must come from the export preset's safe area, not from
+// numbers written here. Two sources for "where is the safe area" is how they drift apart,
+// and the drift is invisible: both frames still render, they just stop agreeing.
+checks += 1;
+const SAFE_VARS = ["--vocab-safe-top", "--vocab-safe-right"];
+const recordedBar = ruleBodies(`${RECORDING} .vocab-toolbar`);
+if (recordedBar.length === 0) {
+  failures.push(`${RECORDING} .vocab-toolbar is gone; the title no longer takes the safe corner`);
+} else {
+  const missing = SAFE_VARS.filter((v) => !recordedBar.some((b) => b.includes(v)));
+  if (missing.length) {
+    failures.push(
+      `${RECORDING} .vocab-toolbar does not read ${missing.join(" or ")}; the title corner ` +
+        "would be a number invented in the stylesheet rather than the export preset's safe area",
+    );
+  }
+}
+
+// Top-aligned, or the title hangs below the corner it is supposed to sit in: the row
+// centres its items and the title block is shorter than the row.
+checks += 1;
+if (!ruleBodies(`${RECORDING} .vocab-toolbar-left`).some((b) => b.includes("align-self: start"))) {
+  failures.push(
+    `${RECORDING} .vocab-toolbar-left is not top-aligned; it would sit below the safe corner`,
+  );
+}
+
 for (const line of failures) console.log(`FAIL  ${line}`);
 if (!failures.length) {
   for (const { selector, why } of MUST_READ) console.log(`OK    ${selector} — ${why}`);
   console.log(`OK    ${VAR} is read ${reads.length}x, always with a fallback, declared nowhere`);
   console.log(`OK    ${RECORDING} hides the saved-words drawer handle`);
+  console.log(`OK    ${RECORDING} .vocab-toolbar takes its corner from the preset's safe area`);
 }
 
 console.log(
