@@ -108,12 +108,15 @@ const [insetTop, insetBottom] = flag("inset", "56,110").split(",").map(Number);
 // of a 405px viewport; 21:9 takes 15.6%. Anything anchored to an edge is what disappears
 // first, which is why the title and the gear were the casualties.
 //
-// 31px is a judgement call, not the safe number: it is what clearing the crop outright
-// (52px) was traded down to because the clip looked too boxed-in. It keeps the toolbar and
-// the rows outside a 19.5:9 crop, leaves them a few pixels inside a 20:9 one, and does not
-// save them at 21:9. Raise it towards 52 to buy that back, or pass 0 to record the app
-// exactly as a reader sees it.
-const insetSide = Number(flag("side", "31"));
+// 25px is a judgement call, not the safe number: clearing the crop outright wanted 52px,
+// and this is the second trade down from it for a frame that looked too boxed-in. What the
+// edge-anchored chrome actually gets is more than this value — the toolbar and the text
+// band add their own 16px, the progress and button rows 24px — so the visible margins are
+// 41px and 49px, against a 20:9 crop that eats 50.6px. On paper that is inside the crop;
+// in the rendered frame the ink sits further in than the boxes do, so what survives is
+// measured rather than predicted. Raise it towards 52 to buy real clearance back, or pass
+// 0 to record the app exactly as a reader sees it.
+const insetSide = Number(flag("side", "25"));
 const scale = Number(flag("scale", String(1080 / 405)));
 const out = resolve(
   flag("out", mode === "feed" ? "./feed-clip.mp4" : `./export-${code ?? "clip"}.mp4`),
