@@ -7672,17 +7672,28 @@ body:has(.vocab-outro) .vocab-resume {
 }
 
 /* ── Recorded intro ──────────────────────────────────────────────────────────────────────
-   The opening: the page is blurred, a badge asks the question the clip is about, and then
-   it clears and the first clue plays. It exists so a viewer is given the context BEFORE
-   the text starts arriving, rather than having to work out what they are looking at while
-   reading it.
+   The opening, in three beats:
 
-   The mirror image of the outro below it, and built the same way: one CSS timeline the
-   recorder starts and waits out, with the duration read back off the live scene. The
-   recorder pauses playback for the intro's length and resumes after, so the first page's
-   entrance plays AFTER the badge rather than behind it. */
+     1. BADGE      a question springs in over the blurred card, throwing confetti, holds
+                   long enough to be read, then pops away.
+     2. ASSEMBLY   the blur lifts off the SAME card and its chrome slides into place, one
+                   piece after another, so the page is seen being built rather than cut to.
+     3. HANDOVER   only once everything has landed does the first clue begin to arrive.
+
+   Beat 3 is the reason the whole thing exists. A clip that opens on finished text asks a
+   viewer to read and orient at the same time; this gives them the question first, then the
+   page, then the answer starting to arrive.
+
+   The stagger is done with animation-delay and `backwards` fill rather than by slicing one
+   long keyframe set into percentages. Each piece then states its own entrance and its own
+   moment in its own rule, the delays read as the running order, and re-timing one piece
+   does not mean recomputing every percentage in the file.
+
+   Recording-only: the recorder injects .vocab-intro, and none of this matches without it. */
 :root {
-  --intro-dur: 2600ms;
+  --intro-dur: 3400ms;
+  /* Overshoots slightly, so pieces land rather than glide to a stop. */
+  --intro-ease: cubic-bezier(0.17, 0.89, 0.28, 1.08);
 }
 .vocab-intro {
   position: fixed;
@@ -7693,87 +7704,256 @@ body:has(.vocab-outro) .vocab-resume {
   pointer-events: none;
   font-family: "Inter", sans-serif;
 }
+
+/* ── Beat 1: the veil ─────────────────────────────────────────────────────────────────── */
 .vocab-intro-veil {
   position: absolute;
   inset: 0;
-  animation: vocab-intro-veil var(--intro-dur) linear forwards;
+  animation: vocab-intro-veil 500ms ease-out 1900ms both;
+  backdrop-filter: blur(22px);
+  background: #00000073;
 }
 @keyframes vocab-intro-veil {
-  0%,
-  62% {  /* 1600ms - held while the badge is up */
+  from {
     backdrop-filter: blur(22px);
     background: #00000073;
   }
-  88%,
-  100% {  /* 2300ms - clear, and the card is sharp again */
+  to {
     backdrop-filter: blur(0px);
     background: #0000;
   }
 }
-/* The badge. Big on purpose: it is the only thing on screen for a second and a half, and
-   it has to be read at a glance on a phone held at arm's length. */
+
+/* ── Beat 1: the badge ────────────────────────────────────────────────────────────────── */
 .vocab-intro-badge {
   position: relative;
-  max-width: 78%;
-  padding: 22px 38px;
-  border-radius: 28px;
-  font-size: 40px;
+  max-width: 76%;
+  padding: 24px 40px;
+  border-radius: 30px;
+  font-size: 42px;
   font-weight: 800;
-  line-height: 1.15;
-  letter-spacing: -0.015em;
+  line-height: 1.12;
+  letter-spacing: -0.02em;
   text-align: center;
   color: #10121a;
-  background: #fdfdffee;
+  background: linear-gradient(180deg, #ffffff, #f2f4fb);
   box-shadow:
-    0 26px 70px #00000066,
-    0 2px 0 #ffffff7a inset;
-  animation: vocab-intro-badge var(--intro-dur) cubic-bezier(0.22, 1.2, 0.36, 1) forwards;
+    0 30px 80px #00000070,
+    0 3px 0 #ffffff inset,
+    0 0 0 1px #ffffff40;
+  /* In, hold, out - one animation each, so the hold is simply the gap between them. */
+  animation:
+    vocab-intro-badge-in 620ms var(--intro-ease) 200ms backwards,
+    vocab-intro-badge-out 340ms cubic-bezier(0.5, -0.4, 0.75, 0.4) 1800ms forwards;
+  overflow: hidden;
 }
-@keyframes vocab-intro-badge {
+@keyframes vocab-intro-badge-in {
   0% {
     opacity: 0;
-    transform: scale(0.82) translateY(10px);
+    transform: scale(0.42) rotate(-7deg);
   }
-  13% {  /* 350ms - overshoots, so it lands rather than fades up */
+  55% {
     opacity: 1;
-    transform: scale(1.04);
+    transform: scale(1.1) rotate(2.5deg);
   }
-  18% {
-    transform: scale(1);
+  78% {
+    transform: scale(0.97) rotate(-1deg);
   }
-  62% {  /* 1600ms - the hold, which is the whole point of the intro */
+  100% {
     opacity: 1;
-    transform: scale(1);
-  }
-  77%,
-  100% {  /* 2000ms - gone quickly, so the clip gets on with it */
-    opacity: 0;
-    transform: scale(0.94);
+    transform: scale(1) rotate(0deg);
   }
 }
-/* The card arrives as the badge leaves. Same "everything except the backdrop" shape as the
-   outro: the gradient stays, so the blur clears onto a page that was always there rather
-   than onto one that fades up from nothing. */
+@keyframes vocab-intro-badge-out {
+  0% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+  30% {
+    transform: scale(1.06) rotate(1.5deg);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.72) rotate(-5deg);
+  }
+}
+/* A light sweeping across the face, once, just after it lands. Pure decoration, but it is
+   what stops a white card reading as a static graphic. */
+.vocab-intro-badge::after {
+  content: "";
+  position: absolute;
+  top: -60%;
+  bottom: -60%;
+  width: 45%;
+  left: -60%;
+  background: linear-gradient(100deg, #0000, #ffffffe0, #0000);
+  transform: skewX(-18deg);
+  animation: vocab-intro-shine 900ms ease-in-out 700ms backwards;
+  opacity: 0;
+}
+@keyframes vocab-intro-shine {
+  0% {
+    left: -60%;
+    opacity: 0;
+  }
+  25% {
+    opacity: 0.85;
+  }
+  100% {
+    left: 130%;
+    opacity: 0;
+  }
+}
+/* A ring that expands out of the badge as it lands, which reads as the impact. */
+.vocab-intro-ring {
+  position: absolute;
+  width: 240px;
+  height: 240px;
+  border-radius: 999px;
+  border: 3px solid #ffffff;
+  animation: vocab-intro-ring 720ms ease-out 330ms backwards;
+  opacity: 0;
+}
+@keyframes vocab-intro-ring {
+  0% {
+    opacity: 0.75;
+    transform: scale(0.3);
+    border-width: 10px;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(2.1);
+    border-width: 1px;
+  }
+}
+
+/* ── Beat 1: confetti ─────────────────────────────────────────────────────────────────── */
+/* Thrown from behind the badge as it lands, then carried down and out. Each piece's
+   trajectory, tint, size and timing live in the nth-child rules below, so the markup is
+   eighteen identical spans and every value that shapes the burst is in this file. */
+.vocab-intro-confetti {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+.vocab-intro-confetti i {
+  position: absolute;
+  width: var(--w, 12px);
+  height: var(--h, 16px);
+  background: var(--c, #ffd166);
+  border-radius: var(--r, 2px);
+  opacity: 0;
+  animation: vocab-intro-confetti var(--d, 1500ms) cubic-bezier(0.1, 0.65, 0.3, 1)
+    var(--t, 300ms) forwards;
+}
+@keyframes vocab-intro-confetti {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) rotate(0deg) scale(0.3);
+  }
+  12% {
+    opacity: 1;
+  }
+  /* The throw: out to its furthest point, still rising. */
+  45% {
+    transform: translate(var(--x), var(--y)) rotate(var(--rot)) scale(1);
+  }
+  /* The fall: gravity takes it past that point and down out of frame. */
+  100% {
+    opacity: 0;
+    transform: translate(calc(var(--x) * 1.25), calc(var(--y) + 420px))
+      rotate(calc(var(--rot) * 2.2)) scale(0.85);
+  }
+}
+.vocab-intro-confetti i:nth-child(1)  { --x: -172px; --y: -96px;  --rot: 220deg; --c: #ff6b6b; --t: 300ms; --d: 1700ms; --w: 13px; --h: 18px; }
+.vocab-intro-confetti i:nth-child(2)  { --x:  168px; --y: -112px; --rot: -260deg; --c: #4ecdc4; --t: 320ms; --d: 1600ms; --w: 11px; --h: 11px; --r: 999px; }
+.vocab-intro-confetti i:nth-child(3)  { --x: -118px; --y: -176px; --rot: 190deg; --c: #ffd166; --t: 345ms; --d: 1800ms; --w: 15px; --h: 9px; }
+.vocab-intro-confetti i:nth-child(4)  { --x:  126px; --y: -186px; --rot: -200deg; --c: #a06bff; --t: 360ms; --d: 1650ms; --w: 10px; --h: 16px; }
+.vocab-intro-confetti i:nth-child(5)  { --x: -214px; --y:  -34px; --rot: 300deg; --c: #7bdcb5; --t: 310ms; --d: 1750ms; --w: 12px; --h: 12px; --r: 999px; }
+.vocab-intro-confetti i:nth-child(6)  { --x:  220px; --y:  -46px; --rot: -320deg; --c: #ff9f1c; --t: 335ms; --d: 1700ms; --w: 14px; --h: 8px; }
+.vocab-intro-confetti i:nth-child(7)  { --x:  -72px; --y: -208px; --rot: 160deg; --c: #4ecdc4; --t: 380ms; --d: 1850ms; --w: 9px; --h: 17px; }
+.vocab-intro-confetti i:nth-child(8)  { --x:   78px; --y: -214px; --rot: -150deg; --c: #ff6b6b; --t: 395ms; --d: 1800ms; --w: 13px; --h: 10px; }
+.vocab-intro-confetti i:nth-child(9)  { --x: -246px; --y: -128px; --rot: 240deg; --c: #ffd166; --t: 355ms; --d: 1900ms; --w: 10px; --h: 10px; --r: 999px; }
+.vocab-intro-confetti i:nth-child(10) { --x:  252px; --y: -136px; --rot: -230deg; --c: #a06bff; --t: 370ms; --d: 1880ms; --w: 12px; --h: 15px; }
+.vocab-intro-confetti i:nth-child(11) { --x: -148px; --y:   38px; --rot: 280deg; --c: #7bdcb5; --t: 325ms; --d: 1600ms; --w: 11px; --h: 14px; }
+.vocab-intro-confetti i:nth-child(12) { --x:  154px; --y:   44px; --rot: -290deg; --c: #ff9f1c; --t: 340ms; --d: 1620ms; --w: 13px; --h: 9px; }
+.vocab-intro-confetti i:nth-child(13) { --x:  -28px; --y: -232px; --rot: 210deg; --c: #ff6b6b; --t: 410ms; --d: 1950ms; --w: 10px; --h: 10px; --r: 999px; }
+.vocab-intro-confetti i:nth-child(14) { --x:   34px; --y: -238px; --rot: -180deg; --c: #4ecdc4; --t: 420ms; --d: 1900ms; --w: 14px; --h: 11px; }
+.vocab-intro-confetti i:nth-child(15) { --x: -196px; --y:  -158px; --rot: 330deg; --c: #ffd166; --t: 365ms; --d: 1820ms; --w: 9px; --h: 15px; }
+.vocab-intro-confetti i:nth-child(16) { --x:  202px; --y:  -166px; --rot: -340deg; --c: #a06bff; --t: 350ms; --d: 1860ms; --w: 12px; --h: 12px; }
+.vocab-intro-confetti i:nth-child(17) { --x: -102px; --y:   76px; --rot: 250deg; --c: #7bdcb5; --t: 330ms; --d: 1560ms; --w: 10px; --h: 13px; }
+.vocab-intro-confetti i:nth-child(18) { --x:  110px; --y:   82px; --rot: -270deg; --c: #ff9f1c; --t: 345ms; --d: 1580ms; --w: 13px; --h: 8px; }
+
+/* ── Beat 2: the page assembles ───────────────────────────────────────────────────────── */
+/* Everything the card paints starts hidden, so the blurred background is the card itself
+   with nothing on it - the same card that is about to be built, not a stand-in. */
 body:has(.vocab-intro) .vocab-card > *:not(.vocab-backdrop),
 body:has(.vocab-intro) .vocab-toolbar,
-body:has(.vocab-intro) .vocab-saved-dock,
-body:has(.vocab-intro) .vocab-resume {
-  animation: vocab-intro-arrive var(--intro-dur, 2600ms) ease-out forwards;
+body:has(.vocab-intro) .vocab-saved-dock {
+  opacity: 0;
 }
-/* The resume button is an artefact of pausing, not part of the card, so it must not fade
-   in with it. Same selector as the rule above and declared after it, which is what makes
-   this an exception to that list rather than a second opinion about it. */
+/* Then each piece arrives in its own right. An animation beats the blanket rule above only
+   while it is filling, so the fill mode has to be BOTH: `backwards` alone covers the delay
+   and then lets go on the last frame, dropping every piece back to the blanket rule's
+   opacity 0 the instant it had finished arriving. The veil did the same thing and snapped
+   back to full blur. */
+body:has(.vocab-intro) .vocab-toolbar {
+  animation: vocab-intro-drop 540ms var(--intro-ease) 2000ms both;
+}
+body:has(.vocab-intro) .vocab-progress {
+  animation: vocab-intro-rise-centred 540ms var(--intro-ease) 2130ms both;
+}
+body:has(.vocab-intro) .vocab-stage-label {
+  animation: vocab-intro-rise-centred 540ms var(--intro-ease) 2190ms both;
+}
+body:has(.vocab-intro) .vocab-action-bar {
+  animation: vocab-intro-rise-centred 540ms var(--intro-ease) 2260ms both;
+}
+body:has(.vocab-intro) .vocab-emoji-strip {
+  animation: vocab-intro-rise 540ms var(--intro-ease) 2330ms both;
+}
+@keyframes vocab-intro-drop {
+  from {
+    opacity: 0;
+    transform: translateY(-26px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes vocab-intro-rise {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+/* The centred chrome carries translateX(-50%) as its resting transform, so its entrance has
+   to restate it - animating plain translateY would drop the centring for the animation's
+   whole length and slide the row to the right of the frame. */
+@keyframes vocab-intro-rise-centred {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+/* ── Beat 3: the text is held back ────────────────────────────────────────────────────── */
+/* The stage stays dark for the WHOLE intro, and the recorder replays page one at the end,
+   so the first clue genuinely begins after the page is built. Without this the entrance
+   has long since played behind the blur, and the clip opens on finished text pretending to
+   be about to arrive. The resume button is an artefact of pausing and never belongs. */
+body:has(.vocab-intro) .vocab-stage,
 body:has(.vocab-intro) .vocab-resume {
   animation: none;
   opacity: 0;
-}
-@keyframes vocab-intro-arrive {
-  0%,
-  62% {
-    opacity: 0;
-  }
-  88%,
-  100% {
-    opacity: 1;
-  }
 }

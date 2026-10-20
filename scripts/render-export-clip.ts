@@ -145,6 +145,19 @@ const out = resolve(
   flag("out", mode === "feed" ? "./feed-clip.mp4" : `./export-${code ?? "clip"}.mp4`),
 );
 
+/**
+ * One tap at a point, as a touch rather than a click.
+ * @param cdp - the connected client
+ * @param x - CSS pixels from the left of the viewport
+ * @param y - CSS pixels from the top
+ */
+async function tap(cdp: Cdp, x: number, y: number): Promise<void> {
+  const point = [{ x: Math.round(x), y: Math.round(y) }];
+  await cdp.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: point });
+  await sleep(60);
+  await cdp.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
+}
+
 // ── A minimal CDP client over Node's built-in WebSocket ─────────────────────────────────
 type Handler = (params: Record<string, unknown>) => void;
 
@@ -449,12 +462,20 @@ async function main() {
     const introMs = await cdp.evaluate<number>(`(() => {
       const el = document.createElement('div');
       el.className = 'vocab-intro';
+      const veil = document.createElement('div');
+      veil.className = 'vocab-intro-veil';
+      const ring = document.createElement('div');
+      ring.className = 'vocab-intro-ring';
+      // Eighteen identical spans; every value that shapes the burst is in the stylesheet's
+      // nth-child rules, so the throw can be redesigned without touching this script.
+      const burst = document.createElement('div');
+      burst.className = 'vocab-intro-confetti';
+      for (let i = 0; i < 18; i += 1) burst.appendChild(document.createElement('i'));
       const badge = document.createElement('div');
       badge.className = 'vocab-intro-badge';
       // textContent, not innerHTML: the badge's words come from a command line.
       badge.textContent = ${JSON.stringify(introText)};
-      el.innerHTML = '<div class="vocab-intro-veil"></div>';
-      el.appendChild(badge);
+      el.append(veil, ring, burst, badge);
       document.body.appendChild(el);
       const raw = getComputedStyle(el).getPropertyValue('--intro-dur').trim();
       const n = parseFloat(raw);
@@ -463,18 +484,30 @@ async function main() {
     })()`);
     if (!introMs) throw new Error("the intro scene has no --intro-dur; is vocabulary.css loaded?");
     console.log(`  + intro (${introMs}ms) "${introText}"`);
-    // Resume when the badge STARTS leaving, not when the scene ends. The stylesheet clears
-    // the veil between 62% and 88%, so resuming at 62% means the first clue arrives as the
-    // blur lifts - and, more practically, the paused-state resume button is gone well
-    // before the page is sharp enough to see it.
-    await sleep(Math.round(introMs * 0.62));
-    await cdp.evaluate(
-      `document.querySelector('.vocab-player-controls .vocab-icon-button')?.click()`,
-    );
-    await sleep(introMs - Math.round(introMs * 0.62));
-    // Removed rather than left transparent: while it is in the document its :has() rule
-    // keeps animating the card's own chrome, and the outro's identical rule would then be
-    // fighting it for the same elements.
+    await sleep(introMs);
+
+    // Beat 3. The first page's entrance has already played, behind the blur, within a
+    // second of the card mounting - pausing cannot win that race, and nothing in the app
+    // exposes a replay. What it does expose is page navigation by tap: forward one page and
+    // back remounts page one, and a remount is a fresh entrance. So the clue arrives here,
+    // after the page has finished assembling, instead of having happened while nobody could
+    // see it. The taps also resume playback on their way through, which is wanted anyway.
+    const card = await cdp.evaluate<{ x: number; y: number } | null>(`(() => {
+      const mid = innerHeight / 2;
+      const c = [...document.querySelectorAll('.vocab-card')].find(el => {
+        const b = el.getBoundingClientRect(); return b.top <= mid && b.bottom >= mid; });
+      if (!c) return null;
+      const b = c.getBoundingClientRect();
+      return { x: b.left + b.width / 2, y: b.top + b.height * 0.42 };
+    })()`);
+    if (card) {
+      // Past 65% of the width is the forward zone, under 35% the back one. Kept well clear
+      // of both edges so a rounded corner or a stray overlay cannot swallow the tap.
+      await tap(cdp, cssWidth * 0.86, card.y);
+      await sleep(120);
+      await tap(cdp, cssWidth * 0.14, card.y);
+      await sleep(80);
+    }
     await cdp.evaluate(`document.querySelector('.vocab-intro')?.remove()`);
   }
 
