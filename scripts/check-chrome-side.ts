@@ -126,7 +126,7 @@ if (!css.includes(RECORDING)) {
 // numbers written here. Two sources for "where is the safe area" is how they drift apart,
 // and the drift is invisible: both frames still render, they just stop agreeing.
 checks += 1;
-const SAFE_VARS = ["--vocab-safe-top", "--vocab-safe-right"];
+const SAFE_VARS = ["--vocab-safe-top"];
 const recordedBar = ruleBodies(`${RECORDING} .vocab-toolbar`);
 if (recordedBar.length === 0) {
   failures.push(`${RECORDING} .vocab-toolbar is gone; the title no longer takes the safe corner`);
@@ -134,8 +134,36 @@ if (recordedBar.length === 0) {
   const missing = SAFE_VARS.filter((v) => !recordedBar.some((b) => b.includes(v)));
   if (missing.length) {
     failures.push(
-      `${RECORDING} .vocab-toolbar does not read ${missing.join(" or ")}; the title corner ` +
+      `${RECORDING} .vocab-toolbar does not read ${missing.join(" or ")}; the bar's top ` +
         "would be a number invented in the stylesheet rather than the export preset's safe area",
+    );
+  }
+}
+
+// ONE margin. Every edge-anchored rule in the recorded frame must resolve to the margin
+// ALONE — no per-element base added to it. That addition is the whole bug this file exists
+// for: with bases of 16, 20 and 24 in play, one knob meant four different margins and
+// lowering it cut whichever element was shallowest, which is not something a rendered frame
+// shows you until the crop lands on exactly that element.
+checks += 1;
+const RECORDED_EDGES = [
+  `${RECORDING} .vocab-toolbar`,
+  `${RECORDING} .vocab-stage-band`,
+  `${RECORDING} :is(.vocab-progress, .vocab-action-bar)`,
+];
+// `16px + var(--…)` or `var(--…) + 20px` — a constant adjoining the margin in one value.
+const BASED = /(\d+px\s*\+\s*var\(--vocab-chrome-side|var\(--vocab-chrome-side[^)]*\)\s*\+\s*\d+px)/;
+for (const selector of RECORDED_EDGES) {
+  const bodies = ruleBodies(selector);
+  if (bodies.length === 0) {
+    failures.push(`${selector} is gone; the recorded frame no longer has one margin`);
+    continue;
+  }
+  const offender = bodies.find((b) => BASED.test(b));
+  if (offender) {
+    failures.push(
+      `${selector} adds a constant to ${VAR}; every recorded edge must resolve to the ` +
+        "margin alone, or one knob silently means several different margins again",
     );
   }
 }
@@ -154,7 +182,8 @@ if (!failures.length) {
   for (const { selector, why } of MUST_READ) console.log(`OK    ${selector} — ${why}`);
   console.log(`OK    ${VAR} is read ${reads.length}x, always with a fallback, declared nowhere`);
   console.log(`OK    ${RECORDING} hides the saved-words drawer handle`);
-  console.log(`OK    ${RECORDING} .vocab-toolbar takes its corner from the preset's safe area`);
+  console.log(`OK    ${RECORDING} .vocab-toolbar takes its top from the preset's safe area`);
+  console.log(`OK    every recorded edge resolves to ${VAR} alone, with no base added`);
 }
 
 console.log(

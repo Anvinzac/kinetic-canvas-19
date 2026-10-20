@@ -414,13 +414,13 @@
    The saved-words drawer handle is a control: it invites a tap that a video cannot take,
    and it rides the right edge where a platform's crop and its own action rail already sit.
    The selector lives HERE rather than in the recorder so it travels with the element it
-   names \u2014 a rule spelled out in the recorder goes stale the moment this class is renamed,
+   names - a rule spelled out in the recorder goes stale the moment this class is renamed,
    and does so silently, because a selector that matches nothing throws no error. The
    recorder only sets the flag. */
 .vocab-recording .vocab-saved-dock {
   display: none;
 }
-/* While recording, the bar's TOP-RIGHT is the safe area's top-right \u2014 not the canvas's.
+/* While recording, the bar's TOP-RIGHT is the safe area's top-right - not the canvas's.
    --vocab-safe-top and --vocab-safe-right are the export preset's own margins (tiktok-clear
    is 8.5% of the height and 15% of the width) resolved to pixels by the recorder, so the
    corner the title sits in is the same corner Export Studio draws. Two numbers invented
@@ -429,22 +429,26 @@
 
    The LEFT is deliberately not the preset's. That margin is 5%, which protects against
    TikTok's own interface but not against the aspect-fill crop that eats ~12.5% of each
-   edge \u2014 following it would put the gear back under the crop. Two different hazards, two
+   edge - following it would put the gear back under the crop. Two different hazards, two
    different numbers; only the right edge happens to be covered by both. */
 .vocab-recording .vocab-toolbar {
   top: var(--vocab-safe-top, var(--vocab-chrome-top-offset));
-  right: var(--vocab-safe-right, calc(max(16px, env(safe-area-inset-right)) + var(--vocab-chrome-side, 0px)));
-  left: calc(max(16px, env(safe-area-inset-left)) + var(--vocab-chrome-side, 0px) + 20px);
+  left: var(--vocab-chrome-side, 0px);
+  right: var(--vocab-chrome-side, 0px);
 }
-/* The scrim is positioned against the bar, so it has to come back up by however far the
-   bar was pushed down — the same reasoning as the reader's offset, reading the safe top. */
+/* The scrim is positioned against the BAR, so reaching an edge means coming back by exactly
+   how far the bar sits from it: the negated margin, never a constant. It read
+   `-18px - margin` while the bar sat at `16 + margin + 20`, and those cannot cancel at any
+   margin - at 25 the gradient stopped 18px short of both edges and read as a dark box
+   floating in the middle of the frame rather than as a top edge. Vertically the same rule
+   already applied, which is why the top looked right while the sides did not. */
 .vocab-recording .vocab-toolbar::before {
   inset: calc(-1 * var(--vocab-safe-top, var(--vocab-chrome-top-offset, 14px)) - 2px)
-    calc(-18px - var(--vocab-chrome-side, 0px)) -26px;
+    calc(-1 * var(--vocab-chrome-side, 0px)) -26px;
 }
 /* Recorded top bar: the title moves to the RIGHT corner.
    The row is `auto 1fr auto` and its three children are auto-placed in source order, so
-   reordering is enough to re-column them \u2014 no second markup. The gear keeps order 0 and
+   reordering is enough to re-column them - no second markup. The gear keeps order 0 and
    takes the left `auto`, the controls take the stretchy middle, and the title lands in the
    right `auto` with justify-self: end. Nothing here applies to a reader. */
 .vocab-recording .vocab-player-controls {
@@ -465,22 +469,27 @@
   text-align: right;
 }
 /* Opt-in, off by default: the transport controls are controls, so a clip does not need
-   them \u2014 but they also say "this is a real app", so whether they earn their place in the
+   them - but they also say "this is a real app", so whether they earn their place in the
    frame is a judgement to make by looking, not one to bake in. --controls hide. */
 .vocab-hide-controls .vocab-player-controls {
   display: none;
 }
-/* The text band carries the chrome inset alone, which puts the words at --vocab-chrome-side
-   while the toolbar sits at 16px + that and the rows at 24px + that. On screen the word is
-   then the one thing reaching past everything else, which reads as the inset not applying
-   to it at all. 16px is the toolbar's own edge margin: matching it lines the word up with
-   the wordmark above it, so the scene has ONE visible margin instead of three.
-
-   Scoped to a recording because the reader's band is deliberately full-bleed: on a phone
-   there is no crop to clear, and the extra 16px would only cost the text its size. */
+/* ONE margin for the recorded frame.
+   The reader's chrome is anchored at three different depths - the toolbar at 16px, the
+   progress and button rows at 24px, the text band flush - which is right for a phone and
+   wrong for a frame that gets cropped, because each element then crosses the crop line at
+   a different moment. "Make the inset smaller" had no single meaning: it cut whichever
+   element happened to be shallowest, and four rounds of tuning never converged.
+   Here every edge-anchored thing in the recorded frame resolves to --vocab-chrome-side and
+   nothing adds a base to it, so one number moves the whole scene and either all of it
+   clears a crop or none of it does. Scoped to a recording: the reader's three depths are
+   deliberate and stay. */
 .vocab-recording .vocab-stage-band {
-  left: calc(16px + var(--vocab-chrome-side, 0px));
-  right: calc(16px + var(--vocab-chrome-side, 0px));
+  left: var(--vocab-chrome-side, 0px);
+  right: var(--vocab-chrome-side, 0px);
+}
+.vocab-recording :is(.vocab-progress, .vocab-action-bar) {
+  width: min(440px, calc(100% - 2 * var(--vocab-chrome-side, 0px)));
 }
 
 .vocab-saved-dock {
@@ -1873,7 +1882,7 @@
 /* The text's own side margins, and the reason this is a variable rather than a number:
    a platform that scales the clip to fill a taller screen crops the SIDES, and the text
    runs to within 2% of them (LINE_BOX_SHARE in useMeasuredLines). Narrowing the band is
-   what moves the text, not a padding \u2014 clientWidth includes padding, so the fit
+   what moves the text, not a padding - clientWidth includes padding, so the fit
    pipeline would never see it. The band is the box the pipeline measures, a ResizeObserver
    watches it, and the lines re-solve to the narrower width on their own. */
 .vocab-stage-band {

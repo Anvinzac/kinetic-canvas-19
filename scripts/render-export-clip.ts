@@ -104,21 +104,16 @@ const [cssWidth, cssHeight] = flag("css", "405x720").split("x").map(Number);
 // Defaults are roughly TikTok's overlay zones at a 405×720 viewport (~8% and ~15%); pass
 // 0,0 to record the app exactly as it sits on a phone.
 const [insetTop, insetBottom] = flag("inset", "56,110").split(",").map(Number);
-// How far in from the LEFT and RIGHT edges, in CSS pixels, and the reason it is not zero:
-// a 9:16 clip on a taller phone is scaled to COVER the feed, so the sides are cropped off.
-// At 20:9 \u2014 the common case \u2014 that is 12.5% of the width gone from each edge, about 51px
-// of a 405px viewport; 21:9 takes 15.6%. Anything anchored to an edge is what disappears
-// first, which is why the title and the gear were the casualties.
+// THE margin for the recorded frame, in CSS pixels, and the only horizontal knob there is.
+// Every edge-anchored thing in the recording resolves to exactly this - title, gear, text,
+// progress row, button row - so one number moves the whole scene together. It used to be an
+// offset added to four different per-element bases, which is why "make the inset smaller"
+// kept cutting whichever element was shallowest.
 //
-// 25px is a judgement call, not the safe number: clearing the crop outright wanted 52px,
-// and this is the second trade down from it for a frame that looked too boxed-in. What the
-// edge-anchored chrome actually gets is more than this value — the toolbar and the text
-// band add their own 16px, the progress and button rows 24px — so the visible margins are
-// 41px and 49px, against a 20:9 crop that eats 50.6px. On paper that is inside the crop;
-// in the rendered frame the ink sits further in than the boxes do, so what survives is
-// measured rather than predicted. Raise it towards 52 to buy real clearance back, or pass
-// 0 to record the app exactly as a reader sees it.
-const insetSide = Number(flag("side", "25"));
+// 0 is full bleed: the scene fills the width, as a reader sees it. That is the right
+// baseline to judge a real post from, because what a platform actually crops has never been
+// measured on a real phone here - see docs/export-recording-layout-handoff.md.
+const insetSide = Number(flag("side", "0"));
 // Whether the transport controls (play, sound, shuffle) stay in the recorded top bar.
 // Kept by default: they are part of what the app looks like. `--controls hide` drops them,
 // which is worth a look when a platform's own chrome is already crowding that edge.
@@ -433,7 +428,7 @@ async function main() {
   // screencast of a scaled viewport can arrive at the CSS size rather than the device-pixel
   // one, and ffmpeg would then quietly UPSCALE it to the output size. Asking for the scale
   // is not the same as getting it, so the check is on the result, and it refuses rather
-  // than warns \u2014 a clip that says 1080\u00d71920 and holds 405\u00d7720 of detail looks soft with
+  // than warns - a clip that says 1080x1920 and holds 405x720 of detail looks soft with
   // nothing in the file to say why, and that one shipped before anyone noticed.
   const probe = spawnSync(
     "ffprobe",
@@ -445,11 +440,11 @@ async function main() {
   if (grabbedWidth && grabbedHeight) {
     if (grabbedWidth < width || grabbedHeight < height) {
       throw new Error(
-        `frames came back at ${grabbedWidth}\u00d7${grabbedHeight}, short of the ${width}\u00d7${height} asked for; ` +
+        `frames came back at ${grabbedWidth}x${grabbedHeight}, short of the ${width}x${height} asked for; ` +
           "encoding them would upscale. Check --force-device-scale-factor reached the browser.",
       );
     }
-    console.log(`  frames captured at ${grabbedWidth}\u00d7${grabbedHeight} (native)`);
+    console.log(`  frames captured at ${grabbedWidth}x${grabbedHeight} (native)`);
   }
   const seconds = captured[captured.length - 1]!.atMs / 1000;
   console.log(
@@ -488,8 +483,8 @@ async function main() {
       "anullsrc=channel_layout=stereo:sample_rate=48000",
       "-shortest",
       "-vf",
-      // in_range=full is what the frames really are \u2014 they arrive as JPEG, which is full
-      // range \u2014 and out_range=tv is what an H.264 file is expected to hold. Without the
+      // in_range=full is what the frames really are - they arrive as JPEG, which is full
+      // range - and out_range=tv is what an H.264 file is expected to hold. Without the
       // conversion the levels stay 0\u2013255 and the file gets tagged yuvj420p; players that
       // read it as 16\u2013235 anyway crush the blacks and blow out the white text.
       `fps=${fps},scale=${width}:${height}:flags=lanczos:in_range=full:out_range=tv,format=yuv420p`,
