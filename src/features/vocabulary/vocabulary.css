@@ -1,5 +1,13 @@
 /* Vocabulary-only layout. Virtual rows keep viewport-sized snap targets and bounded coordinates. */
-.vocabulary-shell {
+
+/* Anything that HOSTS a card declares these, not just the feed's shell. The card's chrome
+   is positioned from them - `bottom: var(--vocab-chrome-inset)` and friends - and a custom
+   property with no fallback that resolves to nothing makes the whole declaration invalid,
+   so the row does not shift, it loses its `bottom` entirely and falls to the top of the
+   frame. That is what the showcase looked like before it was added here: the button row
+   pinned to the top edge, the progress row with it, and nothing to say why. */
+.vocabulary-shell,
+.vocab-showcase-stage {
   /* Shell-level defaults for chrome that floats above the cards (toolbar, options
      panel, empty state). Each card overrides all four from its own validated
      palette, so a role is never undefined wherever it is consumed. */
@@ -7956,4 +7964,93 @@ body:has(.vocab-intro) .vocab-stage,
 body:has(.vocab-intro) .vocab-resume {
   animation: none;
   opacity: 0;
+}
+
+/* ── Showcase ────────────────────────────────────────────────────────────────────────────
+   The promo surface: one card at the clip's exact frame, with the top bar drawn as
+   scenery. It carries .vocab-recording, so every recorded-frame rule above applies here
+   without a recorder having to inject anything.
+
+   The stage is sized the way the export frame's is — both axes given a definite length
+   rather than one axis and an aspect-ratio — because the card inside is height:100%, and a
+   percentage height against an `auto` parent resolves to nothing. That bug rendered a
+   144px card inside a 1920px stage and was invisible at small sizes. */
+.vocab-showcase {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: #000;
+  overflow: hidden;
+}
+.vocab-showcase-stage {
+  --showcase-ratio: calc(1920 / 1080);
+  /* The recorded frame's geometry, owned by the surface that IS the frame rather than
+     injected into it from a script. Declaring --vocab-chrome-side HERE is safe in the way
+     declaring it on a descendant would not be: nothing on this element reads it, so every
+     piece of chrome inside still inherits one value. check-chrome-side allows this one
+     site and no other.
+
+     --vocab-safe-top is the tiktok-clear preset's 8.5% of a 1080x1920 frame, resolved at
+     the 405x720 viewport every recording uses. It is a length and not a percentage because
+     the toolbar's scrim negates it to find the top edge, and a percentage there would
+     resolve against the toolbar's own height instead of the frame's. */
+  --vocab-chrome-side: 25px;
+  --vocab-safe-top: 61px;
+  --vocab-chrome-inset: 64px;
+  --vocab-chrome-bar: 36px;
+  --vocab-chrome-gap: 28px;
+  position: relative;
+  width: min(100vw, calc(100dvh / var(--showcase-ratio)));
+  height: min(100dvh, calc(100vw * var(--showcase-ratio)));
+  overflow: hidden;
+  isolation: isolate;
+}
+/* The scenery bar is absolute within the stage, not fixed to the viewport: the stage IS
+   the frame, and a fixed bar would hang off it whenever the window is a different shape. */
+.vocab-showcase .vocab-toolbar {
+  position: absolute;
+}
+/* Held off until the badge has gone. The assembly rules above animate it in from here. */
+.vocab-showcase .vocab-toolbar[data-hidden] {
+  opacity: 0;
+}
+/* The real toolbar's left column is a dropdown trigger that stacks its wordmark over its
+   difficulty line; this scenery has to stack the same way, or the bar reads as one long
+   run of text instead of a mark with a caption. Aligned to the end because the recorded
+   layout puts this column in the right corner. */
+.vocab-showcase .vocab-toolbar-left {
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0;
+}
+.vocab-showcase-brand {
+  font-weight: 800;
+  font-size: 17px;
+  letter-spacing: -0.01em;
+  color: var(--chrome-ink, #fff);
+  white-space: nowrap;
+}
+.vocab-showcase-brand span {
+  color: var(--vocab-accent, #7bdcb5);
+}
+.vocab-showcase-filter {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--chrome-ink, #fff);
+  opacity: 0.92;
+  white-space: nowrap;
+}
+/* The scenery icons are spans, not buttons, so they need the shape the real ones get from
+   .vocab-icon-button's own rule plus the hover and focus states they will never have. */
+.vocab-showcase [data-showcase-chrome] .vocab-icon-button {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  pointer-events: none;
 }

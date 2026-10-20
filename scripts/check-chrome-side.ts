@@ -81,7 +81,15 @@ for (const { selector, why } of MUST_READ) {
 
 // A declaration, not a read: `--vocab-chrome-side:` with a value, rather than var(--…).
 checks += 1;
+// One site is allowed: the showcase stage, which HOSTS the chrome rather than being part
+// of it. Nothing on that element reads the variable, so everything inside still inherits a
+// single value - the trap this check exists for is a descendant declaring it and quietly
+// cutting itself off from the one above. Anywhere else is still a failure.
+const SHOWCASE_HOST = ".vocab-showcase-stage";
 const declarations = [...css.matchAll(new RegExp(`${VAR}\\s*:`, "g"))].filter((m) => {
+  const rule = css.lastIndexOf("{", m.index);
+  const selector = css.slice(Math.max(0, css.lastIndexOf("}", rule) + 1), rule);
+  if (selector.includes(SHOWCASE_HOST)) return false;
   // `var(--vocab-chrome-side, 0px)` contains no colon after the name, so any colon match
   // that is not preceded by `var(` is a real declaration.
   const before = css.slice(Math.max(0, m.index - 4), m.index);

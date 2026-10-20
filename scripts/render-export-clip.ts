@@ -3,7 +3,10 @@
  *
  * Two modes, because they capture different things:
  *
- *   feed    (default) the real /feed page as a visitor sees it — toolbar, action bar,
+ *   showcase a whole promo clip from /showcase: opening badge, the word in the app's own
+ *           chrome, end card. The PAGE owns the sequence; this only waits on its contract.
+ *           Prefer this to feed mode for anything being posted.
+ *   feed    the real /feed page as a visitor sees it — toolbar, action bar,
  *           progress, all of it — at a phone-sized viewport, for one whole word. This is
  *           what a promo clip wants: the app, not a cutout of it.
  *   export  the stripped /export/$code frame, chrome removed to the preset's clear zone.
@@ -55,6 +58,7 @@ import { join, resolve } from "node:path";
 import { setTimeout as sleep } from "node:timers/promises";
 
 import { getExportPreset } from "../src/features/vocabulary/lib/export-presets";
+import { SHOWCASE_CONTRACT } from "../src/features/vocabulary/lib/showcase-contract";
 import { DIFFICULTY_CHOICE_KEY } from "../src/features/vocabulary/lib/difficulty-choice";
 import { DIFFICULTY_ALL } from "../src/features/vocabulary/lib/difficulty";
 
@@ -87,8 +91,8 @@ const code = argv.find(
   (a) => !a.startsWith("--") && argv[argv.indexOf(a) - 1]?.startsWith("--") !== true,
 );
 const mode = flag("mode", "feed");
-if (mode !== "feed" && mode !== "export") {
-  console.error(`--mode must be "feed" or "export" (got "${mode}")`);
+if (mode !== "feed" && mode !== "export" && mode !== "showcase") {
+  console.error(`--mode must be "showcase", "feed" or "export" (got "${mode}")`);
   process.exit(1);
 }
 if (mode === "export" && !code) {
@@ -131,7 +135,8 @@ const hideControls = flag("controls", "keep") === "hide";
 const withIntro = flag("intro", "on") !== "off";
 // The badge's words. A flag rather than a constant because it is the one thing in the
 // scene a caller is likely to want to change per clip.
-const introText = flag("badge", "Từ gì mà ...");
+const DEFAULT_BADGE = "Từ gì mà ...";
+const introText = flag("badge", DEFAULT_BADGE);
 const withOutro = flag("outro", "on") !== "off";
 const OUTRO_MS = 4600;
 // The safe area comes from the EXPORT preset rather than from numbers invented here, so
@@ -245,8 +250,10 @@ async function main() {
       // the viewport's logical size and ffmpeg upscales — 1080×1920 in the container,
       // 405×720 of real detail. Forcing the device scale factor makes the surface itself
       // that many pixels, which is what screencast then captures.
-      `--force-device-scale-factor=${mode === "feed" ? scale : 1}`,
-      `--window-size=${mode === "feed" ? `${cssWidth},${cssHeight}` : "1080,1920"}`,
+      // Both phone-shaped modes need the forced factor; only export mode draws at the
+      // frame's literal pixel size and wants 1.
+      `--force-device-scale-factor=${mode === "export" ? 1 : scale}`,
+      `--window-size=${mode === "export" ? "1080,1920" : `${cssWidth},${cssHeight}`}`,
       "--force-color-profile=srgb",
       // The card plays on its own; nothing should wait for a gesture that will never come.
       "--autoplay-policy=no-user-gesture-required",
@@ -284,7 +291,21 @@ async function main() {
   let recordedPosition = 0;
   let describe: () => Promise<string>;
 
-  if (mode === "feed") {
+  if (mode === "showcase") {
+    width = Math.round(cssWidth * scale);
+    height = Math.round(cssHeight * scale);
+    const query = new URLSearchParams();
+    if (code) query.set("code", code);
+    if (introText !== DEFAULT_BADGE) query.set("badge", introText);
+    url = `${base}/showcase${query.size ? `?${query}` : ""}`;
+    await cdp.send("Emulation.setDeviceMetricsOverride", {
+      width: cssWidth,
+      height: cssHeight,
+      deviceScaleFactor: 0,
+      mobile: true,
+    });
+    await cdp.send("Emulation.setTouchEmulationEnabled", { enabled: true, maxTouchPoints: 5 });
+  } else if (mode === "feed") {
     width = Math.round(cssWidth * scale);
     height = Math.round(cssHeight * scale);
     // Phone metrics, not a 1080px-wide desktop window. `mobile` makes the app lay out the
@@ -404,6 +425,22 @@ async function main() {
     // is possible but was not worth the fuss here: a caller that needs the word can ask
     // the feed API for the word at this position, and export mode reports it outright.
     describe = async () => `position ${startedOn}`;
+  } else if (mode === "showcase") {
+    // Nothing is driven from out here. The page owns the sequence; this waits on the
+    // contract, says go, and stops when it says it is done.
+    let phase = "";
+    for (let attempt = 0; attempt < 150; attempt += 1) {
+      phase = (await cdp.evaluate<string>("document.body.dataset.showcasePhase || ''")) ?? "";
+      if (phase === "ready" || phase === "missing") break;
+      await sleep(200);
+    }
+    if (phase === "missing") throw new Error("the showcase had no word to show");
+    if (phase !== "ready") throw new Error(`showcase never became ready (phase: "${phase}")`);
+    const shown = await cdp.evaluate<string>("document.body.dataset.showcaseWord || ''");
+    console.log(`  showcase "${shown}" at ${width}x${height}`);
+    isFinished = async () =>
+      (await cdp.evaluate<string>("document.body.dataset.showcasePhase || ''")) === "done";
+    describe = async () => shown || "showcase";
   } else {
     let phase = "";
     for (let attempt = 0; attempt < 150; attempt += 1) {
@@ -453,6 +490,11 @@ async function main() {
   // on its own, which is the whole point of recording it.
   if (mode === "export") {
     await cdp.evaluate(`window.dispatchEvent(new Event("vocab-export-start"))`);
+  }
+  if (mode === "showcase") {
+    await cdp.evaluate(
+      `window.dispatchEvent(new Event(${JSON.stringify(SHOWCASE_CONTRACT.startEvent)}))`,
+    );
   }
 
   // The intro goes in AFTER the screencast is running, so its first frame is captured, and

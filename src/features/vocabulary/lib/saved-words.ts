@@ -54,6 +54,19 @@ function resolveSavedAt(
   return Math.min(...viewTimes);
 }
 
+/**
+ * Every word in THIS host's deck, in catalog order.
+ *
+ * For callers that need to choose one rather than resolve one — the showcase picking a
+ * word to record. Same per-host resolution as the lookups below, so a clip recorded on a
+ * Vietnamese host is a Vietnamese deck's word.
+ * @returns the catalog's words; empty only if the deck is
+ */
+export function allCatalogWords(): readonly VocabularyWord[] {
+  const host = typeof window === "undefined" ? "" : window.location.host;
+  return catalogFor(resolveTarget(host)).words;
+}
+
 /** Resolve a catalog word by id (undefined when the deck no longer holds it). */
 export function lookupWord(id: string): VocabularyWord | undefined {
   return wordsByIdMap().get(id);

@@ -1,0 +1,225 @@
+/**
+ * One word, rendered as a finished promo clip and nothing else.
+ *
+ * The whole sequence — opening badge, the word in the app's own chrome, end card — as a
+ * state machine in one component, instead of a recorder reaching into the live feed and
+ * operating it from outside.
+ *
+ * That outside approach is what this replaces, and it is worth saying why it failed, since
+ * it looked like it worked for a while. To hold the first clue back, the recorder clicked
+ * the feed's pause button — and lost the race: the entrance had already played within a
+ * second of the card mounting, so the clip opened on finished text. To get a fresh
+ * entrance it then synthesised taps on the card's own tap zones to navigate forward and
+ * back, which turned out to move TWO pages per touch (the card answers both pointerup and
+ * touchend), so the page indicator visibly flicked to a later clue and back. Here the same
+ * thing is a prop: the card is handed `active={false}` until the badge has gone, so its
+ * first page has not started rather than being rewound.
+ *
+ * The CONTRACT is the point of the file — see SHOWCASE_CONTRACT. Treat it as published:
+ * changing a phase name breaks whatever is recording, and scripts/check-showcase.ts is
+ * what says so.
+ *
+ * Exports: ShowcasePage
+ * Depends on: VocabularyCard, showcase-contract, saved-words (catalog), vocabulary.css
+ */
+
+import { useEffect, useMemo, useState } from "react";
+import { useSearch } from "@tanstack/react-router";
+import { VocabularyCard } from "./VocabularyCard";
+import { ShowcaseChrome } from "./ShowcaseChrome";
+import { SHOWCASE_CONTRACT, type ShowcasePhase } from "../lib/showcase-contract";
+import { allCatalogWords, findWordByShareCode } from "../lib/saved-words";
+// Each page component brings the card's stylesheet in; this is a page like any other.
+import "../vocabulary.css";
+import type { FeedEntry, Presentation } from "../types";
+import type { VocabularyWord } from "../lib/schema";
+
+/** How long to wait for a paint before declaring readiness anyway. */
+const READY_BACKSTOP_MS = 400;
+
+function setPhase(phase: ShowcasePhase) {
+  if (typeof document !== "undefined") document.body.dataset.showcasePhase = phase;
+}
+
+/**
+ * The scene durations, read from the stylesheet that animates them.
+ *
+ * The timeline lives in CSS; this only needs to know when each scene is over. Reading it
+ * back means there is ONE number per scene rather than one in the stylesheet and a copy
+ * here that silently disagrees after a re-time.
+ *
+ * The unit has to be read as well as the number: Chrome serialises a custom property's
+ * time canonically in SECONDS, so `4600ms` in the stylesheet comes back as "4.6s" and a
+ * bare parseFloat turns four and a half seconds into four and a half milliseconds.
+ * @param name - the custom property to read off the document element
+ * @param fallback - used when the stylesheet has not loaded or the value is unreadable
+ * @returns milliseconds
+ */
+function cssDuration(name: string, fallback: number): number {
+  if (typeof window === "undefined") return fallback;
+  const raw = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  const value = Number.parseFloat(raw);
+  if (!Number.isFinite(value)) return fallback;
+  return /ms$/.test(raw) ? value : value * 1000;
+}
+
+/** One word, played from first frame to end card, ready to be recorded. */
+export function ShowcasePage() {
+  const search = useSearch({ from: "/showcase" });
+  const [phase, setLocalPhase] = useState<ShowcasePhase>("loading");
+
+  // Resolved once. A re-render must not land on a different word mid-take, and `seed`
+  // exists so a scheduled job can ask for the same clip twice.
+  const word = useMemo<VocabularyWord | undefined>(() => {
+    if (search.code) return findWordByShareCode(search.code);
+    const words = allCatalogWords();
+    if (!words.length) return undefined;
+    const seed = search.seed ?? Math.floor(Math.random() * words.length);
+    return words[seed % words.length];
+  }, [search.code, search.seed]);
+
+  const go = (next: ShowcasePhase) => {
+    setLocalPhase(next);
+    setPhase(next);
+  };
+
+  // ── loading → ready ───────────────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!word) {
+      setPhase("missing");
+      setLocalPhase("missing");
+      return;
+    }
+    document.body.dataset.showcaseWord = word.word;
+    // Two frames: one for the card to mount, one for it to have painted. The timeout is
+    // not belt and braces — a headless tab may have rAF throttled to nothing, and a
+    // readiness signal that only ever arrives on a frame would wait forever.
+    let settled = false;
+    const announce = () => {
+      if (settled) return;
+      settled = true;
+      go("ready");
+    };
+    const frame = requestAnimationFrame(() => requestAnimationFrame(announce));
+    const backstop = setTimeout(announce, READY_BACKSTOP_MS);
+    return () => {
+      cancelAnimationFrame(frame);
+      clearTimeout(backstop);
+    };
+    // Runs once per word: later phase changes must not re-announce readiness.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [word]);
+
+  // ── the driver's way in ───────────────────────────────────────────────────────────────
+  useEffect(() => {
+    const start = () => setLocalPhase((current) => (current === "ready" ? "intro" : current));
+    window.addEventListener(SHOWCASE_CONTRACT.startEvent, start);
+    // autostart has to WAIT for readiness rather than fire on mount: readiness is announced
+    // a frame or two later, and a start that arrives first is dropped by the guard above and
+    // the page sits on "ready" forever. Depending on `phase` makes it fire once, when the
+    // page is actually ready to be recorded.
+    if (search.autostart === true && phase === "ready") start();
+    return () => window.removeEventListener(SHOWCASE_CONTRACT.startEvent, start);
+  }, [search.autostart, phase]);
+
+  // ── intro → playing ───────────────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (phase !== "intro") return;
+    setPhase("intro");
+    const timer = setTimeout(() => go("playing"), cssDuration("--intro-dur", 3400));
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase]);
+
+  // ── outro → done ──────────────────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (phase !== "outro") return;
+    setPhase("outro");
+    const timer = setTimeout(() => go("done"), cssDuration("--outro-dur", 4600));
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase]);
+
+  const entry = useMemo<FeedEntry | null>(
+    () =>
+      word
+        ? { occurrenceId: `showcase-${word.id}`, position: 1, cycle: 0, word }
+        : null,
+    [word],
+  );
+  const presentation = useMemo<Presentation>(
+    () => ({
+      theme: search.theme ?? "mix",
+      style: (search.style ?? "mix") as Presentation["style"],
+      autoplay: true,
+      advance: true,
+      pace: "normal",
+      dialect: "default",
+    }),
+    [search.theme, search.style],
+  );
+
+  if (!entry || !word) {
+    return (
+      <main className="vocab-showcase" data-missing="">
+        <p>No word to show{search.code ? ` for the code “${search.code}”` : ""}.</p>
+      </main>
+    );
+  }
+
+  return (
+    <main className="vocab-showcase vocab-recording">
+      <div {...{ [SHOWCASE_CONTRACT.stageAttribute]: "" }} className="vocab-showcase-stage">
+        {/* The chrome a reader taps is drawn here as scenery instead: a clip cannot be
+            tapped, and reusing the live toolbar would drag its dropdowns, sheets and
+            focus handling into a surface that has no one to serve them. */}
+        <ShowcaseChrome hidden={phase === "loading" || phase === "ready" || phase === "intro"} />
+        <VocabularyCard
+          entry={entry}
+          presentation={presentation}
+          // The whole point: held at the first frame of its first page until the badge has
+          // gone. `current` stays true throughout so the card reads this as paused and
+          // holds everything, rather than as the reader having moved on.
+          active={phase === "playing"}
+          current
+          reducedMotion={false}
+          matching={0}
+          canAdvance
+          onAdvance={() => setLocalPhase("outro")}
+        />
+        {phase === "intro" && <ShowcaseIntro text={search.badge ?? "Từ gì mà ..."} />}
+        {(phase === "outro" || phase === "done") && <ShowcaseOutro />}
+      </div>
+    </main>
+  );
+}
+
+/** The opening badge. Markup only; the timeline is in vocabulary.css. */
+function ShowcaseIntro({ text }: { text: string }) {
+  return (
+    <div className="vocab-intro">
+      <div className="vocab-intro-veil" />
+      <div className="vocab-intro-ring" />
+      <div className="vocab-intro-confetti">
+        {Array.from({ length: 18 }, (_, i) => (
+          <i key={i} />
+        ))}
+      </div>
+      <div className="vocab-intro-badge">{text}</div>
+    </div>
+  );
+}
+
+/** The end card. Markup only; the timeline is in vocabulary.css. */
+function ShowcaseOutro() {
+  return (
+    <div className="vocab-outro">
+      <div className="vocab-outro-veil" />
+      <div className="vocab-outro-bar">
+        <span className="vocab-outro-lock" />
+        <span className="vocab-outro-url">anh.chayla.app</span>
+        <span className="vocab-outro-caret" />
+      </div>
+    </div>
+  );
+}
