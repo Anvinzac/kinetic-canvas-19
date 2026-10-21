@@ -78,9 +78,65 @@ rather than letting it animate, or step frames in a recording.
 
 ## 2. The box-shaped crop around glowing text
 
-This one is **two independent causes with the same symptom**, fixed in two commits. The
-sibling may have either or both. Check for both — fixing one leaves the other looking like
-a partial fix.
+> **Read this part before touching anything.** This is **two separate bugs that look
+> identical**, and they are the easiest way to lose a day on this port.
+
+They produce the same artefact — a hard-edged rectangle where a soft halo should be — by
+two mechanisms that share nothing. Different elements, different CSS properties, different
+commits, different fixes. Both were present here.
+
+The trap is this: **each one alone is enough to produce the rectangle.** So if you fix one
+and look at the word, you still see a rectangle. The natural conclusion is "my fix did not
+work", and the next move is to undo it and look elsewhere — which is exactly wrong, because
+the fix did work and the other cause is still running.
+
+That is not hypothetical. Here it took three commits to land two fixes:
+
+```
+bddd0b7  claimed to have addressed the artefact   -> it had not; wrong cause
+dc9370e  found the transform (cause B)            -> corrected bddd0b7's claim
+4484427  found the same-element filter (cause A)  -> corrected dc9370e's claim
+```
+
+Each one corrects the diagnosis in the one before it. Nothing was reverted — the earlier
+commits were worth keeping on other grounds — but two wrong explanations were published and
+believed in between, and both of them were *reasonable* given the symptom. That is what a
+single artefact with two causes does to an investigation.
+
+### Telling them apart, before you change anything
+
+They are distinguishable, and the test takes a minute. **Freeze frames** — a recording
+stepped frame by frame, or `animation-play-state: paused` with a negative `animation-delay`
+to park on a chosen moment. Do not judge at rest: both are transient, and once the word has
+settled both look correct.
+
+| What you see | Which cause | Why |
+| --- | --- | --- |
+| Rectangle **under** the word, during the underline's draw, roughly the first 100ms — soft by the time the draw finishes | **B** (transform) | The glow is being un-squashed as the bar grows, so it appears to heal itself |
+| Rectangle **around** the whole word, present the entire time the glow pulse runs, breathing with it | **A** (filter) | The clip region is the filter's, and it is there for as long as the filter is |
+| Rectangle under the word that **stays** rectangular after the draw completes | **A**, under the bar | Cause B heals; cause A does not |
+| Both: a rectangle under the word early, and a squared-off halo around it throughout | **both** | This is what this repo had |
+
+Two checks that settle it without any guessing:
+
+1. **Read the computed style of the glowing element mid-animation.** If `filter` is
+   anything but `none`, cause A is live on that element. (On a *parent* it is harmless —
+   see the warning under cause A.)
+2. **Read the computed `transform` of the element carrying the `box-shadow`** during the
+   entrance. If it is a `scale`/`scaleX` of anything but 1, cause B is live.
+
+Run both. They are independent, so the answers are independent.
+
+### Order of work
+
+Fix **B first, then A.** B is the smaller change and its symptom is the one that appears
+earliest in the entrance, so with B done you can tell whether A is still running by
+watching the halo rather than the bar. Doing A first leaves the early-frame rectangle in
+place and gives you nothing new to look at.
+
+After each fix, re-run the frozen-frame check and expect the symptom for *that* cause to be
+gone and the other one to remain. **A rectangle still being there after the first fix is
+the expected result, not a failed fix.**
 
 ### Cause A: a `filter` on the same element clips its own text-shadow
 
@@ -142,17 +198,31 @@ reason (wasted compositing), not as a cure for the symptom.
 
 ### Done when
 
-Freeze frames through a highlighted word's entrance — not just at rest, because both
-causes are transient and look fine once settled.
+Freeze frames through a highlighted word's entrance — not just at rest, because both causes
+are transient and look fine once settled.
 
-- At **~60ms** into the underline draw, the glow under the word is soft on all sides. A
-  rectangle there is Cause B.
-- At the **trough and the peak** of the glow pulse, the halo's falloff is soft all round,
-  and the element computes `filter: none`. A halo with straight vertical edges is Cause A.
-- The peak is still visibly wider than the trough — if the pulse stopped working, the
-  `@property` registration was dropped (most likely an `em` in `initial-value`).
+**Both boxes must be ticked. One alone is a half-finished port that still shows a
+rectangle, and will read as a failure.**
+
+- [ ] **Cause B is gone.** At **~60ms** into the underline draw, the glow under the word is
+      soft on all sides. The element carrying the `box-shadow` computes a `transform` with
+      no scale in it. A rectangle here means B is still live.
+- [ ] **Cause A is gone.** At the **trough and the peak** of the glow pulse, the halo's
+      falloff is soft all round and the glowing element computes `filter: none`. A halo
+      with straight vertical or horizontal edges means A is still live.
+
+And two things that must NOT have changed while fixing them:
+
+- The peak is still visibly wider than the trough. If the pulse stopped moving, the
+  `@property` registration was dropped — most likely an `em` in `initial-value`, which is
+  invalid and fails silently, leaving only the `var()` fallback.
 - Geometry unchanged: the lone underline measures `100% + 0.04em`, the joined one
-  `100% + 0.28em`. That bleed is what keeps a compound word's stroke continuous.
+  `100% + 0.28em`. That bleed is what keeps a compound word's stroke continuous, so a
+  "tidier" round number here breaks joined words.
+
+If a rectangle survives both boxes being ticked, it is **not** a third instance of these
+two. Stop and find out which element is drawing it before changing anything else — that is
+the point at which this document stops being a guide and becomes a guess.
 
 ### Known not fixed here
 
