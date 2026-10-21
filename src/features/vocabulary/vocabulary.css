@@ -7662,8 +7662,8 @@ body:has(.vocab-outro) .vocab-resume {
     animation-timing-function: steps(14, end);
   }
   51%,
-  100% {  /* 2350ms */
-    width: 14ch;
+  100% {  /* 2350ms - 14ch alone leaves out the letter-spacing and clipped the last letter */
+    width: calc(14ch + 14 * 0.01em + 2px);
   }
 }
 .vocab-outro-caret {
