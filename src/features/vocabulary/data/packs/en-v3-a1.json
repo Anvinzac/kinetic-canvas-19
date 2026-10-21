@@ -300,7 +300,7 @@
       "initial": "B",
       "usage": [
         {
-          "en": "The kids got _____ during the long drive.",
+          "en": "The children got _____ during the long drive.",
           "vi": "Bọn=trẻ thấy chán | trong chuyến xe dài."
         }
       ],
@@ -358,7 +358,7 @@
       "initial": "C",
       "usage": [
         {
-          "en": "This street food is tasty and _____.",
+          "en": "This street food is good and _____.",
           "vi": "Món=ăn đường_phố này | ngon mà rẻ."
         }
       ],
@@ -386,8 +386,8 @@
       "initial": "E",
       "usage": [
         {
-          "en": "Rent in the city center is very _____.",
-          "vi": "Tiền thuê nhà | ở trung_tâm rất=đắt."
+          "en": "Houses in the city centre are very _____.",
+          "vi": "Nhà ở trung_tâm thành_phố | rất=đắt."
         }
       ],
       "shareCode": "J82",
@@ -414,8 +414,8 @@
       "initial": "D",
       "usage": [
         {
-          "en": "Grandma's spring rolls are _____.",
-          "vi": "Chả_giò bà làm | ngon tuyệt."
+          "en": "Grandma's chicken soup is _____.",
+          "vi": "Món canh_gà bà nấu | ngon tuyệt."
         }
       ],
       "shareCode": "7SW",
@@ -471,8 +471,8 @@
       "initial": "F",
       "usage": [
         {
-          "en": "Hoi An is _____ for its lanterns.",
-          "vi": "Hội_An nổi_tiếng | với những chiếc=đèn_lồng."
+          "en": "Hoi An is _____ for its old houses.",
+          "vi": "Hội_An nổi_tiếng | với những ngôi=nhà cổ."
         }
       ],
       "shareCode": "NJ6",
@@ -613,8 +613,8 @@
       "initial": "F",
       "usage": [
         {
-          "en": "The staff at this hotel are very _____.",
-          "vi": "Nhân_viên khách_sạn này | rất=thân_thiện."
+          "en": "The people at this hotel are very _____.",
+          "vi": "Mọi người ở khách_sạn này | rất=thân_thiện."
         }
       ],
       "shareCode": "EBD",
@@ -669,8 +669,8 @@
       "initial": "P",
       "usage": [
         {
-          "en": "You need a _____ to travel abroad.",
-          "vi": "Bạn cần hộ_chiếu | để ra nước_ngoài."
+          "en": "You need a _____ to travel to another country.",
+          "vi": "Bạn cần hộ_chiếu | để đi nước_ngoài."
         }
       ],
       "shareCode": "HP8",
@@ -813,7 +813,7 @@
       "initial": "H",
       "usage": [
         {
-          "en": "Have you finished your _____ yet?",
+          "en": "Did you finish your _____?",
           "vi": "Con làm xong bài_tập chưa?"
         }
       ],
@@ -899,7 +899,7 @@
       "initial": "L",
       "usage": [
         {
-          "en": "I borrowed this book from the _____.",
+          "en": "I got this book from the _____.",
           "vi": "Tôi mượn cuốn=sách này | ở thư_viện."
         }
       ],
@@ -1240,8 +1240,8 @@
       "initial": "L",
       "usage": [
         {
-          "en": "Her jokes always make me _____.",
-          "vi": "Mấy câu đùa của=cô=ấy | lúc nào cũng làm tôi cười."
+          "en": "My brother is so funny. He always makes me _____.",
+          "vi": "Anh_trai tôi vui_tính lắm, | lúc nào cũng làm tôi cười."
         }
       ],
       "shareCode": "NE1",
@@ -1269,8 +1269,8 @@
       "initial": "C",
       "usage": [
         {
-          "en": "Let's _____ to the top of the hill.",
-          "vi": "Mình leo lên | đỉnh đồi nhé."
+          "en": "Let's _____ the mountain this weekend.",
+          "vi": "Cuối_tuần này | mình leo_núi nhé."
         }
       ],
       "shareCode": "1X4",
@@ -1384,8 +1384,8 @@
       "initial": "B",
       "usage": [
         {
-          "en": "I can't _____ it's already October!",
-          "vi": "Không=thể tin | là đã=tháng Mười rồi!"
+          "en": "I can't _____ it's October now!",
+          "vi": "Không=thể tin | là giờ đã=tháng Mười rồi!"
         }
       ],
       "shareCode": "19N",
@@ -1442,8 +1442,8 @@
       "initial": "R",
       "usage": [
         {
-          "en": "Sit down and _____ for a bit.",
-          "vi": "Ngồi xuống | nghỉ_ngơi chút đi."
+          "en": "Sit down and _____ for a minute.",
+          "vi": "Ngồi xuống | nghỉ_ngơi một=lát đi."
         }
       ],
       "shareCode": "KPB",
@@ -1499,8 +1499,8 @@
       "initial": "T",
       "usage": [
         {
-          "en": "I want to _____ around Vietnam by motorbike.",
-          "vi": "Tôi muốn đi du_lịch | vòng quanh Việt_Nam bằng xe_máy."
+          "en": "I want to _____ around Vietnam by bike.",
+          "vi": "Tôi muốn đi du_lịch | vòng quanh Việt_Nam bằng xe_đạp."
         }
       ],
       "shareCode": "2SW",

@@ -399,8 +399,8 @@
       "initial": "H",
       "usage": [
         {
-          "en": "Biting your nails is a bad _____.",
-          "vi": "Cắn móng_tay | là một=thói_quen xấu."
+          "en": "Eating late at night is a bad _____.",
+          "vi": "Ăn khuya | là một=thói_quen xấu."
         }
       ],
       "shareCode": "BVG",
@@ -428,8 +428,8 @@
       "initial": "B",
       "usage": [
         {
-          "en": "Can I _____ your charger?",
-          "vi": "Mình mượn cục=sạc của=bạn | được không?"
+          "en": "Can I _____ your pen?",
+          "vi": "Mình mượn cây=bút của=bạn | được không?"
         }
       ],
       "shareCode": "06K",
@@ -1150,7 +1150,7 @@
       "initial": "P",
       "usage": [
         {
-          "en": "She won first _____ in the singing contest.",
+          "en": "She won first _____ in the singing competition.",
           "vi": "Cô=ấy đoạt giải nhất | cuộc_thi hát."
         }
       ],
@@ -1712,7 +1712,7 @@
       "initial": "R",
       "usage": [
         {
-          "en": "Can you _____ a good restaurant nearby?",
+          "en": "Can you _____ a good restaurant near here?",
           "vi": "Bạn gợi_ý giúp mình | một=quán ngon gần đây được không?"
         }
       ],
@@ -1768,7 +1768,7 @@
       "initial": "P",
       "usage": [
         {
-          "en": "Don't forget to _____ your swimsuit.",
+          "en": "Don't forget to _____ your swimming things.",
           "vi": "Nhớ xếp đồ bơi | vào va_li nhé."
         }
       ],

@@ -202,8 +202,8 @@
     "defVi": "Thấy buồn_chán | vì chẳng=có gì vui | để=làm.",
     "leadVi": "Mưa cả=ngày, | cứ nằm ngáp_ngắn ngáp_dài | trên giường.",
     "anticipateVi": "Lại ngồi đếm thạch_sùng?",
-    "usageEn": "The kids got _____ during the long drive.",
-    "usageVi": "Bọn=trẻ thấy chán | trong chuyến_xe dài.",
+    "usageEn": "The children got _____ during the long drive.",
+    "usageVi": "Bọn=trẻ thấy chán | trong chuyến xe dài.",
     "topics": [
       "emotion"
     ],
@@ -241,8 +241,8 @@
     "defVi": "Có giá rẻ, | chỉ cần ít tiền | là mua=được.",
     "leadVi": "Áo_thun đồng_giá ba chục, | ai đi ngang | cũng ghé.",
     "anticipateVi": "Mua một tặng một nè!",
-    "usageEn": "This street food is tasty and _____.",
-    "usageVi": "Món_ăn đường_phố này | ngon mà rẻ.",
+    "usageEn": "This street food is good and _____.",
+    "usageVi": "Món=ăn đường_phố này | ngon mà rẻ.",
     "topics": [
       "money",
       "daily"
@@ -261,8 +261,8 @@
     "defVi": "Có giá đắt_đỏ, | cao hơn nhiều | so=với bình_thường.",
     "leadVi": "Nhìn hóa_đơn nhà_hàng xong, | ví bỗng thấy | nhẹ_tênh.",
     "anticipateVi": "Nghe giá | là muốn xỉu!",
-    "usageEn": "Rent in the city center is very _____.",
-    "usageVi": "Tiền thuê nhà | ở trung_tâm | rất=đắt.",
+    "usageEn": "Houses in the city centre are very _____.",
+    "usageVi": "Nhà ở trung_tâm thành_phố | rất=đắt.",
     "topics": [
       "money"
     ],
@@ -280,8 +280,8 @@
     "defVi": "Có vị ngon tuyệt, | ăn xong | vẫn muốn ăn thêm.",
     "leadVi": "Húp một ngụm nước_lèo, | ai cũng gật_gù khen.",
     "anticipateVi": "Thơm quá, chảy nước_miếng!",
-    "usageEn": "Grandma's spring rolls are _____.",
-    "usageVi": "Chả_giò bà làm | ngon tuyệt.",
+    "usageEn": "Grandma's chicken soup is _____.",
+    "usageVi": "Món canh_gà bà nấu | ngon tuyệt.",
     "topics": [
       "food"
     ],
@@ -319,8 +319,8 @@
     "defVi": "Rất nổi_tiếng, | được nhiều người | khắp nơi biết=đến.",
     "leadVi": "Hát một bài, | sáng hôm_sau | cả nước biết tên.",
     "anticipateVi": "Xin chữ_ký | cái nào!",
-    "usageEn": "Hoi An is _____ for its lanterns.",
-    "usageVi": "Hội_An nổi_tiếng | với những chiếc đèn_lồng.",
+    "usageEn": "Hoi An is _____ for its old houses.",
+    "usageVi": "Hội_An nổi_tiếng | với những ngôi=nhà cổ.",
     "topics": [
       "society"
     ],
@@ -415,8 +415,8 @@
     "defVi": "Cởi_mở, | thân_thiện | và dễ bắt_chuyện | với mọi người.",
     "leadVi": "Mới chuyển đến, | bác hàng_xóm | đã=mang sang | đĩa xôi.",
     "anticipateVi": "Cười một cái nào!",
-    "usageEn": "The staff at this hotel are very _____.",
-    "usageVi": "Nhân_viên khách_sạn này | rất=thân_thiện.",
+    "usageEn": "The people at this hotel are very _____.",
+    "usageVi": "Mọi người ở khách_sạn này | rất=thân_thiện.",
     "topics": [
       "character",
       "society"
@@ -474,8 +474,8 @@
     "defVi": "Giấy_tờ tùy_thân | bắt_buộc | khi đi ra nước_ngoài.",
     "leadVi": "Ra tới sân_bay | mới hoảng_hồn: | sổ nhỏ đâu rồi?",
     "anticipateVi": "Xuất trình đi | bạn ơi!",
-    "usageEn": "You need a _____ to travel abroad.",
-    "usageVi": "Bạn cần hộ_chiếu | để ra nước_ngoài.",
+    "usageEn": "You need a _____ to travel to another country.",
+    "usageVi": "Bạn cần hộ_chiếu | để đi nước_ngoài.",
     "topics": [
       "travel"
     ],
@@ -573,7 +573,7 @@
     "defVi": "Những bài_tập | thầy_cô giao | để làm ở nhà.",
     "leadVi": "Tối Chủ_nhật | mới lôi vở ra, | chép vội | cho kịp.",
     "anticipateVi": "Nộp=bài đúng hạn nha!",
-    "usageEn": "Have you finished your _____ yet?",
+    "usageEn": "Did you finish your _____?",
     "usageVi": "Con làm xong bài_tập chưa?",
     "topics": [
       "study"
@@ -632,8 +632,8 @@
     "defVi": "Nơi cất_giữ nhiều sách | để đọc | hoặc mượn về.",
     "leadVi": "Hắt_hơi một cái, | cả phòng đang=đọc | quay lại nhìn.",
     "anticipateVi": "Mở=sách ra nào!",
-    "usageEn": "I borrowed this book from the _____.",
-    "usageVi": "Tôi mượn cuốn_sách này | ở thư_viện.",
+    "usageEn": "I got this book from the _____.",
+    "usageVi": "Tôi mượn cuốn=sách này | ở thư_viện.",
     "topics": [
       "study"
     ],
@@ -865,8 +865,8 @@
     "defVi": "Cười thành tiếng, | giòn_giã | hoặc khúc_khích, | vì thấy vui.",
     "leadVi": "Xem phim hài, | cả nhà ôm=bụng | ha_hả.",
     "anticipateVi": "Ha ha, | đoán ra chưa?",
-    "usageEn": "Her jokes always make me _____.",
-    "usageVi": "Mấy câu đùa của=cô=ấy | lúc nào | cũng làm tôi cười.",
+    "usageEn": "My brother is so funny. He always makes me _____.",
+    "usageVi": "Anh_trai tôi vui_tính lắm, | lúc nào cũng làm tôi cười.",
     "topics": [
       "emotion"
     ],
@@ -884,8 +884,8 @@
     "defVi": "Dùng cả tay lẫn chân | để leo lên | chỗ cao.",
     "leadVi": "Chinh_phục Phan_Xi_Păng, | lên đỉnh | thở không ra hơi.",
     "anticipateVi": "Lên cao chút nữa!",
-    "usageEn": "Let's _____ to the top of the hill.",
-    "usageVi": "Mình leo lên | đỉnh đồi nhé.",
+    "usageEn": "Let's _____ the mountain this weekend.",
+    "usageVi": "Cuối_tuần này | mình leo_núi nhé.",
     "topics": [
       "travel",
       "health"
@@ -964,8 +964,8 @@
     "defVi": "Tin_tưởng rằng | điều gì=đó | đúng là sự_thật.",
     "leadVi": "Nghe chuyện ông Bụt, | lũ nhỏ đinh_ninh | là chuyện thật.",
     "anticipateVi": "Thật hay đùa vậy?",
-    "usageEn": "I can't _____ it's already October!",
-    "usageVi": "Không=thể tin | là đã=tháng Mười rồi!",
+    "usageEn": "I can't _____ it's October now!",
+    "usageVi": "Không=thể tin | là giờ đã=tháng Mười rồi!",
     "topics": [
       "thinking"
     ],
@@ -1003,8 +1003,8 @@
     "defVi": "Nghỉ_ngơi, | thả_lỏng | cho đầu_óc | nhẹ_nhõm hơn.",
     "leadVi": "Tắt điện_thoại, | bật nhạc nhẹ, | ngâm=chân nước ấm.",
     "anticipateVi": "Thả lỏng vai ra nào!",
-    "usageEn": "Sit down and _____ for a bit.",
-    "usageVi": "Ngồi xuống | nghỉ_ngơi chút đi.",
+    "usageEn": "Sit down and _____ for a minute.",
+    "usageVi": "Ngồi xuống | nghỉ_ngơi một=lát đi.",
     "topics": [
       "health",
       "daily"
@@ -1063,8 +1063,8 @@
     "defVi": "Rời nhà đi xa | để vui_chơi | hay công_tác.",
     "leadVi": "Ba_lô trên vai, | năm nào | cũng khám_phá tỉnh mới.",
     "anticipateVi": "Xách ba_lô lên | và đi!",
-    "usageEn": "I want to _____ around Vietnam by motorbike.",
-    "usageVi": "Tôi muốn đi du_lịch | vòng quanh Việt_Nam | bằng xe_máy.",
+    "usageEn": "I want to _____ around Vietnam by bike.",
+    "usageVi": "Tôi muốn đi du_lịch | vòng quanh Việt_Nam bằng xe_đạp.",
     "topics": [
       "travel"
     ],

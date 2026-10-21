@@ -248,8 +248,8 @@
     "defVi": "Việc làm | lặp_lại đều_đặn | đến mức | chẳng cần nghĩ.",
     "leadVi": "Vừa mở=mắt, | tay đã tự tìm | điện_thoại.",
     "anticipateVi": "Ngày nào | cũng vậy mà!",
-    "usageEn": "Biting your nails is a bad _____.",
-    "usageVi": "Cắn móng_tay | là một thói_quen xấu.",
+    "usageEn": "Eating late at night is a bad _____.",
+    "usageVi": "Ăn khuya | là một=thói_quen xấu.",
     "topics": [
       "daily"
     ],
@@ -267,8 +267,8 @@
     "defVi": "Xin dùng tạm | đồ của=người khác | rồi trả lại sau.",
     "leadVi": "\"Cho mình | dùng ké cây_bút, | xíu trả liền nha!\"",
     "anticipateVi": "Cái gì đi rồi | phải về?",
-    "usageEn": "Can I _____ your charger?",
-    "usageVi": "Mình mượn cục_sạc của=bạn | được không?",
+    "usageEn": "Can I _____ your pen?",
+    "usageVi": "Mình mượn cây=bút của=bạn | được không?",
     "topics": [
       "daily",
       "money"
@@ -741,8 +741,8 @@
     "defVi": "Điều mình còn nhớ, | những kỷ_niệm | từ ngày xưa.",
     "leadVi": "Lật xấp ảnh cũ, | thấy mình ngày bé | mặc áo_dài.",
     "anticipateVi": "Nhớ hồi đó không?",
-    "usageEn": "That trip is my favorite childhood _____.",
-    "usageVi": "Chuyến_đi ấy | là kỷ_niệm tuổi_thơ | tôi thích nhất.",
+    "usageEn": "That trip is my favourite _____ from when I was a child.",
+    "usageVi": "Chuyến đi ấy | là kỷ_niệm thời thơ_ấu tôi thích nhất.",
     "topics": [
       "thinking",
       "emotion"
@@ -801,7 +801,7 @@
     "defVi": "Phần_thưởng trao | cho người thắng_cuộc | trong cuộc_thi.",
     "leadVi": "Cuối tiệc tất_niên | bốc_thăm, | trúng ngay chiếc xe_đạp.",
     "anticipateVi": "Xin chúc_mừng bạn!",
-    "usageEn": "She won first _____ in the singing contest.",
+    "usageEn": "She won first _____ in the singing competition.",
     "usageVi": "Cô=ấy đoạt giải nhất | cuộc_thi hát.",
     "topics": [
       "general",
@@ -1207,8 +1207,8 @@
     "defVi": "Đưa ra gợi_ý | về thứ mình thấy hay, | nên thử.",
     "leadVi": "Hỏi quán nào ngon, | cô bạn | gửi ngay danh_sách dài.",
     "anticipateVi": "Tin mình, | thử đi!",
-    "usageEn": "Can you _____ a good restaurant nearby?",
-    "usageVi": "Bạn gợi_ý giúp mình | một quán ngon gần đây | được không?",
+    "usageEn": "Can you _____ a good restaurant near here?",
+    "usageVi": "Bạn gợi_ý giúp mình | một=quán ngon gần đây được không?",
     "topics": [
       "communication",
       "daily"
@@ -1248,7 +1248,7 @@
     "defVi": "Xếp quần_áo, đồ_dùng | vào hành_lý | trước chuyến_đi.",
     "leadVi": "Trước chuyến_bay, | ngồi đè lên va_li | cho đóng nổi.",
     "anticipateVi": "Nhét thêm được | nữa không?",
-    "usageEn": "Don't forget to _____ your swimsuit.",
+    "usageEn": "Don't forget to _____ your swimming things.",
     "usageVi": "Nhớ xếp đồ bơi | vào va_li nhé.",
     "topics": [
       "travel"
