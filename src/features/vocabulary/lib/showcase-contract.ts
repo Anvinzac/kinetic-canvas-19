@@ -21,12 +21,15 @@
  *   data-showcase-phase  "loading" | "ready" | "intro" | "playing" | "outro" | "done"
  *                        | "missing"
  *   data-showcase-word   the headword, once resolved
+ *   data-showcase-intro  which opening variant this take uses (one of `introVariants`)
+ *   data-showcase-outro  which end-card variant this take uses (one of `outroVariants`)
  *
  * The sequence is: loading → ready (first frame painted, nothing moving) → intro (badge)
  * → playing (the word, from the first frame of its first page) → outro (end card) → done.
  * A driver waits for `ready`, begins recording, dispatches `start`, and stops on `done`.
  *
- * Exports: SHOWCASE_CONTRACT, ShowcasePhase
+ * Exports: SHOWCASE_CONTRACT, ShowcasePhase, ShowcaseIntroVariant, ShowcaseOutroVariant,
+ *   pickShowcaseVariants
  * Depends on: none (leaf module)
  */
 
@@ -35,6 +38,41 @@ export const SHOWCASE_CONTRACT = {
   startEvent: "vocab-showcase-start",
   /** Marks the element a recorder crops to; it is exactly the clip's frame. */
   stageAttribute: "data-showcase-stage",
+  /**
+   * How the opening badge arrives and leaves. Every variant keeps the same --intro-dur and
+   * the same beats (in by ~820ms, out by ~1590ms), so the card handover never moves.
+   */
+  introVariants: ["pop", "drop", "stamp", "slide", "flip"] as const,
+  /** How the end card's address bar looks and arrives; the typing and Enter beats are shared. */
+  outroVariants: ["light", "dark", "glass", "rise"] as const,
 } as const;
 
 export type ShowcasePhase = (typeof SHOWCASE_CONTRACT.phases)[number];
+export type ShowcaseIntroVariant = (typeof SHOWCASE_CONTRACT.introVariants)[number];
+export type ShowcaseOutroVariant = (typeof SHOWCASE_CONTRACT.outroVariants)[number];
+
+/**
+ * Choose the opening and end-card variants for one take.
+ *
+ * Unpinned takes differ from each other; a take with a seed gets the same pair every time,
+ * so a scheduled job that re-renders a seed reproduces the clip it rendered before. The
+ * two picks are decorrelated so a seed does not always pair intro N with outro N.
+ * @param seed - the take's seed; random when omitted
+ * @param intro - a pinned opening variant
+ * @param outro - a pinned end-card variant
+ * @returns The pair this take plays
+ * @pure true when `seed` is given
+ */
+export function pickShowcaseVariants(
+  seed?: number,
+  intro?: ShowcaseIntroVariant,
+  outro?: ShowcaseOutroVariant,
+): { intro: ShowcaseIntroVariant; outro: ShowcaseOutroVariant } {
+  const { introVariants, outroVariants } = SHOWCASE_CONTRACT;
+  const base = seed ?? Math.floor(Math.random() * 1_000_000);
+  const mixed = Math.imul(base ^ 0x5bd1e995, 0x27d4eb2d) >>> 0;
+  return {
+    intro: intro ?? introVariants[base % introVariants.length]!,
+    outro: outro ?? outroVariants[(mixed >>> 8) % outroVariants.length]!,
+  };
+}

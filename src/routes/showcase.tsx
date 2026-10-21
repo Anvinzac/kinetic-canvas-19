@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { ShowcasePage } from "@/features/vocabulary/components/ShowcasePage";
 import { STYLE_IDS } from "@/features/vocabulary/lib/schema";
+import { SHOWCASE_CONTRACT } from "@/features/vocabulary/lib/showcase-contract";
 
 /**
  * A whole promo clip for one word: opening badge, the word in the app's chrome, end card.
@@ -28,6 +29,9 @@ export const Route = createFileRoute("/showcase")({
     style: z.enum([...STYLE_IDS, "mix"] as [string, ...string[]]).optional(),
     /** What the opening badge says. */
     badge: z.string().max(80).optional(),
+    /** Pin the opening / end-card variant; otherwise each take picks its own. */
+    intro: z.enum(SHOWCASE_CONTRACT.introVariants).optional(),
+    outro: z.enum(SHOWCASE_CONTRACT.outroVariants).optional(),
     /** Run without waiting for the start event. For eyeballing it in a browser. */
     autostart: z.boolean().optional(),
   }),

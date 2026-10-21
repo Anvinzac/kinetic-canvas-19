@@ -39,6 +39,9 @@
  *     --out <path>          output file
  *     --fps <n>             output frame rate (default: 30)
  *     --max <seconds>       give up if the word never finishes (default: 120)
+ *   showcase mode:
+ *     --intro-style <pop|drop|stamp|slide|flip>  pin the opening (default: picked per take)
+ *     --outro-style <light|dark|glass|rise>      pin the end card (default: picked per take)
  *   feed mode:
  *     --css <w>x<h>         CSS viewport, phone-sized (default: 405x720)
  *     --side <px>           left/right inset clear of a platform's crop (default: 25)
@@ -139,6 +142,18 @@ const DEFAULT_BADGE = "Từ gì mà ...";
 const introText = flag("badge", DEFAULT_BADGE);
 const withOutro = flag("outro", "on") !== "off";
 const OUTRO_MS = 4600;
+// Showcase mode: pin the opening / end-card look. Unset, the page picks a pair per take.
+function styleFlag<T extends string>(name: string, allowed: readonly T[]): T | undefined {
+  const value = flag(name, "");
+  if (!value) return undefined;
+  if (!(allowed as readonly string[]).includes(value)) {
+    console.error(`--${name} must be one of ${allowed.join(", ")} (got "${value}")`);
+    process.exit(1);
+  }
+  return value as T;
+}
+const introStyle = styleFlag("intro-style", SHOWCASE_CONTRACT.introVariants);
+const outroStyle = styleFlag("outro-style", SHOWCASE_CONTRACT.outroVariants);
 // The safe area comes from the EXPORT preset rather than from numbers invented here, so
 // the frame the feed is recorded into and the frame Export Studio draws agree by
 // construction. The margins are fractions of the frame, so they carry to any capture size.
@@ -297,6 +312,8 @@ async function main() {
     const query = new URLSearchParams();
     if (code) query.set("code", code);
     if (introText !== DEFAULT_BADGE) query.set("badge", introText);
+    if (introStyle) query.set("intro", introStyle);
+    if (outroStyle) query.set("outro", outroStyle);
     url = `${base}/showcase${query.size ? `?${query}` : ""}`;
     await cdp.send("Emulation.setDeviceMetricsOverride", {
       width: cssWidth,
@@ -437,7 +454,10 @@ async function main() {
     if (phase === "missing") throw new Error("the showcase had no word to show");
     if (phase !== "ready") throw new Error(`showcase never became ready (phase: "${phase}")`);
     const shown = await cdp.evaluate<string>("document.body.dataset.showcaseWord || ''");
-    console.log(`  showcase "${shown}" at ${width}x${height}`);
+    const looks = await cdp.evaluate<string>(
+      "`${document.body.dataset.showcaseIntro} / ${document.body.dataset.showcaseOutro}`",
+    );
+    console.log(`  showcase "${shown}" (${looks}) at ${width}x${height}`);
     isFinished = async () =>
       (await cdp.evaluate<string>("document.body.dataset.showcasePhase || ''")) === "done";
     describe = async () => shown || "showcase";

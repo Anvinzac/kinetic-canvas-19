@@ -7661,8 +7661,13 @@ body:has(.vocab-outro) .vocab-resume {
     /* Governs the interval that STARTS here: 14 characters, one step each. */
     animation-timing-function: steps(14, end);
   }
-  51%,
-  100% {  /* 2350ms - 14ch alone leaves out the letter-spacing and clipped the last letter */
+  51% {  /* 2350ms - 14ch alone leaves out the letter-spacing and clipped the last letter */
+    width: calc(14ch + 14 * 0.01em);
+  }
+  /* The rounding slack comes in only once typing is over: spread across the steps, it
+     showed a sliver of each letter before that letter was typed. */
+  52%,
+  100% {
     width: calc(14ch + 14 * 0.01em + 2px);
   }
 }
@@ -7677,6 +7682,166 @@ body:has(.vocab-outro) .vocab-resume {
   0%, 6%, 12%, 18%, 24%, 30%, 36%, 42%, 48% { opacity: 1; }
   3%, 9%, 15%, 21%, 27%, 33%, 39%, 45% { opacity: 0; }
   52%, 100% { opacity: 0; }  /* 2400ms - gone once Enter is pressed */
+}
+
+/* End-card variants (data-outro), picked per take like the intro's. Each keeps the bar
+   keyframe's beats - in by 17%, Enter at 58%, gone by 74% - and the shared typing and
+   caret timelines, so only the skin and the way the bar arrives change. "light" is the base
+   rules unchanged. */
+.vocab-outro[data-outro="dark"] .vocab-outro-bar {
+  background: #15171fee;
+  box-shadow:
+    0 18px 50px #00000080,
+    0 0 0 1px #ffffff26 inset;
+  animation-name: vocab-outro-bar-dark;
+}
+.vocab-outro[data-outro="dark"] .vocab-outro-url {
+  color: #f2f4fa;
+}
+.vocab-outro[data-outro="dark"] .vocab-outro-caret {
+  background: #ffd166;
+}
+.vocab-outro[data-outro="dark"] .vocab-outro-lock {
+  background: #cfd3de;
+}
+.vocab-outro[data-outro="dark"] .vocab-outro-lock::before {
+  border-color: #cfd3de;
+}
+@keyframes vocab-outro-bar-dark {
+  0%,
+  8% {
+    opacity: 0;
+    transform: translateY(-36px);
+  }
+  14% {
+    opacity: 1;
+    transform: translateY(3px);
+  }
+  17%,
+  52% {
+    opacity: 1;
+    transform: none;
+    box-shadow:
+      0 18px 50px #00000080,
+      0 0 0 1px #ffffff26 inset;
+  }
+  58% {
+    opacity: 1;
+    transform: scale(0.985);
+    box-shadow:
+      0 0 0 6px #ffd16666,
+      0 18px 50px #00000080;
+  }
+  61% {
+    opacity: 1;
+    transform: none;
+  }
+  74%,
+  100% {
+    opacity: 0;
+    transform: translateY(-24px);
+  }
+}
+
+.vocab-outro[data-outro="glass"] .vocab-outro-bar {
+  background: #ffffff2b;
+  backdrop-filter: blur(16px) saturate(1.5);
+  box-shadow:
+    0 18px 50px #00000059,
+    inset 0 0 0 1.5px #ffffff80;
+  animation-name: vocab-outro-bar-glass;
+}
+.vocab-outro[data-outro="glass"] .vocab-outro-url {
+  color: #fff;
+  text-shadow: 0 1px 8px #00000066;
+}
+.vocab-outro[data-outro="glass"] .vocab-outro-caret {
+  background: #fff;
+}
+.vocab-outro[data-outro="glass"] .vocab-outro-lock {
+  background: #ffffffd0;
+}
+.vocab-outro[data-outro="glass"] .vocab-outro-lock::before {
+  border-color: #ffffffd0;
+}
+@keyframes vocab-outro-bar-glass {
+  0%,
+  8% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  13% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  17%,
+  52% {
+    opacity: 1;
+    transform: none;
+    box-shadow:
+      0 18px 50px #00000059,
+      inset 0 0 0 1.5px #ffffff80;
+  }
+  58% {
+    opacity: 1;
+    transform: scale(0.985);
+    box-shadow:
+      0 0 0 6px #ffffff55,
+      0 18px 50px #00000059,
+      inset 0 0 0 1.5px #ffffff;
+  }
+  61% {
+    opacity: 1;
+    transform: none;
+  }
+  74%,
+  100% {
+    opacity: 0;
+    transform: scale(1.12);
+  }
+}
+
+.vocab-outro[data-outro="rise"] .vocab-outro-bar {
+  box-shadow:
+    0 18px 50px #00000059,
+    0 0 0 2px #7bdcb5;
+  animation-name: vocab-outro-bar-rise;
+}
+@keyframes vocab-outro-bar-rise {
+  0%,
+  8% {
+    opacity: 0;
+    transform: translateY(70px) scale(0.9);
+  }
+  15% {
+    opacity: 1;
+    transform: translateY(-4px);
+  }
+  17%,
+  52% {
+    opacity: 1;
+    transform: none;
+    box-shadow:
+      0 18px 50px #00000059,
+      0 0 0 2px #7bdcb5;
+  }
+  58% {
+    opacity: 1;
+    transform: scale(0.985);
+    box-shadow:
+      0 0 0 10px #ff6b8b55,
+      0 0 0 2px #ff6b8b,
+      0 18px 50px #00000059;
+  }
+  61% {
+    opacity: 1;
+    transform: none;
+  }
+  74%,
+  100% {
+    opacity: 0;
+    transform: translateY(-50px);
+  }
 }
 
 /* ── Recorded intro ──────────────────────────────────────────────────────────────────────
@@ -7912,6 +8077,278 @@ body:has(.vocab-outro) .vocab-resume {
 .vocab-intro-confetti i:nth-child(17) { --x: -102px; --y:   76px; --rot: 250deg; --c: #7bdcb5; --t: 330ms; --d: 1560ms; --w: 10px; --h: 13px; }
 .vocab-intro-confetti i:nth-child(18) { --x:  110px; --y:   82px; --rot: -270deg; --c: #ff9f1c; --t: 345ms; --d: 1580ms; --w: 13px; --h: 8px; }
 
+/* ── Beat 1: variants ─────────────────────────────────────────────────────────────────────
+   /showcase picks one per take (data-intro), so consecutive clips do not open the same way.
+   A variant swaps animation NAMES and the badge's skin only: delays and durations stay the
+   base rule's, so every variant is in by ~820ms and gone by ~1590ms and the handover above
+   never moves. "pop" is the base rules unchanged; the recorder's injected feed-mode intro
+   carries no data-intro and gets the same. */
+.vocab-intro[data-intro="drop"] .vocab-intro-badge {
+  color: #f6f7fb;
+  background: linear-gradient(180deg, #262a39, #14161f);
+  box-shadow:
+    0 30px 80px #000000a0,
+    0 0 0 2px #7bdcb5,
+    0 2px 0 #ffffff1f inset;
+  animation-name: vocab-intro-drop-in, vocab-intro-drop-out;
+}
+@keyframes vocab-intro-drop-in {
+  0% {
+    opacity: 0;
+    transform: translateY(-260%) scaleY(1.12) rotate(4deg);
+  }
+  45% {
+    opacity: 1;
+    transform: translateY(0) scale(1.08, 0.86);
+  }
+  65% {
+    transform: translateY(-14%) scale(0.97, 1.04);
+  }
+  82% {
+    transform: translateY(0) scale(1.02, 0.97);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes vocab-intro-drop-out {
+  0% {
+    opacity: 1;
+    transform: none;
+  }
+  25% {
+    transform: translateY(6%) scale(1.03, 0.94);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-160%) scale(0.9, 1.1);
+  }
+}
+/* The landing kicks up a flat ring of dust under the badge instead of a round shockwave. */
+.vocab-intro[data-intro="drop"] .vocab-intro-ring {
+  width: 380px;
+  height: 64px;
+  translate: 0 74px;
+  border-color: #ffffffb0;
+}
+.vocab-intro[data-intro="drop"] .vocab-intro-confetti i {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #7bdcb5;
+  box-shadow: 0 0 10px #7bdcb5;
+  animation-name: vocab-intro-sparkle;
+}
+
+.vocab-intro[data-intro="stamp"] .vocab-intro-badge {
+  color: #fff;
+  background: linear-gradient(135deg, #ff6b8b, #ff9f43);
+  border-radius: 18px;
+  box-shadow:
+    0 30px 80px #00000080,
+    0 3px 0 #ffffff55 inset;
+  animation-name: vocab-intro-stamp-in, vocab-intro-stamp-out;
+  animation-timing-function: cubic-bezier(0.2, 0.9, 0.3, 1), ease-in;
+}
+@keyframes vocab-intro-stamp-in {
+  0% {
+    opacity: 0;
+    transform: scale(2.6) rotate(-10deg);
+    filter: blur(6px);
+  }
+  35% {
+    opacity: 1;
+    transform: scale(0.94) rotate(-4deg);
+    filter: blur(0);
+  }
+  45% {
+    transform: scale(1.03) rotate(-4deg) translateX(-6px);
+  }
+  55% {
+    transform: scale(1) rotate(-4deg) translateX(5px);
+  }
+  65% {
+    transform: rotate(-4deg) translateX(-3px);
+  }
+  100% {
+    opacity: 1;
+    transform: rotate(-4deg);
+    filter: blur(0);
+  }
+}
+@keyframes vocab-intro-stamp-out {
+  0% {
+    opacity: 1;
+    transform: rotate(-4deg);
+    filter: blur(0);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.5) rotate(-4deg);
+    filter: blur(8px);
+  }
+}
+.vocab-intro[data-intro="stamp"] .vocab-intro-ring {
+  border-radius: 34px;
+  border-color: #ffd166;
+  rotate: -4deg;
+}
+.vocab-intro[data-intro="stamp"] .vocab-intro-confetti i {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: #ffffffc0;
+  animation-name: vocab-intro-puff;
+}
+
+.vocab-intro[data-intro="slide"] .vocab-intro-badge {
+  color: #fff;
+  background: #ffffff26;
+  backdrop-filter: blur(14px) saturate(1.4);
+  text-shadow: 0 2px 12px #00000055;
+  box-shadow:
+    0 30px 80px #00000060,
+    inset 0 0 0 1.5px #ffffff70;
+  animation-name: vocab-intro-slide-in, vocab-intro-slide-out;
+}
+@keyframes vocab-intro-slide-in {
+  0% {
+    opacity: 0;
+    transform: translateX(-160%) skewX(-18deg);
+  }
+  50% {
+    opacity: 1;
+    transform: translateX(6%) skewX(8deg);
+  }
+  72% {
+    transform: translateX(-2%) skewX(-3deg);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes vocab-intro-slide-out {
+  0% {
+    opacity: 1;
+    transform: none;
+  }
+  30% {
+    transform: translateX(-4%) skewX(4deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(170%) skewX(-20deg);
+  }
+}
+/* Speed lines trailing the whip instead of a burst; no shockwave for a sideways arrival. */
+.vocab-intro[data-intro="slide"] .vocab-intro-ring {
+  display: none;
+}
+.vocab-intro[data-intro="slide"] .vocab-intro-confetti i {
+  width: 72px;
+  height: 3px;
+  border-radius: 3px;
+  background: #ffffffb0;
+  animation-name: vocab-intro-streak;
+}
+
+.vocab-intro[data-intro="flip"] {
+  perspective: 900px;
+}
+.vocab-intro[data-intro="flip"] .vocab-intro-badge {
+  color: #0f1a16;
+  background: linear-gradient(180deg, #a6f2d3, #5fd3a6);
+  box-shadow:
+    0 30px 80px #00000070,
+    0 3px 0 #ffffff80 inset;
+  animation-name: vocab-intro-flip-in, vocab-intro-flip-out;
+}
+@keyframes vocab-intro-flip-in {
+  0% {
+    opacity: 0;
+    transform: rotateX(-100deg) scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: rotateX(18deg) scale(1.04);
+  }
+  75% {
+    transform: rotateX(-6deg);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes vocab-intro-flip-out {
+  0% {
+    opacity: 1;
+    transform: none;
+  }
+  100% {
+    opacity: 0;
+    transform: rotateX(95deg) scale(0.85);
+  }
+}
+.vocab-intro[data-intro="flip"] .vocab-intro-ring {
+  border-color: #7bdcb5;
+  box-shadow: 0 0 0 10px #7bdcb544;
+}
+.vocab-intro[data-intro="flip"] .vocab-intro-confetti i {
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  animation-name: vocab-intro-sparkle;
+}
+
+/* Particle paths the variants share. Each reads the same per-piece --x/--y as the base
+   confetti, so the eighteen pieces keep their own spread whichever path they take. */
+@keyframes vocab-intro-sparkle {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0);
+  }
+  20% {
+    opacity: 1;
+  }
+  55% {
+    opacity: 1;
+    transform: translate(calc(var(--x) * 0.9), calc(var(--y) * 0.6 + 40px)) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(calc(var(--x) * 1.05), calc(var(--y) * 0.7 + 30px)) scale(0);
+  }
+}
+@keyframes vocab-intro-puff {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.4);
+  }
+  15% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(calc(var(--x) * 0.7), calc(var(--y) * 0.35 + 60px)) scale(1.8);
+  }
+}
+@keyframes vocab-intro-streak {
+  0% {
+    opacity: 0;
+    transform: translate(-30px, calc(var(--y) * 0.55)) scaleX(0.2);
+  }
+  20% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(calc(-260px + var(--x) * 0.3), calc(var(--y) * 0.55)) scaleX(1.4);
+  }
+}
+
 /* ── Beat 2: the page assembles ───────────────────────────────────────────────────────── */
 /* Everything the card paints starts hidden, so the blurred background is the card itself
    with nothing on it - the same card that is about to be built, not a stand-in. */
@@ -8016,7 +8453,7 @@ body:has(.vocab-intro) .vocab-resume {
      resolve against the toolbar's own height instead of the frame's. */
   --vocab-chrome-side: 25px;
   --vocab-safe-top: 61px;
-  --vocab-chrome-inset: 64px;
+  --vocab-chrome-inset: 69px;
   --vocab-chrome-bar: 36px;
   --vocab-chrome-gap: 28px;
   position: relative;
@@ -8024,6 +8461,13 @@ body:has(.vocab-intro) .vocab-resume {
   height: min(100dvh, calc(100vw * var(--showcase-ratio)));
   overflow: hidden;
   isolation: isolate;
+}
+/* A clip cannot be tapped, so the share tab is dead weight in the panel's corner. */
+.vocab-showcase .vocab-share-dock {
+  display: none;
+}
+.vocab-showcase .vocab-reveal-details {
+  --vocab-reveal-badge-room: 0px;
 }
 /* The scenery bar is absolute within the stage, not fixed to the viewport: the stage IS
    the frame, and a fixed bar would hang off it whenever the window is a different shape. */

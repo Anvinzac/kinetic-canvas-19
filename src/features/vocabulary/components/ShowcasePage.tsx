@@ -27,7 +27,13 @@ import { useEffect, useMemo, useState } from "react";
 import { useSearch } from "@tanstack/react-router";
 import { VocabularyCard } from "./VocabularyCard";
 import { ShowcaseChrome } from "./ShowcaseChrome";
-import { SHOWCASE_CONTRACT, type ShowcasePhase } from "../lib/showcase-contract";
+import {
+  SHOWCASE_CONTRACT,
+  pickShowcaseVariants,
+  type ShowcaseIntroVariant,
+  type ShowcaseOutroVariant,
+  type ShowcasePhase,
+} from "../lib/showcase-contract";
 import { allCatalogWords, findWordByShareCode } from "../lib/saved-words";
 // Each page component brings the card's stylesheet in; this is a page like any other.
 import "../vocabulary.css";
@@ -77,6 +83,11 @@ export function ShowcasePage() {
     const seed = search.seed ?? Math.floor(Math.random() * words.length);
     return words[seed % words.length];
   }, [search.code, search.seed]);
+  // Also resolved once, for the same reason: the end card must not change look mid-take.
+  const variants = useMemo(
+    () => pickShowcaseVariants(search.seed, search.intro, search.outro),
+    [search.seed, search.intro, search.outro],
+  );
 
   const go = (next: ShowcasePhase) => {
     setLocalPhase(next);
@@ -91,6 +102,8 @@ export function ShowcasePage() {
       return;
     }
     document.body.dataset.showcaseWord = word.word;
+    document.body.dataset.showcaseIntro = variants.intro;
+    document.body.dataset.showcaseOutro = variants.outro;
     // Two frames: one for the card to mount, one for it to have painted. The timeout is
     // not belt and braces — a headless tab may have rAF throttled to nothing, and a
     // readiness signal that only ever arrives on a frame would wait forever.
@@ -187,17 +200,19 @@ export function ShowcasePage() {
           canAdvance
           onAdvance={() => setLocalPhase("outro")}
         />
-        {phase === "intro" && <ShowcaseIntro text={search.badge ?? "Từ gì mà ..."} />}
-        {(phase === "outro" || phase === "done") && <ShowcaseOutro />}
+        {phase === "intro" && (
+          <ShowcaseIntro text={search.badge ?? "Từ gì mà ..."} variant={variants.intro} />
+        )}
+        {(phase === "outro" || phase === "done") && <ShowcaseOutro variant={variants.outro} />}
       </div>
     </main>
   );
 }
 
 /** The opening badge. Markup only; the timeline is in vocabulary.css. */
-function ShowcaseIntro({ text }: { text: string }) {
+function ShowcaseIntro({ text, variant }: { text: string; variant: ShowcaseIntroVariant }) {
   return (
-    <div className="vocab-intro">
+    <div className="vocab-intro" data-intro={variant}>
       <div className="vocab-intro-veil" />
       <div className="vocab-intro-ring" />
       <div className="vocab-intro-confetti">
@@ -211,9 +226,9 @@ function ShowcaseIntro({ text }: { text: string }) {
 }
 
 /** The end card. Markup only; the timeline is in vocabulary.css. */
-function ShowcaseOutro() {
+function ShowcaseOutro({ variant }: { variant: ShowcaseOutroVariant }) {
   return (
-    <div className="vocab-outro">
+    <div className="vocab-outro" data-outro={variant}>
       <div className="vocab-outro-veil" />
       <div className="vocab-outro-bar">
         <span className="vocab-outro-lock" />
