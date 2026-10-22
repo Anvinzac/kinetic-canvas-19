@@ -8,13 +8,13 @@
  * printed the word would end the game in the chat thread).
  *
  * Exports: ChallengePage
- * Depends on: router, findWordByShareCode, answerPattern, vocabulary.css
+ * Depends on: router, useServedWord, answerPattern, vocabulary.css
  */
 
 import { Link, useParams } from "@tanstack/react-router";
 import { useMemo, useState, type FormEvent } from "react";
 import { ArrowLeft, Send } from "lucide-react";
-import { findWordByShareCode } from "../lib/saved-words";
+import { useServedWord } from "../hooks/useServedWord";
 import { MarkedText } from "./MarkedText";
 import "../vocabulary.css";
 
@@ -30,10 +30,22 @@ function matches(guess: string, answer: string): boolean {
  */
 export function ChallengePage(): React.ReactElement {
   const { code = "" } = useParams({ strict: false }) as { code?: string };
-  const word = useMemo(() => findWordByShareCode(code), [code]);
+  const lookup = useMemo(() => (code ? { code } : null), [code]);
+  const { word: served } = useServedWord(lookup);
+  const word = code ? served : null;
   const [guess, setGuess] = useState("");
   const [wrong, setWrong] = useState(0);
   const [solved, setSolved] = useState(false);
+
+  if (word === undefined) {
+    return (
+      <main className="vocabulary-shell vocab-challenge-shell" aria-busy="true">
+        <div className="vocab-challenge-card">
+          <p className="vocab-challenge-eyebrow">Đang tải câu đố…</p>
+        </div>
+      </main>
+    );
+  }
 
   if (!word) {
     return (

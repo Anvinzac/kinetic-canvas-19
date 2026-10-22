@@ -21,11 +21,11 @@ export function useVocabularyFeed(seed: string, filters: VocabularyFilters) {
     getNextPageParam: (last) =>
       last.nextPosition === null
         ? undefined
-        : { position: last.nextPosition, revision: last.revision },
+        : { position: last.nextPosition, revision: last.revision, token: last.cursor },
     getPreviousPageParam: (first) =>
       first.previousPosition === null
         ? undefined
-        : { position: first.previousPosition, revision: first.revision },
+        : { position: first.previousPosition, revision: first.revision, token: first.cursor },
     maxPages: VOCAB_MAX_PAGES,
     staleTime: Infinity,
     gcTime: 0,
@@ -34,7 +34,7 @@ export function useVocabularyFeed(seed: string, filters: VocabularyFilters) {
     retry: (attempt, error) =>
       !(
         error instanceof VocabularyRequestError &&
-        ["CATALOG_CHANGED", "INVALID_REQUEST"].includes(error.code)
+        ["CATALOG_CHANGED", "STREAM_EXPIRED", "INVALID_REQUEST", "FORBIDDEN"].includes(error.code)
       ) && attempt < 2,
   });
   useEffect(
@@ -79,5 +79,16 @@ export function useVocabularyFeed(seed: string, filters: VocabularyFilters) {
   );
   const catalogChanged =
     query.error instanceof VocabularyRequestError && query.error.code === "CATALOG_CHANGED";
-  return { ...query, entries, metadata: query.data?.pages[0], catalogChanged };
+  // A stream left open past its cursor's lifetime; the fix is the same fresh restart.
+  const streamExpired =
+    query.error instanceof VocabularyRequestError && query.error.code === "STREAM_EXPIRED";
+  const needsRestart = catalogChanged || streamExpired;
+  return {
+    ...query,
+    entries,
+    metadata: query.data?.pages[0],
+    catalogChanged,
+    streamExpired,
+    needsRestart,
+  };
 }

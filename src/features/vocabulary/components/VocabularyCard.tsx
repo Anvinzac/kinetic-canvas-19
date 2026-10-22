@@ -51,6 +51,7 @@ import {
   hasReaction,
   type ReactionKind,
 } from "../lib/reactions";
+import { rememberWord } from "../lib/saved-word-cache";
 import { EMOJI_PALETTE, formatEmojiTotal, mockEmojiTotals, withLocalEmojis } from "../lib/emoji";
 import { useLearningPlayback } from "../hooks/useLearningPlayback";
 import { usePresence } from "@/hooks/use-presence";
@@ -725,6 +726,8 @@ export function VocabularyCard({
       // Reactions are always live — no pre-reveal lock. flipReaction bumps the tap
       // counter itself when the reaction turns on.
       const turningOn = !hasReaction(wordId, kind);
+      // The saved pages have no deck to look the word up in, so they keep this copy.
+      if (turningOn) rememberWord(entry.word);
       flipReaction(wordId, kind);
       readLocalReactions();
       if (turningOn) {
@@ -735,7 +738,7 @@ export function VocabularyCard({
         }));
       }
     },
-    [wordId, readLocalReactions, showEmojiStrip],
+    [wordId, entry.word, readLocalReactions, showEmojiStrip],
   );
   const heartsLabel = formatReactionCount(taps.heart);
   const bookmarksLabel = formatReactionCount(taps.bookmark);

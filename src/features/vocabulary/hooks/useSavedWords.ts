@@ -4,9 +4,9 @@
  * localStorage reaction store, so ONE listener keeps both tabs and both counts in
  * sync instead of registering a duplicate per tab.
  *
- * This module reaches the bundled catalog through ../lib/saved-words, so it belongs to
- * the saved page only. The toolbar badge count deliberately stays in ./useSavedCount,
- * which touches nothing but the reaction leaf.
+ * Words resolve from the copies kept when the reader reacted (../lib/saved-word-cache);
+ * the deck itself never reaches the browser. The toolbar badge count stays in
+ * ./useSavedCount, which touches nothing but the reaction leaf.
  *
  * Exports: useSavedWords
  * Depends on: React, ../lib/reactions, ../lib/saved-words

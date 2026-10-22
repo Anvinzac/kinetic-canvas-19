@@ -35,6 +35,7 @@ export async function fetchVocabularyPage(input: {
     position: String(input.cursor.position),
     limit: String(VOCAB_PAGE_LIMIT),
     ...(input.cursor.revision ? { revision: input.cursor.revision } : {}),
+    ...(input.cursor.token ? { token: input.cursor.token } : {}),
   });
   const controller = new AbortController();
   const abort = () => controller.abort();

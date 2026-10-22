@@ -304,9 +304,9 @@ export function VocabularyStream({
               <button
                 type="button"
                 className="vocab-light-button"
-                onClick={query.catalogChanged ? onRestart : retry}
+                onClick={query.needsRestart ? onRestart : retry}
               >
-                {query.catalogChanged ? "Bắt đầu dòng mới" : "Thử lại"}
+                {query.needsRestart ? "Bắt đầu dòng mới" : "Thử lại"}
               </button>
             )}
             {empty && (
@@ -394,16 +394,18 @@ export function VocabularyStream({
               <span>
                 {query.catalogChanged
                   ? "Có bộ từ mới. Khởi động lại để tải."
-                  : query.isPaused
-                    ? "Mất mạng — các từ đã tải vẫn xem được."
-                    : "Không tải thêm từ được."}
+                  : query.streamExpired
+                    ? "Phiên xem đã hết hạn. Khởi động lại để xem tiếp."
+                    : query.isPaused
+                      ? "Mất mạng — các từ đã tải vẫn xem được."
+                      : "Không tải thêm từ được."}
               </span>
               <button
                 type="button"
-                onClick={query.catalogChanged ? onRestart : retry}
+                onClick={query.needsRestart ? onRestart : retry}
                 disabled={query.isFetching}
               >
-                {query.catalogChanged ? "Khởi động lại" : "Thử lại"}
+                {query.needsRestart ? "Khởi động lại" : "Thử lại"}
               </button>
             </div>
           )}

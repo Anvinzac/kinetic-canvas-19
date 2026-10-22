@@ -2,6 +2,7 @@ import { createStart, createMiddleware } from "@tanstack/react-start";
 
 import { renderErrorPage } from "./lib/error-page";
 import { RATE_LIMITS, callerKey, checkRateLimit, rateLimitedResponse } from "./lib/rate-limit";
+import { WORD_DATA_PATHS, browserOnlyResponse, isBrowserRequest } from "./lib/bot-gate";
 import { attachSupabaseAuth } from "@/integrations/supabase/auth-attacher";
 
 /**
@@ -17,6 +18,9 @@ import { attachSupabaseAuth } from "@/integrations/supabase/auth-attacher";
  */
 const rateLimitMiddleware = createMiddleware().server(async ({ next, request }) => {
   const path = new URL(request.url).pathname;
+  // Tools and crawlers are turned away before they cost a token: an endpoint that hands
+  // out word content only answers the app's own pages (see lib/bot-gate).
+  if (WORD_DATA_PATHS.has(path) && !isBrowserRequest(request)) return browserOnlyResponse();
   const budget = RATE_LIMITS[path];
   if (!budget) return next();
   const verdict = checkRateLimit(path, callerKey(request), budget);

@@ -48,6 +48,7 @@ import { Route as ApiPublicEngagementRouteImport } from './routes/api/public/eng
 import { Route as ApiPublicTelemetryRouteImport } from './routes/api/public/telemetry'
 import { Route as ApiPublicVocabularyRouteImport } from './routes/api/public/vocabulary'
 import { Route as ApiPublicVocabularyRefillRouteImport } from './routes/api/public/vocabulary-refill'
+import { Route as ApiPublicWordRouteImport } from './routes/api/public/word'
 import { Route as ApiPublicWordReportRouteImport } from './routes/api/public/word-report'
 
 const IndexRoute = IndexRouteImport.update({
@@ -247,6 +248,11 @@ const ApiPublicVocabularyRefillRoute =
     path: '/api/public/vocabulary-refill',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicWordRoute = ApiPublicWordRouteImport.update({
+  id: '/api/public/word',
+  path: '/api/public/word',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicWordReportRoute = ApiPublicWordReportRouteImport.update({
   id: '/api/public/word-report',
   path: '/api/public/word-report',
@@ -292,6 +298,7 @@ export interface FileRoutesByFullPath {
   '/api/public/telemetry': typeof ApiPublicTelemetryRoute
   '/api/public/vocabulary': typeof ApiPublicVocabularyRoute
   '/api/public/vocabulary-refill': typeof ApiPublicVocabularyRefillRoute
+  '/api/public/word': typeof ApiPublicWordRoute
   '/api/public/word-report': typeof ApiPublicWordReportRoute
 }
 export interface FileRoutesByTo {
@@ -332,6 +339,7 @@ export interface FileRoutesByTo {
   '/api/public/telemetry': typeof ApiPublicTelemetryRoute
   '/api/public/vocabulary': typeof ApiPublicVocabularyRoute
   '/api/public/vocabulary-refill': typeof ApiPublicVocabularyRefillRoute
+  '/api/public/word': typeof ApiPublicWordRoute
   '/api/public/word-report': typeof ApiPublicWordReportRoute
 }
 export interface FileRoutesById {
@@ -375,6 +383,7 @@ export interface FileRoutesById {
   '/api/public/telemetry': typeof ApiPublicTelemetryRoute
   '/api/public/vocabulary': typeof ApiPublicVocabularyRoute
   '/api/public/vocabulary-refill': typeof ApiPublicVocabularyRefillRoute
+  '/api/public/word': typeof ApiPublicWordRoute
   '/api/public/word-report': typeof ApiPublicWordReportRoute
 }
 export interface FileRouteTypes {
@@ -418,6 +427,7 @@ export interface FileRouteTypes {
     | '/api/public/telemetry'
     | '/api/public/vocabulary'
     | '/api/public/vocabulary-refill'
+    | '/api/public/word'
     | '/api/public/word-report'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -458,6 +468,7 @@ export interface FileRouteTypes {
     | '/api/public/telemetry'
     | '/api/public/vocabulary'
     | '/api/public/vocabulary-refill'
+    | '/api/public/word'
     | '/api/public/word-report'
   id:
     | '__root__'
@@ -500,6 +511,7 @@ export interface FileRouteTypes {
     | '/api/public/telemetry'
     | '/api/public/vocabulary'
     | '/api/public/vocabulary-refill'
+    | '/api/public/word'
     | '/api/public/word-report'
   fileRoutesById: FileRoutesById
 }
@@ -520,6 +532,7 @@ export interface RootRouteChildren {
   ApiPublicTelemetryRoute: typeof ApiPublicTelemetryRoute
   ApiPublicVocabularyRoute: typeof ApiPublicVocabularyRoute
   ApiPublicVocabularyRefillRoute: typeof ApiPublicVocabularyRefillRoute
+  ApiPublicWordRoute: typeof ApiPublicWordRoute
   ApiPublicWordReportRoute: typeof ApiPublicWordReportRoute
 }
 
@@ -798,6 +811,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicVocabularyRefillRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/word': {
+      id: '/api/public/word'
+      path: '/api/public/word'
+      fullPath: '/api/public/word'
+      preLoaderRoute: typeof ApiPublicWordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/word-report': {
       id: '/api/public/word-report'
       path: '/api/public/word-report'
@@ -890,6 +910,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicTelemetryRoute: ApiPublicTelemetryRoute,
   ApiPublicVocabularyRoute: ApiPublicVocabularyRoute,
   ApiPublicVocabularyRefillRoute: ApiPublicVocabularyRefillRoute,
+  ApiPublicWordRoute: ApiPublicWordRoute,
   ApiPublicWordReportRoute: ApiPublicWordReportRoute,
 }
 export const routeTree = rootRouteImport

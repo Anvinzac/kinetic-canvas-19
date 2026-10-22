@@ -1,30 +1,17 @@
 /**
- * Client-side resolution of this device's reacted words against the bundled catalog.
- * Pure lookups over localStorage plus the compiled deck — no server call, no auth,
- * no account.
+ * Client-side resolution of this device's reacted words against the copies it kept when
+ * the reader reacted (./saved-word-cache). Pure localStorage reads — no server call, no
+ * auth, no account, and no deck: the catalog never ships to the browser.
  *
  * Exports: SavedWord, getWordsWithReaction, getSavedWords, getFavoriteWords,
- *   countWordsWithReaction, lookupWord, findWordByShareCode
- * Depends on: ./catalog-source, ./schema, ./history, ./reactions
+ *   countWordsWithReaction
+ * Depends on: ./schema, ./history, ./reactions, ./saved-word-cache
  */
 
-import { catalogFor } from "./catalog-source";
-import { normalizeShareCode } from "./share-code";
-import { resolveTarget } from "./target-language";
 import type { VocabularyWord } from "./schema";
 import { loadHistory } from "./history";
 import { getReactionSnapshot, getReactionWordIds, type ReactionKind } from "./reactions";
-
-/** Stable id → word index so reaction lookups never rescan the deck. */
-// Resolved lazily: saved lists are per-address (localStorage), so the deck is this host's.
-let byId: Map<string, VocabularyWord> | undefined;
-function wordsByIdMap(): Map<string, VocabularyWord> {
-  if (!byId) {
-    const host = typeof window === "undefined" ? "" : window.location.host;
-    byId = new Map(catalogFor(resolveTarget(host)).words.map((word) => [word.id, word]));
-  }
-  return byId;
-}
+import { cachedWord, cachedWordIds } from "./saved-word-cache";
 
 /** One word on a saved page, plus the state that put it there. */
 export type SavedWord = {
@@ -55,52 +42,9 @@ function resolveSavedAt(
 }
 
 /**
- * Every word in THIS host's deck, in catalog order.
- *
- * For callers that need to choose one rather than resolve one — the showcase picking a
- * word to record. Same per-host resolution as the lookups below, so a clip recorded on a
- * Vietnamese host is a Vietnamese deck's word.
- * @returns the catalog's words; empty only if the deck is
- */
-export function allCatalogWords(): readonly VocabularyWord[] {
-  const host = typeof window === "undefined" ? "" : window.location.host;
-  return catalogFor(resolveTarget(host)).words;
-}
-
-/** Resolve a catalog word by id (undefined when the deck no longer holds it). */
-export function lookupWord(id: string): VocabularyWord | undefined {
-  return wordsByIdMap().get(id);
-}
-
-/** Share code → word, resolved lazily against THIS host's deck, same as byId. */
-let byShareCode: Map<string, VocabularyWord> | undefined;
-
-/**
- * Resolve a word from a challenge link's share code.
- *
- * Codes are per-deck: each locale's catalog issues its own, and a host serves one
- * deck, so `/w/K7F` means whatever this host's catalog says it means.
- * @param code Raw code from the URL. Normalised here, so a lower-case or
- *   lightly mistyped one still resolves.
- * @returns The word, or undefined when the code is unknown — which includes a
- *   code whose word has since left the deck.
- */
-export function findWordByShareCode(code: string): VocabularyWord | undefined {
-  if (!byShareCode) {
-    const host = typeof window === "undefined" ? "" : window.location.host;
-    byShareCode = new Map(
-      catalogFor(resolveTarget(host)).words.flatMap((word) =>
-        word.shareCode ? [[word.shareCode, word] as const] : [],
-      ),
-    );
-  }
-  return byShareCode.get(normalizeShareCode(code));
-}
-
-/**
  * Every word this device has the given reaction on, in the order the reactions were
- * written. Words removed from the catalog after reacting are skipped silently, so a
- * stale localStorage id can never render an empty row.
+ * written. A reaction with no kept copy (one made before copies were kept) is skipped
+ * silently, so a stale localStorage id can never render an empty row.
  * @param kind - Which reaction defines the list membership
  * @returns Resolved words for that tab
  */
@@ -108,7 +52,7 @@ export function getWordsWithReaction(kind: ReactionKind): SavedWord[] {
   const history = loadHistory();
   const list: SavedWord[] = [];
   for (const id of getReactionWordIds(kind)) {
-    const word = wordsByIdMap().get(id);
+    const word = cachedWord(id);
     if (!word) continue;
     const entry = getReactionSnapshot(id);
     list.push({
@@ -131,7 +75,8 @@ export function getFavoriteWords(): SavedWord[] {
   return getWordsWithReaction("heart");
 }
 
-/** How many catalog words this device currently has on for one reaction. */
+/** How many kept words this device currently has on for one reaction. */
 export function countWordsWithReaction(kind: ReactionKind): number {
-  return getReactionWordIds(kind).filter((id) => wordsByIdMap().has(id)).length;
+  const kept = cachedWordIds();
+  return getReactionWordIds(kind).filter((id) => kept.has(id)).length;
 }

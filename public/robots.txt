@@ -1,0 +1,6 @@
+User-agent: *
+Disallow: /api/
+Disallow: /export/
+Disallow: /showcase
+Disallow: /w/
+Disallow: /admin

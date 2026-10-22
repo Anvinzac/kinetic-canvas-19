@@ -19,14 +19,19 @@
  * a budget you can prove, so anything that must hold exactly — a spend cap, a quota —
  * belongs in Postgres where every instance can see the same counter.
  *
- * Exports: RATE_LIMITS, callerKey, checkRateLimit, rateLimitedResponse, resetRateLimits
+ * Exports: RATE_LIMITS, NEW_STREAM_BUDGET, callerKey, checkRateLimit, rateLimitedResponse,
+ *   resetRateLimits
  * Depends on: none (leaf module)
  */
 
 /** A budget: how many requests one caller may make to one bucket per window. */
 export type RateLimit = { limit: number; windowMs: number };
+/** One budget, or several windows that must ALL have room (a burst cap plus a daily cap). */
+export type RateBudget = RateLimit | readonly RateLimit[];
 
 const MINUTE = 60 * 1000;
+const HOUR = 60 * MINUTE;
+const DAY = 24 * HOUR;
 
 /**
  * Per-endpoint budgets, keyed by the pathname the middleware matches.
@@ -36,7 +41,7 @@ const MINUTE = 60 * 1000;
  * by the page itself, so their ceilings are set well above what an honest session produces
  * and are there to stop a flood, not to pace a reader. Refill is a daily cron call.
  */
-export const RATE_LIMITS: Record<string, RateLimit> = {
+export const RATE_LIMITS: Record<string, RateBudget> = {
   // A reader fixing a deck by hand might file a handful; a script files hundreds.
   "/api/public/word-report": { limit: 12, windowMs: 10 * MINUTE },
   // Unauthenticated AND writes through the service-role key, so this is the one that most
@@ -44,8 +49,21 @@ export const RATE_LIMITS: Record<string, RateLimit> = {
   "/api/public/telemetry": { limit: 120, windowMs: MINUTE },
   // One tap each; a reader cannot out-tap this, a script can.
   "/api/public/engagement": { limit: 90, windowMs: MINUTE },
-  // Paging the feed. Generous: a fast scroller legitimately pulls several pages a minute.
-  "/api/public/vocabulary": { limit: 240, windowMs: MINUTE },
+  // Paging the feed, 12 words a page. A reader spends seconds to minutes on each word, so
+  // even someone skipping hard pulls about a page a minute; the burst cap leaves room for
+  // the backfill that tops up a stream after blocked words. The hour and day caps are
+  // what make walking the whole corpus from one address take days instead of minutes.
+  "/api/public/vocabulary": [
+    { limit: 30, windowMs: MINUTE },
+    { limit: 120, windowMs: HOUR },
+    { limit: 400, windowMs: DAY },
+  ],
+  // One word by share code (challenge links, recorder surfaces). One request yields one
+  // word, so the daily cap bounds enumeration to a trickle.
+  "/api/public/word": [
+    { limit: 20, windowMs: MINUTE },
+    { limit: 200, windowMs: DAY },
+  ],
   // pg_cron calls this once a day. Anything beyond a retry or two is not the cron.
   "/api/public/vocabulary-refill": { limit: 10, windowMs: 10 * MINUTE },
 };
@@ -53,7 +71,20 @@ export const RATE_LIMITS: Record<string, RateLimit> = {
 /** Past this many tracked callers the map is swept of windows that have expired. */
 const SWEEP_AT = 5000;
 
-const hits = new Map<string, number[]>();
+/**
+ * New streams on the feed. Not a path: the vocabulary handler charges it only for a
+ * page 0, because a stream's later pages need its signed cursor while page 0 does not —
+ * so fresh seeds are the one way to fan out, and they get the tighter allowance. Every
+ * filter change opens a stream too, which is what the ten-minute figure leaves room for.
+ */
+export const NEW_STREAM_BUDGET: RateBudget = [
+  { limit: 20, windowMs: 10 * MINUTE },
+  { limit: 100, windowMs: DAY },
+];
+
+// Each window remembers its own length, so a sweep never judges a day-long window by
+// the minute-long one that happened to trigger it.
+const hits = new Map<string, { windowMs: number; times: number[] }>();
 
 /**
  * The caller, as far as the edge will tell us.
@@ -74,34 +105,41 @@ export function callerKey(request: Request): string {
 }
 
 /**
- * Take one token from a caller's budget.
+ * Take one token from a caller's budget. With several windows, the request proceeds only
+ * if every window has room, and a refused request is charged to none of them.
  * @param bucket - what is being limited, usually the pathname
  * @param key - the caller, from callerKey
- * @param budget - how many per window
- * @returns Whether the request may proceed, and when the window frees up if not
+ * @param budget - how many per window, or several windows at once
+ * @returns Whether the request may proceed, and when the tightest full window frees up if not
  */
 export function checkRateLimit(
   bucket: string,
   key: string,
-  budget: RateLimit,
+  budget: RateBudget,
 ): { allowed: boolean; retryAfterSeconds: number } {
   const now = Date.now();
-  const id = `${bucket}|${key}`;
-  const recent = (hits.get(id) ?? []).filter((time) => now - time < budget.windowMs);
-  if (recent.length >= budget.limit) {
-    hits.set(id, recent);
-    const oldest = recent[0] ?? now;
-    return {
-      allowed: false,
-      retryAfterSeconds: Math.max(1, Math.ceil((budget.windowMs - (now - oldest)) / 1000)),
-    };
+  const windows = Array.isArray(budget) ? budget : [budget as RateLimit];
+  const slots = windows.map((window, index) => {
+    const id = `${bucket}#${index}|${key}`;
+    const times = (hits.get(id)?.times ?? []).filter((time) => now - time < window.windowMs);
+    return { id, window, times };
+  });
+  let retryAfterSeconds = 0;
+  for (const { id, window, times } of slots) {
+    hits.set(id, { windowMs: window.windowMs, times });
+    if (times.length < window.limit) continue;
+    const oldest = times[0] ?? now;
+    retryAfterSeconds = Math.max(
+      retryAfterSeconds,
+      Math.max(1, Math.ceil((window.windowMs - (now - oldest)) / 1000)),
+    );
   }
-  recent.push(now);
-  hits.set(id, recent);
+  if (retryAfterSeconds > 0) return { allowed: false, retryAfterSeconds };
+  for (const { times } of slots) times.push(now);
   // Keep the map from growing without bound on a long-lived server.
   if (hits.size > SWEEP_AT) {
-    for (const [entry, times] of hits) {
-      if (!times.some((time) => now - time < budget.windowMs)) hits.delete(entry);
+    for (const [entry, { windowMs, times }] of hits) {
+      if (!times.some((time) => now - time < windowMs)) hits.delete(entry);
     }
   }
   return { allowed: true, retryAfterSeconds: 0 };

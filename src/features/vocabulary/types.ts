@@ -37,8 +37,10 @@ export type FeedPage = {
   levelSamples: Partial<Record<VocabularyLevel, { word: string; defVi: string }[]>>;
   /** Total words under the page's topic filter, unlevelled words included. */
   topicTotal: number;
+  /** Signed cursor the next (or previous) page request must echo back. Server pages only. */
+  cursor?: string;
 };
-export type FeedCursor = { position: number; revision?: string };
+export type FeedCursor = { position: number; revision?: string; token?: string };
 /**
  * Which visual dialect dresses the stream. "douyin" swaps in the mainland-flavored
  * palettes, motion presets and highlight reskin; it is only ever offered on the

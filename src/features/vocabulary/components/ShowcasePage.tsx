@@ -20,7 +20,7 @@
  * what says so.
  *
  * Exports: ShowcasePage
- * Depends on: VocabularyCard, showcase-contract, saved-words (catalog), vocabulary.css
+ * Depends on: VocabularyCard, showcase-contract, useServedWord, vocabulary.css
  */
 
 import { useEffect, useMemo, useState } from "react";
@@ -34,11 +34,10 @@ import {
   type ShowcaseOutroVariant,
   type ShowcasePhase,
 } from "../lib/showcase-contract";
-import { allCatalogWords, findWordByShareCode } from "../lib/saved-words";
+import { useServedWord, type WordLookup } from "../hooks/useServedWord";
 // Each page component brings the card's stylesheet in; this is a page like any other.
 import "../vocabulary.css";
 import type { FeedEntry, Presentation } from "../types";
-import type { VocabularyWord } from "../lib/schema";
 
 /** How long to wait for a paint before declaring readiness anyway. */
 const READY_BACKSTOP_MS = 400;
@@ -76,13 +75,15 @@ export function ShowcasePage() {
 
   // Resolved once. A re-render must not land on a different word mid-take, and `seed`
   // exists so a scheduled job can ask for the same clip twice.
-  const word = useMemo<VocabularyWord | undefined>(() => {
-    if (search.code) return findWordByShareCode(search.code);
-    const words = allCatalogWords();
-    if (!words.length) return undefined;
-    const seed = search.seed ?? Math.floor(Math.random() * words.length);
-    return words[seed % words.length];
-  }, [search.code, search.seed]);
+  const lookup = useMemo<WordLookup>(
+    () =>
+      search.code
+        ? { code: search.code }
+        : { seed: search.seed ?? Math.floor(Math.random() * 1_000_000) },
+    [search.code, search.seed],
+  );
+  // undefined while the lookup is in flight; the phase stays "loading" until it lands.
+  const { word } = useServedWord(lookup);
   // Also resolved once, for the same reason: the end card must not change look mid-take.
   const variants = useMemo(
     () => pickShowcaseVariants(search.seed, search.intro, search.outro),
@@ -96,6 +97,7 @@ export function ShowcasePage() {
 
   // ── loading → ready ───────────────────────────────────────────────────────────────────
   useEffect(() => {
+    if (word === undefined) return;
     if (!word) {
       setPhase("missing");
       setLocalPhase("missing");
@@ -154,10 +156,7 @@ export function ShowcasePage() {
   }, [phase]);
 
   const entry = useMemo<FeedEntry | null>(
-    () =>
-      word
-        ? { occurrenceId: `showcase-${word.id}`, position: 1, cycle: 0, word }
-        : null,
+    () => (word ? { occurrenceId: `showcase-${word.id}`, position: 1, cycle: 0, word } : null),
     [word],
   );
   const presentation = useMemo<Presentation>(
@@ -172,6 +171,7 @@ export function ShowcasePage() {
     [search.theme, search.style],
   );
 
+  if (word === undefined) return <main className="vocab-showcase" aria-busy="true" />;
   if (!entry || !word) {
     return (
       <main className="vocab-showcase" data-missing="">

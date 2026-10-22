@@ -45,15 +45,15 @@ export function useFeedPagination(
     fetchPreviousPage,
   ]);
 
-  const { catalogChanged, isFetchPreviousPageError, isFetchNextPageError, refetch } = query;
+  const { needsRestart, isFetchPreviousPageError, isFetchNextPageError, refetch } = query;
   const retry = useCallback(() => {
-    if (isFetching || catalogChanged) return;
+    if (isFetching || needsRestart) return;
     if (isFetchPreviousPageError) void fetchPreviousPage({ cancelRefetch: false });
     else if (isFetchNextPageError) void fetchNextPage({ cancelRefetch: false });
     else void refetch({ cancelRefetch: false });
   }, [
     isFetching,
-    catalogChanged,
+    needsRestart,
     isFetchPreviousPageError,
     isFetchNextPageError,
     fetchPreviousPage,

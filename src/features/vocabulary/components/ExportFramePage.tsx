@@ -16,14 +16,14 @@
  * what a job captures here is what a reader sees there.
  *
  * Exports: ExportFramePage
- * Depends on: VocabularyCard, export presets, saved-words (share-code lookup), vocabulary.css
+ * Depends on: VocabularyCard, export presets, useServedWord (share-code lookup), vocabulary.css
  */
 
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { useParams, useSearch } from "@tanstack/react-router";
 import { VocabularyCard } from "./VocabularyCard";
 import { getExportPreset } from "../lib/export-presets";
-import { findWordByShareCode } from "../lib/saved-words";
+import { useServedWord } from "../hooks/useServedWord";
 import { EXPORT_CONTRACT, type ExportPhase } from "../lib/export-contract";
 // Each page component brings the card's stylesheet in; this is a page like any other.
 // Without it the card renders with no rules at all — content height inside the frame,
@@ -44,12 +44,14 @@ export function ExportFramePage() {
   const { code } = useParams({ from: "/export/$code" });
   const search = useSearch({ from: "/export/$code" });
   const preset = getExportPreset(search.preset);
-  const word = useMemo(() => findWordByShareCode(code), [code]);
+  // undefined while the lookup is in flight: the phase stays "loading" until it lands.
+  const { word } = useServedWord(useMemo(() => ({ code }), [code]));
   // Held until a driver asks, so the first frame is a still the recorder can start on
   // rather than a card already a third of the way through its entrance.
   const [playing, setPlaying] = useState(search.autostart === true);
 
   useEffect(() => {
+    if (word === undefined) return;
     if (!word) {
       setPhase("missing");
       return;
@@ -107,6 +109,7 @@ export function ExportFramePage() {
     [search.theme, search.style],
   );
 
+  if (word === undefined) return <main className="vocab-export-frame" aria-busy="true" />;
   if (!entry) {
     return (
       <main className="vocab-export-frame" data-missing="">
