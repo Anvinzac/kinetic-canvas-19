@@ -428,6 +428,13 @@
 .vocab-recording .vocab-saved-dock {
   display: none;
 }
+/* A milestone is the reader's, not the clip's. It is a sibling of the dock rather than a
+   child of the card, so the blanket showcase rules that clear the card's own children do
+   not reach it and this has to be said explicitly. check-streak asserts the rule exists —
+   a badge flashing into a published promo is only ever noticed after it is posted. */
+.vocab-recording .vocab-streak-flash {
+  display: none;
+}
 /* While recording, the bar's TOP-RIGHT is the safe area's top-right - not the canvas's.
    --vocab-safe-top and --vocab-safe-right are the export preset's own margins (tiktok-clear
    is 8.5% of the height and 15% of the width) resolved to pixels by the recorder, so the
@@ -8516,4 +8523,117 @@ body:has(.vocab-intro) .vocab-resume {
   width: 34px;
   height: 34px;
   pointer-events: none;
+}
+
+/* ── Streak milestone ────────────────────────────────────────────────────────────────────
+   The badge that lands when a run of days reaches a milestone, and the row of the ones
+   already earned inside the saved drawer. Nothing here renders before the first milestone:
+   the badge mounts only on the moment it is earned, and the row returns null while empty.
+
+   Decorative and CSS-driven, like .vocab-reveal-burst — no framer-motion. The lifetime
+   comes in as --vocab-streak-dur from the component that also sets the retirement timer,
+   so the animation and the timer cannot drift apart.
+
+   Stem is `vocab-streak-` because `.vocab-saved-badge(s)` is already the level/POS chips on
+   a saved row and `.vocab-intro-badge` is the showcase opening card. */
+.vocab-streak-flash {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 14px;
+  pointer-events: none;
+  animation:
+    vocab-streak-flash-in 360ms var(--ease-spring, cubic-bezier(0.17, 0.89, 0.28, 1.08)) both,
+    vocab-streak-flash-out 420ms ease-in calc(var(--vocab-streak-dur, 2200ms) - 420ms) forwards;
+}
+.vocab-streak-flash-disc {
+  display: grid;
+  place-items: center;
+  align-content: center;
+  width: 132px;
+  height: 132px;
+  border-radius: 999px;
+  /* Accent fill with the palette's own on-accent ink: never white on accent. The lifted
+     --popup-accent is the live card's, so the badge matches the word it celebrates. */
+  background: var(--popup-accent, var(--vocab-accent));
+  color: var(--popup-accent-ink, var(--vocab-button-ink));
+  box-shadow:
+    0 20px 60px color-mix(in srgb, #000 42%, transparent),
+    0 0 0 10px color-mix(in srgb, var(--popup-accent, var(--vocab-accent)) 20%, transparent);
+}
+.vocab-streak-flash-days {
+  font-family: "Inter", sans-serif;
+  font-size: 50px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+.vocab-streak-flash-unit {
+  font-family: "Inter", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  opacity: 0.82;
+}
+.vocab-streak-flash-caption {
+  margin: 0;
+  font-family: "Inter", sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--chrome-ink);
+  text-shadow: 0 1px 10px color-mix(in srgb, #000 55%, transparent);
+}
+@keyframes vocab-streak-flash-in {
+  from {
+    opacity: 0;
+    transform: scale(0.72);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes vocab-streak-flash-out {
+  to {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+}
+
+/* The earned row in the saved drawer. Static chips, no gesture: the drawer already owns
+   three (open pull, close drag, per-row un-save swipe) and does not need a fourth. */
+.vocab-streak-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 0 18px 14px;
+}
+.vocab-streak-badge {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  padding: 5px 11px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--vocab-accent) 16%, transparent);
+  border: 1px solid color-mix(in srgb, var(--vocab-accent) 34%, transparent);
+  color: var(--shell-text);
+  font-family: "Inter", sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+}
+.vocab-streak-badge small {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.7;
 }

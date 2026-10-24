@@ -40,7 +40,8 @@
     "check:export-frame": "npx tsx scripts/check-export-frame.ts",
     "check:chrome-side": "npx tsx scripts/check-chrome-side.ts",
     "check:fit-floor": "npx tsx scripts/check-fit-floor.ts",
-    "check:showcase": "npx tsx scripts/check-showcase.ts"
+    "check:showcase": "npx tsx scripts/check-showcase.ts",
+    "check:streak": "npx tsx scripts/check-streak.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

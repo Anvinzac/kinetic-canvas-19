@@ -8,9 +8,11 @@
  *
  * Exports: FOLDER_CAP, GroupMode, GROUP_MODES, WordFolder, WordGroup, dayLabel,
  *   groupSavedWords
- * Depends on: ./schema (LEVELS), ./saved-words (type only)
+ * Depends on: ./day (the shared day boundary, which the streak counts in too),
+ *   ./schema (LEVELS), ./saved-words (type only)
  */
 
+import { DAY_MS, startOfDay } from "./day";
 import { LEVELS } from "./schema";
 import type { SavedWord } from "./saved-words";
 
@@ -41,7 +43,6 @@ export type WordGroup = {
   folders: WordFolder[];
 };
 
-const DAY_MS = 24 * 60 * 60 * 1000;
 
 /** Bucket label for words the device never stamped. */
 export const UNDATED_LABEL = "Chưa xác định";
@@ -58,12 +59,6 @@ const LEVEL_BAND_VI: Record<string, string> = {
   C1: "Cao cấp",
   C2: "Cao cấp",
 };
-
-function startOfDay(ts: number): number {
-  const day = new Date(ts);
-  day.setHours(0, 0, 0, 0);
-  return day.getTime();
-}
 
 /**
  * Calendar-day label in Vietnamese: the three relative words a reader thinks in, then a

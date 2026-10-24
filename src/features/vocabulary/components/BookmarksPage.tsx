@@ -12,6 +12,7 @@
  * Depends on: router Link, lucide icons, useSavedWords, saved-groups, i18n labels, vocabulary.css
  */
 
+import { useStreakBadges } from "../hooks/useStreakBadges";
 import { Link } from "@tanstack/react-router";
 import { ArrowLeft, Bookmark, ChevronDown, Heart, Undo2, X } from "lucide-react";
 import {
@@ -428,6 +429,22 @@ function SavedFolders({
  *   second <main> inside the feed's would be invalid) and the leading control
  *   becomes a close button instead of a link back to the feed.
  */
+/** The milestones this device has earned. Renders nothing until there is one. */
+function StreakBadges() {
+  const badges = useStreakBadges();
+  if (!badges.length) return null;
+  return (
+    <div className="vocab-streak-row" aria-label="Mốc chuỗi ngày đã đạt">
+      {badges.map((days) => (
+        <span className="vocab-streak-badge" key={days}>
+          {days}
+          <small>ngày</small>
+        </span>
+      ))}
+    </div>
+  );
+}
+
 export function BookmarksPage({ onClose }: { onClose?: () => void } = {}) {
   const { saved, favorites, remove, restore } = useSavedWords();
   const [tab, setTab] = useState<TabKind>("bookmark");
@@ -503,6 +520,13 @@ export function BookmarksPage({ onClose }: { onClose?: () => void } = {}) {
           </p>
         </div>
       </header>
+
+      {/* Hidden until the first milestone is earned — that early return is the whole rule.
+          No progress affordance anywhere: the first thing a reader ever sees is a badge they
+          already hold. Shared by both tabs, because it is the device's streak rather than a
+          property of either list, and it sits under a header that already says the storage
+          is local. */}
+      <StreakBadges />
 
       <div
         className="vocab-saved-tabs"

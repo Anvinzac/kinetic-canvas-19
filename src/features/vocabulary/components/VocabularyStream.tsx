@@ -29,6 +29,7 @@ export function VocabularyStream({
   history,
   onRecordView,
   onWordEnding,
+  onWordFinished,
   exportOpen = false,
   onCloseExport,
   onClearHistory,
@@ -47,6 +48,8 @@ export function VocabularyStream({
   onRecordView: (wordId: string) => void;
   /** The on-screen word reached its final page; ms left before the stream moves on. */
   onWordEnding?: (remainingMs: number) => void;
+  /** A word was finished; the feed records it against the reader's daily streak. */
+  onWordFinished?: (wordId: string) => void;
   /** Show the video-export studio for the on-screen word (the caller gates this to admins). */
   exportOpen?: boolean;
   onCloseExport?: () => void;
@@ -374,6 +377,7 @@ export function VocabularyStream({
                   canAdvance={activeIndex < rows.length - 1}
                   onAdvance={() => advanceFrom(entry.occurrenceId)}
                   onWordEnding={onWordEnding}
+                  onWordFinished={onWordFinished}
                   revealButtonLabel={revealButtonLabel}
                   onToggleAutoplay={onToggleAutoplay}
                 />

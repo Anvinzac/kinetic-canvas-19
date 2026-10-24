@@ -196,6 +196,7 @@ export function VocabularyCard({
   canAdvance,
   onAdvance,
   onWordEnding,
+  onWordFinished,
   exportLayout,
   revealButtonLabel,
   onToggleAutoplay,
@@ -221,6 +222,12 @@ export function VocabularyCard({
    * turned by hand and there is no telling. Lets the music bow out with the word.
    */
   onWordEnding?: (remainingMs: number) => void;
+  /**
+   * This word was finished, and should count towards the reader's daily streak. Carries
+   * `word.id` and never `occurrenceId`: the same word can be admitted twice in one stream,
+   * and the id is the only thing stable across a shuffle or a remount.
+   */
+  onWordFinished?: (wordId: string) => void;
   /**
    * Render for video export instead of for a reader: the text is confined to the
    * given clear zone, the interactive chrome is hidden and gestures are off. The
@@ -331,6 +338,31 @@ export function VocabularyCard({
   // the answer (auto-finish or a coda tap), so the strip is always what is showing.
   const [leaving, setLeaving] = useState(false);
   const leaveTimer = useRef<number | undefined>(undefined);
+  /**
+   * Count this word towards the streak.
+   *
+   * `viaTimer` is the coda's own clock running out. That is the only thing that counts
+   * normally — a reader who taps the coda away has not waited for the word, and right-zone
+   * taps are not rate-limited, so counting a dismissal would make a streak reachable with a
+   * thumb.
+   *
+   * Reduced motion is the exception, and it is not optional. useLearningPlayback gates
+   * `playing` on `!reducedMotion` and calls `onFinish` inside that gate, so for a reader
+   * with the OS setting on, the timer NEVER fires: timer-only would hand them a permanently
+   * zero streak for a preference they may never connect to it. Their coda dismissal is the
+   * only exit they have, so it counts.
+   *
+   * Loop mode earns nothing either way: the card returns to page 0 and bumps `replay`
+   * rather than finishing. Accepted — loop means "stay on this word".
+   */
+  const markWordFinished = useCallback(
+    (viaTimer: boolean) => {
+      if (exportLayout) return;
+      if (!viaTimer && !reducedMotion) return;
+      onWordFinished?.(entry.word.id);
+    },
+    [exportLayout, reducedMotion, onWordFinished, entry.word.id],
+  );
   const advanceWithExit = useCallback(() => {
     if (leaveTimer.current !== undefined) return;
     if (reducedMotion || !canAdvance || exportLayout) {
@@ -379,7 +411,10 @@ export function VocabularyCard({
     canAdvance,
     revealPage,
     loop: looping,
-    onFinish: advanceWithExit,
+    onFinish: () => {
+      markWordFinished(true);
+      advanceWithExit();
+    },
   });
   // Which way the reader last moved, derived during render so the outgoing page
   // already knows its exit direction on the same pass that swaps it out.
@@ -606,6 +641,7 @@ export function VocabularyCard({
           if (isSpelling) {
             if (canSkip()) {
               resume();
+              markWordFinished(false);
               advanceWithExit();
             }
           } else if (!stage.reveal && canSkip()) {
@@ -626,6 +662,7 @@ export function VocabularyCard({
         if (isSpelling) {
           if (canSkip()) {
             resume();
+            markWordFinished(false);
             advanceWithExit();
           }
           return;

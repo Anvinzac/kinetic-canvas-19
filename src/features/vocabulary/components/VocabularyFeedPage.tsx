@@ -1,6 +1,7 @@
 /** Public vocabulary page orchestration. Exports: VocabularyFeedPage. Depends on: controls, stream, reduced-motion preference, font readiness, track rotation. */
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useReducedMotion } from "framer-motion";
+import { useStreak } from "../hooks/useStreak";
 import { useQuery } from "@tanstack/react-query";
 import { useScreenWakeLock } from "@/hooks/use-screen-wake-lock";
 import { useShellHeightVar } from "@/hooks/use-shell-height-var";
@@ -15,6 +16,7 @@ import { getActiveVocabWording } from "@/features/admin/api/wording.functions";
 import { FeedControls } from "./FeedControls";
 import { VocabularyStream } from "./VocabularyStream";
 import { SavedDrawer } from "./SavedDrawer";
+import { StreakBadgeFlash } from "./StreakBadgeFlash";
 import { DifficultyOnboarding } from "./DifficultyOnboarding";
 import { fetchVocabularyPage } from "../api/feed";
 import { readDifficultyChoice, writeDifficultyChoice } from "../lib/difficulty-choice";
@@ -136,6 +138,8 @@ export function VocabularyFeedPage({ locale }: { locale?: TargetLocale }) {
   const closeExport = useCallback(() => setExportOpen(false), []);
   const viewHistory = useViewHistory();
   const reducedMotion = !!useReducedMotion();
+  // On-device only, like the saved words beside it: no account, no table, nothing leaves.
+  const streak = useStreak();
   // No rotate-to-portrait gate here: the feed has its own landscape layout (two-column
   // answer page, compact chrome, measured shell height). The post-player surfaces, which
   // only letterbox, keep theirs. Keep the screen lit while the feed is open.
@@ -214,6 +218,16 @@ export function VocabularyFeedPage({ locale }: { locale?: TargetLocale }) {
         </div>
       )}
       <SavedDrawer open={savedOpen} onOpenChange={setSavedOpen} />
+      {/* Beside the drawer rather than inside the card: the word is finished at the moment
+          the stream starts scrolling to the next one, so a card-level badge would ride out
+          of frame half-played. Keyed on the milestone so each one replays from its start. */}
+      {streak.celebrating !== null && (
+        <StreakBadgeFlash
+          key={streak.celebrating}
+          days={streak.celebrating}
+          onDone={streak.dismiss}
+        />
+      )}
       <VocabularyStream
         key={`${packName ?? ""}:${seed}:${filters.topic}:${filters.level}:${filters.difficulty}`}
         seed={seed}
@@ -226,6 +240,7 @@ export function VocabularyFeedPage({ locale }: { locale?: TargetLocale }) {
         history={viewHistory.history}
         onRecordView={handleRecordView}
         onWordEnding={music.wordEnding}
+        onWordFinished={streak.finish}
         onClearHistory={viewHistory.clear}
         onMetadata={setMetadata}
         onRestart={shuffle}
