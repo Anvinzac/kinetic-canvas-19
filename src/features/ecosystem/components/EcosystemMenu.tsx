@@ -13,12 +13,13 @@
  */
 
 import type React from "react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { LayoutGrid, Settings, Store, X } from "lucide-react";
 import { ECOSYSTEM_STORE_AVAILABLE } from "@/lib/feature-flags";
 import { usePresence } from "@/hooks/use-presence";
 import { ECOSYSTEM_APPS, type EcosystemApp } from "../data/apps";
+import { resolveTarget } from "@/features/vocabulary/lib/target-language";
 import "../ecosystem.css";
 
 /** Matches the exit keyframes in ecosystem.css. */
@@ -127,12 +128,21 @@ export function EcosystemMenu({
   onOpenSettings,
 }: EcosystemMenuProps): React.ReactElement {
   const presence = usePresence(open, ECOSYSTEM_EXIT_MS);
+  // Everything except the host the reader is already on. Which host that is varies now
+  // that each language is its own address, so it is resolved rather than assumed: on
+  // duc.chayla.app the sibling worth offering is Anh, not Đức. Unknown hosts (localhost, a
+  // preview build, an IP) resolve to English, which is also what the feed itself serves
+  // there, so the drawer agrees with the deck beside it.
+  const apps = useMemo(() => {
+    const here = typeof window === "undefined" ? "" : resolveTarget(window.location.host);
+    return ECOSYSTEM_APPS.filter((app) => app.locale !== here);
+  }, []);
   const anchor = useRef<HTMLDivElement>(null);
   const trigger = useRef<HTMLButtonElement>(null);
   const firstItem = useRef<HTMLLIElement>(null);
   // The store counts as a tile, so it shares the last row with whatever apps
   // land beside it.
-  const total = ECOSYSTEM_APPS.length + 1;
+  const total = apps.length + 1;
   const rowCount = Math.ceil(total / COLUMNS);
   // The grid may only become scrollable once the panel has stopped moving — a
   // scrollbar appearing mid-animation is the artefact this guards against.
@@ -221,11 +231,11 @@ export function EcosystemMenu({
           >
             {/* Kept clear of the top-right corner, which the notch eats into. */}
             <div className="eco-panel-head">
-              <p className="eco-panel-title">Hệ sinh thái Chay Lá</p>
+              <p className="eco-panel-title">Ứng dụng</p>
               <p className="eco-panel-sub">Chạm để mở app khác</p>
             </div>
-            <ul className="eco-panel-grid" role="menu" aria-label="Hệ sinh thái Chay Lá">
-              {ECOSYSTEM_APPS.map((app, index) => (
+            <ul className="eco-panel-grid" role="menu" aria-label="Ứng dụng Chay Lá">
+              {apps.map((app, index) => (
                 <AppTile
                   key={app.id}
                   app={app}
