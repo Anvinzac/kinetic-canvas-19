@@ -1,11 +1,17 @@
 /* Ecosystem menu: the Chay Lá app family as a rounded panel that unfolds from
-   the top-right corner button and notches around it. Borrows the feed's
-   frosted-glass language so the panel reads as chrome, not a system dialog. */
+   the top-LEFT corner button and notches around it. Borrows the feed's
+   frosted-glass language so the panel reads as chrome, not a system dialog.
+
+   It opened from the top right until the grid moved in front of the page title.
+   Everything below is mirrored as a consequence, and the mirror is the whole of
+   the change: the notch, the transform origin, the corner highlight, the shadow
+   direction and the head's padding all have to name the SAME corner, or the
+   panel stops wrapping its button and starts sliding under it. */
 
 .eco-anchor {
   position: relative;
   display: inline-grid;
-  justify-self: end;
+  justify-self: start;
   /* Replaced at runtime with the trigger's measured width. The fallback is the
      full-size button; vocabulary.css shrinks it to 34 and 30 at narrow widths. */
   --eco-btn: 44px;
@@ -45,44 +51,45 @@
 }
 
 /* Anchored flush to the trigger's own box. The anchor wraps the button exactly,
-   so top/right of 0 put the panel's corner on the button's corner and the button
-   centre lands at (100% - half, half) in the panel's own coordinates — at any
-   button size. An earlier -22px offset also pushed the panel past the right edge
-   of the screen, which is what flashed a horizontal scrollbar on opening. */
+   so top/left of 0 put the panel's corner on the button's corner and the button
+   centre lands at (half, half) in the panel's own coordinates — at any button
+   size. An earlier -22px offset pushed the panel past the screen edge, which is
+   what flashed a horizontal scrollbar on opening; the same hazard applies on
+   this side, so the offset stays at 0. */
 .eco-panel {
   position: absolute;
   z-index: 1;
   top: 0;
-  right: 0;
+  left: 0;
   width: min(316px, calc(100vw - 28px));
   /* Nothing inside may extend the panel: a transformed tile mid-animation was
      enough to put a scrollbar on screen for a few frames. */
   overflow: hidden;
   --eco-half: calc(var(--eco-btn) / 2);
-  /* The head's own height and padding-right are what clear the notch; see below. */
+  /* The head's own height and padding-left are what clear the notch; see below. */
   padding: 16px 12px 14px;
   border-radius: 26px;
   background:
-    radial-gradient(circle at 100% 0, #ffffff26, #ffffff0d 45%, #ffffff00 70%),
+    radial-gradient(circle at 0 0, #ffffff26, #ffffff0d 45%, #ffffff00 70%),
     color-mix(in srgb, var(--shell-surface, #15102a) 78%, #05010e 22%);
   backdrop-filter: blur(22px) saturate(165%);
   box-shadow:
     inset 0 1px 0 #ffffff1f,
-    -14px 20px 54px #00000073;
+    14px 20px 54px #00000073;
   color: var(--shell-text, #f4f1ff);
 
   /* The notch: a circle punched out of the corner so the panel wraps the button
      instead of sliding underneath it. Radius is the button's own plus air. */
   --eco-notch: calc(var(--eco-half) + 9px);
   --eco-notch-mask: radial-gradient(
-    circle var(--eco-notch) at calc(100% - var(--eco-half)) var(--eco-half),
+    circle var(--eco-notch) at var(--eco-half) var(--eco-half),
     transparent 0 var(--eco-notch),
     #000 calc(var(--eco-notch) + 0.5px)
   );
   -webkit-mask-image: var(--eco-notch-mask);
   mask-image: var(--eco-notch-mask);
 
-  transform-origin: calc(100% - var(--eco-half)) var(--eco-half);
+  transform-origin: var(--eco-half) var(--eco-half);
   animation: eco-panel-in var(--dur-move, 220ms)
     var(--ease-spring, cubic-bezier(0.34, 1.4, 0.64, 1)) both;
 }
@@ -99,7 +106,7 @@
   flex-direction: column;
   gap: 1px;
   /* Clears the notch, which eats a (button + 9px) square out of the corner. */
-  padding: 0 calc(var(--eco-btn) + 16px) 0 6px;
+  padding: 0 6px 0 calc(var(--eco-btn) + 16px);
   min-height: calc(var(--eco-btn) + 10px);
 }
 .eco-panel-title {

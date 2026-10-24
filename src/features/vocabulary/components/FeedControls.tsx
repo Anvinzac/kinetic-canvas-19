@@ -24,7 +24,6 @@ import {
 } from "lucide-react";
 import { COMMUNITY_AVAILABLE } from "@/lib/feature-flags";
 import { EcosystemMenu } from "@/features/ecosystem/components/EcosystemMenu";
-import { ECOSYSTEM_STORE_AVAILABLE } from "@/lib/feature-flags";
 import { stylePool, themePool } from "../lib/presets";
 import { DIFFICULTY_ALL, formatLevelBand, countTrackWords, tracksFor } from "../lib/difficulty";
 import { CEFR_LEVELS, HSK_LEVELS, type NarrativeStyle } from "../lib/schema";
@@ -924,8 +923,18 @@ export function FeedControls({
   return (
     <header className="vocab-toolbar" ref={toolbar}>
       <div className="vocab-toolbar-row">
-        {/* Left: just the title, which is the difficulty trigger. Settings moved
-            to the top-right corner — see the right column. */}
+        {/* Far left: the app family. Rendered unconditionally — ECOSYSTEM_STORE_AVAILABLE
+            gates the STORE TILE inside the panel, not the panel itself, and the panel
+            already falls back to a Settings tile in its place while the siblings are
+            unannounced. */}
+        <EcosystemMenu
+          open={ecoOpen}
+          onOpenChange={toggleEco}
+          reducedMotion={reducedMotion}
+          onOpenSettings={() => onOpen(true)}
+        />
+        {/* Then the title, which is the difficulty trigger. Settings holds the top-right
+            corner — see the right column. */}
         <div className="vocab-toolbar-left">
           <DifficultyDropdown
             value={filters.difficulty}
@@ -984,31 +993,22 @@ export function FeedControls({
             </button>
           )}
         </div>
-        {/* Right: the corner control. While the sibling apps are unannounced the
-            app panel is gone entirely and Settings takes the corner; when the
-            store ships, the corner goes back to the app panel and Settings
-            becomes a tile inside it. Either way the sheet pops from HERE. */}
-        {ECOSYSTEM_STORE_AVAILABLE ? (
-          <EcosystemMenu
-            open={ecoOpen}
-            onOpenChange={toggleEco}
-            reducedMotion={reducedMotion}
-            onOpenSettings={() => onOpen(true)}
-          />
-        ) : (
-          <button
-            className="vocab-icon-button vocab-corner-button"
-            type="button"
-            ref={toggleButton}
-            onClick={() => (open ? close() : onOpen(true))}
-            aria-expanded={open}
-            aria-controls={panelId}
-            aria-label={open ? "Đóng tùy chọn" : "Mở tùy chọn luồng từ vựng"}
-            data-active={open || undefined}
-          >
-            {open ? <X size={19} /> : <Settings size={19} />}
-          </button>
-        )}
+        {/* Right: Settings, now permanently. The two used to trade this corner — the app
+            panel took it when the store shipped and Settings stepped back into the panel
+            as a tile — but the panel has moved to the far left, so neither has to give way
+            and the sheet still pops from HERE. */}
+        <button
+          className="vocab-icon-button vocab-corner-button"
+          type="button"
+          ref={toggleButton}
+          onClick={() => (open ? close() : onOpen(true))}
+          aria-expanded={open}
+          aria-controls={panelId}
+          aria-label={open ? "Đóng tùy chọn" : "Mở tùy chọn luồng từ vựng"}
+          data-active={open || undefined}
+        >
+          {open ? <X size={19} /> : <Settings size={19} />}
+        </button>
       </div>
       {/* Now-playing: the shuffle control changes only the background track, so the song's
           name runs ONCE beneath the controls like a news ticker — never looping, fading out
